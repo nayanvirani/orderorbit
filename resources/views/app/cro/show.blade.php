@@ -1,0 +1,168 @@
+@extends('layouts.embedded')
+
+@section('title', $experience->name)
+
+@php
+    $type = \App\Experiences\Registry::type($experience->type);
+    $published = $experience->publishedVersion;
+    $config = $experience->draft_config;
+    $tabs = ['overview' => 'Overview', 'configuration' => 'Configuration', 'targeting' => 'Targeting', 'analytics' => 'Analytics', 'experiment' => 'Experiment', 'history' => 'History'];
+    $canEdit = request()->attributes->get('storeUser')?->can('manage_experiences');
+    $editorUrl = $store->adminUrl('themes/current/editor?template='.($type['surface'] === 'product' ? 'product' : ($type['surface'] === 'cart' ? 'cart' : 'index')).'&addAppBlockId='.config('shopify.api_key').'/experience&target=newAppsSection');
+    $describe = function ($field, $value) {
+        return match ($field['type']) {
+            'toggle' => $value ? 'On' : 'Off',
+            'select' => $field['options'][$value] ?? $value,
+            'checkboxes' => collect((array) $value)->map(fn ($v) => $field['options'][$v] ?? $v)->implode(', ') ?: '—',
+            'products', 'collections' => collect((array) $value)->pluck('title')->implode(', ') ?: '—',
+            'list' => count((array) $value).' '.\Illuminate\Support\Str::plural('row', count((array) $value)),
+            'datetime' => $value ? \Illuminate\Support\Carbon::parse($value)->toDayDateTimeString() : '—',
+            default => ($value === null || $value === '') ? '—' : $value,
+        };
+    };
+    $actionLabels = ['experience.created' => 'Created', 'experience.saved' => 'Saved draft', 'experience.published' => 'Published', 'experience.paused' => 'Paused', 'experience.resumed' => 'Resumed', 'experience.archived' => 'Archived', 'experience.unarchived' => 'Restored from archive', 'experience.duplicated' => 'Created as a copy', 'experience.version_restored' => 'Loaded an earlier version', 'experience.changes_discarded' => 'Discarded changes'];
+@endphp
+
+@section('content')
+<s-page heading="{{ $experience->name }}">
+    @if ($canEdit && $experience->status !== 'archived')
+        <s-button slot="primary-action" variant="primary" href="{{ app_route('app.cro.experiences.edit', ['experience' => $experience->id]) }}">Edit</s-button>
+    @endif
+
+    @if ($experience->status === 'published' && $experience->placement_status === 'not_placed')
+        <s-banner tone="warning" heading="Published but not placed">
+            <s-paragraph>Shoppers can't see this yet. Add the OrderOrbit experience block in the Theme Editor and choose “{{ $type['singular'] }}”.</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ $editorUrl }}" target="_top">Open Theme Editor</s-button>
+        </s-banner>
+    @endif
+    @if ($published && $experience->has_unpublished_changes && $experience->status !== 'archived')
+        <s-banner tone="info">This experience has changes that aren't live yet. Publish from the editor to update your store.</s-banner>
+    @endif
+
+    <nav class="oo-tabs" aria-label="Experience">
+        @foreach ($tabs as $key => $label)
+            <a href="{{ app_route('app.cro.experiences.show', ['experience' => $experience->id, 'tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif>{{ $label }}</a>
+        @endforeach
+    </nav>
+
+    @if ($tab === 'overview')
+        <s-section>
+            <dl class="oo-kv">
+                <dt>Status</dt><dd>@include('app.cro._status')</dd>
+                <dt>Type</dt><dd>{{ $type['label'] }}</dd>
+                <dt>Template</dt><dd>{{ $experience->templateName() }} @if ($experience->templateVersion)<span class="oo-muted">· v{{ $experience->templateVersion->version }}</span>@endif</dd>
+                <dt>Experience ID</dt><dd><span class="oo-code">{{ $experience->handle }}</span> <span class="oo-muted oo-small">Pin it in the block's “Experience ID” setting.</span></dd>
+                <dt>Live version</dt><dd>{{ $published ? 'v'.$published->version.' · '.$published->published_at->diffForHumans() : 'Not published' }}</dd>
+                @if ($experience->starts_at || $experience->ends_at)
+                    <dt>Schedule</dt><dd>{{ $experience->starts_at?->setTimezone($store->timezone ?? 'UTC')->toDayDateTimeString() ?? 'Now' }} → {{ $experience->ends_at?->setTimezone($store->timezone ?? 'UTC')->toDayDateTimeString() ?? 'No end' }}</dd>
+                @endif
+                <dt>Placement</dt>
+                <dd>
+                    @switch($experience->placement_status)
+                        @case('placed')<s-badge tone="success">Placed in theme</s-badge>@break
+                        @case('not_placed')<s-badge tone="critical">Not placed</s-badge>@break
+                        @default<s-badge>Not checked</s-badge>
+                    @endswitch
+                    <span class="oo-muted oo-small">{{ $experience->placement_checked_at ? 'Checked '.$experience->placement_checked_at->diffForHumans() : '' }}</span>
+                </dd>
+                @if ($experience->description)<dt>Description</dt><dd>{{ $experience->description }}</dd>@endif
+            </dl>
+        </s-section>
+
+        <s-section heading="Performance">
+            <s-grid gridTemplateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="base">
+                @foreach (['Views', 'Interactions', 'Conversions', 'Revenue'] as $kpi)
+                    <s-box padding="base" border="base" borderRadius="base"><s-text color="subdued">{{ $kpi }}</s-text><s-heading>—</s-heading></s-box>
+                @endforeach
+            </s-grid>
+            <s-paragraph><span class="oo-muted">Performance appears here once analytics is connected.</span></s-paragraph>
+        </s-section>
+
+        @if ($canEdit)
+            <s-section heading="Actions">
+                <div class="oo-inline">
+                    @if (in_array($experience->status, ['draft', 'paused'], true) && ! $published)
+                        <s-button href="{{ app_route('app.cro.experiences.edit', ['experience' => $experience->id]) }}">Open editor to publish</s-button>
+                    @endif
+                    @if ($experience->status === 'published')
+                        <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'pause']) }}" data-confirm="Pause this experience? Shoppers stop seeing it right away."><s-button type="submit">Pause</s-button></form>
+                    @endif
+                    @if ($experience->status === 'paused' && $published)
+                        <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'resume']) }}"><s-button type="submit">Resume</s-button></form>
+                    @endif
+                    <s-button href="{{ $editorUrl }}" target="_top">Open Theme Editor</s-button>
+                    <form method="POST" action="{{ app_route('app.cro.experiences.placement', ['experience' => $experience->id]) }}"><s-button type="submit">Re-check placement</s-button></form>
+                    <form method="POST" action="{{ app_route('app.cro.experiences.duplicate', ['experience' => $experience->id]) }}"><s-button type="submit">Duplicate</s-button></form>
+                    @if ($experience->status === 'archived')
+                        <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'unarchive']) }}"><s-button type="submit">Restore from archive</s-button></form>
+                    @else
+                        <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'archive']) }}" data-confirm="Archive this experience? It stops showing on your store."><s-button type="submit" tone="critical">Archive</s-button></form>
+                    @endif
+                </div>
+            </s-section>
+        @endif
+
+    @elseif ($tab === 'configuration' || $tab === 'targeting')
+        @foreach ($tab === 'configuration' ? ['content', 'design', 'behavior'] : ['targeting', 'schedule'] as $section)
+            <s-section heading="{{ ucfirst($section) }}">
+                <dl class="oo-kv">
+                    @foreach ($fields[$section] as $key => $field)
+                        <dt>{{ $field['label'] }}</dt><dd>{{ $describe($field, $config[$section][$key] ?? null) }}</dd>
+                    @endforeach
+                </dl>
+            </s-section>
+        @endforeach
+        @if ($canEdit && $experience->status !== 'archived')
+            <s-button href="{{ app_route('app.cro.experiences.edit', ['experience' => $experience->id]) }}">Edit</s-button>
+        @endif
+
+    @elseif ($tab === 'analytics')
+        <s-section heading="Analytics">
+            <dl class="oo-kv">
+                <dt>Track views</dt><dd>{{ ($config['analytics']['track_views'] ?? true) ? 'On' : 'Off' }}</dd>
+                <dt>Track clicks</dt><dd>{{ ($config['analytics']['track_clicks'] ?? true) ? 'On' : 'Off' }}</dd>
+            </dl>
+            <s-paragraph><span class="oo-muted">Events, funnels and revenue for this experience appear once analytics is connected.</span></s-paragraph>
+        </s-section>
+
+    @elseif ($tab === 'experiment')
+        <s-section heading="Experiment">
+            <s-paragraph>No test is running on this experience.</s-paragraph>
+            <s-paragraph><span class="oo-muted">A/B and A/B/C tests arrive with Experiments.</span></s-paragraph>
+        </s-section>
+
+    @else
+        <s-section heading="Versions">
+            @if ($versions->isEmpty())
+                <s-paragraph>No published versions yet.</s-paragraph>
+            @else
+                <table class="oo-table stack">
+                    <thead><tr><th>Version</th><th>Published</th><th>By</th><th>Note</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach ($versions as $version)
+                            <tr>
+                                <td><strong>v{{ $version->version }}</strong> @if ($version->id === $experience->published_version_id)<s-badge tone="success">Live</s-badge>@endif</td>
+                                <td data-label="Published">{{ $version->published_at?->diffForHumans() }}</td>
+                                <td data-label="By">{{ $version->author?->displayName() ?? '—' }}</td>
+                                <td class="oo-muted" data-label="Note">{{ $version->change_note ?? '—' }}</td>
+                                <td style="text-align:right">
+                                    @if ($canEdit && $version->id !== $experience->published_version_id)
+                                        <form method="POST" action="{{ app_route('app.cro.experiences.versions.restore', ['experience' => $experience->id, 'version' => $version->id]) }}" data-confirm="Load v{{ $version->version }} into the draft? Your current draft is replaced."><s-button type="submit" variant="tertiary">Restore</s-button></form>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </s-section>
+        <s-section heading="Activity">
+            @forelse ($activity as $log)
+                <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit' }}</strong> · {{ $actionLabels[$log->action] ?? $log->action }}@if (isset($log->context['version'])) v{{ $log->context['version'] }}@endif <span class="oo-muted">· {{ $log->created_at->diffForHumans() }}</span></s-paragraph>
+            @empty
+                <s-paragraph>No activity yet.</s-paragraph>
+            @endforelse
+        </s-section>
+    @endif
+</s-page>
+@endsection

@@ -2,6 +2,7 @@
 <nav class="oo-tabs" aria-label="Settings">
     @foreach ([
         ['app.settings.store', 'Store', null],
+        ['app.settings.branding', 'Branding', null],
         ['app.settings.users', 'Users & roles', 'manage_users'],
         ['app.settings.billing', 'Billing', null],
         ['app.settings.activity', 'Activity', 'view_activity'],

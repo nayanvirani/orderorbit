@@ -15,8 +15,8 @@ class DashboardController extends Controller
             ['label' => 'Connect your store', 'done' => $store->isInstalled() && $store->missingScopes() === [], 'route' => 'app.settings.store'],
             ['label' => 'Choose your goal', 'done' => $store->goal !== null, 'route' => 'app.onboarding'],
             ['label' => 'Choose a plan', 'done' => $store->plan !== null, 'route' => 'app.settings.billing'],
-            ['label' => 'Create your first experience', 'done' => false],
-            ['label' => 'Place it in the Theme Editor', 'done' => false],
+            ['label' => 'Create your first experience', 'done' => $store->experiences()->exists(), 'route' => 'app.cro.experiences.create'],
+            ['label' => 'Place it in the Theme Editor', 'done' => $store->experiences()->where('placement_status', 'placed')->exists(), 'route' => 'app.cro.experiences.index'],
             ['label' => 'Verify analytics', 'done' => false],
         ];
 

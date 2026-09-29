@@ -1,0 +1,22 @@
+{%- comment -%}
+  Published experiences (app-owned metafield written by OrderOrbit) and the minimal
+  page context the runtime needs for targeting. No customer personal data is output:
+  only whether the shopper is logged in and their order count.
+  Duplicates across several blocks are harmless; the runtime reads the first.
+{%- endcomment -%}
+<script type="application/json" data-oo-data>{{ app.metafields.orderorbit.experiences.value | json }}</script>
+<script type="application/json" data-oo-context>
+  {
+    "page": {{ request.page_type | json }},
+    "product": {{ product.id | json }},
+    "productTitle": {{ product.title | json }},
+    "productPrice": {{ product.selected_or_first_available_variant.price | json }},
+    "collections": {{ product.collections | map: 'id' | json }},
+    "loggedIn": {% if customer %}true{% else %}false{% endif %},
+    "ordersCount": {{ customer.orders_count | default: 0 | json }},
+    "country": {{ localization.country.iso_code | json }},
+    "currency": {{ cart.currency.iso_code | json }},
+    "cartTotal": {{ cart.total_price | json }},
+    "designMode": {{ request.design_mode | json }}
+  }
+</script>

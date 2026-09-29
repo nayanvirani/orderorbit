@@ -35,6 +35,11 @@ class Store extends Model
         return $this->hasMany(StoreUser::class);
     }
 
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(Experience::class);
+    }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
