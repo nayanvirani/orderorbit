@@ -1,0 +1,33 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "6c6351ce074785f2db1fee2ac2ee484c"
+name = "OrderOrbit"
+application_url = "https://orderorbit.space/app"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = false
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled", "app/scopes_update", "app_subscriptions/update" ]
+  uri = "https://orderorbit.space/webhooks/shopify"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "https://orderorbit.space/webhooks/shopify"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_products,read_themes,write_discounts,write_pixels,read_customer_events"
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [ "https://orderorbit.space/auth/callback" ]
+
+[pos]
+embedded = false
