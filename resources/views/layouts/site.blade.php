@@ -6,32 +6,172 @@
     <title>@yield('title', 'OrderOrbit | Shopify CRO, Checkout & Upsell App')</title>
     <meta name="description" content="@yield('description', 'Bundles, upsells, free gifts, shipping bars, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <link rel="canonical" href="{{ url()->current() }}">
-    <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+    <meta property="og:site_name" content="OrderOrbit">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@yield('title', 'OrderOrbit | Shopify CRO, Checkout & Upsell App')">
+    <meta property="og:description" content="@yield('description', 'Bundles, upsells, free gifts, shipping bars, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#5b4bff">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ filemtime(public_path('css/site.css')) }}">
+    @stack('head')
 </head>
 <body>
-    <header class="site">
-        <div class="wrap">
-            <a class="logo" href="{{ route('site.home') }}">OrderOrbit</a>
-            <nav class="main">
-                <a class="hide-sm" href="{{ route('site.home') }}#features">Product</a>
-                <a class="hide-sm" href="{{ route('site.home') }}#how-it-works">How It Works</a>
-                <a class="hide-sm" href="{{ route('site.pricing') }}">Pricing</a>
-                <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+    @include('site.partials.icons')
+
+    <header class="site-header" data-header>
+        <div class="wrap bar">
+            <a class="logo" href="{{ route('site.home') }}" aria-label="OrderOrbit home">
+                <svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit
+            </a>
+
+            <nav class="nav" aria-label="Main">
+                <div class="item" data-dropdown>
+                    <button type="button" aria-expanded="false">Product <x-icon name="chev" class="chev"/></button>
+                    <div class="dropdown mega">
+                        @foreach (['convert' => 'CRO', 'checkout' => 'Checkout', 'grow' => 'Grow'] as $group => $label)
+                            <div>
+                                <h5>{{ $label }}</h5>
+                                @foreach ($navGroups[$group] as $slug => $f)
+                                    <a class="dd-link" href="{{ route('site.feature', $slug) }}">
+                                        <span class="ico"><x-icon :name="$f['icon']"/></span>
+                                        <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="item" data-dropdown>
+                    <button type="button" aria-expanded="false">Solutions <x-icon name="chev" class="chev"/></button>
+                    <div class="dropdown narrow">
+                        @foreach ($navSolutions as $slug => $s)
+                            <a class="dd-link" href="{{ route('site.solution', $slug) }}">
+                                <span class="ico"><x-icon :name="$s['icon']"/></span>
+                                <span><strong>{{ $s['name'] }}</strong><span>{{ $s['tagline'] }}</span></span>
+                            </a>
+                        @endforeach
+                        <a class="dd-link" href="{{ route('site.solutions') }}">
+                            <span class="ico"><x-icon name="grid"/></span>
+                            <span><strong>All solutions</strong><span>Find the setup that fits your store</span></span>
+                        </a>
+                    </div>
+                </div>
+                <div class="item"><a href="{{ route('site.templates') }}">Templates</a></div>
+                <div class="item"><a href="{{ route('site.pricing') }}">Pricing</a></div>
+                <div class="item" data-dropdown>
+                    <button type="button" aria-expanded="false">Resources <x-icon name="chev" class="chev"/></button>
+                    <div class="dropdown narrow">
+                        <a class="dd-link" href="{{ route('site.how') }}"><span class="ico"><x-icon name="orbit"/></span><span><strong>How It Works</strong><span>From install to your first test</span></span></a>
+                        <a class="dd-link" href="{{ route('site.resources') }}"><span class="ico"><x-icon name="book"/></span><span><strong>Resources</strong><span>Guides and templates</span></span></a>
+                        <a class="dd-link" href="{{ route('site.blog') }}"><span class="ico"><x-icon name="message"/></span><span><strong>Blog</strong><span>Shopify conversion, explained</span></span></a>
+                        <a class="dd-link" href="{{ route('site.help') }}"><span class="ico"><x-icon name="help"/></span><span><strong>Help Center</strong><span>Setup guides and troubleshooting</span></span></a>
+                    </div>
+                </div>
             </nav>
+
+            <div class="header-actions">
+                <a class="signin" href="{{ config('shopify.sign_in_url') }}">Sign In</a>
+                <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked"><x-icon name="bag" class="shopify-mark"/><span>Install<span class="hide-xs"> on Shopify</span></span></a>
+                <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" data-menu-toggle><x-icon name="menu"/></button>
+            </div>
         </div>
     </header>
 
-    <main>@yield('content')</main>
-
-    <footer class="site">
-        <div class="wrap">
-            <strong>OrderOrbit</strong> — Convert more customers. Increase order value. Bring customers back.
-            <div class="cols">
-                <div><h4>Product</h4><a href="{{ route('site.home') }}#features">Features</a><a href="{{ route('site.home') }}#how-it-works">How It Works</a><a href="{{ route('site.pricing') }}">Pricing</a></div>
-                <div><h4>Legal</h4><a href="{{ route('site.privacy') }}">Privacy Policy</a><a href="{{ route('site.terms') }}">Terms</a></div>
+    <div class="mobile-menu" data-mobile-menu>
+        <details>
+            <summary>Product <x-icon name="chev" class="chev"/></summary>
+            <div class="links">
+                @foreach ($navGroups as $group)
+                    @foreach ($group as $slug => $f)
+                        <a class="dd-link" href="{{ route('site.feature', $slug) }}"><span class="ico"><x-icon :name="$f['icon']"/></span><span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span></a>
+                    @endforeach
+                @endforeach
             </div>
-            <p>© {{ date('Y') }} OrderOrbit</p>
+        </details>
+        <details>
+            <summary>Solutions <x-icon name="chev" class="chev"/></summary>
+            <div class="links">
+                @foreach ($navSolutions as $slug => $s)
+                    <a class="dd-link" href="{{ route('site.solution', $slug) }}"><span class="ico"><x-icon :name="$s['icon']"/></span><span><strong>{{ $s['name'] }}</strong><span>{{ $s['tagline'] }}</span></span></a>
+                @endforeach
+            </div>
+        </details>
+        <a class="plain" href="{{ route('site.templates') }}">Templates</a>
+        <a class="plain" href="{{ route('site.pricing') }}">Pricing</a>
+        <details>
+            <summary>Resources <x-icon name="chev" class="chev"/></summary>
+            <div class="links">
+                <a class="dd-link" href="{{ route('site.how') }}"><span class="ico"><x-icon name="orbit"/></span><span><strong>How It Works</strong></span></a>
+                <a class="dd-link" href="{{ route('site.resources') }}"><span class="ico"><x-icon name="book"/></span><span><strong>Resources</strong></span></a>
+                <a class="dd-link" href="{{ route('site.blog') }}"><span class="ico"><x-icon name="message"/></span><span><strong>Blog</strong></span></a>
+                <a class="dd-link" href="{{ route('site.help') }}"><span class="ico"><x-icon name="help"/></span><span><strong>Help Center</strong></span></a>
+            </div>
+        </details>
+        <a class="plain" href="{{ config('shopify.sign_in_url') }}">Sign In</a>
+        <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+    </div>
+
+    <main>
+        @yield('content')
+    </main>
+
+    <footer class="site-footer">
+        <div class="wrap">
+            <div class="footer-top">
+                <div class="brand">
+                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit</a>
+                    <p>Convert more customers. Increase order value. Bring customers back.</p>
+                    <div class="ctas" style="margin-top:24px">
+                        <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+                    </div>
+                </div>
+                <div class="footer-cols">
+                    <div>
+                        <h4>Product</h4>
+                        <a href="{{ route('site.features') }}">Features</a>
+                        <a href="{{ route('site.templates') }}">Templates</a>
+                        <a href="{{ route('site.how') }}">How It Works</a>
+                        <a href="{{ route('site.pricing') }}">Pricing</a>
+                    </div>
+                    <div>
+                        <h4>Solutions</h4>
+                        @foreach ($navSolutions as $slug => $s)
+                            <a href="{{ route('site.solution', $slug) }}">{{ str_replace(' Brands', '', $s['name']) }}</a>
+                        @endforeach
+                    </div>
+                    <div>
+                        <h4>Resources</h4>
+                        <a href="{{ route('site.help') }}">Help Center</a>
+                        <a href="{{ route('site.resources') }}">Guides</a>
+                        <a href="{{ route('site.blog') }}">Blog</a>
+                    </div>
+                    <div>
+                        <h4>Company</h4>
+                        <a href="{{ route('site.about') }}">About</a>
+                        <a href="{{ route('site.contact') }}">Contact</a>
+                        <a href="{{ route('site.security') }}">Security</a>
+                    </div>
+                    <div>
+                        <h4>Legal</h4>
+                        <a href="{{ route('site.privacy') }}">Privacy Policy</a>
+                        <a href="{{ route('site.terms') }}">Terms</a>
+                        <a href="{{ route('site.dpa') }}">Data Processing</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© {{ date('Y') }} OrderOrbit. Built for Shopify.</span>
+                <span>Theme App Blocks · Checkout Extensions · Consent-aware Web Pixel</span>
+            </div>
         </div>
     </footer>
+
+    <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path('js/site.js')) }}" defer></script>
+    @stack('scripts')
 </body>
 </html>

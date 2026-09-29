@@ -2,18 +2,170 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContactSubmission;
+use App\Support\Content;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
+use Throwable;
 
 class SiteController extends Controller
 {
+    public const SURFACES = [
+        'product' => 'Product page',
+        'cart' => 'Cart',
+        'checkout' => 'Checkout',
+        'thank-you' => 'Thank You',
+        'account' => 'Customer Account',
+        'automation' => 'Automation',
+    ];
+
+    public const TEMPLATE_TYPES = [
+        'bundle' => 'Bundles',
+        'gift' => 'Free Gift',
+        'shipping' => 'Shipping Bar',
+        'qty' => 'Quantity Breaks',
+        'upsell' => 'Upsells',
+        'countdown' => 'Countdown',
+        'sticky' => 'Sticky ATC',
+        'trust' => 'Trust & Reviews',
+        'promo' => 'Promotion',
+        'thankyou' => 'Thank You',
+        'account' => 'Customer Account',
+        'flow' => 'Automation',
+    ];
+
     public function home(): View
     {
-        return view('site.home', ['plans' => config('shopify.billing.plans')]);
+        $templates = collect(Content::templates());
+
+        return view('site.home', [
+            'plans' => config('shopify.billing.plans'),
+            'groups' => Content::featureGroups(),
+            'solutions' => Content::solutions(),
+            'templateTeaser' => $templates->unique('type')->take(8)->values()->all(),
+        ]);
+    }
+
+    public function features(): View
+    {
+        return view('site.features', ['groups' => Content::featureGroups()]);
+    }
+
+    public function feature(string $slug): View
+    {
+        $feature = Content::feature($slug) ?? abort(404);
+
+        $siblings = array_filter(Content::features(), fn ($f, $s) => $s !== $slug, ARRAY_FILTER_USE_BOTH);
+        $sameGroup = array_filter($siblings, fn ($f) => $f['group'] === $feature['group']);
+        $related = array_slice($sameGroup + $siblings, 0, 3, true);
+
+        return view('site.feature', [
+            'feature' => $feature,
+            'templates' => array_values(array_filter(Content::templates(), fn ($t) => $t['feature'] === $slug)),
+            'surfaces' => self::SURFACES,
+            'related' => $related,
+        ]);
+    }
+
+    public function solutions(): View
+    {
+        return view('site.solutions', ['solutions' => Content::solutions()]);
+    }
+
+    public function solution(string $slug): View
+    {
+        $solution = Content::solution($slug) ?? abort(404);
+
+        return view('site.solution', [
+            'solution' => $solution,
+            'features' => array_intersect_key(Content::features(), array_flip($solution['features'])),
+        ]);
+    }
+
+    public function how(): View
+    {
+        return view('site.how');
+    }
+
+    public function templates(): View
+    {
+        return view('site.templates', [
+            'templates' => Content::templates(),
+            'surfaces' => self::SURFACES,
+            'types' => self::TEMPLATE_TYPES,
+        ]);
     }
 
     public function pricing(): View
     {
-        return view('site.pricing', ['plans' => config('shopify.billing.plans')]);
+        return view('site.pricing', ['plans' => config('shopify.billing.plans'), 'pricing' => Content::pricing()]);
+    }
+
+    public function resources(): View
+    {
+        return view('site.resources', [
+            'posts' => Content::posts(),
+            'helpCategories' => Content::helpCategories(),
+            'templateCount' => count(Content::templates()),
+        ]);
+    }
+
+    public function blog(): View
+    {
+        return view('site.blog', ['posts' => Content::posts()]);
+    }
+
+    public function help(): View
+    {
+        return view('site.help', ['helpCategories' => Content::helpCategories()]);
+    }
+
+    public function contact(): View
+    {
+        return view('site.contact');
+    }
+
+    public function submitContact(Request $request): RedirectResponse
+    {
+        // Honeypot: bots fill every field.
+        if ($request->filled('website')) {
+            return back()->with('contact_sent', true);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:120',
+            'email' => 'required|email:rfc|max:190',
+            'company' => 'nullable|string|max:160',
+            'store_url' => 'nullable|string|max:190',
+            'topic' => 'required|in:Sales,Support,Partnership,Other',
+            'message' => 'required|string|max:5000',
+        ], [
+            'email.required' => 'Enter a valid email address.',
+            'email.email' => 'Enter a valid email address.',
+            'message.required' => 'Please add a message.',
+        ]);
+
+        try {
+            ContactSubmission::create($data + ['ip' => $request->ip()]);
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->withInput()->with('contact_failed', true);
+        }
+
+        return back()->with('contact_sent', true);
+    }
+
+    public function about(): View
+    {
+        return view('site.about');
+    }
+
+    public function security(): View
+    {
+        return view('site.security');
     }
 
     public function privacy(): View
@@ -24,5 +176,32 @@ class SiteController extends Controller
     public function terms(): View
     {
         return view('site.terms');
+    }
+
+    public function dpa(): View
+    {
+        return view('site.dpa');
+    }
+
+    public function sitemap(): Response
+    {
+        $urls = [
+            route('site.home'), route('site.how'), route('site.features'), route('site.templates'), route('site.solutions'),
+            route('site.pricing'), route('site.resources'), route('site.blog'), route('site.help'), route('site.contact'),
+            route('site.about'), route('site.security'), route('site.privacy'), route('site.terms'), route('site.dpa'),
+        ];
+        foreach (array_keys(Content::features()) as $slug) {
+            $urls[] = route('site.feature', $slug);
+        }
+        foreach (array_keys(Content::solutions()) as $slug) {
+            $urls[] = route('site.solution', $slug);
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+        foreach ($urls as $url) {
+            $xml .= '<url><loc>'.e($url).'</loc></url>';
+        }
+
+        return response($xml.'</urlset>', 200, ['Content-Type' => 'application/xml']);
     }
 }

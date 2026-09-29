@@ -8,9 +8,21 @@ class PublicSiteTest extends TestCase
 {
     public function test_public_pages_render(): void
     {
-        foreach (['/', '/pricing', '/privacy', '/terms'] as $path) {
-            $this->get($path)->assertOk()->assertSee('OrderOrbit');
+        $paths = ['/', '/how-it-works', '/features', '/solutions', '/templates', '/pricing', '/resources', '/blog', '/help', '/contact', '/about', '/security', '/privacy', '/terms', '/dpa', '/sitemap.xml'];
+        $paths = array_merge(
+            $paths,
+            array_map(fn ($slug) => "/features/{$slug}", array_keys(\App\Support\Content::features())),
+            array_map(fn ($slug) => "/solutions/{$slug}", array_keys(\App\Support\Content::solutions())),
+        );
+
+        foreach ($paths as $path) {
+            $this->get($path)->assertOk();
         }
+    }
+
+    public function test_unknown_feature_is_a_404_page(): void
+    {
+        $this->get('/features/not-a-feature')->assertNotFound()->assertSee('drifted');
     }
 
     public function test_embedded_app_bounces_without_session_token(): void
