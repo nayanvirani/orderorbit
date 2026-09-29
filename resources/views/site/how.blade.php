@@ -33,7 +33,7 @@
     <section class="section {{ $loop->even ? 'tint' : '' }}">
         <div class="wrap split {{ $loop->even ? 'flip' : '' }}">
             <div class="split-copy reveal">
-                <span class="eyebrow"><span class="dot"></span>Step {{ $loop->iteration }} of 8</span>
+                <div class="step-mark"><span class="chapter-mark">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span class="eyebrow"><span class="dot"></span>Step {{ $loop->iteration }} of 8</span></div>
                 <h2>{{ $title }}</h2>
                 <p class="lead">{{ $text }}</p>
             </div>
