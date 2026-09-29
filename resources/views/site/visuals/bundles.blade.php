@@ -25,7 +25,7 @@
         </div>
     </div>
     <x-slot:chips>
-        <div class="float-chip c1"><span class="dot"></span><code>orderorbit:bundle_completed</code></div>
+        <div class="float-chip c1"><span class="dot"></span>Bundle completed</div>
         <div class="float-chip c2"><x-icon name="check-circle" style="color:#12b886"/> Native Shopify cart</div>
     </x-slot:chips>
 </x-browser>

@@ -13,10 +13,10 @@
 <section class="section tight" style="padding-top:0">
     <div class="wrap grid two">
         @foreach ([
-            ['lock', 'Access', ['Shopify OAuth with least-privilege scopes', 'Role-based access for your staff', 'Audit logs']],
-            ['shield', 'Data', ['Store data isolation', 'Encrypted secrets', 'Encryption in transit', 'Retention controls', 'Export and deletion on request']],
-            ['chart', 'Analytics', ['Collected through Shopify\'s consent-aware Web Pixel', 'Respects the Customer Privacy API', 'Data minimisation']],
-            ['zap', 'Reliability', ['Webhook signature validation', 'Idempotent processing', 'Retries and monitoring']],
+            ['lock', 'Access', ['Secure sign-in through Shopify', 'Only the permissions the app needs', 'Role-based access for your staff', 'A record of important account activity']],
+            ['shield', 'Data', ['Each store\'s data is kept separate', 'Sensitive information is protected', 'You choose how long data is kept', 'Export and deletion on request']],
+            ['chart', 'Analytics', ['Respects your customers\' consent choices', 'Follows your store\'s privacy settings in Shopify', 'Only the data needed to measure results']],
+            ['zap', 'Reliability', ['Every update from Shopify is verified', 'No duplicate actions or emails', 'Continuous monitoring']],
         ] as [$icon, $title, $items])
             <div class="card reveal">
                 <div class="icon-badge"><x-icon :name="$icon"/></div>

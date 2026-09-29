@@ -44,7 +44,7 @@
             <h2>The foundation under every experience.</h2>
         </div>
         <div class="grid four">
-            @foreach ([['grid', 'Template library', 'Proven presets for every surface.', route('site.templates')], ['palette', 'Brand settings', 'Colours, fonts, buttons and spacing shared by every block.', null], ['shield', 'Consent-aware analytics', 'Shopify Web Pixel and Customer Privacy API.', route('site.security')], ['card', 'Shopify Billing', 'Starter, Growth and Scale on your Shopify invoice.', route('site.pricing')]] as [$icon, $title, $text, $href])
+            @foreach ([['grid', 'Template library', 'Proven presets for every surface.', route('site.templates')], ['palette', 'Brand settings', 'Colours, fonts, buttons and spacing shared by every block.', null], ['shield', 'Consent-aware analytics', 'Respects your customers\' consent choices.', route('site.security')], ['card', 'Shopify Billing', 'Starter, Growth and Scale on your Shopify invoice.', route('site.pricing')]] as [$icon, $title, $text, $href])
                 @if ($href)
                     <a class="card reveal" href="{{ $href }}"><div class="icon-badge"><x-icon :name="$icon"/></div><h3>{{ $title }}</h3><p>{{ $text }}</p></a>
                 @else

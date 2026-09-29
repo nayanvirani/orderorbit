@@ -14,6 +14,6 @@
         <div class="run-status"><span class="pill green">● Enabled</span><span class="pill gray">v3 · Published</span><span class="pill">1,284 runs · 99.4% success</span></div>
     </div>
     <x-slot:chips>
-        <div class="float-chip c1"><x-icon name="mail" style="color:#8f5cff"/> Email included — no SMTP</div>
+        <div class="float-chip c1"><x-icon name="mail" style="color:#8f5cff"/> Email sending included</div>
     </x-slot:chips>
 </x-browser>

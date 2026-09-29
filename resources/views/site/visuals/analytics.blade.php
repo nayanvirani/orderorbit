@@ -32,6 +32,6 @@
         </div>
     </div>
     <x-slot:chips>
-        <div class="float-chip c1"><x-icon name="shield" style="color:#12b886"/> Consent-aware Web Pixel</div>
+        <div class="float-chip c1"><x-icon name="shield" style="color:#12b886"/> Consent-aware analytics</div>
     </x-slot:chips>
 </x-browser>

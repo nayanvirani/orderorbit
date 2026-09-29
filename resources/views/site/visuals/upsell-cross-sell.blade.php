@@ -20,7 +20,7 @@
         </div>
     </div>
     <x-slot:chips>
-        <div class="float-chip c1"><span class="dot"></span><code>orderorbit:upsell_accepted</code></div>
+        <div class="float-chip c1"><span class="dot"></span>Upsell accepted</div>
         <div class="float-chip c3"><x-icon name="check-circle" style="color:#12b886"/> Never force-opens your drawer</div>
     </x-slot:chips>
 </x-browser>

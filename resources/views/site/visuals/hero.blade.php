@@ -38,7 +38,7 @@
             <span class="add-btn">Add to cart</span>
         </div>
     </div>
-    <div class="float-chip c1"><span class="dot"></span><code>orderorbit:bundle_completed</code></div>
+    <div class="float-chip c1"><span class="dot"></span>Bundle completed</div>
     <div class="float-chip c2"><x-icon name="layout" style="color:#8f5cff"/> Placed in the Theme Editor</div>
-    <div class="float-chip c3"><span class="dot"></span><code>orderorbit:shipping_threshold_reached</code></div>
+    <div class="float-chip c3"><span class="dot"></span>Free shipping unlocked</div>
 </div>

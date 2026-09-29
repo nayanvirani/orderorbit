@@ -38,9 +38,9 @@
 <div class="strip">
     <div class="wrap">
         <span><x-icon name="bag"/>Built for Shopify</span>
-        <span><x-icon name="layout"/>Theme App Blocks</span>
-        <span><x-icon name="card"/>Checkout Extensions</span>
-        <span><x-icon name="shield"/>Consent-aware Web Pixel</span>
+        <span><x-icon name="layout"/>Placed in the Theme Editor</span>
+        <span><x-icon name="card"/>Checkout blocks</span>
+        <span><x-icon name="shield"/>Consent-aware analytics</span>
         <span><x-icon name="zap"/>Shopify Billing</span>
     </div>
 </div>
@@ -52,7 +52,7 @@
             <div>
                 <span class="tag"><x-icon name="alert"/>The problem</span>
                 <h2>Too many apps. Not enough answers.</h2>
-                <p>Most stores run one app for bundles, another for upsells, another for timers and another for email — each with its own scripts, styles and reports. Pages slow down, themes break, and nobody can say which change actually moved revenue.</p>
+                <p>Most stores run one app for bundles, another for upsells, another for timers and another for email — each with its own settings, styles and reports. Pages slow down, themes break, and nobody can say which change actually moved revenue.</p>
                 <a class="btn" style="margin-top:24px" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How OrderOrbit Works <x-icon name="arrow"/></a>
             </div>
             <div class="stack-art" aria-hidden="true">
@@ -74,7 +74,7 @@
             <ul class="bullet-list">
                 <li><x-icon name="check-circle"/><span><b style="color:#fff">Create</b> from a proven template</span></li>
                 <li><x-icon name="check-circle"/><span><b style="color:#fff">Publish</b> natively through the Theme Editor</span></li>
-                <li><x-icon name="check-circle"/><span><b style="color:#fff">Measure</b> with a consent-aware Web Pixel</span></li>
+                <li><x-icon name="check-circle"/><span><b style="color:#fff">Measure</b> with consent-aware analytics</span></li>
                 <li><x-icon name="check-circle"/><span><b style="color:#fff">Test</b>, <b style="color:#fff">personalize</b> and <b style="color:#fff">automate</b> from the same data</span></li>
             </ul>
         </div>
@@ -166,7 +166,7 @@
         <div class="split-copy reveal">
             <span class="eyebrow"><span class="dot"></span>Analytics</span>
             <h2>Know what's working.</h2>
-            <p class="lead">Every view, click, add-to-cart and purchase is tracked through Shopify's consent-aware Web Pixel. See funnels, revenue by experience and the full customer journey.</p>
+            <p class="lead">Every view, click, add-to-cart and purchase is tracked with consent-aware analytics. See funnels, revenue by experience and the full customer journey.</p>
             <a class="btn dark" href="{{ route('site.feature', 'analytics') }}">Explore Analytics <x-icon name="arrow"/></a>
         </div>
         <div class="reveal">@include('site.visuals.analytics')</div>
@@ -209,7 +209,7 @@
         </div>
         <div class="grid four">
             @foreach ([
-                ['code-off', 'No theme code edits', 'Every storefront experience is a Theme App Block.'],
+                ['code-off', 'No theme code edits', 'Every storefront experience is a block you place in the Theme Editor.'],
                 ['bag', 'No forced cart drawers', 'We never open or intercept your theme\'s drawer.'],
                 ['cursor', 'No duplicate add-to-cart', 'Your theme keeps handling variants, quantity and cart.'],
                 ['trash', 'One-click removal', 'Remove a block in the Theme Editor and it\'s gone.'],
@@ -279,14 +279,14 @@
         <div class="section-head reveal"><h2>Frequently asked questions.</h2></div>
         @include('site.partials.faq', ['faqs' => [
             ['What is OrderOrbit?', 'OrderOrbit helps Shopify brands convert more visitors, raise order value and bring customers back with theme-safe CRO blocks, checkout experiences, lifecycle automation, analytics and A/B testing — in one app.'],
-            ['Will OrderOrbit slow down or break my theme?', 'Storefront experiences are Theme App Blocks that load only where you place them. There are no theme code edits, and removing a block is one click in the Theme Editor.'],
+            ['Will OrderOrbit slow down or break my theme?', 'Storefront experiences are blocks that load only where you place them in the Theme Editor. There are no theme code edits, and removing a block is one click in the Theme Editor.'],
             ['Do I need to edit theme code?', 'No. You place and arrange every block in Shopify\'s Theme Editor.'],
-            ['Does it work with my cart drawer?', 'Cart upsells use a cart-drawer app block where your theme supports one, and fall back to the cart page where it doesn\'t. OrderOrbit never force-opens or intercepts your drawer.'],
-            ['Can I customise checkout?', 'OrderOrbit adds supported blocks through Shopify Checkout Extensibility. Blocks inside the checkout steps require Shopify Plus; Thank You and Order Status blocks are available on all plans that support checkout extensions. We only show the targets your store supports.'],
+            ['Does it work with my cart drawer?', 'Cart upsells appear in your cart drawer where your theme supports it, and fall back to the cart page where it doesn\'t. OrderOrbit never force-opens or intercepts your drawer.'],
+            ['Can I customise checkout?', 'OrderOrbit adds blocks to checkout in the ways Shopify supports. Blocks inside the checkout steps require Shopify Plus; Thank You and Order Status blocks are available on all plans that support checkout blocks. We only show the targets your store supports.'],
             ['How is revenue attributed?', 'Revenue is attributed within a set window using clearly labelled first-touch, last-touch and experience-assisted models. Attribution is an analytical model, not proof of causality — use A/B tests to prove impact.'],
             ['How does A/B testing decide a winner?', 'At 95% confidence using standard statistical tests, and only after at least 7 days, 1,000 visitors and 100 conversions per variant.'],
-            ['Is analytics consent-aware / GDPR-friendly?', 'Yes. Events are collected through Shopify\'s Web Pixel and respect the Customer Privacy API. You control retention, and we support data export and deletion.'],
-            ['Can I send emails without setting up SMTP?', 'Yes. Email is sent through OrderOrbit\'s managed delivery. You only set a sender name and reply-to address.'],
+            ['Is analytics consent-aware / GDPR-friendly?', 'Yes. Analytics respect your customers\' consent choices and your store\'s privacy settings in Shopify. You control retention, and we support data export and deletion.'],
+            ['Can I send emails without setting up an email provider?', 'Yes. Sending is included with OrderOrbit. You only set a sender name and reply-to address.'],
             ['What does OrderOrbit cost, and is billing through Shopify?', 'Starter is $9.99/mo, Growth $29.99/mo and Scale $59.99/mo, all billed through your Shopify invoice.'],
         ]])
     </div>

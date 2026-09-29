@@ -13,6 +13,6 @@
         @endforeach
     </div>
     <x-slot:chips>
-        <div class="float-chip c2"><span class="dot"></span><code>orderorbit:shipping_threshold_reached</code></div>
+        <div class="float-chip c2"><span class="dot"></span>Free shipping unlocked</div>
     </x-slot:chips>
 </x-browser>

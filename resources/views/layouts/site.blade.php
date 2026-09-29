@@ -166,7 +166,7 @@
             </div>
             <div class="footer-bottom">
                 <span>© {{ date('Y') }} OrderOrbit. Built for Shopify.</span>
-                <span>Theme App Blocks · Checkout Extensions · Consent-aware Web Pixel</span>
+                <span>Placed in the Theme Editor · Checkout blocks · Consent-aware analytics</span>
             </div>
         </div>
     </footer>

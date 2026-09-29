@@ -30,6 +30,6 @@
     </div>
     <x-slot:chips>
         <div class="float-chip c1"><x-icon name="check-circle" style="color:#12b886"/> Only targets your plan supports</div>
-        <div class="float-chip c3"><span class="dot"></span><code>orderorbit:checkout_block_viewed</code></div>
+        <div class="float-chip c3"><span class="dot"></span>Checkout block viewed</div>
     </x-slot:chips>
 </x-browser>

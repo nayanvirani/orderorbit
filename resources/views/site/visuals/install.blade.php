@@ -6,7 +6,7 @@
     <div class="oo-block" style="margin-top:16px">
         <span class="oo-tag">LEAST-PRIVILEGE</span>
         <h5>OrderOrbit will be able to:</h5>
-        @foreach (['View products and themes', 'Create discounts for your offers', 'Add a consent-aware Web Pixel', 'Bill through your Shopify invoice'] as $perm)
+        @foreach (['View products and themes', 'Create discounts for your offers', 'Measure results with consent-aware analytics', 'Bill through your Shopify invoice'] as $perm)
             <div style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;margin-top:8px"><x-icon name="check-circle" style="width:16px;height:16px;color:#12b886"/>{{ $perm }}</div>
         @endforeach
     </div>
