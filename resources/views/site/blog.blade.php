@@ -4,7 +4,7 @@
 @section('description', 'Practical guides on CRO, bundles, upsells, checkout, retention and testing for Shopify stores.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Blog</span>
         <h1>Shopify conversion, <span class="grad-text">explained.</span></h1>

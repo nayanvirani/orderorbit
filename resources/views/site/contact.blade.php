@@ -4,7 +4,7 @@
 @section('description', 'Questions about OrderOrbit, pricing or partnerships? We reply within one business day.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Contact</span>
         <h1>Let's talk about <span class="grad-text">growing your store.</span></h1>

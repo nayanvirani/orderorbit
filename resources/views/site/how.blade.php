@@ -4,7 +4,7 @@
 @section('description', 'From install to your first A/B test: create, publish, measure, test, personalize and automate with OrderOrbit.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>How it works</span>
         <h1>From install to <span class="grad-text">your first test.</span></h1>

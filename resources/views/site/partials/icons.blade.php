@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
     <defs>
-        <linearGradient id="oo-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b4bff"/><stop offset=".5" stop-color="#8f5cff"/><stop offset="1" stop-color="#ff5ca8"/></linearGradient>
+        <linearGradient id="oo-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4f2a"/><stop offset=".5" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ffcf6a"/></linearGradient>
     </defs>
     @php($s = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"')
     <symbol id="i-bundle" viewBox="0 0 24 24" {!! $s !!}><path d="M16.5 9.4 7.5 4.2"/><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></symbol>
@@ -54,6 +54,6 @@
     <symbol id="i-orbit" viewBox="0 0 32 32">
         <circle cx="16" cy="16" r="6.5" fill="url(#oo-grad)"/>
         <ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="url(#oo-grad)" stroke-width="2.2" transform="rotate(-30 16 16)"/>
-        <circle cx="27.2" cy="9.6" r="2.6" fill="#ff5ca8"/>
+        <circle cx="27.2" cy="9.6" r="2.6" fill="#ffe3a8"/>
     </symbol>
 </svg>

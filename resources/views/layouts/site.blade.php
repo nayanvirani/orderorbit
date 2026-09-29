@@ -12,19 +12,20 @@
     <meta property="og:description" content="@yield('description', 'Bundles, upsells, free gifts, shipping bars, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#5b4bff">
+    <meta name="theme-color" content="#07060d">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ filemtime(public_path('css/site.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/mockups.css') }}?v={{ filemtime(public_path('css/mockups.css')) }}">
     @stack('head')
 </head>
 <body>
     @include('site.partials.icons')
 
-    <header class="site-header" data-header>
-        <div class="wrap bar">
+    <header class="dock-wrap" data-header>
+        <div class="dock">
             <a class="logo" href="{{ route('site.home') }}" aria-label="OrderOrbit home">
                 <svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit
             </a>
@@ -76,7 +77,7 @@
 
             <div class="header-actions">
                 <a class="signin" href="{{ config('shopify.sign_in_url') }}">Sign In</a>
-                <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked"><x-icon name="bag" class="shopify-mark"/><span>Install<span class="hide-xs"> on Shopify</span></span></a>
+                <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install app</a>
                 <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" data-menu-toggle><x-icon name="menu"/></button>
             </div>
         </div>
@@ -125,7 +126,7 @@
             <div class="footer-top">
                 <div class="brand">
                     <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit</a>
-                    <p>Convert more customers. Increase order value. Bring customers back.</p>
+                    <p>Convert more customers. Increase order value. <em class="grad-text">Bring customers back.</em></p>
                     <div class="ctas" style="margin-top:24px">
                         <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
                     </div>
@@ -169,6 +170,7 @@
                 <span>Placed in the Theme Editor · Checkout blocks · Consent-aware analytics</span>
             </div>
         </div>
+        <div class="wordmark" aria-hidden="true">OrderOrbit</div>
     </footer>
 
     <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path('js/site.js')) }}" defer></script>

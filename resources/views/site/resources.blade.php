@@ -4,7 +4,7 @@
 @section('description', 'Guides, templates and answers for growing conversion, order value and repeat purchase on Shopify.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Resources</span>
         <h1>Resources for better <span class="grad-text">Shopify conversion.</span></h1>

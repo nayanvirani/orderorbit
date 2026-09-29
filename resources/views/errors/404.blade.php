@@ -1,7 +1,7 @@
 @extends('layouts.site')
 @section('title', 'Page not found | OrderOrbit')
 @section('content')
-<section class="page-hero" style="padding:96px 0">
+<section class="page-hero sky" style="padding:96px 0">
     <div class="wrap">
         <div style="max-width:320px;margin:0 auto 12px">@include('site.diagrams.orbit', ['light' => true, 'active' => []])</div>
         <h1>This page drifted <span class="grad-text">out of orbit.</span></h1>

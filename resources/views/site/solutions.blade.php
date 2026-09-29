@@ -4,7 +4,7 @@
 @section('description', 'OrderOrbit setups for DTC brands, repeat-purchase brands, fashion & apparel and Shopify Plus.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Solutions</span>
         <h1>Growth tools shaped for <span class="grad-text">your kind of store.</span></h1>
