@@ -4,6 +4,8 @@
 
 @section('content')
 <s-page heading="Welcome to OrderOrbit">
+    <x-app.hero eyebrow="Get started" title="Welcome to <em>OrderOrbit.</em>"
+        lead="Two quick steps now: confirm your store connection and choose what to improve first. We'll recommend where to start." />
     <div class="oo-steps" aria-label="Onboarding progress">
         @foreach ($steps as $i => $label)
             @php($n = $i + 1)

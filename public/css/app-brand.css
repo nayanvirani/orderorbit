@@ -1,0 +1,86 @@
+/* OrderOrbit brand layer for the embedded app.
+   The app stays light and Polaris-based (it lives inside Shopify admin); this adds the
+   public site's identity: serif headlines, warm solar gradient, mono labels, orbit motif. */
+:root {
+    --ob-serif: "Instrument Serif", Georgia, serif;
+    --ob-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --ob-grad: linear-gradient(100deg, #ff4f2a 0%, #ff8a3d 45%, #ffcf6a 100%);
+    --ob-sun: #e8551f;
+    --ob-ink: #1a1a1a;
+    --ob-muted: #616161;
+    --ob-line: #ebebeb;
+    --ob-cream: #fff8f0;
+}
+
+/* Hero */
+.ob-hero { position: relative; overflow: hidden; isolation: isolate; margin-bottom: 16px; padding: 28px 28px 26px; border-radius: 16px; background: radial-gradient(520px 260px at 100% 0%, rgba(255, 138, 61, .22), transparent 70%), radial-gradient(420px 200px at 0% 100%, rgba(255, 207, 106, .18), transparent 70%), var(--ob-cream); box-shadow: 0 1px 0 rgba(26, 26, 26, .07), 0 0 0 1px rgba(26, 26, 26, .06); }
+.ob-hero::after { content: ""; position: absolute; z-index: -1; right: -60px; top: 50%; width: 320px; height: 320px; transform: translateY(-50%); border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 170, 90, .95) 0 16px, rgba(255, 106, 46, .25) 17px 34px, transparent 35px),
+                repeating-radial-gradient(circle, transparent 0 59px, rgba(232, 85, 31, .14) 60px 61px); opacity: .9; }
+.ob-eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 500 11px/1 var(--ob-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ob-sun); }
+.ob-eyebrow::before { content: ""; width: 16px; height: 1px; background: currentColor; }
+.ob-title { margin: 12px 0 0; max-width: 680px; font: 400 clamp(30px, 4vw, 44px)/1.02 var(--ob-serif); letter-spacing: -.01em; color: var(--ob-ink); }
+.ob-title em { font-style: italic; background: var(--ob-grad); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .05em; }
+.ob-lead { margin: 10px 0 0; max-width: 620px; color: var(--ob-muted); font-size: 14px; line-height: 1.5; }
+.ob-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+@media (max-width: 640px) { .ob-hero { padding: 22px 18px; } .ob-hero::after { width: 220px; height: 220px; right: -90px; opacity: .6; } }
+
+/* KPI tiles */
+.ob-kpis { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.ob-kpi { padding: 14px 16px; border-radius: 12px; background: #fff; box-shadow: 0 1px 0 rgba(26, 26, 26, .07), 0 0 0 1px rgba(26, 26, 26, .07); }
+.ob-kpi small { display: block; font: 500 10.5px/1.2 var(--ob-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ob-muted); }
+.ob-kpi b { display: block; margin-top: 8px; font: 400 32px/1 var(--ob-serif); color: var(--ob-ink); }
+.ob-kpi span { display: block; margin-top: 6px; font-size: 12px; color: var(--ob-muted); }
+
+/* Setup checklist */
+.ob-checklist { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.ob-checklist li { counter-increment: s; display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ob-line); }
+.ob-checklist li:last-child { border-bottom: 0; }
+.ob-checklist li::before { content: counter(s); flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 400 15px/1 var(--ob-serif); color: var(--ob-sun); border: 1px solid rgba(232, 85, 31, .35); background: var(--ob-cream); }
+.ob-checklist li.done::before { content: "✓"; font-family: inherit; font-size: 13px; color: #fff; border: 0; background: var(--ob-grad); }
+.ob-checklist li.done > span { color: var(--ob-muted); text-decoration: line-through; text-decoration-color: rgba(0, 0, 0, .25); }
+.ob-checklist a { color: var(--ob-ink); font-weight: 550; text-decoration: none; }
+.ob-checklist a:hover { color: var(--ob-sun); }
+.ob-progress { height: 6px; border-radius: 6px; background: #f1f1f1; overflow: hidden; margin: 4px 0 8px; }
+.ob-progress i { display: block; height: 100%; border-radius: inherit; background: var(--ob-grad); }
+
+/* Plan picker — the website's joined pricing strip, light */
+.ob-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 1px 0 rgba(26, 26, 26, .07), 0 0 0 1px rgba(26, 26, 26, .08); }
+.ob-plan { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 24px 22px; border-right: 1px solid var(--ob-line); }
+.ob-plan:last-child { border-right: 0; }
+.ob-plan.featured { background: radial-gradient(360px 180px at 50% 0%, rgba(255, 138, 61, .16), transparent 70%), var(--ob-cream); }
+.ob-plan.current { box-shadow: inset 0 0 0 2px var(--ob-sun); }
+.ob-plan .ob-badge { position: absolute; top: 16px; right: 16px; }
+.ob-plan h3 { margin: 0; font: 400 28px/1 var(--ob-serif); color: var(--ob-ink); }
+.ob-price { font: 400 44px/1 var(--ob-serif); color: var(--ob-ink); }
+.ob-price small { font: 500 11px/1 var(--ob-mono); letter-spacing: .06em; color: var(--ob-muted); }
+.ob-plan ul { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 7px; flex: 1; }
+.ob-plan li { display: flex; gap: 8px; font-size: 13px; color: #303030; }
+.ob-plan li::before { content: "✓"; color: var(--ob-sun); font-weight: 700; }
+@media (max-width: 760px) { .ob-plan { border-right: 0; border-bottom: 1px solid var(--ob-line); } .ob-plan:last-child { border-bottom: 0; } }
+
+/* Badges drawn by us (Polaris badges stay for statuses) */
+.ob-badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px; font: 500 10.5px/1 var(--ob-mono); letter-spacing: .06em; text-transform: uppercase; color: #3a1405; background: var(--ob-grad); }
+.ob-badge.soft { color: var(--ob-sun); background: #ffefe3; }
+
+/* Type cards (create experience / CRO overview) */
+.ob-types { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.ob-type { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 12px; background: #fff; text-decoration: none; color: inherit; box-shadow: 0 1px 0 rgba(26, 26, 26, .07), 0 0 0 1px rgba(26, 26, 26, .07); transition: box-shadow .15s, transform .15s; }
+.ob-type:hover { transform: translateY(-2px); box-shadow: 0 6px 16px -8px rgba(232, 85, 31, .45), 0 0 0 1px rgba(232, 85, 31, .35); }
+.ob-type h4 { margin: 0; display: flex; align-items: center; gap: 8px; font: 400 22px/1.1 var(--ob-serif); color: var(--ob-ink); }
+.ob-type p { margin: 0; color: var(--ob-muted); font-size: 13px; }
+.ob-type .ob-row { display: flex; gap: 12px; margin-top: auto; padding-top: 8px; font-size: 13px; font-weight: 550; }
+.ob-type .ob-row a { color: var(--ob-sun); text-decoration: none; }
+.ob-type .ob-row a:hover { text-decoration: underline; }
+
+/* Empty state */
+.ob-empty { display: grid; justify-items: center; gap: 10px; padding: 28px 16px; text-align: center; }
+.ob-empty svg { width: 64px; height: 64px; }
+.ob-empty h3 { margin: 0; font: 400 26px/1.1 var(--ob-serif); color: var(--ob-ink); }
+.ob-empty p { margin: 0; max-width: 460px; color: var(--ob-muted); }
+
+/* Warm the app's own progress elements */
+.oo-meter i { background: var(--ob-grad) !important; }
+.oo-meter i.full { background: #c70a24 !important; }
+.oo-steps span.done { background: #ffefe3 !important; color: #9a3412 !important; }
+.oo-steps span.current { background: var(--ob-ink) !important; }

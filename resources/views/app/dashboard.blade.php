@@ -2,8 +2,19 @@
 
 @section('title', 'Dashboard')
 
+@php
+    $done = collect($checklist)->where('done', true)->count();
+    $total = count($checklist);
+@endphp
+
 @section('content')
 <s-page heading="Dashboard">
+    <x-app.hero :eyebrow="$store->name ?? $store->shop_domain" title="Your store, <em>in orbit.</em>"
+        lead="Create an experience, place it in your theme, and watch what it earns — then test, personalize and automate from the same numbers.">
+        <s-button variant="primary" href="{{ app_route('app.cro.experiences.create') }}">Create experience</s-button>
+        <s-button href="{{ app_route('app.templates') }}">Browse templates</s-button>
+    </x-app.hero>
+
     @foreach ($alerts as $alert)
         <s-banner tone="{{ $alert['tone'] }}">
             <s-paragraph>{{ $alert['text'] }}</s-paragraph>
@@ -11,47 +22,37 @@
         </s-banner>
     @endforeach
 
-    @unless ($store->hasPlanAccess())
-        <s-banner tone="warning" heading="Choose a plan to start publishing">
-            <s-paragraph>Pick Starter, Growth or Scale on Shopify's plan page. Billing runs through your Shopify invoice.</s-paragraph>
-            <s-button slot="secondary-actions" href="{{ $store->pricingUrl() }}" target="_top">Choose a plan</s-button>
-        </s-banner>
-    @endunless
+    <s-section heading="Performance">
+        <div class="ob-kpis">
+            @foreach (['Revenue influenced', 'Conversion rate', 'AOV', 'CRO revenue'] as $kpi)
+                <div class="ob-kpi"><small>{{ $kpi }}</small><b>—</b><span>Collecting data</span></div>
+            @endforeach
+        </div>
+    </s-section>
 
     @unless ($checklistDone)
         <s-section heading="Set up OrderOrbit">
-            <s-stack gap="small-200">
+            <div class="ob-progress" aria-label="{{ $done }} of {{ $total }} done"><i style="width:{{ round($done / $total * 100) }}%"></i></div>
+            <p class="oo-muted oo-small" style="margin:0 0 6px">{{ $done }} of {{ $total }} done</p>
+            <ol class="ob-checklist">
                 @foreach ($checklist as $item)
-                    <s-stack direction="inline" gap="small-200" alignItems="center">
-                        <s-badge tone="{{ $item['done'] ? 'success' : 'neutral' }}">{{ $item['done'] ? 'Done' : 'To do' }}</s-badge>
+                    <li class="{{ $item['done'] ? 'done' : '' }}">
                         @if (! $item['done'] && isset($item['route']))
-                            <s-link href="{{ app_route($item['route']) }}">{{ $item['label'] }}</s-link>
+                            <a href="{{ app_route($item['route']) }}">{{ $item['label'] }} →</a>
                         @else
-                            <s-text>{{ $item['label'] }}</s-text>
+                            <span>{{ $item['label'] }}</span>
                         @endif
-                    </s-stack>
+                    </li>
                 @endforeach
-            </s-stack>
+            </ol>
         </s-section>
     @endunless
-
-    <s-section heading="Performance">
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(160px, 1fr))" gap="base">
-            @foreach (['Revenue Influenced', 'Conversion Rate', 'AOV', 'CRO Revenue'] as $kpi)
-                <s-box padding="base" border="base" borderRadius="base">
-                    <s-text color="subdued">{{ $kpi }}</s-text>
-                    <s-heading>—</s-heading>
-                    <s-text color="subdued">Collecting data</s-text>
-                </s-box>
-            @endforeach
-        </s-grid>
-    </s-section>
 
     <s-section heading="Recent activity">
         @forelse ($recent as $log)
             <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit' }}</strong> · {{ str_replace(['.', '_'], [' ', ' '], $log->action) }} <span class="oo-muted">· {{ $log->created_at?->diffForHumans() }}</span></s-paragraph>
         @empty
-            <s-paragraph>No activity yet.</s-paragraph>
+            <x-app.empty title="Nothing here yet" text="Your team's changes — new experiences, publishes, plan changes — show up here." />
         @endforelse
         @if (request()->attributes->get('storeUser')?->can('view_activity'))
             <s-link href="{{ app_route('app.settings.activity') }}">View all activity</s-link>
