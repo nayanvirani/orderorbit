@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 class Store extends Model
 {
@@ -95,7 +96,7 @@ class Store extends Model
      */
     public function pricingUrl(): string
     {
-        return $this->adminUrl('charges/'.config('shopify.app_handle').'/pricing_plans');
+        return $this->adminUrl('charges/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/pricing_plans');
     }
 
     /**

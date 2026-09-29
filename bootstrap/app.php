@@ -3,6 +3,7 @@
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\AuthenticateShopify;
 use App\Http\Middleware\EnsureStorePermission;
+use App\Http\Middleware\RequirePlan;
 use App\Http\Middleware\VerifyShopifyWebhook;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'shopify.auth' => AuthenticateShopify::class,
             'shopify.webhook' => VerifyShopifyWebhook::class,
             'store.can' => EnsureStorePermission::class,
+            'store.plan' => RequirePlan::class,
         ]);
 
         // Embedded requests authenticate with App Bridge session tokens (third-party

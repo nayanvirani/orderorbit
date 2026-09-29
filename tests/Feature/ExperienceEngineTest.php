@@ -132,7 +132,7 @@ class ExperienceEngineTest extends TestCase
 
     public function test_no_plan_means_no_publishing(): void
     {
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
         $manager = app(ExperienceManager::class);
 
         $this->expectExceptionMessage('Choose a plan');
