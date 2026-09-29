@@ -228,7 +228,7 @@
             <h2>Start from a template.</h2>
             <p class="lead">Browse bundle, gift, shipping, upsell, countdown, trust, checkout and automation templates.</p>
         </div>
-        <div class="tpl-grid">
+        <div class="tpl-grid tpl-teaser">
             @foreach ($templateTeaser as $tpl)
                 <a class="tpl reveal" href="{{ route('site.templates', ['type' => $tpl['type']]) }}" style="text-decoration:none">
                     <div class="thumb"><div>@include('site.partials.thumb', ['type' => $tpl['type'], 'v' => $loop->index])</div></div>

@@ -48,7 +48,7 @@
             <p class="lead">Bundles, gifts, shipping bars, upsells, countdowns, trust, checkout, Thank You, customer account and automation.</p>
             <a class="btn dark" href="{{ route('site.templates') }}">Browse Templates <x-icon name="arrow"/></a>
         </div>
-        <div class="tpl-grid reveal" style="grid-template-columns:1fr 1fr">
+        <div class="tpl-grid reveal thumb-pair">
             @foreach (['bundle', 'shipping', 'qty', 'thankyou'] as $type)
                 <div class="tpl"><div class="thumb"><div>@include('site.partials.thumb', ['type' => $type, 'v' => $loop->index])</div></div></div>
             @endforeach

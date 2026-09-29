@@ -687,3 +687,63 @@ label.fld .err { display: block; color: #d6336c; font-size: 13px; margin-top: 6p
     .reveal { opacity: 1; transform: none; }
 }
 @media (max-width: 420px) { .hide-xs { display: none; } }
+
+/* ---------------------------------------------------------------- Mobile hardening
+   Grid/flex children default to min-width:auto, so wide mockups pushed columns past
+   the viewport on phones. Let them shrink, and clip anything decorative. */
+html, body { overflow-x: clip; }
+.hero-grid, .split { grid-template-columns: minmax(0, 1fr); }
+.hero-grid > *, .split > *, .grid > *, .problem > *, .example-card > *, .tab-panel > *, .pdp > *, .checkout > *, .cart-drawer > *, .dash > *, .acct-grid > *, .variants > * { min-width: 0; }
+@media (min-width: 1000px) { .hero-grid { grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); } }
+@media (min-width: 980px) { .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); } }
+.browser, .phone, .metrics-panel { max-width: 100%; }
+.browser .chrome .url { min-width: 0; text-overflow: ellipsis; }
+.flow .node { max-width: 100%; }
+@media (max-width: 640px) {
+    .hero { padding: 40px 0 64px; }
+    .hero-copy > * + * { margin-top: 18px; }
+    .page-hero { padding: 48px 0 40px; }
+    .ctas .btn { flex: 1 1 auto; }
+    .ctas .btn.lg { padding: 15px 18px; }
+    .eyebrow { font-size: 11px; letter-spacing: .1em; line-height: 1.3; }
+    .lead { font-size: 17px; }
+    .problem { padding: 24px 20px; border-radius: 22px; }
+    .problem p { font-size: 16px; }
+    .stack-art { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 22px; }
+    .cta-banner { border-radius: 24px; }
+    .tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; margin: 0 -16px 28px; padding: 0 16px 6px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex: none; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; margin-left: -16px; margin-right: -16px; padding: 0 16px 6px; scrollbar-width: none; }
+    .filters::-webkit-scrollbar { display: none; }
+    .filters .tab { flex: none; }
+    .float-chip { display: none; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .criteria { grid-template-columns: 1fr; }
+    .trust-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .wf-branch { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .wf-node { width: 100%; }
+    .ship-bar .row { flex-wrap: wrap; gap: 4px; }
+    .sale-banner { flex-direction: column; align-items: flex-start; }
+    .timer div { width: 40px; }
+    .modal { padding: 0; align-items: flex-end; }
+    .modal .box { border-radius: 22px 22px 0 0; max-height: 94vh; padding: 18px 16px; }
+    .footer-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .compare th, .compare td { padding: 12px 12px; font-size: 14px; }
+    .strip .wrap { gap: 12px 20px; }
+    .strip span { font-size: 13px; }
+}
+.thumb-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.upsell .meta { min-width: 0; }
+@media (max-width: 640px) { .thumb-pair { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) {
+    .tpl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .tpl .thumb { padding: 10px; aspect-ratio: 4 / 3; }
+    .tpl .thumb > div { zoom: .62; }
+    .tpl .meta { padding: 10px 12px 12px; }
+    .tpl .meta b { font-size: 13.5px; }
+    .tpl .meta span .pill + .pill { display: none; }
+    .tpl-teaser > :nth-child(n+5) { display: none; }
+    .thumb-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
