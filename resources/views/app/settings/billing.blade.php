@@ -12,7 +12,8 @@
     @if ($effective)
         @include('app.settings._tabs')
     @else
-        <s-banner tone="info">Choose a plan below to start using OrderOrbit. Experiences, templates and settings are unavailable until you subscribe.</s-banner>
+        <x-app.hero eyebrow="Plans" title="Choose your <em>orbit.</em>"
+            lead="Choose a plan below to start using OrderOrbit. Experiences, templates and settings are unavailable until you subscribe. Billing runs through your Shopify invoice." />
     @endif
 
     @if ($syncError)
@@ -78,28 +79,28 @@
 
     @endif
 
-    <s-section heading="Plans">
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(230px, 1fr))" gap="base">
+    <s-section heading="{{ $effective ? 'Plans' : 'Pick a plan' }}">
+        <div class="ob-plans">
             @foreach ($plans as $key => $plan)
                 @php($isCurrent = $effective === $key)
-                <s-box padding="base" border="base" borderRadius="base">
-                    <s-stack gap="small-300">
-                        <s-stack direction="inline" gap="small-200" alignItems="center">
-                            <strong>{{ $plan['name'] }}</strong>
-                            @if ($isCurrent)<s-badge tone="success">Current plan</s-badge>@endif
-                        </s-stack>
-                        <s-heading>${{ number_format($plan['price'], 2) }}<span class="oo-muted" style="font-weight:400"> /mo</span></s-heading>
-                        <s-unordered-list>
-                            @foreach ($plan['features'] as $feature)<s-list-item>{{ $feature }}</s-list-item>@endforeach
-                        </s-unordered-list>
-                        @if ($canManage)
-                            {{-- Shopify's hosted plan page (Managed Pricing); it returns to the app with ?charge_id. --}}
-                            <s-button variant="{{ $isCurrent ? 'secondary' : 'primary' }}" href="{{ $store->pricingUrl() }}" target="_top">{{ $isCurrent ? 'Manage plan' : 'Choose plan' }}</s-button>
-                        @endif
-                    </s-stack>
-                </s-box>
+                <div class="ob-plan {{ $key === 'growth' ? 'featured' : '' }} {{ $isCurrent ? 'current' : '' }}">
+                    @if ($isCurrent)
+                        <span class="ob-badge">Current plan</span>
+                    @elseif ($key === 'growth')
+                        <span class="ob-badge">Most popular</span>
+                    @endif
+                    <h3>{{ $plan['name'] }}</h3>
+                    <div class="ob-price">${{ number_format($plan['price'], 2) }} <small>/MO</small></div>
+                    <ul>
+                        @foreach ($plan['features'] as $feature)<li>{{ $feature }}</li>@endforeach
+                    </ul>
+                    @if ($canManage)
+                        {{-- Shopify's hosted plan page (Managed Pricing); it returns to the app with ?charge_id. --}}
+                        <s-button variant="{{ $isCurrent ? 'secondary' : 'primary' }}" href="{{ $store->pricingUrl() }}" target="_top">{{ $isCurrent ? 'Manage plan' : 'Choose plan' }}</s-button>
+                    @endif
+                </div>
             @endforeach
-        </s-grid>
+        </div>
         @unless ($canManage)
             <s-paragraph><span class="oo-muted">Only store owners can change the plan.</span></s-paragraph>
         @endunless

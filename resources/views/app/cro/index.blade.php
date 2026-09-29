@@ -38,8 +38,9 @@
             @if ($filters['q'] || $filters['status'] || (! $type && $filters['type']))
                 <s-paragraph>No experiences match those filters.</s-paragraph>
             @else
-                <s-paragraph>{{ $typeDef['empty'] ?? 'Create your first experience. Pick a template, customise it and publish it from the Theme Editor.' }}</s-paragraph>
-                <s-button variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.strtolower($typeDef['singular']) : 'Create experience' }}</s-button>
+                <x-app.empty :title="$typeDef ? 'No '.strtolower($typeDef['label']).' yet' : 'No experiences yet'" :text="$typeDef['empty'] ?? 'Create your first experience. Pick a template, customise it and publish it from the Theme Editor.'">
+                    <s-button variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.strtolower($typeDef['singular']) : 'Create experience' }}</s-button>
+                </x-app.empty>
             @endif
         @else
             <form method="POST" action="{{ app_route('app.cro.experiences.bulk') }}" data-confirm="Apply this action to the selected experiences?">

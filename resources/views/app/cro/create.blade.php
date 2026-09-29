@@ -9,6 +9,8 @@
 
 @section('content')
 <s-page heading="Create experience">
+    <x-app.hero eyebrow="New experience" :title="$type ? 'Choose a <em>'.e(strtolower(\App\Experiences\Registry::type($type)['singular'])).'</em> template.' : 'What do you want to <em>build?</em>'"
+        :lead="$type ? 'Every template is fully customisable — content, design, targeting and schedule.' : 'Pick an experience type. You can build and preview every type; publishing follows your plan.'" />
     <div class="b-steps" aria-label="Steps">
         <span class="b-step" aria-current="{{ $type ? 'false' : 'step' }}"><span>1</span>Type</span>
         <span class="b-step" aria-current="{{ $type ? 'step' : 'false' }}"><span>2</span>Template</span>
@@ -16,22 +18,20 @@
     </div>
 
     @if (! $type)
-        <s-section heading="What do you want to build?">
-            <s-grid gridTemplateColumns="repeat(auto-fit, minmax(220px, 1fr))" gap="base">
+        <s-section>
+            <div class="ob-types">
                 @foreach (\App\Experiences\Registry::types() as $key => $t)
-                    <s-box padding="base" border="base" borderRadius="base">
-                        <s-stack gap="small-200">
-                            <s-stack direction="inline" gap="small-200" alignItems="center"><strong>{{ $t['label'] }}</strong>@unless ($t['publishable'])<s-badge tone="info">Preview</s-badge>@endunless</s-stack>
-                            <s-text color="subdued">{{ $t['description'] }}</s-text>
-                            <s-button href="{{ app_route('app.cro.experiences.create', ['type' => $key]) }}">Choose</s-button>
-                        </s-stack>
-                    </s-box>
+                    <a class="ob-type" href="{{ app_route('app.cro.experiences.create', ['type' => $key]) }}">
+                        <h4>{{ $t['label'] }}@unless ($t['publishable'])<span class="ob-badge soft">Preview</span>@endunless</h4>
+                        <p>{{ $t['description'] }}</p>
+                        <div class="ob-row"><span style="color:var(--ob-sun)">Choose →</span></div>
+                    </a>
                 @endforeach
-            </s-grid>
+            </div>
         </s-section>
     @else
         @php($t = \App\Experiences\Registry::type($type))
-        <s-section heading="Choose a {{ strtolower($t['singular']) }} template">
+        <s-section>
             <form method="POST" action="{{ app_route('app.cro.experiences.store') }}">
                 <input type="hidden" name="type" value="{{ $type }}">
                 <div class="b-templates" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">

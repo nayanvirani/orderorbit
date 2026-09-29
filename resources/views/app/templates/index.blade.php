@@ -9,6 +9,8 @@
 
 @section('content')
 <s-page heading="Templates">
+    <x-app.hero eyebrow="Template library" title="Start from a <em>proven template.</em>"
+        lead="Every template shares your brand colours and fonts. Pick one, customise it in the builder, and publish it from the Theme Editor." />
     <nav class="oo-tabs" aria-label="Template types">
         <a href="{{ app_route('app.templates') }}" @if (! $type) aria-current="page" @endif>All</a>
         @foreach (\App\Experiences\Registry::types() as $key => $t)
