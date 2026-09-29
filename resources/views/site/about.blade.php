@@ -4,7 +4,7 @@
 @section('description', 'OrderOrbit is a Shopify-native growth platform: native placement, honest measurement, merchant control and privacy by default.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>About</span>
         <h1>Built to help Shopify brands <span class="grad-text">grow the right way.</span></h1>

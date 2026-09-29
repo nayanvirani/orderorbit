@@ -129,5 +129,20 @@
         });
     }
 
+    // "On this page" rail: highlight the section in view
+    const tocLinks = $$('[data-toc]');
+    if (tocLinks.length && 'IntersectionObserver' in window) {
+        const byId = Object.fromEntries(tocLinks.map((a) => [a.getAttribute('href').slice(1), a]));
+        const spy = new IntersectionObserver((entries) => {
+            entries.forEach((en) => {
+                if (en.isIntersecting) {
+                    tocLinks.forEach((a) => a.classList.remove('on'));
+                    if (byId[en.target.id]) byId[en.target.id].classList.add('on');
+                }
+            });
+        }, { rootMargin: '-40% 0px -55% 0px' });
+        Object.keys(byId).forEach((id) => { const el = document.getElementById(id); if (el) spy.observe(el); });
+    }
+
     if (location.pathname === '/pricing') track('pricing_viewed');
 })();

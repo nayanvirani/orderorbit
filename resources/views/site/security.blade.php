@@ -4,7 +4,7 @@
 @section('description', 'Least-privilege Shopify scopes, store data isolation, encrypted secrets, consent-aware analytics, webhook validation and audit logs.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Security</span>
         <h1>Security and privacy are <span class="grad-text">part of the product.</span></h1>

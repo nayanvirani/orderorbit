@@ -4,7 +4,7 @@
 @section('description', 'Preview every OrderOrbit template: bundles, free gifts, shipping bars, upsells, countdowns, trust, checkout, Thank You, customer account and automation.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>{{ count($templates) }} templates</span>
         <h1>Start from a <span class="grad-text">proven template.</span></h1>

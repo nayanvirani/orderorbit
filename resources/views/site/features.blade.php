@@ -4,32 +4,32 @@
 @section('description', 'Bundles, free gifts, shipping bars, upsells, checkout blocks, automation, analytics, A/B testing and personalization for Shopify.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Features</span>
-        <h1>Every growth tool your store needs, <span class="grad-text">in one app.</span></h1>
+        <h1>Every growth tool your store needs, <em>in one app.</em></h1>
         <p class="lead">One design system, one analytics layer, one bill.</p>
         <div class="ctas">
-            <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked"><x-icon name="bag"/>Install on Shopify</a>
+            <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
             <a class="btn lg" href="{{ route('site.pricing') }}">See Pricing</a>
         </div>
     </div>
 </section>
 
-@foreach (['convert' => ['Convert', 'Turn more visitors into buyers and raise order value on the product page and cart.'], 'checkout' => ['Checkout', 'Keep selling at checkout, on Thank You and Order Status pages, and in customer accounts.'], 'grow' => ['Grow', 'Measure, test, personalize and automate from one set of numbers.']] as $group => [$label, $intro])
-    <section class="section {{ $loop->even ? 'tint' : '' }} tight">
-        <div class="wrap">
-            <div class="section-head left reveal" style="margin-bottom:32px">
+@foreach (['convert' => ['01', 'Convert', 'Turn more visitors into buyers and raise order value on the product page and cart.'], 'checkout' => ['02', 'Checkout', 'Keep selling at checkout, on Thank You and Order Status pages, and in customer accounts.'], 'grow' => ['03', 'Grow', 'Measure, test, personalize and automate from one set of numbers.']] as $group => [$number, $label, $intro])
+    <section class="section {{ $loop->odd ? 'alt' : '' }}" id="{{ $group }}">
+        <div class="wrap chapter">
+            <div class="chapter-side reveal">
+                <div class="chapter-mark">{{ $number }}</div>
                 <span class="eyebrow"><span class="dot"></span>{{ $label }}</span>
                 <h2>{{ $intro }}</h2>
             </div>
-            <div class="grid {{ count($groups[$group]) > 4 ? 'four' : 'three' }}">
+            <div class="bento">
                 @foreach ($groups[$group] as $slug => $f)
-                    <a class="card reveal" href="{{ route('site.feature', $slug) }}">
-                        <div class="icon-badge"><x-icon :name="$f['icon']"/></div>
+                    <a class="b-tile go-arrow {{ count($groups[$group]) > 4 ? 'w3' : 'w3' }} reveal" href="{{ route('site.feature', $slug) }}">
+                        <span class="tile-tag">{{ $f['eyebrow'] }}</span>
                         <h3>{{ $f['name'] }}</h3>
                         <p>{{ $f['hero'] }}</p>
-                        <span class="more">Learn more <x-icon name="arrow"/></span>
                     </a>
                 @endforeach
             </div>
@@ -37,21 +37,19 @@
     </section>
 @endforeach
 
-<section class="section dark tight">
-    <div class="wrap">
-        <div class="section-head left reveal" style="margin-bottom:32px">
+<section class="section">
+    <div class="wrap chapter">
+        <div class="chapter-side reveal">
+            <div class="chapter-mark">04</div>
             <span class="eyebrow"><span class="dot"></span>Platform</span>
-            <h2>The foundation under every experience.</h2>
+            <h2>The foundation under <em>every experience.</em></h2>
         </div>
-        <div class="grid four">
-            @foreach ([['grid', 'Template library', 'Proven presets for every surface.', route('site.templates')], ['palette', 'Brand settings', 'Colours, fonts, buttons and spacing shared by every block.', null], ['shield', 'Consent-aware analytics', 'Respects your customers\' consent choices.', route('site.security')], ['card', 'Shopify Billing', 'Starter, Growth and Scale on your Shopify invoice.', route('site.pricing')]] as [$icon, $title, $text, $href])
-                @if ($href)
-                    <a class="card reveal" href="{{ $href }}"><div class="icon-badge"><x-icon :name="$icon"/></div><h3>{{ $title }}</h3><p>{{ $text }}</p></a>
-                @else
-                    <div class="card reveal"><div class="icon-badge"><x-icon :name="$icon"/></div><h3>{{ $title }}</h3><p>{{ $text }}</p></div>
-                @endif
-            @endforeach
-        </div>
+        <ol class="num-list cols">
+            <li><strong>Template library</strong><p>Proven presets for every surface. <a class="link-arrow" href="{{ route('site.templates') }}">Browse</a></p></li>
+            <li><strong>Brand settings</strong><p>Colours, fonts, buttons and spacing shared by every block.</p></li>
+            <li><strong>Consent-aware analytics</strong><p>Respects your customers' consent choices. <a class="link-arrow" href="{{ route('site.security') }}">Security</a></p></li>
+            <li><strong>Shopify Billing</strong><p>Starter, Growth and Scale on your Shopify invoice. <a class="link-arrow" href="{{ route('site.pricing') }}">Pricing</a></p></li>
+        </ol>
     </div>
 </section>
 

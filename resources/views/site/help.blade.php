@@ -4,7 +4,7 @@
 @section('description', 'Setup guides, product docs and troubleshooting for OrderOrbit.')
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Help center</span>
         <h1>How can we <span class="grad-text">help?</span></h1>

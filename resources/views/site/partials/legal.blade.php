@@ -1,4 +1,4 @@
-<section class="page-hero" style="padding-bottom:32px">
+<section class="page-hero sky" style="padding-bottom:32px">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Legal</span>
         <h1>{{ $title }}</h1>
