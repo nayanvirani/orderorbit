@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\Content;
 use Tests\TestCase;
 
 class PublicSiteTest extends TestCase
@@ -11,8 +12,8 @@ class PublicSiteTest extends TestCase
         $paths = ['/', '/how-it-works', '/features', '/solutions', '/templates', '/pricing', '/resources', '/blog', '/help', '/contact', '/about', '/security', '/privacy', '/terms', '/dpa', '/sitemap.xml'];
         $paths = array_merge(
             $paths,
-            array_map(fn ($slug) => "/features/{$slug}", array_keys(\App\Support\Content::features())),
-            array_map(fn ($slug) => "/solutions/{$slug}", array_keys(\App\Support\Content::solutions())),
+            array_map(fn ($slug) => "/features/{$slug}", array_keys(Content::features())),
+            array_map(fn ($slug) => "/solutions/{$slug}", array_keys(Content::solutions())),
         );
 
         foreach ($paths as $path) {

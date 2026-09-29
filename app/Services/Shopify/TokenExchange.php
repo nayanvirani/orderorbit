@@ -42,6 +42,34 @@ class TokenExchange
         return $store;
     }
 
+    /**
+     * Identifies the Shopify staff member behind a session token. Uses an online-token
+     * exchange for the associated_user details; the online token itself is not stored.
+     *
+     * @return array{id: int, first_name: ?string, last_name: ?string, email: ?string, account_owner: bool}|null
+     */
+    public function associatedUser(Store $store, string $sessionToken): ?array
+    {
+        $response = Http::asJson()->acceptJson()->post("https://{$store->shop_domain}/admin/oauth/access_token", [
+            'client_id' => config('shopify.api_key'),
+            'client_secret' => config('shopify.api_secret'),
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:token-exchange',
+            'subject_token' => $sessionToken,
+            'subject_token_type' => 'urn:ietf:params:oauth:token-type:id_token',
+            'requested_token_type' => 'urn:shopify:params:oauth:token-type:online-access-token',
+        ]);
+
+        $user = $response->successful() ? $response->json('associated_user') : null;
+
+        return $user ? [
+            'id' => (int) $user['id'],
+            'first_name' => $user['first_name'] ?? null,
+            'last_name' => $user['last_name'] ?? null,
+            'email' => $user['email'] ?? null,
+            'account_owner' => (bool) ($user['account_owner'] ?? false),
+        ] : null;
+    }
+
     public function refresh(Store $store): Store
     {
         if ($store->refresh_token === null) {

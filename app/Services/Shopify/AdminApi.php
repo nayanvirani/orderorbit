@@ -3,6 +3,7 @@
 namespace App\Services\Shopify;
 
 use App\Models\Store;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -20,7 +21,7 @@ class AdminApi
 
         $response = Http::withHeaders(['X-Shopify-Access-Token' => $store->access_token])
             ->acceptJson()
-            ->retry(3, 500, fn ($e, $request) => $e instanceof \Illuminate\Http\Client\RequestException && $e->response->status() === 429, throw: false)
+            ->retry(3, 500, fn ($e, $request) => $e instanceof RequestException && $e->response->status() === 429, throw: false)
             ->post("https://{$store->shop_domain}/admin/api/{$version}/graphql.json", [
                 'query' => $query,
                 'variables' => (object) $variables,

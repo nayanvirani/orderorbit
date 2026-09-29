@@ -18,18 +18,35 @@ class OnboardingController extends Controller
         'checkout' => ['label' => 'Improve checkout', 'help' => 'Trust, shipping progress and offers in checkout where supported.'],
     ];
 
-    public function show(Store $store): View
+    /** Section 41 / D1: the eight onboarding steps. */
+    public const STEPS = [
+        'Store connection', 'Goal', 'First experience', 'Template', 'Configure', 'Preview', 'Publish and place', 'Verify analytics',
+    ];
+
+    public function show(Request $request, Store $store): View
     {
-        return view('app.onboarding', ['store' => $store, 'goals' => self::GOALS]);
+        $step = (int) $request->query('step', $store->goal ? 2 : 1);
+
+        return view('app.onboarding', [
+            'store' => $store,
+            'goals' => self::GOALS,
+            'steps' => self::STEPS,
+            'step' => max(1, min(2, $step)),
+            'missingScopes' => $store->missingScopes(),
+        ]);
     }
 
     public function update(Request $request, Store $store): RedirectResponse
     {
-        $data = $request->validate(['goal' => 'required|in:'.implode(',', array_keys(self::GOALS))]);
+        $goal = (string) $request->input('goal');
 
-        $store->forceFill(['goal' => $data['goal']])->save();
-        AuditLog::record('onboarding.goal_selected', $store, $data, 'store_user', (string) $request->attributes->get('storeUser')?->id);
+        if (! array_key_exists($goal, self::GOALS)) {
+            return redirect()->to(app_route('app.onboarding', ['step' => 2, 'notice' => 'unexpected']));
+        }
 
-        return redirect()->to(app_route('app.billing', ['saved' => 1]));
+        $store->forceFill(['goal' => $goal])->save();
+        AuditLog::record('onboarding.goal_selected', $store, ['goal' => $goal]);
+
+        return redirect()->to(app_route($store->plan ? 'app.dashboard' : 'app.settings.billing', ['notice' => 'saved']));
     }
 }

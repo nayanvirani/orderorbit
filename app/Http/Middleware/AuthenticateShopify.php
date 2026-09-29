@@ -3,11 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\InvalidSessionToken;
+use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\StoreUser;
-use App\Services\Shopify\AdminApi;
 use App\Services\Shopify\SessionToken;
 use App\Services\Shopify\ShopDomain;
+use App\Services\Shopify\StoreSync;
 use App\Services\Shopify\TokenExchange;
 use Closure;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class AuthenticateShopify
     public function __construct(
         private readonly SessionToken $sessionTokens,
         private readonly TokenExchange $tokenExchange,
-        private readonly AdminApi $api,
+        private readonly StoreSync $storeSync,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -45,28 +46,88 @@ class AuthenticateShopify
         $shop = SessionToken::shopFromClaims($claims);
         $store = Store::firstOrNew(['shop_domain' => $shop]);
 
-        if (! $store->exists || ! $store->isInstalled() || $this->scopesChanged($store)) {
+        if (! $store->exists || ! $store->isInstalled() || $store->missingScopes() !== []) {
             $store = $this->tokenExchange->exchange($store, $token);
-            $this->syncShopDetails($store);
-        }
 
-        $user = null;
-        if (isset($claims['sub'])) {
-            $user = StoreUser::firstOrCreate(
-                ['store_id' => $store->id, 'shopify_user_id' => (int) $claims['sub']],
-                ['role' => $store->users()->exists() ? 'staff' : 'owner'],
-            );
-            $user->forceFill(['last_active_at' => now()])->save();
+            try {
+                $this->storeSync->sync($store);
+            } catch (Throwable $e) {
+                report($e);
+            }
         }
 
         $request->attributes->set('store', $store);
-        $request->attributes->set('storeUser', $user);
         app()->instance(Store::class, $store);
 
-        $response = $next($request);
+        $user = isset($claims['sub']) ? $this->resolveUser($store, (int) $claims['sub'], $token) : null;
+        $request->attributes->set('storeUser', $user);
+
+        if ($user?->disabled_at !== null) {
+            $response = response()->view('app.forbidden', ['removed' => true], 403);
+        } else {
+            $response = $next($request);
+        }
+
         $response->headers->set('Content-Security-Policy', "frame-ancestors https://{$shop} https://admin.shopify.com;");
 
         return $response;
+    }
+
+    private function resolveUser(Store $store, int $shopifyUserId, string $token): StoreUser
+    {
+        $user = StoreUser::where('store_id', $store->id)->where('shopify_user_id', $shopifyUserId)->first();
+
+        $info = null;
+        if ($user === null || $user->email === null) {
+            try {
+                $info = $this->tokenExchange->associatedUser($store, $token);
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        if ($user === null) {
+            $user = $this->claimInvite($store, $info['email'] ?? null) ?? new StoreUser([
+                'store_id' => $store->id,
+                'role' => $store->activeOwners()->exists() ? 'staff' : 'owner',
+            ]);
+            $user->shopify_user_id = $shopifyUserId;
+            $isNew = ! $user->exists;
+        }
+
+        if ($info !== null) {
+            $user->fill(array_intersect_key($info, array_flip(['first_name', 'last_name', 'email', 'account_owner'])));
+            // The Shopify account owner is always an OrderOrbit owner.
+            if ($info['account_owner']) {
+                $user->role = 'owner';
+            }
+        }
+
+        if ($user->last_active_at === null || $user->last_active_at->lt(now()->subMinutes(5))) {
+            $user->last_active_at = now();
+        }
+
+        $user->save();
+
+        if ($isNew ?? false) {
+            request()->attributes->set('storeUser', $user);
+            AuditLog::record('user.joined', $store, ['role' => $user->role], $user);
+        }
+
+        return $user;
+    }
+
+    private function claimInvite(Store $store, ?string $email): ?StoreUser
+    {
+        if ($email === null) {
+            return null;
+        }
+
+        return StoreUser::where('store_id', $store->id)
+            ->whereNull('shopify_user_id')
+            ->whereNull('disabled_at')
+            ->whereRaw('lower(email) = ?', [strtolower($email)])
+            ->first();
     }
 
     private function unauthenticated(Request $request): Response
@@ -84,38 +145,5 @@ class AuthenticateShopify
 
         return response()->json(['message' => 'Your session has expired. Please reopen OrderOrbit from Shopify admin.'], 401)
             ->header('X-Shopify-Retry-Invalid-Session-Request', '1');
-    }
-
-    private function scopesChanged(Store $store): bool
-    {
-        $granted = array_filter(explode(',', (string) $store->scopes));
-        $required = array_filter(explode(',', (string) config('shopify.scopes')));
-
-        // write_x implies read_x, so only compare against scopes we have not been granted at all.
-        foreach ($required as $scope) {
-            $implied = str_replace('read_', 'write_', $scope);
-            if (! in_array($scope, $granted, true) && ! in_array($implied, $granted, true)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function syncShopDetails(Store $store): void
-    {
-        try {
-            $shop = $this->api->graphql($store, '{ shop { name email currencyCode ianaTimezone plan { displayName } } }')['shop'];
-
-            $store->forceFill([
-                'name' => $shop['name'],
-                'email' => $shop['email'],
-                'currency' => $shop['currencyCode'],
-                'timezone' => $shop['ianaTimezone'],
-                'shopify_plan' => $shop['plan']['displayName'] ?? null,
-            ])->save();
-        } catch (Throwable $e) {
-            report($e);
-        }
     }
 }

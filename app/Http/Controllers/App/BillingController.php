@@ -5,6 +5,8 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\Store;
 use App\Services\Shopify\Billing;
+use App\Services\Usage;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -14,30 +16,45 @@ class BillingController extends Controller
 {
     public function __construct(private readonly Billing $billing) {}
 
-    public function index(Store $store): View
+    public function index(Request $request, Store $store, Usage $usage): View
     {
-        $syncError = null;
+        $syncError = false;
 
         try {
             $this->billing->sync($store);
         } catch (Throwable $e) {
             report($e);
-            $syncError = 'Your Shopify connection needs attention. Open Settings → Store to review it.';
+            $syncError = true;
         }
 
-        return view('app.billing', [
-            'store' => $store->fresh(),
+        $store->refresh();
+
+        return view('app.settings.billing', [
+            'store' => $store,
             'subscription' => $store->activeSubscription()->first(),
+            'latest' => $store->subscriptions()->latest('id')->first(),
             'plans' => config('shopify.billing.plans'),
+            'usage' => $usage->summary($store),
             'syncError' => $syncError,
+            'canManage' => $request->attributes->get('storeUser')?->can('manage_billing'),
         ]);
     }
 
-    public function subscribe(Request $request, Store $store): Response
+    public function subscribe(Request $request, Store $store): Response|RedirectResponse
     {
-        $data = $request->validate(['plan' => 'required|in:'.implode(',', array_keys(config('shopify.billing.plans')))]);
+        $plan = (string) $request->input('plan');
 
-        $confirmationUrl = $this->billing->createSubscription($store, $data['plan']);
+        if (! array_key_exists($plan, config('shopify.billing.plans'))) {
+            return redirect()->to(app_route('app.settings.billing', ['notice' => 'unexpected']));
+        }
+
+        try {
+            $confirmationUrl = $this->billing->createSubscription($store, $plan);
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()->to(app_route('app.settings.billing', ['notice' => 'shopify']));
+        }
 
         // The approval page must open in the top frame, outside the admin iframe.
         return response()->view('app.redirect', ['url' => $confirmationUrl]);

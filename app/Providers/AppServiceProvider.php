@@ -3,9 +3,10 @@
 namespace App\Providers;
 
 use App\Services\Shopify\SessionToken;
+use App\Services\Usage;
 use App\Support\Content;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,6 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(Usage::class);
+
         $this->app->singleton(SessionToken::class, fn () => new SessionToken(
             (string) config('shopify.api_key'),
             (string) config('shopify.api_secret'),

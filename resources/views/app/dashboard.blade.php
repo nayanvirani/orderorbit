@@ -4,10 +4,17 @@
 
 @section('content')
 <s-page heading="Dashboard">
+    @foreach ($alerts as $alert)
+        <s-banner tone="{{ $alert['tone'] }}">
+            <s-paragraph>{{ $alert['text'] }}</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ app_route($alert['route']) }}">{{ $alert['action'] }}</s-button>
+        </s-banner>
+    @endforeach
+
     @if ($store->plan === null)
         <s-banner tone="warning" heading="Choose a plan to start publishing">
-            <s-paragraph>Pick Starter, Growth or Scale. Billing runs through Shopify and includes a free trial.</s-paragraph>
-            <s-button slot="secondary-actions" href="{{ app_route('app.billing') }}">View plans</s-button>
+            <s-paragraph>Pick Starter, Growth or Scale. Billing runs through Shopify.</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ app_route('app.settings.billing') }}">View plans</s-button>
         </s-banner>
     @endif
 
@@ -29,7 +36,7 @@
     @endunless
 
     <s-section heading="Performance">
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(180px, 1fr))" gap="base">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(160px, 1fr))" gap="base">
             @foreach (['Revenue Influenced', 'Conversion Rate', 'AOV', 'CRO Revenue'] as $kpi)
                 <s-box padding="base" border="base" borderRadius="base">
                     <s-text color="subdued">{{ $kpi }}</s-text>
@@ -40,8 +47,15 @@
         </s-grid>
     </s-section>
 
-    <s-section heading="Store">
-        <s-paragraph>{{ $store->name ?? $store->shop_domain }} · {{ $store->currency ?? '—' }} · Plan: {{ $store->plan ? config("shopify.billing.plans.{$store->plan}.name") : 'None' }}</s-paragraph>
+    <s-section heading="Recent activity">
+        @forelse ($recent as $log)
+            <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit' }}</strong> · {{ str_replace(['.', '_'], [' ', ' '], $log->action) }} <span class="oo-muted">· {{ $log->created_at?->diffForHumans() }}</span></s-paragraph>
+        @empty
+            <s-paragraph>No activity yet.</s-paragraph>
+        @endforelse
+        @if (request()->attributes->get('storeUser')?->can('view_activity'))
+            <s-link href="{{ app_route('app.settings.activity') }}">View all activity</s-link>
+        @endif
     </s-section>
 </s-page>
 @endsection
