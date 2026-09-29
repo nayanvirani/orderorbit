@@ -17,6 +17,7 @@
     "country": {{ localization.country.iso_code | json }},
     "currency": {{ cart.currency.iso_code | json }},
     "cartTotal": {{ cart.total_price | json }},
-    "designMode": {{ request.design_mode | json }}
+    "designMode": {{ request.design_mode | json }},
+    "assets": {{ 'orderorbit.js' | asset_url | json }}
   }
 </script>

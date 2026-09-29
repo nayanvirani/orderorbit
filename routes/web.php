@@ -107,7 +107,7 @@ Route::get('/storefront/{file}', function (string $file) {
         'Content-Type' => str_ends_with($file, '.css') ? 'text/css' : 'application/javascript',
         'Cache-Control' => 'public, max-age=300',
     ]);
-})->where('file', 'orderorbit\.(js|css)')->name('storefront.asset');
+})->where('file', 'orderorbit\.(js|css)|oo-[a-z\-]+\.js')->name('storefront.asset');
 
 // Shopify webhooks (app lifecycle, billing, GDPR compliance)
 Route::post('/webhooks/shopify', WebhookController::class)

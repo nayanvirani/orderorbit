@@ -1,0 +1,299 @@
+/*!
+ * OrderOrbit storefront runtime (core). Renders published experiences inside
+ * OrderOrbit app blocks that merchants place in the Theme Editor. It never edits
+ * theme markup, opens cart drawers or intercepts add-to-cart; it only reads the
+ * cart to show progress. Each experience type's renderer is a separate small file
+ * loaded only when a page shows that type. Also powers the in-app preview.
+ */
+(function () {
+  'use strict';
+
+  if (window.OrderOrbit && window.OrderOrbit.version) return;
+
+  var MOBILE = '(max-width: 749px)';
+  var events = [];
+  var renderers = {};
+  var loading = {};
+  var assetBase = '';
+  var assetQuery = '';
+
+  // ---------------------------------------------------------------- helpers (shared with type files)
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function money(amount, currency) {
+    var n = Number(amount || 0);
+    try {
+      return new Intl.NumberFormat(document.documentElement.lang || undefined, { style: 'currency', currency: currency || 'USD' }).format(n);
+    } catch (e) {
+      return (currency || '$') + ' ' + n.toFixed(2);
+    }
+  }
+
+  function fill(template, vars) {
+    return esc(template || '').replace(/\{(\w+)\}/g, function (m, key) {
+      return key in vars ? '<strong>' + esc(vars[key]) + '</strong>' : m;
+    });
+  }
+
+  function numericId(gid) {
+    var m = String(gid || '').match(/(\d+)$/);
+    return m ? m[1] : String(gid || '');
+  }
+
+  function icon(paths) {
+    return '<svg class="oo-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+  }
+
+  var GIFT = '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>';
+
+  function productImage(p) {
+    return p && p.image
+      ? '<img class="oo-img" src="' + esc(p.image) + '" alt="' + esc(p.title) + '" loading="lazy" width="120" height="120">'
+      : '<span class="oo-img oo-img-empty" aria-hidden="true"></span>';
+  }
+
+  // Cart-value thresholds (shipping bar, free gift) and their milestone ladder.
+  function thresholds(list, total) {
+    var sorted = (list || []).filter(function (t) { return t && t.amount != null; }).sort(function (a, b) { return a.amount - b.amount; });
+    var next = null;
+    var reached = [];
+    sorted.forEach(function (t) { if (total >= Number(t.amount)) reached.push(t); else if (!next) next = t; });
+    var top = sorted.length ? Number(sorted[sorted.length - 1].amount) : 0;
+    return { sorted: sorted, next: next, reached: reached, last: reached[reached.length - 1] || null, pct: top ? Math.min(100, (total / top) * 100) : 0 };
+  }
+
+  function ladder(state, currency) {
+    if (state.sorted.length < 2) return '';
+    var top = Number(state.sorted[state.sorted.length - 1].amount);
+    return '<div class="oo-ladder">' + state.sorted.map(function (t) {
+      var done = state.reached.indexOf(t) !== -1;
+      return '<span class="oo-milestone' + (done ? ' oo-done' : '') + '" style="left:' + (top ? (Number(t.amount) / top) * 100 : 0) + '%" title="' + esc(t.reward) + '">' + icon(GIFT) + '<small>' + esc(money(t.amount, currency)) + '</small></span>';
+    }).join('') + '</div>';
+  }
+
+  var h = { esc: esc, money: money, fill: fill, numericId: numericId, icon: icon, GIFT: GIFT, productImage: productImage, thresholds: thresholds, ladder: ladder };
+
+  function track(name, exp, extra) {
+    var a = exp.analytics || {};
+    if (name === 'experience_viewed' ? a.track_views === false : a.track_clicks === false) return;
+    var detail = Object.assign({ event: 'orderorbit:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, extra || {});
+    events.push(detail);
+    try { document.dispatchEvent(new CustomEvent('orderorbit:event', { detail: detail })); } catch (e) { /* old browsers */ }
+  }
+
+  // ---------------------------------------------------------------- targeting
+  function utm(key) {
+    var value = new URLSearchParams(location.search).get(key);
+    try {
+      if (value) sessionStorage.setItem('oo_' + key, value);
+      return value || sessionStorage.getItem('oo_' + key) || '';
+    } catch (e) {
+      return value || '';
+    }
+  }
+
+  function dismissed(exp) {
+    try { return exp.behavior && exp.behavior.dismissible && localStorage.getItem('oo_dismiss_' + exp.id) === String(exp.version); } catch (e) { return false; }
+  }
+
+  function matches(exp, ctx) {
+    var t = exp.targeting || {};
+    var now = ctx.now || Date.now();
+    if (exp.starts_at && Date.parse(exp.starts_at) > now) return false;
+    if (exp.ends_at && Date.parse(exp.ends_at) <= now) return false;
+    if (ctx.preview) return true;
+    if (dismissed(exp)) return false;
+
+    if (t.page_types && t.page_types.length && t.page_types.indexOf(ctx.page) === -1) return false;
+    if (t.products && t.products.length) {
+      var ids = t.products.map(function (p) { return numericId(p.id); });
+      if (!ctx.product || ids.indexOf(String(ctx.product)) === -1) return false;
+    }
+    if (t.collections && t.collections.length) {
+      var have = (ctx.collections || []).map(String);
+      if (!t.collections.some(function (c) { return have.indexOf(numericId(c.id)) !== -1; })) return false;
+    }
+    var cart = (ctx.cartTotal || 0) / 100;
+    if (t.cart_min != null && t.cart_min !== '' && cart < Number(t.cart_min)) return false;
+    if (t.cart_max != null && t.cart_max !== '' && cart > Number(t.cart_max)) return false;
+    var mobile = window.matchMedia && window.matchMedia(MOBILE).matches;
+    if ((t.device === 'mobile' && !mobile) || (t.device === 'desktop' && mobile)) return false;
+    if (t.customer === 'returning' && !(ctx.ordersCount > 0)) return false;
+    if (t.customer === 'new' && ctx.ordersCount > 0) return false;
+    if (t.countries) {
+      var codes = String(t.countries).toUpperCase().split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      if (codes.length && codes.indexOf(String(ctx.country || '').toUpperCase()) === -1) return false;
+    }
+    if (t.utm_source && utm('utm_source') !== t.utm_source) return false;
+    if (t.utm_campaign && utm('utm_campaign') !== t.utm_campaign) return false;
+    return true;
+  }
+
+  function choose(experiences, type, pinnedId, ctx) {
+    var list = (experiences || []).filter(function (e) {
+      return (pinnedId ? e.id === pinnedId : e.type === type) && matches(e, ctx);
+    });
+    list.sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); });
+    return list[0] || null;
+  }
+
+  // ---------------------------------------------------------------- type loading
+  function setAssets(url) {
+    var m = String(url || '').match(/^(.*\/)orderorbit\.js(\?.*)?$/);
+    if (m) { assetBase = m[1]; assetQuery = m[2] || ''; }
+  }
+
+  function load(type) {
+    if (renderers[type]) return Promise.resolve(renderers[type]);
+    if (!loading[type]) {
+      loading[type] = new Promise(function (resolve) {
+        var s = document.createElement('script');
+        s.src = assetBase + 'oo-' + type + '.js' + assetQuery;
+        s.async = true;
+        s.onload = function () { resolve(renderers[type] || null); };
+        s.onerror = function () { resolve(null); };
+        document.head.appendChild(s);
+      });
+    }
+    return loading[type];
+  }
+
+  function define(type, fn) { renderers[type] = fn; }
+
+  // ---------------------------------------------------------------- rendering
+  function styleVars(d) {
+    return '--oo-primary:' + (d.primary_color || '#303030') + ';--oo-accent:' + (d.accent_color || '#5b4bff') + ';--oo-text:' + (d.text_color || '#1d1b33') +
+      ';--oo-bg:' + (d.background_color || '#ffffff') + ';--oo-radius:' + (d.radius != null ? d.radius : 12) + 'px';
+  }
+
+  // Merchant CSS, scoped to this experience only.
+  function scopedCss(exp) {
+    var css = exp.design && exp.design.custom_css;
+    if (!css) return '';
+    var scope = '[data-oo-exp="' + exp.id + '"] ';
+    return '<style>' + String(css).replace(/<\/?style[^>]*>/gi, '').replace(/@import[^;]*;?/gi, '').replace(/(^|})\s*([^{}@]+)\{/g, function (m, close, sel) {
+      return close + sel.split(',').map(function (s) { return scope + s.trim(); }).join(', ') + '{';
+    }) + '</style>';
+  }
+
+  function paint(el, exp, ctx, renderer) {
+    var inner = renderer ? renderer(exp, ctx, h) : null;
+    if (!inner) { el.innerHTML = ''; el.hidden = true; return false; }
+
+    var d = exp.design || {};
+    var b = exp.behavior || {};
+    var cls = ['oo-exp', 'oo-type-' + exp.type, 'oo-style-' + (exp.style || 'card'), 'oo-space-' + (d.spacing || 'comfortable'), 'oo-btn-' + (d.button_style || 'filled')];
+    if (d.border) cls.push('oo-bordered');
+    if (d.font === 'system') cls.push('oo-font-system');
+    if (d.hide_on_mobile) cls.push('oo-hide-mobile');
+    if (d.hide_on_desktop) cls.push('oo-hide-desktop');
+    if (b.animation && b.animation !== 'none' && !ctx.preview) cls.push('oo-anim-' + b.animation);
+    if (exp.type === 'sticky-atc') cls.push('oo-sticky-' + ((exp.content && exp.content.position) || 'bottom'));
+
+    el.hidden = false;
+    el.innerHTML = scopedCss(exp) + '<div class="' + cls.join(' ') + '" data-oo-exp="' + esc(exp.id) + '" style="' + styleVars(d) + '">' +
+      (b.dismissible ? '<button type="button" class="oo-close" aria-label="Dismiss" data-oo-dismiss>×</button>' : '') + inner + '</div>';
+
+    startTimers(el);
+    if (!ctx.preview && !el.__ooBound) {
+      el.__ooBound = true;
+      track('experience_viewed', exp, { page_type: ctx.page });
+      el.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-oo-click]');
+        if (btn) track('experience_clicked', exp, { action: btn.getAttribute('data-oo-click') });
+        if (e.target.closest('[data-oo-dismiss]')) {
+          try { localStorage.setItem('oo_dismiss_' + exp.id, String(exp.version)); } catch (err) { /* private mode */ }
+          el.hidden = true;
+          track('experience_closed', exp);
+        }
+      });
+    }
+    return true;
+  }
+
+  /** Renders one experience into el. Returns a Promise<boolean> (false when nothing shows). */
+  function render(el, exp, ctx) {
+    ctx = ctx || {};
+    return load(exp.type).then(function (renderer) { return paint(el, exp, ctx, renderer); });
+  }
+
+  var timer = null;
+  function startTimers(root) {
+    function tick() {
+      var nodes = document.querySelectorAll('[data-oo-end]');
+      if (!nodes.length) { clearInterval(timer); timer = null; return; }
+      nodes.forEach(function (node) {
+        var left = Math.max(0, Math.floor((Number(node.getAttribute('data-oo-end')) - Date.now()) / 1000));
+        var parts = [Math.floor(left / 86400), Math.floor((left % 86400) / 3600), Math.floor((left % 3600) / 60), left % 60];
+        node.querySelectorAll('b').forEach(function (b, i) { b.textContent = String(parts[i]).padStart(2, '0'); });
+      });
+    }
+    if (root.querySelector('[data-oo-end]')) {
+      tick();
+      if (!timer) timer = setInterval(tick, 1000);
+    }
+  }
+
+  // ---------------------------------------------------------------- storefront mounting
+  function readJson(selector) {
+    var node = document.querySelector(selector);
+    try { return node ? JSON.parse(node.textContent) : null; } catch (e) { return null; }
+  }
+
+  var state = { data: null, ctx: null };
+
+  function mountAll() {
+    state.data = state.data || readJson('script[data-oo-data]') || { experiences: [] };
+    state.ctx = state.ctx || readJson('script[data-oo-context]') || {};
+    setAssets(state.ctx.assets);
+    document.querySelectorAll('[data-oo-block]').forEach(function (el) {
+      var exp = choose(state.data.experiences, el.getAttribute('data-oo-type'), (el.getAttribute('data-oo-id') || '').trim(), state.ctx);
+      if (exp) {
+        render(el, exp, Object.assign({ currency: state.data.currency }, state.ctx));
+      } else if (state.ctx.designMode) {
+        // Only merchants in the Theme Editor see this; shoppers see nothing.
+        el.hidden = false;
+        el.innerHTML = '<div class="oo-editor-note">OrderOrbit: no published ' + esc(el.getAttribute('data-oo-type') || '') + ' experience matches this page yet. Publish one in the OrderOrbit app, or check its targeting.</div>';
+      } else {
+        el.hidden = true;
+      }
+    });
+  }
+
+  // Re-render cart-aware experiences when the cart changes. Read-only: we watch for
+  // completed cart requests; we never wrap or block the theme's own calls.
+  function refreshCart() {
+    fetch(((window.Shopify && Shopify.routes && Shopify.routes.root) || '/') + 'cart.js', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (cart) { state.ctx = Object.assign({}, state.ctx, { cartTotal: cart.total_price }); mountAll(); })
+      .catch(function () { /* offline or blocked */ });
+  }
+
+  function watchCart() {
+    if (!('PerformanceObserver' in window)) return;
+    var pending = null;
+    try {
+      new PerformanceObserver(function (list) {
+        if (list.getEntries().some(function (e) { return /\/cart\/(add|change|update|clear)/.test(e.name); })) {
+          clearTimeout(pending);
+          pending = setTimeout(refreshCart, 150);
+        }
+      }).observe({ type: 'resource', buffered: false });
+    } catch (e) { /* unsupported */ }
+  }
+
+  window.OrderOrbit = { version: '1.1.0', render: render, define: define, setAssets: setAssets, mountAll: mountAll, matches: matches, choose: choose, events: events, h: h };
+
+  var self = document.currentScript;
+  if (self) setAssets(self.src);
+
+  if (document.querySelector('[data-oo-block]')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountAll); else mountAll();
+    watchCart();
+    document.addEventListener('shopify:section:load', function () { state.data = null; state.ctx = null; mountAll(); });
+  }
+})();

@@ -201,6 +201,8 @@ class ExperienceEngineTest extends TestCase
     public function test_storefront_asset_is_served(): void
     {
         $this->get('/storefront/orderorbit.js')->assertOk()->assertHeader('Content-Type', 'application/javascript');
+        $this->get('/storefront/oo-trust.js')->assertOk();
+        $this->get('/storefront/oo-nope.js')->assertNotFound();
         $this->get('/storefront/../.env')->assertNotFound();
     }
 }

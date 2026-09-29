@@ -1,0 +1,12 @@
+{
+  "name": "orderorbit-storefront-build",
+  "private": true,
+  "type": "module",
+  "description": "Minifies resources/storefront into the theme app extension assets.",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "terser": "^5.31.0"
+  }
+}

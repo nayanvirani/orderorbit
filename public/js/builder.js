@@ -92,11 +92,11 @@
     clearTimeout(pending);
     pending = setTimeout(() => {
       if (!window.OrderOrbit) return;
-      const shown = window.OrderOrbit.render(target, experience(), context());
-      if (!shown) {
+      window.OrderOrbit.render(target, experience(), context()).then((shown) => {
+        if (shown) return;
         target.hidden = false;
         target.innerHTML = '<p class="b-muted b-empty-preview">Nothing to show with these settings (for example, the countdown has ended and is set to hide).</p>';
-      }
+      });
     }, 120);
   }
 
