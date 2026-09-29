@@ -210,7 +210,7 @@ class ExperienceManager
         if (! ($type['publishable'] ?? false)) {
             throw new PublishException("{$type['label']} can be built and previewed now. Publishing to your store opens in an upcoming release.");
         }
-        if ($store->plan === null) {
+        if (! $store->hasPlanAccess()) {
             throw new PublishException('Choose a plan to start publishing.', 'plan');
         }
 

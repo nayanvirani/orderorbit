@@ -47,6 +47,6 @@ class OnboardingController extends Controller
         $store->forceFill(['goal' => $goal])->save();
         AuditLog::record('onboarding.goal_selected', $store, ['goal' => $goal]);
 
-        return redirect()->to(app_route($store->plan ? 'app.dashboard' : 'app.settings.billing', ['notice' => 'saved']));
+        return redirect()->to(app_route($store->hasPlanAccess() ? 'app.dashboard' : 'app.settings.billing', ['notice' => 'saved']));
     }
 }

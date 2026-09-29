@@ -10,7 +10,7 @@ class Store extends Model
 {
     protected $fillable = [
         'shop_domain', 'access_token', 'refresh_token', 'access_token_expires_at', 'scopes',
-        'name', 'email', 'currency', 'timezone', 'shopify_plan', 'theme_name', 'capabilities', 'capabilities_checked_at', 'plan', 'goal',
+        'name', 'email', 'currency', 'timezone', 'shopify_plan', 'theme_name', 'capabilities', 'capabilities_checked_at', 'plan', 'plan_expires_at', 'goal',
         'onboarding_completed_at', 'installed_at', 'uninstalled_at',
     ];
 
@@ -24,6 +24,7 @@ class Store extends Model
             'access_token_expires_at' => 'datetime',
             'capabilities' => 'array',
             'capabilities_checked_at' => 'datetime',
+            'plan_expires_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
             'installed_at' => 'datetime',
             'uninstalled_at' => 'datetime',
@@ -66,11 +67,43 @@ class Store extends Model
     }
 
     /**
+     * The plan whose features and limits apply right now: the subscribed plan
+     * (including a cancelled plan's paid-up grace period), or the configured
+     * plan for our own test shops. Null means no access.
+     */
+    public function effectivePlan(): ?string
+    {
+        if ($this->plan !== null && ($this->plan_expires_at === null || $this->plan_expires_at->isFuture())) {
+            return $this->plan;
+        }
+
+        return $this->isTestShop() ? config('shopify.test_shop_plan') : null;
+    }
+
+    public function hasPlanAccess(): bool
+    {
+        return $this->effectivePlan() !== null;
+    }
+
+    public function isTestShop(): bool
+    {
+        return in_array($this->shop_domain, config('shopify.test_shops', []), true);
+    }
+
+    /**
+     * Shopify's hosted plan picker (Managed Pricing).
+     */
+    public function pricingUrl(): string
+    {
+        return $this->adminUrl('charges/'.config('shopify.app_handle').'/pricing_plans');
+    }
+
+    /**
      * Plan limit for a usage meter; null means unlimited, 0 when there is no plan.
      */
     public function planLimit(string $meter): ?int
     {
-        $limits = config("shopify.billing.plans.{$this->plan}.limits");
+        $limits = config('shopify.billing.plans.'.$this->effectivePlan().'.limits');
 
         return is_array($limits) && array_key_exists($meter, $limits) ? $limits[$meter] : 0;
     }

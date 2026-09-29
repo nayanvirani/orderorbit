@@ -5,16 +5,29 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Store;
+use App\Services\Shopify\Billing;
 use Illuminate\View\View;
+use Throwable;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Store $store): View
+    public function __invoke(Store $store, Billing $billing): View
     {
+        // Merchants land here after choosing a plan on Shopify's page. If the
+        // webhook hasn't arrived yet, ask Shopify directly (only while unsubscribed).
+        if (! $store->hasPlanAccess()) {
+            try {
+                $billing->sync($store);
+                $store->refresh();
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
         $checklist = [
             ['label' => 'Connect your store', 'done' => $store->isInstalled() && $store->missingScopes() === [], 'route' => 'app.settings.store'],
             ['label' => 'Choose your goal', 'done' => $store->goal !== null, 'route' => 'app.onboarding'],
-            ['label' => 'Choose a plan', 'done' => $store->plan !== null, 'route' => 'app.settings.billing'],
+            ['label' => 'Choose a plan', 'done' => $store->hasPlanAccess(), 'route' => 'app.settings.billing'],
             ['label' => 'Create your first experience', 'done' => $store->experiences()->exists(), 'route' => 'app.cro.experiences.create'],
             ['label' => 'Place it in the Theme Editor', 'done' => $store->experiences()->where('placement_status', 'placed')->exists(), 'route' => 'app.cro.experiences.index'],
             ['label' => 'Verify analytics', 'done' => false],

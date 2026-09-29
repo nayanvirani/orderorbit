@@ -50,7 +50,7 @@ class Usage
      */
     public function allows(Store $store, string $meter, int $adding = 1): bool
     {
-        if ($store->plan === null) {
+        if (! $store->hasPlanAccess()) {
             return false;
         }
 
@@ -77,7 +77,7 @@ class Usage
             'meter' => $meter,
             'label' => $label,
             'used' => $this->current($store, $meter),
-            'limit' => $store->plan ? $store->planLimit($meter) : 0,
+            'limit' => $store->hasPlanAccess() ? $store->planLimit($meter) : 0,
         ], array_keys(self::METERS), self::METERS);
     }
 }

@@ -6,22 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Store;
 use App\Services\Shopify\Billing;
 use App\Services\Usage;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Throwable;
 
+/**
+ * Settings → Billing. Read-only under Shopify Managed Pricing: shows the plan
+ * Shopify reports, usage against its limits, and links to Shopify's own plan
+ * picker for changes.
+ */
 class BillingController extends Controller
 {
-    public function __construct(private readonly Billing $billing) {}
-
-    public function index(Request $request, Store $store, Usage $usage): View
+    public function index(Request $request, Store $store, Billing $billing, Usage $usage): View
     {
         $syncError = false;
 
         try {
-            $this->billing->sync($store);
+            $billing->sync($store);
         } catch (Throwable $e) {
             report($e);
             $syncError = true;
@@ -38,25 +39,5 @@ class BillingController extends Controller
             'syncError' => $syncError,
             'canManage' => $request->attributes->get('storeUser')?->can('manage_billing'),
         ]);
-    }
-
-    public function subscribe(Request $request, Store $store): Response|RedirectResponse
-    {
-        $plan = (string) $request->input('plan');
-
-        if (! array_key_exists($plan, config('shopify.billing.plans'))) {
-            return redirect()->to(app_route('app.settings.billing', ['notice' => 'unexpected']));
-        }
-
-        try {
-            $confirmationUrl = $this->billing->createSubscription($store, $plan);
-        } catch (Throwable $e) {
-            report($e);
-
-            return redirect()->to(app_route('app.settings.billing', ['notice' => 'shopify']));
-        }
-
-        // The approval page must open in the top frame, outside the admin iframe.
-        return response()->view('app.redirect', ['url' => $confirmationUrl]);
     }
 }

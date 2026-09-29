@@ -88,7 +88,6 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         Route::post('/branding', [BrandingController::class, 'update'])->middleware('store.can:manage_settings')->name('branding.update');
 
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
-        Route::post('/billing', [BillingController::class, 'subscribe'])->middleware('store.can:manage_billing')->name('billing.subscribe');
 
         Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
     });

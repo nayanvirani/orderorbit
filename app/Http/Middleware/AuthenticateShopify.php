@@ -6,6 +6,7 @@ use App\Exceptions\InvalidSessionToken;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\StoreUser;
+use App\Services\Shopify\Billing;
 use App\Services\Shopify\SessionToken;
 use App\Services\Shopify\ShopDomain;
 use App\Services\Shopify\StoreSync;
@@ -51,6 +52,14 @@ class AuthenticateShopify
 
             try {
                 $this->storeSync->sync($store);
+            } catch (Throwable $e) {
+                report($e);
+            }
+
+            // Under Managed Pricing the merchant may have chosen a plan during install,
+            // before the app_subscriptions/update webhook reaches us.
+            try {
+                app(Billing::class)->sync($store);
             } catch (Throwable $e) {
                 report($e);
             }
