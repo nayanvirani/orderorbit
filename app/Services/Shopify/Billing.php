@@ -27,7 +27,7 @@ class Billing
             throw new InvalidArgumentException("Unknown plan [{$planKey}].");
         }
 
-        $returnUrl = sprintf('https://admin.shopify.com/store/%s/apps/%s/app/billing', $store->handle(), config('shopify.api_key'));
+        $returnUrl = sprintf('https://admin.shopify.com/store/%s/apps/%s/app/settings/billing', $store->handle(), config('shopify.api_key'));
 
         $data = $this->api->graphql($store, <<<'GQL'
             mutation Subscribe($name: String!, $returnUrl: URL!, $trialDays: Int, $test: Boolean, $lineItems: [AppSubscriptionLineItemInput!]!) {
