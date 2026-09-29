@@ -21,7 +21,7 @@ All secrets are Railway service variables — see `.env.example` for the names. 
 
 ## Deploy
 
-- Pushing to `main` deploys on Railway (migrations run as the pre-deploy step, health check `/up`).
+- Pushing to `main` deploys the `orderorbit` Railway service (Railpack build; pre-deploy `php artisan migrate --force`; health check `/up` — set on the service).
 - App config (URLs, scopes, webhooks) and extensions: `shopify app deploy`.
 
 ## Tests
