@@ -8,7 +8,7 @@
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>About</span>
         <h1>Built to help Shopify brands <span class="grad-text">grow the right way.</span></h1>
-        <p class="lead">OrderOrbit is a Shopify-native growth platform. We believe conversion tools should work with your theme, not against it; that results should be measured honestly; and that one well-built app beats a stack of scripts.</p>
+        <p class="lead">OrderOrbit is a Shopify-native growth platform. We believe conversion tools should work with your theme, not against it; that results should be measured honestly; and that one well-built app beats a stack of add-ons.</p>
         <div class="ctas">
             <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked"><x-icon name="bag"/>Install on Shopify</a>
             <a class="btn lg" href="{{ route('site.contact') }}">Contact us</a>

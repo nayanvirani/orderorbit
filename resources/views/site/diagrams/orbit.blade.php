@@ -2,7 +2,7 @@
     $stages = [
         'create' => ['Create', 'Pick a template', 'sparkle', 50, 9],
         'publish' => ['Publish', 'Place in Theme Editor', 'rocket', 85.5, 29.5],
-        'measure' => ['Measure', 'Web Pixel events', 'chart', 85.5, 70.5],
+        'measure' => ['Measure', 'Views, clicks, revenue', 'chart', 85.5, 70.5],
         'test' => ['Test', 'A/B and A/B/C', 'split', 50, 91],
         'personalize' => ['Personalize', 'Segments & rules', 'target', 14.5, 70.5],
         'automate' => ['Automate', 'Lifecycle workflows', 'flow', 14.5, 29.5],

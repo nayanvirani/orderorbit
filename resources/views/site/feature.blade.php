@@ -119,7 +119,7 @@
         <div class="split-copy reveal">
             <span class="eyebrow"><span class="dot"></span>Analytics</span>
             <h2>See exactly what it earns.</h2>
-            <p class="lead">Every {{ strtolower($feature['name']) }} view, interaction and purchase is tracked through Shopify's consent-aware Web Pixel, so you can compare experiences with one set of numbers — and A/B test the next idea.</p>
+            <p class="lead">Every {{ strtolower($feature['name']) }} view, interaction and purchase is tracked with consent-aware analytics, so you can compare experiences with one set of numbers — and A/B test the next idea.</p>
             <a class="btn dark" href="{{ route('site.feature', 'analytics') }}">Explore Analytics <x-icon name="arrow"/></a>
         </div>
         @include('site.partials.metrics', ['title' => $feature['name'], 'metrics' => $feature['metrics'], 'id' => $feature['slug']])

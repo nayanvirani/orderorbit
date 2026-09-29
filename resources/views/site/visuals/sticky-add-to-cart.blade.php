@@ -27,6 +27,6 @@
             </div>
         </div>
     </div>
-    <div class="float-chip c1"><span class="dot"></span><code>orderorbit:sticky_atc_clicked</code></div>
+    <div class="float-chip c1"><span class="dot"></span>Sticky button clicked</div>
     <div class="float-chip c2"><x-icon name="cursor" style="color:#8f5cff"/> Scrolls back to your theme's button</div>
 </div>

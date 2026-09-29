@@ -22,6 +22,6 @@
         </div>
     </div>
     <x-slot:chips>
-        <div class="float-chip c1"><span class="dot"></span><code>orderorbit:free_gift_unlocked</code></div>
+        <div class="float-chip c1"><span class="dot"></span>Free gift unlocked</div>
     </x-slot:chips>
 </x-browser>

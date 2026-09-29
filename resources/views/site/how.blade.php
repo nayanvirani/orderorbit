@@ -23,7 +23,7 @@
         ['Choose your goal.', 'Conversion, order value, repeat purchase or checkout — we recommend where to start.', 'goal'],
         ['Pick a template.', 'Bundles, gifts, shipping bars, upsells and more, ready to customise.', 'bundles'],
         ['Customise and place.', 'Match your brand, then add the block in the Theme Editor. No code.', 'theme-editor'],
-        ['Measure.', 'The Web Pixel tracks views, clicks, add-to-carts and purchases per experience.', 'analytics'],
+        ['Measure.', 'OrderOrbit tracks views, clicks, add-to-carts and purchases per experience.', 'analytics'],
         ['Test.', 'Run an A/B test and keep the version that wins.', 'ab-testing'],
         ['Personalize.', 'Show different experiences to different shoppers.', 'personalization'],
         ['Automate.', 'Follow up after purchase with reviews, reorders and win-back.', 'automation'],
