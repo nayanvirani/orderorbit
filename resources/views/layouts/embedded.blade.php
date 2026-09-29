@@ -52,6 +52,11 @@
 </head>
 <body>
     @php($navUser = request()->attributes->get('storeUser'))
+    @if (! request()->attributes->get('store')?->hasPlanAccess())
+    <s-app-nav>
+        <s-link href="{{ app_route('app.settings.billing') }}" rel="home">Choose a plan</s-link>
+    </s-app-nav>
+    @else
     <s-app-nav>
         <s-link href="{{ app_route('app.dashboard') }}" rel="home">Home</s-link>
         @if (! request()->attributes->get('store')?->goal)
@@ -62,6 +67,7 @@
         <s-link href="{{ app_route('app.templates') }}">Templates</s-link>
         <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     </s-app-nav>
+    @endif
 
     @yield('content')
 

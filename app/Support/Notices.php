@@ -30,6 +30,8 @@ class Notices
         'bulk_done' => ['Changes applied.', false],
         'publish_unavailable' => ['This experience type can be built and previewed now. Publishing opens in an upcoming release.', true],
         'invalid' => ['Fix the highlighted fields before publishing.', true],
+        'plan_updated' => ['Your plan is active. Thanks for choosing OrderOrbit!', false],
+        'plan_pending' => ['We\'re waiting for Shopify to confirm your plan. This page updates once it does.', false],
         'network' => ['We couldn\'t complete that request. Please try again.', true],
         'permission' => ['You don\'t have permission to perform this action.', true],
         'shopify' => ['Your Shopify connection needs attention. Open Settings → Store to review it.', true],

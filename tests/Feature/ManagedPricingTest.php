@@ -7,6 +7,7 @@ use App\Models\Subscription;
 use App\Services\Shopify\Billing;
 use App\Services\Usage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\Concerns\InteractsWithShopify;
 use Tests\TestCase;
@@ -57,7 +58,7 @@ class ManagedPricingTest extends TestCase
 
     public function test_activation_webhook_records_plan_and_period_end(): void
     {
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
         $this->shopifyReports([$this->active('gid://shopify/AppSubscription/1', 'Growth')]);
 
         $this->webhook('ACTIVE', 'gid://shopify/AppSubscription/1', 'Growth', 'w1')->assertNoContent();
@@ -70,7 +71,7 @@ class ManagedPricingTest extends TestCase
 
     public function test_switching_plans_supersedes_the_old_subscription(): void
     {
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
         $billing = app(Billing::class);
 
         $report = fn (array $subs) => ['data' => ['currentAppInstallation' => ['activeSubscriptions' => $subs]]];
@@ -88,7 +89,7 @@ class ManagedPricingTest extends TestCase
 
     public function test_cancellation_keeps_access_until_the_paid_period_ends(): void
     {
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
         $this->shopifyReports([$this->active('gid://shopify/AppSubscription/1', 'Growth', '+10 days')]);
         app(Billing::class)->sync($store);
 
@@ -106,7 +107,7 @@ class ManagedPricingTest extends TestCase
 
     public function test_frozen_or_unknown_plans_give_no_access(): void
     {
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
 
         $this->webhook('FROZEN', 'gid://shopify/AppSubscription/9', 'Growth', 'w3')->assertNoContent();
         $this->assertFalse($store->fresh()->hasPlanAccess());
@@ -119,28 +120,68 @@ class ManagedPricingTest extends TestCase
     public function test_test_shops_get_access_without_a_subscription(): void
     {
         config(['shopify.test_shops' => [$this->shop], 'shopify.test_shop_plan' => 'growth']);
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
 
         $this->assertTrue($store->hasPlanAccess());
         $this->assertSame('growth', $store->effectivePlan());
         $this->assertNull($store->planLimit('bundles'));
-        $this->assertFalse($this->installedStore(['shop_domain' => 'real.myshopify.com'])->hasPlanAccess());
+        $this->assertFalse($this->installedStore(['shop_domain' => 'real.myshopify.com', 'plan' => null])->hasPlanAccess());
     }
 
-    public function test_dashboard_picks_up_a_plan_chosen_on_shopify_before_the_webhook(): void
+    public function test_shops_without_a_plan_only_see_billing(): void
     {
-        $store = $this->installedStore();
+        $store = $this->installedStore(['plan' => null]);
         $owner = $this->member($store, 'owner');
-        $this->shopifyReports([$this->active('gid://shopify/AppSubscription/5', 'Starter')]);
+        $this->shopifyReports([]);
 
-        $this->get('/app', $this->as($owner))->assertOk()->assertDontSee('Choose a plan to start publishing');
-        $this->assertSame('starter', $store->fresh()->plan);
+        foreach (['/app', '/app/cro', '/app/templates', '/app/settings/store', '/app/onboarding'] as $path) {
+            $this->get($path, $this->as($owner))->assertRedirectContains('/app/settings/billing');
+        }
+        $this->get('/app/settings/billing', $this->as($owner))->assertOk()
+            ->assertSee('Choose a plan below to start using OrderOrbit')
+            ->assertSee('Choose plan');
+    }
+
+    public function test_returning_from_shopifys_plan_page_syncs_the_new_subscription(): void
+    {
+        $store = $this->installedStore(['plan' => null]);
+        $owner = $this->member($store, 'owner');
+        $this->shopifyReports([$this->active('gid://shopify/AppSubscription/77', 'Scale')]);
+
+        $this->get('/app?charge_id=77', $this->as($owner))->assertRedirectContains('notice=plan_updated');
+        $this->assertSame('scale', $store->fresh()->plan);
+        $this->get('/app', $this->as($owner))->assertOk();
+    }
+
+    public function test_plan_changes_are_picked_up_on_return_even_with_an_existing_plan(): void
+    {
+        $store = $this->installedStore(['plan' => null]);
+        $owner = $this->member($store, 'owner');
+        $report = fn (array $subs) => ['data' => ['currentAppInstallation' => ['activeSubscriptions' => $subs]]];
+        Http::fake(["{$this->shop}/admin/api/*" => Http::sequence()
+            ->push($report([$this->active('gid://shopify/AppSubscription/1', 'Starter')]))
+            ->push($report([$this->active('gid://shopify/AppSubscription/2', 'Growth')]))]);
+
+        app(Billing::class)->sync($store);
+        $this->get('/app?charge_id=2', $this->as($owner))->assertRedirectContains('notice=plan_updated');
+        $this->assertSame('growth', $store->fresh()->plan);
+    }
+
+    public function test_the_app_handle_comes_from_shopify(): void
+    {
+        $store = $this->installedStore(['plan' => null]);
+        Http::fake(["{$this->shop}/admin/api/*" => Http::response(['data' => ['currentAppInstallation' => ['app' => ['handle' => 'orderorbit-3'], 'activeSubscriptions' => []]]])]);
+
+        app(Billing::class)->sync($store);
+
+        $this->assertSame('https://admin.shopify.com/store/demo/charges/orderorbit-3/pricing_plans', $store->fresh()->pricingUrl());
     }
 
     public function test_billing_page_links_to_shopifys_plan_picker(): void
     {
         config(['shopify.app_handle' => 'orderorbit-app']);
-        $store = $this->installedStore();
+        Cache::forget('shopify.app_handle');
+        $store = $this->installedStore(['plan' => null]);
         $owner = $this->member($store, 'owner');
         $staff = $this->member($store, 'staff');
         $this->shopifyReports([]);

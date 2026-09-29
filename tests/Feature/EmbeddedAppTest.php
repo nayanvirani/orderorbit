@@ -146,7 +146,9 @@ class EmbeddedAppTest extends TestCase
     {
         $store = $this->installedStore(['capabilities' => ['online_store_2' => true, 'checkout_blocks' => false, 'thank_you_blocks' => true, 'plus' => false], 'theme_name' => 'Dawn']);
         $owner = $this->member($store, 'owner');
-        Http::fake(["{$this->shop}/admin/api/*" => Http::response(['data' => ['currentAppInstallation' => ['activeSubscriptions' => []]]])]);
+        Http::fake(["{$this->shop}/admin/api/*" => Http::response(['data' => ['currentAppInstallation' => ['activeSubscriptions' => [
+            ['id' => 'gid://shopify/AppSubscription/1', 'name' => 'Growth', 'status' => 'ACTIVE', 'test' => true, 'trialDays' => 0, 'createdAt' => now()->toIso8601String(), 'currentPeriodEnd' => now()->addMonth()->toIso8601String()],
+        ]]]])]);
 
         $this->get('/app/settings/store', $this->as($owner))->assertOk()->assertSee('Dawn')->assertSee('Requires Shopify Plus');
         $this->get('/app/settings/users', $this->as($owner))->assertOk()->assertSee('What each role can do');

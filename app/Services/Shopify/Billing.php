@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\Subscription;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -33,10 +34,16 @@ class Billing
         $data = $this->api->graphql($store, <<<'GQL'
             {
               currentAppInstallation {
+                app { handle }
                 activeSubscriptions { id name status test trialDays createdAt currentPeriodEnd }
               }
             }
             GQL);
+
+        // The pricing page URL needs the app's handle; Shopify tells us, so nobody has to configure it.
+        if ($handle = $data['currentAppInstallation']['app']['handle'] ?? null) {
+            Cache::forever('shopify.app_handle', $handle);
+        }
 
         $active = collect($data['currentAppInstallation']['activeSubscriptions'] ?? [])->firstWhere('status', 'ACTIVE');
 

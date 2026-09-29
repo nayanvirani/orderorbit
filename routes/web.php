@@ -39,61 +39,64 @@ Route::controller(SiteController::class)->name('site.')->group(function () {
 
 // Merchant embedded app (Part B)
 Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function () {
-    Route::get('/', DashboardController::class)->middleware('store.can:view_dashboard')->name('dashboard');
-    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
-    Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
+    // Billing stays reachable without a plan: it's where plans are chosen.
+    Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
 
-    // CRO experiences (section 15, D2)
-    Route::prefix('cro')->name('cro.')->group(function () {
-        Route::get('/', [ExperienceController::class, 'overview'])->middleware('store.can:view_dashboard')->name('overview');
+    Route::middleware('store.plan')->group(function () {
+        Route::get('/', DashboardController::class)->middleware('store.can:view_dashboard')->name('dashboard');
+        Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
+        Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
 
-        Route::prefix('experiences')->name('experiences.')->group(function () {
-            Route::get('/', [ExperienceController::class, 'index'])->name('index');
-            Route::get('/export', [ExperienceController::class, 'export'])->name('export');
-            Route::middleware('store.can:manage_experiences')->group(function () {
-                Route::get('/new', [ExperienceController::class, 'create'])->name('create');
-                Route::post('/', [ExperienceController::class, 'store'])->name('store');
-                Route::post('/bulk', [ExperienceController::class, 'bulk'])->name('bulk');
-                Route::get('/{experience}/edit', [ExperienceController::class, 'edit'])->whereNumber('experience')->name('edit');
-                Route::post('/{experience}', [ExperienceController::class, 'update'])->whereNumber('experience')->name('update');
-                Route::post('/{experience}/publish', [ExperienceController::class, 'publish'])->whereNumber('experience')->name('publish');
-                Route::post('/{experience}/duplicate', [ExperienceController::class, 'duplicate'])->whereNumber('experience')->name('duplicate');
-                Route::post('/{experience}/placement', [ExperienceController::class, 'checkPlacement'])->whereNumber('experience')->name('placement');
-                Route::post('/{experience}/versions/{version}/restore', [ExperienceController::class, 'restoreVersion'])->whereNumber(['experience', 'version'])->name('versions.restore');
-                Route::post('/{experience}/{action}', [ExperienceController::class, 'lifecycle'])->whereNumber('experience')->whereIn('action', ['pause', 'resume', 'archive', 'unarchive', 'discard'])->name('lifecycle');
+        // CRO experiences (section 15, D2)
+        Route::prefix('cro')->name('cro.')->group(function () {
+            Route::get('/', [ExperienceController::class, 'overview'])->middleware('store.can:view_dashboard')->name('overview');
+
+            Route::prefix('experiences')->name('experiences.')->group(function () {
+                Route::get('/', [ExperienceController::class, 'index'])->name('index');
+                Route::get('/export', [ExperienceController::class, 'export'])->name('export');
+                Route::middleware('store.can:manage_experiences')->group(function () {
+                    Route::get('/new', [ExperienceController::class, 'create'])->name('create');
+                    Route::post('/', [ExperienceController::class, 'store'])->name('store');
+                    Route::post('/bulk', [ExperienceController::class, 'bulk'])->name('bulk');
+                    Route::get('/{experience}/edit', [ExperienceController::class, 'edit'])->whereNumber('experience')->name('edit');
+                    Route::post('/{experience}', [ExperienceController::class, 'update'])->whereNumber('experience')->name('update');
+                    Route::post('/{experience}/publish', [ExperienceController::class, 'publish'])->whereNumber('experience')->name('publish');
+                    Route::post('/{experience}/duplicate', [ExperienceController::class, 'duplicate'])->whereNumber('experience')->name('duplicate');
+                    Route::post('/{experience}/placement', [ExperienceController::class, 'checkPlacement'])->whereNumber('experience')->name('placement');
+                    Route::post('/{experience}/versions/{version}/restore', [ExperienceController::class, 'restoreVersion'])->whereNumber(['experience', 'version'])->name('versions.restore');
+                    Route::post('/{experience}/{action}', [ExperienceController::class, 'lifecycle'])->whereNumber('experience')->whereIn('action', ['pause', 'resume', 'archive', 'unarchive', 'discard'])->name('lifecycle');
+                });
+                Route::get('/{experience}', [ExperienceController::class, 'show'])->whereNumber('experience')->name('show');
             });
-            Route::get('/{experience}', [ExperienceController::class, 'show'])->whereNumber('experience')->name('show');
+
+            Route::get('/{type}', [ExperienceController::class, 'index'])->whereIn('type', array_keys(Registry::types()))->name('type');
         });
 
-        Route::get('/{type}', [ExperienceController::class, 'index'])->whereIn('type', array_keys(Registry::types()))->name('type');
-    });
+        Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
 
-    Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', fn () => redirect()->to(app_route('app.settings.store')))->name('index');
+            Route::get('/store', [StoreSettingsController::class, 'show'])->name('store');
+            Route::post('/store/recheck', [StoreSettingsController::class, 'recheck'])->middleware('store.can:manage_settings')->name('store.recheck');
+            Route::post('/store/reconnect', [StoreSettingsController::class, 'reconnect'])->middleware('store.can:manage_settings')->name('store.reconnect');
 
-    Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('/', fn () => redirect()->to(app_route('app.settings.store')))->name('index');
-        Route::get('/store', [StoreSettingsController::class, 'show'])->name('store');
-        Route::post('/store/recheck', [StoreSettingsController::class, 'recheck'])->middleware('store.can:manage_settings')->name('store.recheck');
-        Route::post('/store/reconnect', [StoreSettingsController::class, 'reconnect'])->middleware('store.can:manage_settings')->name('store.reconnect');
+            Route::middleware('store.can:manage_users')->group(function () {
+                Route::get('/users', [UsersController::class, 'index'])->name('users');
+                Route::post('/users', [UsersController::class, 'invite'])->name('users.invite');
+                Route::post('/users/{user}/role', [UsersController::class, 'updateRole'])->name('users.role');
+                Route::post('/users/{user}/remove', [UsersController::class, 'remove'])->name('users.remove');
+                Route::post('/users/{user}/restore', [UsersController::class, 'restore'])->name('users.restore');
+            });
 
-        Route::middleware('store.can:manage_users')->group(function () {
-            Route::get('/users', [UsersController::class, 'index'])->name('users');
-            Route::post('/users', [UsersController::class, 'invite'])->name('users.invite');
-            Route::post('/users/{user}/role', [UsersController::class, 'updateRole'])->name('users.role');
-            Route::post('/users/{user}/remove', [UsersController::class, 'remove'])->name('users.remove');
-            Route::post('/users/{user}/restore', [UsersController::class, 'restore'])->name('users.restore');
+            Route::get('/branding', [BrandingController::class, 'show'])->name('branding');
+            Route::post('/branding', [BrandingController::class, 'update'])->middleware('store.can:manage_settings')->name('branding.update');
+
+            Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
         });
 
-        Route::get('/branding', [BrandingController::class, 'show'])->name('branding');
-        Route::post('/branding', [BrandingController::class, 'update'])->middleware('store.can:manage_settings')->name('branding.update');
-
-        Route::get('/billing', [BillingController::class, 'index'])->name('billing');
-
-        Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
+        // Older links before the move to Settings.
+        Route::get('/billing', fn () => redirect()->to(app_route('app.settings.billing')))->name('billing');
     });
-
-    // Older links and Shopify's billing return URL before the move to Settings.
-    Route::get('/billing', fn () => redirect()->to(app_route('app.settings.billing', request()->only('charge_id'))))->name('billing');
 });
 
 // The storefront runtime, served from the theme extension so the builder preview

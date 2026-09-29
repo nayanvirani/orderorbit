@@ -47,6 +47,7 @@ return [
     |
     */
 
+    // Fallback only: the handle is read from Shopify on every billing sync.
     'app_handle' => env('SHOPIFY_APP_HANDLE', 'orderorbit'),
 
     'test_shops' => array_values(array_filter(array_map('trim', explode(',', (string) env('ORDERORBIT_TEST_SHOPS', ''))))),

@@ -8,8 +8,12 @@
 @endphp
 
 @section('content')
-<s-page heading="Settings">
-    @include('app.settings._tabs')
+<s-page heading="{{ $effective ? 'Settings' : 'Choose a plan' }}">
+    @if ($effective)
+        @include('app.settings._tabs')
+    @else
+        <s-banner tone="info">Choose a plan below to start using OrderOrbit. Experiences, templates and settings are unavailable until you subscribe.</s-banner>
+    @endif
 
     @if ($syncError)
         <s-banner tone="critical">Your Shopify connection needs attention. Open Settings → Store to review it.</s-banner>
@@ -46,21 +50,18 @@
         <s-banner tone="info" heading="Test store">
             <s-paragraph>This development store has {{ $planName($effective) }} access without a subscription, for testing only.</s-paragraph>
         </s-banner>
-    @else
-        @php($state = match ($latest?->status) {
-            'PENDING' => ['warning', 'Waiting for approval', 'Approve the plan in Shopify to activate it.'],
+    @elseif ($latest && in_array($latest->status, ['PENDING', 'FROZEN', 'DECLINED', 'EXPIRED', 'CANCELLED'], true))
+        @php($state = [
+            'PENDING' => ['warning', 'Waiting for approval', 'Approve the plan on Shopify to activate it.'],
             'FROZEN' => ['critical', 'Frozen', 'Your Shopify account has a billing issue. Resolve it in Shopify to reactivate OrderOrbit. Your data is kept.'],
-            'DECLINED' => ['warning', 'Not approved', 'The plan wasn\'t approved. Choose a plan to continue.'],
-            'EXPIRED' => ['warning', 'Approval expired', 'The approval request expired. Choose a plan to continue.'],
-            'CANCELLED' => ['warning', 'Cancelled', 'Your plan was cancelled. Choose a plan to continue. Your data is kept.'],
-            default => ['info', 'Choose a plan to start publishing', 'Plans and any free trial are shown on Shopify\'s plan page, and billing runs through your Shopify invoice.'],
-        })
-        <s-banner tone="{{ $state[0] }}" heading="{{ $latest ? 'Plan status: '.$state[1] : $state[1] }}">
-            <s-paragraph>{{ $state[2] }}</s-paragraph>
-            @if ($canManage)<s-button slot="secondary-actions" variant="primary" href="{{ $store->pricingUrl() }}" target="_top">Choose a plan</s-button>@endif
-        </s-banner>
+            'DECLINED' => ['warning', 'Not approved', 'The plan wasn\'t approved. Choose a plan below to continue.'],
+            'EXPIRED' => ['warning', 'Approval expired', 'The approval request expired. Choose a plan below to continue.'],
+            'CANCELLED' => ['warning', 'Cancelled', 'Your plan was cancelled. Choose a plan below to continue. Your data is kept.'],
+        ][$latest->status])
+        <s-banner tone="{{ $state[0] }}" heading="Plan status: {{ $state[1] }}"><s-paragraph>{{ $state[2] }}</s-paragraph></s-banner>
     @endif
 
+    @if ($effective)
     <s-section heading="Usage">
         <s-grid gridTemplateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap="base">
             @foreach ($usage as $meter)
@@ -75,30 +76,33 @@
         </s-grid>
     </s-section>
 
-    <s-section heading="Compare plans">
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(220px, 1fr))" gap="base">
+    @endif
+
+    <s-section heading="Plans">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(230px, 1fr))" gap="base">
             @foreach ($plans as $key => $plan)
+                @php($isCurrent = $effective === $key)
                 <s-box padding="base" border="base" borderRadius="base">
-                    <s-stack gap="small-200">
+                    <s-stack gap="small-300">
                         <s-stack direction="inline" gap="small-200" alignItems="center">
                             <strong>{{ $plan['name'] }}</strong>
-                            @if ($effective === $key)<s-badge tone="success">Current</s-badge>@endif
+                            @if ($isCurrent)<s-badge tone="success">Current plan</s-badge>@endif
                         </s-stack>
-                        <s-heading>${{ number_format($plan['price'], 2) }}/mo</s-heading>
+                        <s-heading>${{ number_format($plan['price'], 2) }}<span class="oo-muted" style="font-weight:400"> /mo</span></s-heading>
                         <s-unordered-list>
                             @foreach ($plan['features'] as $feature)<s-list-item>{{ $feature }}</s-list-item>@endforeach
                         </s-unordered-list>
+                        @if ($canManage)
+                            {{-- Shopify's hosted plan page (Managed Pricing); it returns to the app with ?charge_id. --}}
+                            <s-button variant="{{ $isCurrent ? 'secondary' : 'primary' }}" href="{{ $store->pricingUrl() }}" target="_top">{{ $isCurrent ? 'Manage plan' : 'Choose plan' }}</s-button>
+                        @endif
                     </s-stack>
                 </s-box>
             @endforeach
         </s-grid>
-        @if ($canManage)
-            <s-stack direction="inline" gap="small-200" style="margin-top:16px">
-                <s-button variant="{{ $effective ? 'secondary' : 'primary' }}" href="{{ $store->pricingUrl() }}" target="_top">{{ $effective ? 'Change plan on Shopify' : 'Choose a plan on Shopify' }}</s-button>
-            </s-stack>
-        @else
+        @unless ($canManage)
             <s-paragraph><span class="oo-muted">Only store owners can change the plan.</span></s-paragraph>
-        @endif
+        @endunless
     </s-section>
 
     <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Existing data is never deleted or changed on downgrade; items over the new limit are paused, not removed.</span></s-paragraph>

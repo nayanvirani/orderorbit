@@ -27,6 +27,7 @@ trait InteractsWithShopify
             'scopes' => 'read_products,write_discounts',
             'name' => 'Demo Store',
             'currency' => 'USD',
+            'plan' => 'growth',
             'installed_at' => now(),
         ], $attributes));
     }
