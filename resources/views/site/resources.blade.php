@@ -31,7 +31,7 @@
 <section class="section tight">
     <div class="wrap">
         <div class="section-head left reveal" style="margin-bottom:28px"><h2 style="font-size:30px">Latest from the blog</h2></div>
-        <div class="grid three">
+        <div class="post-grid">
             @foreach (array_slice($posts, 1, 3) as $post)
                 @include('site.partials.post-card', ['post' => $post, 'i' => $loop->index + 1])
             @endforeach
@@ -61,7 +61,7 @@
         <div class="section-head reveal"><span class="eyebrow"><span class="dot"></span>Help center</span><h2>Browse by topic.</h2></div>
         <div class="grid four">
             @foreach (array_slice($helpCategories, 0, 8) as $c)
-                <a class="card reveal" href="{{ route('site.help') }}#{{ $c['slug'] }}"><div class="icon-badge soft"><x-icon :name="$c['icon']"/></div><h3 style="font-size:17px">{{ $c['name'] }}</h3><p>{{ $c['text'] }}</p></a>
+                <a class="card reveal" href="{{ route('site.help') }}#{{ $c['slug'] }}"><div class="icon-badge soft"><x-icon :name="$c['icon']"/></div><h3>{{ $c['name'] }}</h3><p>{{ $c['text'] }}</p></a>
             @endforeach
         </div>
         <div class="card center reveal" style="margin-top:28px">

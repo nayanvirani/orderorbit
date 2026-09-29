@@ -281,3 +281,6 @@
     .bundle-item small { font-size: 9px; }
 }
 
+
+/* Screens are light: never inherit the dark site's heading colour. */
+.visual h1, .visual h2, .visual h3, .visual h4, .visual h5, .tpl h4, .tpl h5, .sat h4, .sat h5, .bento-screen h4, .bento-screen h5 { color: #1d1b33; }

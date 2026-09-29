@@ -18,7 +18,7 @@
             @foreach ($helpCategories as $c)
                 <div class="card hover" id="{{ $c['slug'] }}" data-help-item>
                     <div class="icon-badge soft"><x-icon :name="$c['icon']"/></div>
-                    <h3 style="font-size:17px">{{ $c['name'] }}</h3>
+                    <h3>{{ $c['name'] }}</h3>
                     <p>{{ $c['text'] }}</p>
                 </div>
             @endforeach

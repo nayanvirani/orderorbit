@@ -22,8 +22,8 @@
             @php($list = $cat === 'All' ? $posts : array_values(array_filter($posts, fn ($p) => $p['category'] === $cat)))
             <div role="tabpanel" id="blog-{{ \Illuminate\Support\Str::slug($cat) }}" @unless ($loop->first) hidden @endunless>
                 @if ($list)
-                    <div class="grid three">
-                        @foreach ($list as $post)@include('site.partials.post-card', ['post' => $post, 'i' => $loop->index])@endforeach
+                    <div class="post-grid">
+                        @foreach ($list as $post)@include('site.partials.post-card', ['post' => $post, 'i' => $loop->index, 'featured' => $cat === 'All' && $loop->first])@endforeach
                     </div>
                 @else
                     <div class="card center"><h3>Posts in {{ $cat }} are on the way.</h3><p>Browse all posts in the meantime.</p></div>

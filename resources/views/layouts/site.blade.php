@@ -31,20 +31,42 @@
             </a>
 
             <nav class="nav" aria-label="Main">
-                <div class="item" data-dropdown>
+                <div class="item mega-item" data-dropdown>
                     <button type="button" aria-expanded="false">Product <x-icon name="chev" class="chev"/></button>
                     <div class="dropdown mega">
-                        @foreach (['convert' => 'CRO', 'checkout' => 'Checkout', 'grow' => 'Grow'] as $group => $label)
-                            <div>
-                                <h5>{{ $label }}</h5>
-                                @foreach ($navGroups[$group] as $slug => $f)
+                        <div class="col">
+                            <h5>CRO</h5>
+                            <div class="cro-list">
+                                @foreach ($navGroups['convert'] as $slug => $f)
                                     <a class="dd-link" href="{{ route('site.feature', $slug) }}">
                                         <span class="ico"><x-icon :name="$f['icon']"/></span>
                                         <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
                                     </a>
                                 @endforeach
                             </div>
-                        @endforeach
+                        </div>
+                        <div class="col">
+                            <h5>Checkout</h5>
+                            @foreach ($navGroups['checkout'] as $slug => $f)
+                                <a class="dd-link" href="{{ route('site.feature', $slug) }}">
+                                    <span class="ico"><x-icon :name="$f['icon']"/></span>
+                                    <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
+                                </a>
+                            @endforeach
+                            <a class="mega-feature" href="{{ route('site.templates') }}">
+                                <strong>Start from a template</strong>
+                                <span>87 ready-made designs to customise →</span>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <h5>Grow</h5>
+                            @foreach ($navGroups['grow'] as $slug => $f)
+                                <a class="dd-link" href="{{ route('site.feature', $slug) }}">
+                                    <span class="ico"><x-icon :name="$f['icon']"/></span>
+                                    <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
                 <div class="item" data-dropdown>

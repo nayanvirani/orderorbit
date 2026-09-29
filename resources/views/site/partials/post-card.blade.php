@@ -1,4 +1,4 @@
-<article class="card post-card reveal">
+<article class="card post-card reveal {{ ($featured ?? false) ? 'featured' : '' }}">
     <div class="cover cover-{{ ($i % 5) + 1 }}"><x-icon :name="$post['feature'] ? \App\Support\Content::feature($post['feature'])['icon'] : 'book'"/></div>
     <div class="body">
         <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill">{{ $post['category'] }}</span><span class="pill gray">Coming soon</span></div>
