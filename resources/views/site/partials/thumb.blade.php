@@ -1,5 +1,5 @@
 {{-- Compact template preview. $type: bundle, gift, shipping, qty, upsell, countdown, sticky, trust, promo, thankyou, account, flow; $v: variant index --}}
-@php($v = $v ?? 0)
+@php($v = ($v ?? 0) % 5)
 @switch($type)
     @case('bundle')
         <div class="oo-block" style="padding:10px">

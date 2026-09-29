@@ -33,7 +33,7 @@
             @foreach ($templates as $tpl)
                 <button type="button" class="tpl" data-surface="{{ $tpl['surface'] }}" data-type="{{ $tpl['type'] }}" data-feature="{{ $tpl['feature'] }}" data-name="{{ $tpl['name'] }}" data-label="{{ $tpl['label'] }} · {{ $surfaces[$tpl['surface']] }}">
                     <div class="thumb"><div style="filter:hue-rotate({{ [0, 28, -24, 52, -46][$loop->index % 5] }}deg)">@include('site.partials.thumb', ['type' => $tpl['type'], 'v' => $loop->index])</div></div>
-                    <div class="meta"><b>{{ $tpl['name'] }}</b><span><span class="pill">{{ $tpl['label'] }}</span><span class="pill gray">{{ $surfaces[$tpl['surface']] }}</span></span></div>
+                    <div class="meta"><b>{{ $tpl['name'] }}</b><span><span class="pill">{{ $tpl['label'] }}</span>@if ($surfaces[$tpl['surface']] !== $tpl['label'])<span class="pill gray">{{ $surfaces[$tpl['surface']] }}</span>@endif</span></div>
                 </button>
             @endforeach
         </div>
