@@ -6,62 +6,24 @@ use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\Subscription;
 use Illuminate\Support\Carbon;
-use InvalidArgumentException;
-use RuntimeException;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Shopify Billing API: recurring app subscriptions for Starter / Growth / Scale.
+ * Shopify Managed Pricing. Plans live in the Partner Dashboard and merchants
+ * choose them on Shopify's hosted page (Store::pricingUrl()), so the app never
+ * creates or cancels a subscription. It mirrors what Shopify reports:
+ *
+ * - app_subscriptions/update webhook: every plan change (applyWebhook)
+ * - a live query when the app is first opened, when a shop still looks
+ *   unsubscribed, and on the billing page (sync) — the webhook and the
+ *   merchant's first visit race each other.
+ *
+ * Each Shopify subscription is its own row, so upgrades, downgrades and
+ * cancellations keep their history.
  */
 class Billing
 {
     public function __construct(private readonly AdminApi $api) {}
-
-    /**
-     * Creates a subscription and returns the merchant confirmation URL.
-     */
-    public function createSubscription(Store $store, string $planKey): string
-    {
-        $plan = config("shopify.billing.plans.{$planKey}");
-
-        if ($plan === null) {
-            throw new InvalidArgumentException("Unknown plan [{$planKey}].");
-        }
-
-        $returnUrl = sprintf('https://admin.shopify.com/store/%s/apps/%s/app/settings/billing', $store->handle(), config('shopify.api_key'));
-
-        $data = $this->api->graphql($store, <<<'GQL'
-            mutation Subscribe($name: String!, $returnUrl: URL!, $trialDays: Int, $test: Boolean, $lineItems: [AppSubscriptionLineItemInput!]!) {
-              appSubscriptionCreate(name: $name, returnUrl: $returnUrl, trialDays: $trialDays, test: $test, lineItems: $lineItems) {
-                confirmationUrl
-                appSubscription { id status }
-                userErrors { field message }
-              }
-            }
-            GQL, [
-            'name' => "OrderOrbit {$plan['name']}",
-            'returnUrl' => $returnUrl,
-            'trialDays' => $store->subscriptions()->exists() ? 0 : config('shopify.billing.trial_days'),
-            'test' => (bool) config('shopify.billing.test'),
-            'lineItems' => [[
-                'plan' => [
-                    'appRecurringPricingDetails' => [
-                        'price' => ['amount' => $plan['price'], 'currencyCode' => config('shopify.billing.currency')],
-                        'interval' => 'EVERY_30_DAYS',
-                    ],
-                ],
-            ]],
-        ]);
-
-        $result = $data['appSubscriptionCreate'];
-
-        if (! empty($result['userErrors'])) {
-            throw new RuntimeException('Billing error: '.$result['userErrors'][0]['message']);
-        }
-
-        AuditLog::record('billing.subscription_requested', $store, ['plan' => $planKey]);
-
-        return $result['confirmationUrl'];
-    }
 
     /**
      * Pulls the active subscription from Shopify and mirrors it locally.
@@ -76,72 +38,140 @@ class Billing
             }
             GQL);
 
-        $active = $data['currentAppInstallation']['activeSubscriptions'][0] ?? null;
+        $active = collect($data['currentAppInstallation']['activeSubscriptions'] ?? [])->firstWhere('status', 'ACTIVE');
 
         if ($active === null) {
+            // Shopify reports nothing active: close any row we still think is active.
+            // A cancellation's paid-up period (if we captured one) still grants access.
             $store->subscriptions()->where('status', 'ACTIVE')->update(['status' => 'CANCELLED', 'cancelled_at' => now()]);
-            $store->forceFill(['plan' => null])->save();
+            $this->refreshStorePlan($store);
 
             return null;
         }
 
-        return $this->mirror($store, $active['id'], $active['status'], $active['name'], [
-            'test' => $active['test'],
-            'trial_ends_at' => $active['trialDays'] > 0 ? Carbon::parse($active['createdAt'])->addDays($active['trialDays']) : null,
-            'current_period_ends_at' => $active['currentPeriodEnd'] ? Carbon::parse($active['currentPeriodEnd']) : null,
+        return $this->mirror($store, $active['id'], 'ACTIVE', $active['name'], [
+            'test' => (bool) ($active['test'] ?? false),
+            'trial_ends_at' => ($active['trialDays'] ?? 0) > 0 ? Carbon::parse($active['createdAt'])->addDays($active['trialDays']) : null,
+            'current_period_ends_at' => ! empty($active['currentPeriodEnd']) ? Carbon::parse($active['currentPeriodEnd']) : null,
         ]);
     }
 
     /**
      * Applies an app_subscriptions/update webhook payload.
      */
-    public function applyWebhook(Store $store, array $payload): Subscription
+    public function applyWebhook(Store $store, array $payload): ?Subscription
     {
-        $sub = $payload['app_subscription'];
+        $sub = $payload['app_subscription'] ?? $payload;
+        $gid = (string) ($sub['admin_graphql_api_id'] ?? '');
 
-        return $this->mirror($store, $sub['admin_graphql_api_id'], $sub['status'], $sub['name']);
+        if ($gid === '') {
+            return null;
+        }
+
+        $status = strtoupper((string) ($sub['status'] ?? 'PENDING'));
+
+        // The payload doesn't reliably carry the period end, so an activation asks
+        // Shopify once. A cancellation deliberately doesn't: the period end captured
+        // while it was active is what grants the grace period.
+        if ($status === 'ACTIVE') {
+            try {
+                return $this->sync($store) ?? $this->mirror($store, $gid, $status, (string) ($sub['name'] ?? ''));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $this->mirror($store, $gid, $status, (string) ($sub['name'] ?? ''));
+    }
+
+    /**
+     * Maps a Shopify plan display name to our plan key. Case-insensitive, and
+     * tolerates an "OrderOrbit " prefix. Unknown names (e.g. a free plan) map to null.
+     */
+    public static function planKeyFromName(?string $name): ?string
+    {
+        $needle = strtolower(trim((string) $name));
+        $needle = preg_replace('/^orderorbit\s+/', '', $needle);
+
+        foreach (config('shopify.billing.plans') as $key => $plan) {
+            foreach ([$plan['shopify_name'] ?? null, $plan['name'], $key] as $candidate) {
+                if ($candidate !== null && strtolower((string) $candidate) === $needle) {
+                    return $key;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function mirror(Store $store, string $gid, string $status, string $name, array $extra = []): Subscription
     {
         $planKey = self::planKeyFromName($name);
 
-        $subscription = Subscription::updateOrCreate(
-            ['shopify_subscription_id' => $gid],
-            array_merge([
+        $subscription = DB::transaction(function () use ($store, $gid, $status, $name, $planKey, $extra) {
+            $subscription = Subscription::firstOrNew(['shopify_subscription_id' => $gid]);
+            $subscription->fill([
                 'store_id' => $store->id,
-                'plan' => $planKey,
+                'plan' => $planKey ?? strtolower($name ?: 'unknown'),
                 'status' => $status,
-                'price' => config("shopify.billing.plans.{$planKey}.price", 0),
-            ], $extra),
-        );
+                'price' => config("shopify.billing.plans.{$planKey}.price", $subscription->price ?? 0),
+            ]);
 
-        if ($status === 'ACTIVE' && $subscription->activated_at === null) {
-            $subscription->forceFill(['activated_at' => now()])->save();
-        }
+            // Only overwrite dates we actually received, so a cancellation keeps the
+            // period end recorded while the subscription was active.
+            foreach ($extra as $key => $value) {
+                if ($value !== null || $key === 'test') {
+                    $subscription->{$key} = $value;
+                }
+            }
 
-        if (in_array($status, ['CANCELLED', 'EXPIRED', 'DECLINED'], true) && $subscription->cancelled_at === null) {
-            $subscription->forceFill(['cancelled_at' => now()])->save();
-        }
+            if ($status === 'ACTIVE') {
+                $subscription->activated_at ??= now();
+                $subscription->cancelled_at = null;
+            } elseif (in_array($status, ['CANCELLED', 'EXPIRED', 'DECLINED'], true)) {
+                $subscription->cancelled_at ??= now();
+            }
+            $subscription->save();
 
-        if ($status === 'ACTIVE' && $store->plan !== $planKey) {
-            $store->forceFill(['plan' => $planKey])->save();
-            AuditLog::record('billing.plan_activated', $store, ['plan' => $planKey]);
-        } elseif ($status !== 'ACTIVE' && $store->plan === $planKey && ! $store->activeSubscription()->exists()) {
-            $store->forceFill(['plan' => null])->save();
+            // Shopify has one active subscription per shop. When this one activates,
+            // any other "active" row is a plan the merchant switched away from.
+            if ($status === 'ACTIVE') {
+                $store->subscriptions()->whereKeyNot($subscription->id)->where('status', 'ACTIVE')
+                    ->update(['status' => 'CANCELLED', 'cancelled_at' => now()]);
+            }
+
+            return $subscription;
+        });
+
+        $before = $store->plan;
+        $this->refreshStorePlan($store);
+
+        if ($store->plan !== $before) {
+            AuditLog::record($store->plan ? 'billing.plan_activated' : 'billing.plan_ended', $store, ['plan' => $store->plan ?? $before, 'status' => $status]);
         }
 
         return $subscription;
     }
 
-    private static function planKeyFromName(string $name): string
+    /**
+     * Mirrors the usable plan onto the store: the active subscription, else a
+     * cancelled one whose paid period hasn't ended (grace period), else none.
+     */
+    private function refreshStorePlan(Store $store): void
     {
-        foreach (config('shopify.billing.plans') as $key => $plan) {
-            if (strcasecmp($name, "OrderOrbit {$plan['name']}") === 0) {
-                return $key;
-            }
-        }
+        $active = $store->subscriptions()->where('status', 'ACTIVE')->latest('id')->first();
+        $grace = $active ? null : $store->subscriptions()
+            ->where('status', 'CANCELLED')
+            ->where('current_period_ends_at', '>', now())
+            ->latest('current_period_ends_at')
+            ->first();
 
-        return 'unknown';
+        $current = $active ?? $grace;
+        $known = $current && array_key_exists($current->plan, config('shopify.billing.plans'));
+
+        $store->forceFill([
+            'plan' => $known ? $current->plan : null,
+            'plan_expires_at' => $known && $grace ? $grace->current_period_ends_at : null,
+        ])->save();
     }
 }

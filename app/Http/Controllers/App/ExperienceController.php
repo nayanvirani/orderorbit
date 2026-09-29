@@ -33,7 +33,7 @@ class ExperienceController extends Controller
             'byType' => $store->experiences()->notArchived()->selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type'),
             'notPlaced' => $store->experiences()->where('status', 'published')->where('placement_status', 'not_placed')->count(),
             'recent' => $store->experiences()->notArchived()->latest('updated_at')->limit(6)->get(),
-            'activeLimit' => $store->plan ? $store->planLimit('active_experiences') : 0,
+            'activeLimit' => $store->hasPlanAccess() ? $store->planLimit('active_experiences') : 0,
             'activeUsed' => $usage->current($store, 'active_experiences'),
         ]);
     }

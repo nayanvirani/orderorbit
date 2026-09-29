@@ -69,7 +69,6 @@ class EmbeddedAppTest extends TestCase
         $staff = $this->member($store, 'staff');
 
         $this->get('/app/settings/users', $this->as($staff))->assertForbidden()->assertSee('You don\'t have permission to perform this action.', false);
-        $this->post('/app/settings/billing', ['plan' => 'growth'], $this->as($staff))->assertForbidden();
         $this->get('/app/settings/activity', $this->as($staff))->assertForbidden();
     }
 

@@ -11,12 +11,12 @@
         </s-banner>
     @endforeach
 
-    @if ($store->plan === null)
+    @unless ($store->hasPlanAccess())
         <s-banner tone="warning" heading="Choose a plan to start publishing">
-            <s-paragraph>Pick Starter, Growth or Scale. Billing runs through Shopify.</s-paragraph>
-            <s-button slot="secondary-actions" href="{{ app_route('app.settings.billing') }}">View plans</s-button>
+            <s-paragraph>Pick Starter, Growth or Scale on Shopify's plan page. Billing runs through your Shopify invoice.</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ $store->pricingUrl() }}" target="_top">Choose a plan</s-button>
         </s-banner>
-    @endif
+    @endunless
 
     @unless ($checklistDone)
         <s-section heading="Set up OrderOrbit">
