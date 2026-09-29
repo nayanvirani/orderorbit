@@ -1,10 +1,14 @@
 <?php
 
+use App\Experiences\Registry;
 use App\Http\Controllers\App\ActivityController;
 use App\Http\Controllers\App\BillingController;
+use App\Http\Controllers\App\BrandingController;
 use App\Http\Controllers\App\DashboardController;
+use App\Http\Controllers\App\ExperienceController;
 use App\Http\Controllers\App\OnboardingController;
 use App\Http\Controllers\App\StoreSettingsController;
+use App\Http\Controllers\App\TemplateLibraryController;
 use App\Http\Controllers\App\UsersController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\WebhookController;
@@ -39,6 +43,33 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
     Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
     Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
 
+    // CRO experiences (section 15, D2)
+    Route::prefix('cro')->name('cro.')->group(function () {
+        Route::get('/', [ExperienceController::class, 'overview'])->middleware('store.can:view_dashboard')->name('overview');
+
+        Route::prefix('experiences')->name('experiences.')->group(function () {
+            Route::get('/', [ExperienceController::class, 'index'])->name('index');
+            Route::get('/export', [ExperienceController::class, 'export'])->name('export');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::get('/new', [ExperienceController::class, 'create'])->name('create');
+                Route::post('/', [ExperienceController::class, 'store'])->name('store');
+                Route::post('/bulk', [ExperienceController::class, 'bulk'])->name('bulk');
+                Route::get('/{experience}/edit', [ExperienceController::class, 'edit'])->whereNumber('experience')->name('edit');
+                Route::post('/{experience}', [ExperienceController::class, 'update'])->whereNumber('experience')->name('update');
+                Route::post('/{experience}/publish', [ExperienceController::class, 'publish'])->whereNumber('experience')->name('publish');
+                Route::post('/{experience}/duplicate', [ExperienceController::class, 'duplicate'])->whereNumber('experience')->name('duplicate');
+                Route::post('/{experience}/placement', [ExperienceController::class, 'checkPlacement'])->whereNumber('experience')->name('placement');
+                Route::post('/{experience}/versions/{version}/restore', [ExperienceController::class, 'restoreVersion'])->whereNumber(['experience', 'version'])->name('versions.restore');
+                Route::post('/{experience}/{action}', [ExperienceController::class, 'lifecycle'])->whereNumber('experience')->whereIn('action', ['pause', 'resume', 'archive', 'unarchive', 'discard'])->name('lifecycle');
+            });
+            Route::get('/{experience}', [ExperienceController::class, 'show'])->whereNumber('experience')->name('show');
+        });
+
+        Route::get('/{type}', [ExperienceController::class, 'index'])->whereIn('type', array_keys(Registry::types()))->name('type');
+    });
+
+    Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
+
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', fn () => redirect()->to(app_route('app.settings.store')))->name('index');
         Route::get('/store', [StoreSettingsController::class, 'show'])->name('store');
@@ -53,6 +84,9 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
             Route::post('/users/{user}/restore', [UsersController::class, 'restore'])->name('users.restore');
         });
 
+        Route::get('/branding', [BrandingController::class, 'show'])->name('branding');
+        Route::post('/branding', [BrandingController::class, 'update'])->middleware('store.can:manage_settings')->name('branding.update');
+
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
         Route::post('/billing', [BillingController::class, 'subscribe'])->middleware('store.can:manage_billing')->name('billing.subscribe');
 
@@ -62,6 +96,18 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
     // Older links and Shopify's billing return URL before the move to Settings.
     Route::get('/billing', fn () => redirect()->to(app_route('app.settings.billing', request()->only('charge_id'))))->name('billing');
 });
+
+// The storefront runtime, served from the theme extension so the builder preview
+// renders with exactly the code shoppers get.
+Route::get('/storefront/{file}', function (string $file) {
+    $path = base_path('extensions/orderorbit-theme/assets/'.$file);
+    abort_unless(is_file($path), 404);
+
+    return response()->file($path, [
+        'Content-Type' => str_ends_with($file, '.css') ? 'text/css' : 'application/javascript',
+        'Cache-Control' => 'public, max-age=300',
+    ]);
+})->where('file', 'orderorbit\.(js|css)')->name('storefront.asset');
 
 // Shopify webhooks (app lifecycle, billing, GDPR compliance)
 Route::post('/webhooks/shopify', WebhookController::class)

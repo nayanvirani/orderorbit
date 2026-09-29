@@ -48,6 +48,7 @@
             .oo-table.stack td[data-label]::before { content: attr(data-label) ": "; color: #616161; }
         }
     </style>
+    @stack('head')
 </head>
 <body>
     @php($navUser = request()->attributes->get('storeUser'))
@@ -56,6 +57,9 @@
         @if (! request()->attributes->get('store')?->goal)
             <s-link href="{{ app_route('app.onboarding') }}">Get started</s-link>
         @endif
+        <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
+        <s-link href="{{ app_route('app.cro.experiences.index') }}">Experiences</s-link>
+        <s-link href="{{ app_route('app.templates') }}">Templates</s-link>
         <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     </s-app-nav>
 
@@ -74,6 +78,12 @@
             if (!input) {
                 input = Object.assign(document.createElement('input'), { type: 'hidden', name: 'id_token' });
                 form.appendChild(input);
+            }
+            // form.submit() ignores the clicked button, so carry its name/value (e.g. action=publish).
+            form.querySelectorAll('input[data-submitter]').forEach((el) => el.remove());
+            if (event.submitter && event.submitter.name) {
+                form.appendChild(Object.assign(document.createElement('input'), { type: 'hidden', name: event.submitter.name, value: event.submitter.value }))
+                    .setAttribute('data-submitter', '');
             }
             input.value = await shopify.idToken();
             form.querySelectorAll('[type="submit"]').forEach((b) => b.setAttribute('loading', ''));

@@ -1,0 +1,65 @@
+{%- comment -%} An OrderOrbit experience, placed by the merchant in the Theme Editor. {%- endcomment -%}
+{%- render 'orderorbit-data' -%}
+<div class="oo-root" data-oo-block data-oo-type="{{ block.settings.experience_type | escape }}" data-oo-id="{{ block.settings.experience_id | strip | escape }}" {{ block.shopify_attributes }}></div>
+
+{% schema %}
+{
+  "name": "OrderOrbit experience",
+  "target": "section",
+  "stylesheet": "orderorbit.css",
+  "javascript": "orderorbit.js",
+  "settings": [
+    {
+      "type": "select",
+      "id": "experience_type",
+      "label": "Experience",
+      "options": [
+        {
+          "value": "shipping-bar",
+          "label": "Shipping bar"
+        },
+        {
+          "value": "countdown",
+          "label": "Countdown"
+        },
+        {
+          "value": "trust",
+          "label": "Trust & social proof"
+        },
+        {
+          "value": "bundles",
+          "label": "Bundle"
+        },
+        {
+          "value": "free-gifts",
+          "label": "Free gift"
+        },
+        {
+          "value": "quantity-breaks",
+          "label": "Quantity breaks"
+        },
+        {
+          "value": "product-upsells",
+          "label": "Product upsell"
+        },
+        {
+          "value": "cart-upsells",
+          "label": "Cart upsell"
+        },
+        {
+          "value": "sticky-atc",
+          "label": "Sticky add to cart"
+        }
+      ],
+      "default": "shipping-bar",
+      "info": "Shows your highest-priority published experience of this type that matches the shopper."
+    },
+    {
+      "type": "text",
+      "id": "experience_id",
+      "label": "Experience ID (optional)",
+      "info": "Pin one experience. Copy its ID from the experience page in OrderOrbit."
+    }
+  ]
+}
+{% endschema %}
