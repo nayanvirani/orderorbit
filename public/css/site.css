@@ -564,7 +564,7 @@ label.fld .err { display: block; color: #b42318; font: 500 13px/1.4 var(--sans);
 .footer-cols a { display: block; padding: 5px 0; text-decoration: none; color: var(--muted); font-size: 15px; transition: color .15s; }
 .footer-cols a:hover { color: var(--text); }
 .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); font: 500 12px/1.5 var(--mono); letter-spacing: .04em; color: var(--dim); }
-.wordmark { margin: 40px 0 -.22em; font: 400 clamp(90px, 22vw, 340px)/1 var(--serif); letter-spacing: -.04em; text-align: center; color: var(--text); background: none; -webkit-text-fill-color: currentColor; user-select: none; white-space: nowrap; }
+.wordmark { margin: 40px 0 -.22em; font: 400 clamp(52px, 13vw, 210px)/1 var(--serif); letter-spacing: -.04em; text-align: center; color: var(--text); background: none; -webkit-text-fill-color: currentColor; user-select: none; white-space: nowrap; }
 @media (min-width: 900px) { .footer-top { grid-template-columns: 1fr 2fr; } }
 
 /* Reveal */
@@ -588,3 +588,7 @@ label.fld .err { display: block; color: #b42318; font: 500 13px/1.4 var(--sans);
 .tpl-explain > div { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border: 1px solid var(--line, #e5e5e5); border-radius: 16px; background: var(--card, #fff); }
 .tpl-explain b { font-family: var(--font-head, inherit); font-size: 16px; }
 .tpl-explain span { color: var(--muted, #666); font-size: 14px; line-height: 1.55; }
+
+/* "OrderOrbit Space" stays on one line in the header */
+.logo { white-space: nowrap; }
+@media (max-width: 480px) { .dock .logo, header .logo { font-size: 19px; gap: 7px; } }

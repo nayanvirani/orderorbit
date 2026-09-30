@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Features | OrderOrbit — Shopify CRO, Checkout & Growth')
+@section('title', 'Features | OrderOrbit Space — Shopify CRO, Checkout & Growth')
 @section('description', 'Bundles, progressive gifts, cart upsells, checkout blocks, automation, analytics, A/B testing and personalization for Shopify.')
 
 @section('content')

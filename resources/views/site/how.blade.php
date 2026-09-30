@@ -1,14 +1,14 @@
 @extends('layouts.site')
 
-@section('title', 'How It Works | OrderOrbit')
-@section('description', 'From install to your first A/B test: create, publish, measure, test, personalize and automate with OrderOrbit.')
+@section('title', 'How It Works | OrderOrbit Space')
+@section('description', 'From install to your first A/B test: create, publish, measure, test, personalize and automate with OrderOrbit Space.')
 
 @section('content')
 <section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>How it works</span>
         <h1>From install to <span class="grad-text">your first test.</span></h1>
-        <p class="lead">OrderOrbit runs one loop: create, publish, measure, test, personalize, automate.</p>
+        <p class="lead">OrderOrbit Space runs one loop: create, publish, measure, test, personalize, automate.</p>
         <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked"><x-icon name="bag"/>Install on Shopify</a></div>
     </div>
 </section>
@@ -23,7 +23,7 @@
         ['Choose your goal.', 'Conversion, order value, repeat purchase or checkout — we recommend where to start.', 'goal'],
         ['Pick a template.', 'Bundle and progressive gift layouts, ready-made and fully customisable.', 'bundles'],
         ['Customise and place.', 'Match your brand, then add the block in the Theme Editor. No code.', 'theme-editor'],
-        ['Measure.', 'OrderOrbit tracks views, clicks, add-to-carts and purchases per experience.', 'analytics'],
+        ['Measure.', 'OrderOrbit Space tracks views, clicks, add-to-carts and purchases per experience.', 'analytics'],
         ['Test.', 'Run an A/B test and keep the version that wins.', 'ab-testing'],
         ['Personalize.', 'Show different experiences to different shoppers.', 'personalization'],
         ['Automate.', 'Follow up after purchase with reviews, reorders and win-back.', 'automation'],

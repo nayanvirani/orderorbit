@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>OrderOrbit · Coming soon</title>
+    <title>OrderOrbit Space · Coming soon</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +42,7 @@
 <main>
     <div class="orbit" aria-hidden="true"><span></span><span></span><b></b><i></i></div>
     <span class="eyebrow">Shopify CRO · checkout · customer experience</span>
-    <h1>OrderOrbit is <em>coming soon.</em></h1>
+    <h1>OrderOrbit Space is <em>coming soon.</em></h1>
     <p>Bundles, progressive gifts and checkout experiences for Shopify stores, all in one app. We're putting on the finishing touches.</p>
 
     <details @if ($failed) open @endif>
@@ -56,7 +56,7 @@
         @if ($failed)<p class="error" role="alert">That password isn't right.</p>@endif
     </details>
 
-    <footer>&copy; {{ date('Y') }} OrderOrbit · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a></footer>
+    <footer>&copy; {{ date('Y') }} OrderOrbit Space · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a></footer>
 </main>
 </body>
 </html>

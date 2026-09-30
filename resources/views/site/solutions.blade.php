@@ -1,14 +1,14 @@
 @extends('layouts.site')
 
-@section('title', 'Solutions | OrderOrbit')
-@section('description', 'OrderOrbit setups for DTC brands, repeat-purchase brands, fashion & apparel and Shopify Plus.')
+@section('title', 'Solutions | OrderOrbit Space')
+@section('description', 'OrderOrbit Space setups for DTC brands, repeat-purchase brands, fashion & apparel and Shopify Plus.')
 
 @section('content')
 <section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Solutions</span>
         <h1>Growth tools shaped for <span class="grad-text">your kind of store.</span></h1>
-        <p class="lead">Pick your model to see the OrderOrbit setup that fits.</p>
+        <p class="lead">Pick your model to see the OrderOrbit Space setup that fits.</p>
     </div>
 </section>
 <section class="section tight" style="padding-top:0">

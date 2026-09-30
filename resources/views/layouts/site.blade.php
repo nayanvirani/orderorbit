@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'OrderOrbit | Shopify CRO, Checkout & Upsell App')</title>
+    <title>@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')</title>
     <meta name="description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <link rel="canonical" href="{{ url()->current() }}">
-    <meta property="og:site_name" content="OrderOrbit">
+    <meta property="og:site_name" content="OrderOrbit Space">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="@yield('title', 'OrderOrbit | Shopify CRO, Checkout & Upsell App')">
+    <meta property="og:title" content="@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')">
     <meta property="og:description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
@@ -26,8 +26,8 @@
 
     <header class="dock-wrap" data-header>
         <div class="dock">
-            <a class="logo" href="{{ route('site.home') }}" aria-label="OrderOrbit home">
-                <svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit
+            <a class="logo" href="{{ route('site.home') }}" aria-label="OrderOrbit Space home">
+                <svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit Space
             </a>
 
             <nav class="nav" aria-label="Main">
@@ -147,7 +147,7 @@
         <div class="wrap">
             <div class="footer-top">
                 <div class="brand">
-                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit</a>
+                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit Space</a>
                     <p>Convert more customers. Increase order value. <em class="grad-text">Bring customers back.</em></p>
                     <div class="ctas" style="margin-top:24px">
                         <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
@@ -188,11 +188,11 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© {{ date('Y') }} OrderOrbit. Built for Shopify.</span>
+                <span>© {{ date('Y') }} OrderOrbit Space. Built for Shopify.</span>
                 <span>Placed in the Theme Editor · Checkout blocks · Consent-aware analytics</span>
             </div>
         </div>
-        <div class="wordmark" aria-hidden="true">OrderOrbit</div>
+        <div class="wordmark" aria-hidden="true">OrderOrbit Space</div>
     </footer>
 
     <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path('js/site.js')) }}" defer></script>

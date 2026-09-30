@@ -4,7 +4,7 @@
 <script type="application/ld+json">{!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'SoftwareApplication',
-    'name' => 'OrderOrbit',
+    'name' => 'OrderOrbit Space',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Shopify',
     'description' => 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
@@ -27,14 +27,14 @@
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Shopify CRO, checkout &amp; customer experience<span class="dot"></span></span>
         <h1>Convert more customers. <em>Increase order value.</em> Bring customers back.</h1>
-        <p class="lead">OrderOrbit gives your Shopify store bundles, progressive gifts and free shipping, upsells, checkout and thank-you blocks, lifecycle automation, analytics and A/B testing — in one app, placed natively through the Theme Editor.</p>
+        <p class="lead">OrderOrbit Space gives your Shopify store bundles, progressive gifts and free shipping, upsells, checkout and thank-you blocks, lifecycle automation, analytics and A/B testing — in one app, placed natively through the Theme Editor.</p>
         <div class="ctas">
             <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
             <a class="btn lg" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How It Works</a>
         </div>
         <div class="assure"><span>No theme code edits</span><span>·</span><span>Billed through Shopify</span><span>·</span><span>Remove any block in one click</span></div>
     </div>
-    <div class="orbit-stage" aria-label="OrderOrbit experiences on a Shopify store">
+    <div class="orbit-stage" aria-label="OrderOrbit Space experiences on a Shopify store">
         <div class="ring r2"></div>
         <div class="ring r1"></div>
         <div class="planet"></div>
@@ -65,7 +65,7 @@
                 <span class="tag"><x-icon name="alert"/>The problem</span>
                 <h2>Too many apps. Not enough answers.</h2>
                 <p>Most stores run one app for bundles, another for upsells, another for timers and another for email — each with its own settings, styles and reports. Pages slow down, themes break, and nobody can say which change actually moved revenue.</p>
-                <a class="link-arrow" style="margin-top:26px" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How OrderOrbit Works <x-icon name="arrow"/></a>
+                <a class="link-arrow" style="margin-top:26px" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How OrderOrbit Space Works <x-icon name="arrow"/></a>
             </div>
             <div class="stack-art" aria-hidden="true">
                 @foreach ([['bundle', 'Bundle app'], ['sparkle', 'Upsell app'], ['clock', 'Timer app'], ['mail', 'Email app'], ['shield', 'Badges app'], ['chart', 'Analytics app']] as [$icon, $name])
@@ -233,16 +233,16 @@
             <h2>Frequently asked <em>questions.</em></h2>
         </div>
         @include('site.partials.faq', ['faqs' => [
-            ['What is OrderOrbit?', 'OrderOrbit helps Shopify brands convert more visitors, raise order value and bring customers back with theme-safe CRO blocks, checkout experiences, lifecycle automation, analytics and A/B testing — in one app.'],
-            ['Will OrderOrbit slow down or break my theme?', 'Storefront experiences are blocks that load only where you place them in the Theme Editor. There are no theme code edits, and removing a block is one click in the Theme Editor.'],
+            ['What is OrderOrbit Space?', 'OrderOrbit Space helps Shopify brands convert more visitors, raise order value and bring customers back with theme-safe CRO blocks, checkout experiences, lifecycle automation, analytics and A/B testing — in one app.'],
+            ['Will OrderOrbit Space slow down or break my theme?', 'Storefront experiences are blocks that load only where you place them in the Theme Editor. There are no theme code edits, and removing a block is one click in the Theme Editor.'],
             ['Do I need to edit theme code?', 'No. You place and arrange every block in Shopify\'s Theme Editor.'],
-            ['Does it work with my cart drawer?', 'Cart upsells appear in your cart drawer where your theme supports it, and fall back to the cart page where it doesn\'t. OrderOrbit never force-opens or intercepts your drawer.'],
-            ['Can I customise checkout?', 'OrderOrbit adds blocks to checkout in the ways Shopify supports. Blocks inside the checkout steps require Shopify Plus; Thank You and Order Status blocks are available on all plans that support checkout blocks. We only show the targets your store supports.'],
+            ['Does it work with my cart drawer?', 'Cart upsells appear in your cart drawer where your theme supports it, and fall back to the cart page where it doesn\'t. OrderOrbit Space never force-opens or intercepts your drawer.'],
+            ['Can I customise checkout?', 'OrderOrbit Space adds blocks to checkout in the ways Shopify supports. Blocks inside the checkout steps require Shopify Plus; Thank You and Order Status blocks are available on all plans that support checkout blocks. We only show the targets your store supports.'],
             ['How is revenue attributed?', 'Revenue is attributed within a set window using clearly labelled first-touch, last-touch and experience-assisted models. Attribution is an analytical model, not proof of causality — use A/B tests to prove impact.'],
             ['How does A/B testing decide a winner?', 'At 95% confidence using standard statistical tests, and only after at least 7 days, 1,000 visitors and 100 conversions per variant.'],
             ['Is analytics consent-aware / GDPR-friendly?', 'Yes. Analytics respect your customers\' consent choices and your store\'s privacy settings in Shopify. You control retention, and we support data export and deletion.'],
-            ['Can I send emails without setting up an email provider?', 'Yes. Sending is included with OrderOrbit. You only set a sender name and reply-to address.'],
-            ['What does OrderOrbit cost, and is billing through Shopify?', 'Starter is $9.99/mo, Growth $29.99/mo and Scale $59.99/mo, all billed through your Shopify invoice.'],
+            ['Can I send emails without setting up an email provider?', 'Yes. Sending is included with OrderOrbit Space. You only set a sender name and reply-to address.'],
+            ['What does OrderOrbit Space cost, and is billing through Shopify?', 'Starter is $9.99/mo, Growth $29.99/mo and Scale $59.99/mo, all billed through your Shopify invoice.'],
         ]])
     </div>
 </section>

@@ -9,7 +9,7 @@
     ];
     $active = $active ?? array_keys($stages);
 @endphp
-<div class="orbit {{ ($light ?? false) ? 'light' : '' }}" role="img" aria-label="The OrderOrbit loop: Create, Publish, Measure, Test, Personalize, Automate">
+<div class="orbit {{ ($light ?? false) ? 'light' : '' }}" role="img" aria-label="The OrderOrbit Space loop: Create, Publish, Measure, Test, Personalize, Automate">
     <svg class="rings" viewBox="0 0 100 100" aria-hidden="true">
         <defs>
             <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4f2a"/><stop offset=".5" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ffcf6a"/></linearGradient>
@@ -20,7 +20,7 @@
         <circle r="1.4" fill="#ffcf6a"><animateMotion dur="12s" repeatCount="indefinite" path="M50,9 a41,41 0 1,1 -0.01,0"/></circle>
         <circle r="1" fill="#fff" opacity=".9"><animateMotion dur="12s" begin="-6s" repeatCount="indefinite" path="M50,9 a41,41 0 1,1 -0.01,0"/></circle>
     </svg>
-    <div class="core"><div><strong>OrderOrbit</strong><small>one loop for growth</small></div></div>
+    <div class="core"><div><strong>OrderOrbit Space</strong><small>one loop for growth</small></div></div>
     @foreach ($stages as $key => [$label, $sub, $icon, $x, $y])
         <div class="node {{ in_array($key, $active, true) ? 'on' : 'off' }}" style="left:{{ $x }}%;top:{{ $y }}%">
             <span class="bubble"><x-icon :name="$icon"/></span>

@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', $solution['name'].' | Shopify CRO for '.$solution['name'].' | OrderOrbit')
+@section('title', $solution['name'].' | Shopify CRO for '.$solution['name'].' | OrderOrbit Space')
 @section('description', $solution['seo_description'])
 
 @section('content')
@@ -39,7 +39,7 @@
     <div class="wrap split">
         <div class="split-copy reveal">
             <span class="eyebrow"><span class="dot"></span>Recommended setup</span>
-            <h2>The OrderOrbit setup for <em>{{ $solution['name'] }}.</em></h2>
+            <h2>The OrderOrbit Space setup for <em>{{ $solution['name'] }}.</em></h2>
             <ol class="num-list" style="margin-top:28px">
                 @foreach ($solution['setup'] as $item)<li>{{ $item }}</li>@endforeach
             </ol>

@@ -1,14 +1,14 @@
 @extends('layouts.site')
 
-@section('title', 'Contact | OrderOrbit')
-@section('description', 'Questions about OrderOrbit, pricing or partnerships? We reply within one business day.')
+@section('title', 'Contact | OrderOrbit Space')
+@section('description', 'Questions about OrderOrbit Space, pricing or partnerships? We reply within one business day.')
 
 @section('content')
 <section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Contact</span>
         <h1>Let's talk about <span class="grad-text">growing your store.</span></h1>
-        <p class="lead">Questions about OrderOrbit, pricing or partnerships? We reply within one business day.</p>
+        <p class="lead">Questions about OrderOrbit Space, pricing or partnerships? We reply within one business day.</p>
     </div>
 </section>
 <section class="section tight" style="padding-top:0">

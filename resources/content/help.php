@@ -4,7 +4,7 @@
 
 return [
     ['name' => 'Getting Started', 'icon' => 'rocket', 'text' => 'Install, choose a goal and publish your first experience.'],
-    ['name' => 'Shopify Setup & Theme Editor', 'icon' => 'layers', 'text' => 'Place OrderOrbit blocks in your theme.'],
+    ['name' => 'Shopify Setup & Theme Editor', 'icon' => 'layers', 'text' => 'Place OrderOrbit Space blocks in your theme.'],
     ['name' => 'Experiences & Templates', 'icon' => 'sparkle', 'text' => 'The global builder, versions and templates.'],
     ['name' => 'Bundles', 'icon' => 'bundle', 'text' => 'Bundle types, rules, pricing and cart behaviour.'],
     ['name' => 'Progressive Gifts', 'icon' => 'gift', 'text' => 'Milestones, gifts, free shipping and layouts.'],
