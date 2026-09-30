@@ -42,7 +42,7 @@
                         <p>{{ $feature['problem'][1] }}</p>
                     </div>
                     <div>
-                        <span class="eyebrow"><span class="dot"></span>How OrderOrbit fixes it</span>
+                        <span class="eyebrow"><span class="dot"></span>How OrderOrbit Space fixes it</span>
                         <ul class="bullet-list">
                             @foreach (array_slice($feature['grid'], 0, 3) as $point)<li><x-icon name="check"/>{{ $point }}</li>@endforeach
                         </ul>

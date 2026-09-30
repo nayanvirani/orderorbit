@@ -1,14 +1,14 @@
 @extends('layouts.site')
 
-@section('title', 'Help Center | OrderOrbit')
-@section('description', 'Setup guides, product docs and troubleshooting for OrderOrbit.')
+@section('title', 'Help Center | OrderOrbit Space')
+@section('description', 'Setup guides, product docs and troubleshooting for OrderOrbit Space.')
 
 @section('content')
 <section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Help center</span>
         <h1>How can we <span class="grad-text">help?</span></h1>
-        <p class="lead">Setup guides, product docs and troubleshooting for OrderOrbit.</p>
+        <p class="lead">Setup guides, product docs and troubleshooting for OrderOrbit Space.</p>
         <label class="search"><x-icon name="search"/><input type="search" placeholder="Search help topics…" aria-label="Search help topics" data-help-search></label>
     </div>
 </section>

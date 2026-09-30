@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Resources | OrderOrbit')
+@section('title', 'Resources | OrderOrbit Space')
 @section('description', 'Guides, templates and answers for growing conversion, order value and repeat purchase on Shopify.')
 
 @section('content')

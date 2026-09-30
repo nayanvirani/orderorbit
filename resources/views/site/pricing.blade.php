@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
-@section('title', 'Pricing | OrderOrbit — Starter, Growth & Scale')
-@section('description', 'OrderOrbit plans from $9.99/mo, billed monthly through Shopify. Change or cancel anytime.')
+@section('title', 'Pricing | OrderOrbit Space — Starter, Growth & Scale')
+@section('description', 'OrderOrbit Space plans from $9.99/mo, billed monthly through Shopify. Change or cancel anytime.')
 
 @section('content')
 <section class="page-hero sky">

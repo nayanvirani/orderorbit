@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Security & Privacy | OrderOrbit')
+@section('title', 'Security & Privacy | OrderOrbit Space')
 @section('description', 'Least-privilege Shopify scopes, store data isolation, encrypted secrets, consent-aware analytics, webhook validation and audit logs.')
 
 @section('content')

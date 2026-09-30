@@ -21,7 +21,7 @@ return [
         'loop' => ['create', 'publish', 'measure', 'test', 'automate'],
         'example' => ['title' => 'A home-fragrance brand.', 'text' => 'Launch a "Build your candle trio" bundle, add progressive gifts with free shipping at $60, then test two bundle layouts on the product page.', 'flow' => ['Candle trio bundle', '$60 shipping bar', 'A/B: Tier Cards vs Radio', 'Keep the winner']],
         'faqs' => [
-            ['Can I replace my current bundle app?', 'Yes; recreate bundles in OrderOrbit, place the block, then remove the old app.'],
+            ['Can I replace my current bundle app?', 'Yes; recreate bundles in OrderOrbit Space, place the block, then remove the old app.'],
             ['Will it slow my store?', 'Blocks load only where placed.'],
         ],
     ],
@@ -40,7 +40,7 @@ return [
         'loop' => ['create', 'publish', 'personalize', 'automate'],
         'example' => ['title' => 'A supplement brand.', 'text' => 'A 30-day supply triggers a reminder at day 24 with a one-click reorder link.', 'flow' => ['30-day supply ordered', 'Wait 24 days', 'Reorder reminder', 'One-click reorder']],
         'faqs' => [
-            ['Does it work with subscriptions?', 'Bundles and quantity breaks respect selling plans where supported; OrderOrbit is not a subscription app.'],
+            ['Does it work with subscriptions?', 'Bundles and quantity breaks respect selling plans where supported; OrderOrbit Space is not a subscription app.'],
         ],
     ],
 
@@ -76,7 +76,7 @@ return [
         'loop' => ['create', 'publish', 'measure', 'test', 'personalize'],
         'example' => ['title' => 'A premium outdoor brand.', 'text' => 'Test a guarantee banner vs a review slider in checkout, with cart abandonment as a guardrail.', 'flow' => ['A: Guarantee banner', 'B: Review slider', 'Guardrail: abandonment', 'Ship the winner']],
         'faqs' => [
-            ['Does OrderOrbit replace checkout?', 'No. It adds blocks to checkout in the ways Shopify supports.'],
+            ['Does OrderOrbit Space replace checkout?', 'No. It adds blocks to checkout in the ways Shopify supports.'],
         ],
     ],
 

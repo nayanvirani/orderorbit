@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Blog | Shopify Conversion, Explained | OrderOrbit')
+@section('title', 'Blog | Shopify Conversion, Explained | OrderOrbit Space')
 @section('description', 'Practical guides on CRO, bundles, upsells, checkout, retention and testing for Shopify stores.')
 
 @section('content')

@@ -5,7 +5,7 @@
         <h3>{{ $post['title'] }}</h3>
         <p>{{ $post['excerpt'] }}</p>
         @if ($post['feature'])
-            <a class="more" href="{{ route('site.feature', $post['feature']) }}" style="text-decoration:none;margin-top:auto">Try this in OrderOrbit <x-icon name="arrow"/></a>
+            <a class="more" href="{{ route('site.feature', $post['feature']) }}" style="text-decoration:none;margin-top:auto">Try this in OrderOrbit Space <x-icon name="arrow"/></a>
         @endif
     </div>
 </article>

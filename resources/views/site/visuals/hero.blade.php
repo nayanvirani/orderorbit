@@ -1,4 +1,4 @@
-<div class="visual" role="img" aria-label="A Shopify product page with an OrderOrbit bundle, shipping progress bar and sticky add-to-cart">
+<div class="visual" role="img" aria-label="A Shopify product page with an OrderOrbit Space bundle, shipping progress bar and sticky add-to-cart">
     <div class="glow" aria-hidden="true"></div>
     <div class="browser">
         <div class="chrome"><i></i><i></i><i></i><div class="url"><x-icon name="lock"/>glowlab.com/products/the-daily-routine</div></div>

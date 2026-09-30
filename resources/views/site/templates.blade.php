@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
-@section('title', 'Shopify CRO Templates | OrderOrbit')
-@section('description', 'Preview every OrderOrbit template: bundles, progressive gifts, cart upsells, countdowns, trust, checkout, Thank You, customer account and automation.')
+@section('title', 'Shopify CRO Templates | OrderOrbit Space')
+@section('description', 'Preview every OrderOrbit Space template: bundles, progressive gifts, cart upsells, countdowns, trust, checkout, Thank You, customer account and automation.')
 
 @section('content')
 <section class="page-hero sky">
