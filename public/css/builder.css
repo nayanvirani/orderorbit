@@ -5,7 +5,7 @@
 .b-step { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e3e3e3; background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 550; color: #303030; cursor: pointer; }
 .b-step span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #f1f1f1; font-size: 11px; }
 .b-step[aria-current="step"] { background: #303030; color: #fff; border-color: #303030; }
-.b-step[aria-current="step"] span { background: linear-gradient(100deg, #ff4f2a, #ff8a3d 45%, #ffcf6a); color: #3a1405; }
+.b-step[aria-current="step"] span { background: #fff; color: #1a1a1a; }
 .b-step-error { border-color: #e51c00; color: #8e1f0b; }
 .b-step-error span { background: #fee9e8; }
 
@@ -55,7 +55,7 @@
 
 .b-templates { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .b-template { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 2px solid #ebebeb; border-radius: 12px; cursor: pointer; background: #fafafa; }
-.b-template:has(input:checked) { border-color: #e8551f; background: #fff; box-shadow: 0 0 0 3px rgba(232, 85, 31, .12); }
+.b-template:has(input:checked) { border-color: #1a1a1a; background: #fff; box-shadow: 0 0 0 3px rgba(26, 26, 26, .1); }
 .b-template input { position: absolute; top: 10px; right: 10px; }
 .b-template-preview { display: block; max-height: 190px; overflow: hidden; pointer-events: none; zoom: .7; }
 .b-template-name { font-weight: 600; }
