@@ -63,9 +63,11 @@ class SiteController extends Controller
         }
         $feature = Content::feature($slug) ?? abort(404);
 
+        // Related: live features first, same group first.
         $siblings = array_filter(Content::features(), fn ($f, $s) => $s !== $slug, ARRAY_FILTER_USE_BOTH);
-        $sameGroup = array_filter($siblings, fn ($f) => $f['group'] === $feature['group']);
-        $related = array_slice($sameGroup + $siblings, 0, 3, true);
+        $live = array_filter($siblings, fn ($f) => ($f['status'] ?? 'live') === 'live');
+        $sameGroup = array_filter($live, fn ($f) => $f['group'] === $feature['group']);
+        $related = array_slice($sameGroup + $live + $siblings, 0, 3, true);
 
         return view('site.feature', [
             'feature' => $feature,

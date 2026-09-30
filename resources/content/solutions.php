@@ -1,8 +1,8 @@
 <?php
 
 /*
-| Solutions pages — Combined MVP Scope, section 7 and Part E3.
-| "loop" marks which core-loop stages the recommended setup uses.
+| Solutions pages. "setup" uses features that are live today; "later" lists
+| planned features (shown as coming soon).
 */
 
 return [
@@ -12,17 +12,24 @@ return [
         'tagline' => 'One app instead of an app stack',
         'icon' => 'rocket',
         'visual' => 'bundles',
-        'h1' => 'Grow conversion and order value without an app stack.',
-        'hero' => 'Replace separate bundle, upsell, timer, trust and email apps with one theme-safe platform and one set of numbers.',
-        'seo_description' => 'One Shopify app for bundles, upsells, incentives, checkout, automation and testing — built for DTC brands.',
-        'problem' => ['Five apps, five setups, five dashboards.', 'Each one slows your pages a little and claims a little credit. Nobody can say what actually worked.'],
-        'setup' => ['Bundle on hero products', 'Progressive gifts with free shipping', 'Cart upsell', 'Trust row near ATC', 'Review Request workflow', 'A/B test the bundle layout'],
-        'features' => ['bundles', 'progressive-gifts', 'cart-upsells', 'trust-social-proof', 'automation', 'ab-testing'],
-        'loop' => ['create', 'publish', 'measure', 'test', 'automate'],
-        'example' => ['title' => 'A home-fragrance brand.', 'text' => 'Launch a "Build your candle trio" bundle, add progressive gifts with free shipping at $60, then test two bundle layouts on the product page.', 'flow' => ['Candle trio bundle', '$60 shipping bar', 'A/B: Tier Cards vs Radio', 'Keep the winner']],
+        'h1' => 'Raise order value without an app stack.',
+        'hero' => 'Bundles, gifts, upsells, countdowns and trust blocks in one app, with one design and one set of numbers.',
+        'seo_description' => 'One Shopify app for bundles, progressive gifts, upsells, countdowns and trust — built for DTC brands.',
+        'overview' => [
+            'Most direct-to-consumer stores end up with a bundle app, a gift app, a timer app and a reviews widget. Each has its own settings, its own look and its own claim to the revenue — and each adds a little weight to your pages.',
+            'OrderOrbit Space replaces that stack with one app. Every offer shares your store\'s design, applies its price at checkout, and reports to the same analytics, so you can see which offer actually earned the money.',
+        ],
+        'setup' => [
+            ['Quantity-break bundle on your hero product', 'Buy 1, buy 2 (most popular), buy 3 — each with its own saving.'],
+            ['Progressive gifts', 'Free shipping at your free-shipping threshold and a free gift just above your average order value.'],
+            ['Cart upsell', 'One relevant add-on in the cart, with a small incentive.'],
+            ['Trust row near the buy button', 'Shipping, returns and secure checkout, in your colours.'],
+        ],
+        'later' => ['A/B test two bundle layouts', 'Review request emails after delivery'],
+        'features' => ['bundles', 'progressive-gifts', 'cart-upsells', 'trust-social-proof', 'analytics'],
         'faqs' => [
-            ['Can I replace my current bundle app?', 'Yes; recreate bundles in OrderOrbit Space, place the block, then remove the old app.'],
-            ['Will it slow my store?', 'Blocks load only where placed.'],
+            ['Can I replace my current bundle app?', 'Yes. Recreate your bundles in OrderOrbit Space, check them on your store, then remove the old app.'],
+            ['Will it slow my store?', 'Each offer loads only on the pages where it appears, and there are no theme code edits.'],
         ],
     ],
 
@@ -30,53 +37,72 @@ return [
         'name' => 'Repeat-Purchase Brands',
         'tagline' => 'Beauty, food, supplements, consumables',
         'icon' => 'repeat',
-        'visual' => 'customer-accounts',
-        'h1' => 'Turn first orders into routines.',
-        'hero' => 'Routine bundles, reorder reminders and one-click reorder in customer accounts for beauty, food, supplements and other consumables.',
-        'seo_description' => 'Routine bundles, reorder reminders and one-click reorder for Shopify beauty, food and supplement brands.',
-        'problem' => ['Your margin is in the second order.', 'Customers run out, forget where they bought, and buy elsewhere.'],
-        'setup' => ['Mix & match routine bundle', 'Quantity break bundle', 'Thank You page reorder block', 'Reorder Reminder workflow timed per product', 'Customer Account Reorder'],
-        'features' => ['bundles', 'progressive-gifts', 'checkout', 'customer-accounts', 'automation', 'personalization'],
-        'loop' => ['create', 'publish', 'personalize', 'automate'],
-        'example' => ['title' => 'A supplement brand.', 'text' => 'A 30-day supply triggers a reminder at day 24 with a one-click reorder link.', 'flow' => ['30-day supply ordered', 'Wait 24 days', 'Reorder reminder', 'One-click reorder']],
+        'visual' => 'bundles',
+        'h1' => 'Sell the routine, not just the product.',
+        'hero' => 'Routine bundles, multi-packs and gifts that reward bigger orders for beauty, food, supplements and other consumables.',
+        'seo_description' => 'Routine bundles, multi-packs and gift rewards for Shopify beauty, food and supplement brands.',
+        'overview' => [
+            'When customers buy a product they use up, the best time to grow the order is the first purchase. A routine bundle or a three-pack turns one bottle into a month\'s supply, and a gift at the right threshold makes the bigger basket feel like the obvious choice.',
+            'With OrderOrbit Space you can offer mix & match routines, multi-packs with a per-unit saving, and progressive gifts — all priced at checkout, with inventory deducted per product.',
+        ],
+        'setup' => [
+            ['Mix & match routine bundle', 'Shoppers pick three products from your range and save as the bundle fills.'],
+            ['Multi-pack quantity breaks', 'Buy 2 or 3 of the same product with a clear per-unit saving.'],
+            ['Gift at the right threshold', 'A sample or travel size unlocks just above your average order.'],
+        ],
+        'later' => ['Reorder reminder emails', 'One-tap reorder in customer accounts'],
+        'features' => ['bundles', 'progressive-gifts', 'countdown-timer', 'analytics'],
         'faqs' => [
-            ['Does it work with subscriptions?', 'Bundles and quantity breaks respect selling plans where supported; OrderOrbit Space is not a subscription app.'],
+            ['Do bundles work with my inventory?', 'Yes. Orders list each product, so Shopify deducts stock item by item.'],
+            ['Can shoppers choose flavours or shades?', 'Yes. You map which variants each product offers and shoppers pick one per item.'],
         ],
     ],
 
     'fashion-apparel' => [
         'name' => 'Fashion & Apparel',
-        'tagline' => 'Sell the outfit, not the single item',
+        'tagline' => 'Complete the look',
         'icon' => 'shirt',
-        'visual' => 'cart-upsells',
-        'h1' => 'Build bigger baskets.',
-        'hero' => 'Complete-the-look bundles, progressive gifts and trust blocks that help shoppers buy the outfit, not the single item.',
-        'seo_description' => 'Complete-the-look bundles, progressive gifts and trust blocks for Shopify fashion and apparel brands.',
-        'problem' => ['One item, then gone.', 'Fashion shoppers browse a lot and buy one piece, often after comparing return policies.'],
-        'setup' => ['Product upsell "Complete the look"', 'Free-gift ladder at two thresholds', 'Guarantee card with returns promise', 'Countdown for real sale end dates', 'Win-back workflow'],
-        'features' => ['bundles', 'progressive-gifts', 'trust-social-proof', 'countdown-timer', 'automation'],
-        'loop' => ['create', 'publish', 'measure', 'automate'],
-        'example' => ['title' => 'A denim brand.', 'text' => 'Jeans page recommends the matching jacket; spend $150 unlocks a free tote.', 'flow' => ['Viewing jeans', 'Complete the look: jacket', 'Cart $150', 'Free tote unlocked']],
+        'visual' => 'bundles',
+        'h1' => 'Sell the outfit, not the single item.',
+        'hero' => 'Frequently-bought-together bundles, size selection per item, gifts and trust blocks for fashion and apparel stores.',
+        'seo_description' => 'Complete-the-look bundles, per-item size selection, gifts and trust blocks for Shopify fashion brands.',
+        'overview' => [
+            'Fashion shoppers think in outfits. A frequently-bought-together bundle — tee, overshirt and cap — shows them the full look and makes it easy to buy in one step, with a size picker for every item.',
+            'Add a free gift above your average order and a trust row about returns and exchanges, and the bigger basket stops feeling risky.',
+        ],
+        'setup' => [
+            ['Complete-the-look bundle', 'A fixed bundle of matching items with one saving, a size choice per item.'],
+            ['Gift above your average order', 'A tote or accessory unlocks when the cart passes the threshold.'],
+            ['Returns and exchanges trust row', 'The reassurance fashion shoppers look for, next to the buy button.'],
+        ],
+        'later' => ['Personalized offers for returning customers'],
+        'features' => ['bundles', 'progressive-gifts', 'trust-social-proof', 'sticky-add-to-cart'],
         'faqs' => [
-            ['Can recommendations depend on the product?', 'Yes, by product or collection rules.'],
+            ['Can shoppers pick a different size for each item?', 'Yes. Each item in the bundle has its own variant picker.'],
         ],
     ],
 
     'shopify-plus' => [
         'name' => 'Shopify Plus Brands',
-        'tagline' => 'Full checkout-block access',
-        'icon' => 'star',
-        'visual' => 'checkout',
-        'h1' => 'Extend checkout with confidence.',
-        'hero' => 'Checkout blocks for trust, reviews, shipping progress and offers on supported Plus targets — plus experiments and personalization across your store.',
-        'seo_description' => 'Checkout blocks for trust, reviews, shipping progress and offers on Shopify Plus, with experiments and personalization.',
-        'problem' => ['Checkout is your most valuable page, and your most fragile.', 'Custom code is gone; supported checkout blocks are the way forward.'],
-        'setup' => ['Checkout trust row', 'Checkout shipping progress', 'Thank You cross-sell', 'Order Status tracking/support', 'Segmented upsells', 'A/B tests on checkout blocks'],
-        'features' => ['checkout', 'customer-accounts', 'ab-testing', 'personalization', 'analytics'],
-        'loop' => ['create', 'publish', 'measure', 'test', 'personalize'],
-        'example' => ['title' => 'A premium outdoor brand.', 'text' => 'Test a guarantee banner vs a review slider in checkout, with cart abandonment as a guardrail.', 'flow' => ['A: Guarantee banner', 'B: Review slider', 'Guardrail: abandonment', 'Ship the winner']],
+        'tagline' => 'Scale with control',
+        'icon' => 'building',
+        'visual' => 'analytics',
+        'h1' => 'Grow order value with control and clear numbers.',
+        'hero' => 'Team roles, an audit log, checkout-level pricing and per-offer revenue for larger Shopify stores.',
+        'seo_description' => 'Bundles, gifts and upsells with team roles, audit logs and per-offer revenue for Shopify Plus brands.',
+        'overview' => [
+            'Larger stores need more than a widget. OrderOrbit Space gives your team owner, admin and staff roles, records every change in an audit log, and applies every saving through Shopify\'s own checkout functions.',
+            'Analytics credit each order line to the offer that added it, so merchandising and growth teams can agree on what\'s working.',
+        ],
+        'setup' => [
+            ['Team roles and audit log', 'Control who can publish, and see who changed what.'],
+            ['Bundles and gifts across your catalogue', 'Unlimited offers on the Growth and Scale plans.'],
+            ['Per-offer revenue', 'Views, adds to cart, orders and revenue for each offer.'],
+        ],
+        'later' => ['Blocks inside checkout (Plus)', 'A/B testing', 'Personalization by audience'],
+        'features' => ['bundles', 'progressive-gifts', 'analytics', 'checkout'],
         'faqs' => [
-            ['Does OrderOrbit Space replace checkout?', 'No. It adds blocks to checkout in the ways Shopify supports.'],
+            ['Does it use Shopify\'s own checkout pricing?', 'Yes. Savings are applied by Shopify Functions at checkout, so they work with your checkout settings.'],
         ],
     ],
 

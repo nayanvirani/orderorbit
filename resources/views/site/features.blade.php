@@ -1,57 +1,45 @@
 @extends('layouts.site')
 
-@section('title', 'Features | OrderOrbit Space — Shopify CRO, Checkout & Growth')
-@section('description', 'Bundles, progressive gifts, cart upsells, checkout blocks, automation, analytics, A/B testing and personalization for Shopify.')
+@section('title', 'Features | OrderOrbit Space — Bundles, Gifts, Upsells for Shopify')
+@section('description', 'Bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart, trust blocks and analytics for Shopify, in one app.')
+
+@php
+    $features = \App\Support\Content::features();
+    $groups = ['convert' => ['Raise order value and conversion', 'On your product pages and in the cart.'], 'grow' => ['Measure and grow', 'See what each offer earns.'], 'checkout' => ['After the Buy button', 'Checkout, Thank You and customer accounts.']];
+@endphp
 
 @section('content')
-<section class="page-hero sky">
-    <div class="wrap">
-        <span class="eyebrow"><span class="dot"></span>Features</span>
-        <h1>Every growth tool your store needs, <em>in one app.</em></h1>
-        <p class="lead">One design system, one analytics layer, one bill.</p>
-        <div class="ctas">
-            <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
-            <a class="btn lg" href="{{ route('site.pricing') }}">See Pricing</a>
-        </div>
-    </div>
-</section>
-
-@foreach (['convert' => ['01', 'Convert', 'Turn more visitors into buyers and raise order value on the product page and cart.'], 'checkout' => ['02', 'Checkout', 'Keep selling at checkout, on Thank You and Order Status pages, and in customer accounts.'], 'grow' => ['03', 'Grow', 'Measure, test, personalize and automate from one set of numbers.']] as $group => [$number, $label, $intro])
-    <section class="section {{ $loop->odd ? 'alt' : '' }}" id="{{ $group }}">
-        <div class="wrap chapter">
-            <div class="chapter-side reveal">
-                <div class="chapter-mark">{{ $number }}</div>
-                <span class="eyebrow"><span class="dot"></span>{{ $label }}</span>
-                <h2>{{ $intro }}</h2>
-            </div>
-            <div class="bento">
-                @foreach ($groups[$group] as $slug => $f)
-                    <a class="b-tile go-arrow {{ count($groups[$group]) > 4 ? 'w3' : 'w3' }} reveal" href="{{ route('site.feature', $slug) }}">
-                        <span class="tile-tag">{{ $f['eyebrow'] }}</span>
-                        <h3>{{ $f['name'] }}</h3>
-                        <p>{{ $f['hero'] }}</p>
-                    </a>
-                @endforeach
-            </div>
+<div class="mn">
+    <section class="mn-hero">
+        <div class="wrap">
+            <span class="mn-kicker">Features</span>
+            <h1>Everything that raises order value, <em>in one app.</em></h1>
+            <p class="mn-lead">Each feature has ready-made templates, shares your store's design and applies its savings at checkout. Features marked "coming soon" are being built now.</p>
         </div>
     </section>
-@endforeach
 
-<section class="section">
-    <div class="wrap chapter">
-        <div class="chapter-side reveal">
-            <div class="chapter-mark">04</div>
-            <span class="eyebrow"><span class="dot"></span>Platform</span>
-            <h2>The foundation under <em>every experience.</em></h2>
+    <section class="mn-section plain">
+        <div class="mn-wide">
+            @foreach ($groups as $group => [$title, $intro])
+                @php($items = array_filter($features, fn ($f) => $f['group'] === $group))
+                @php(uasort($items, fn ($a, $b) => (($a['status'] ?? 'live') === 'soon') <=> (($b['status'] ?? 'live') === 'soon')))
+                <p class="mn-group">{{ $title }}</p>
+                <p class="mn-intro" style="margin-bottom:16px">{{ $intro }}</p>
+                <ul class="mn-rows" style="margin-bottom:48px">
+                    @foreach ($items as $slug => $f)
+                        <li><a href="{{ route('site.feature', $slug) }}"><b>{{ $f['name'] }}@if (($f['status'] ?? 'live') === 'soon')<span class="soon">Coming soon</span>@endif</b><span>{{ $f['summary'] ?? $f['menu'] }}</span><i>Learn more →</i></a></li>
+                    @endforeach
+                </ul>
+            @endforeach
         </div>
-        <ol class="num-list cols">
-            <li><strong>Template library</strong><p>Proven presets for every surface. <a class="link-arrow" href="{{ route('site.templates') }}">Browse</a></p></li>
-            <li><strong>Brand settings</strong><p>Colours, fonts, buttons and spacing shared by every block.</p></li>
-            <li><strong>Consent-aware analytics</strong><p>Respects your customers' consent choices. <a class="link-arrow" href="{{ route('site.security') }}">Security</a></p></li>
-            <li><strong>Shopify Billing</strong><p>Starter, Growth and Scale on your Shopify invoice. <a class="link-arrow" href="{{ route('site.pricing') }}">Pricing</a></p></li>
-        </ol>
-    </div>
-</section>
+    </section>
 
-@include('site.partials.cta')
+    <section class="mn-section mn-cta">
+        <div class="mn-narrow">
+            <h2>Start with one feature</h2>
+            <p>Most stores begin with a bundle or a gift bar and add the rest later. Every plan includes every live feature; higher plans raise the limits.</p>
+            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a><a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a></div>
+        </div>
+    </section>
+</div>
 @endsection

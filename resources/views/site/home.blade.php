@@ -7,245 +7,121 @@
     'name' => 'OrderOrbit Space',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Shopify',
-    'description' => 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
+    'description' => 'Bundles, progressive gifts, upsells, countdowns and analytics for Shopify, in one app.',
     'offers' => array_values(array_map(fn ($p) => ['@type' => 'Offer', 'name' => $p['name'], 'price' => $p['price'], 'priceCurrency' => 'USD'], $plans)),
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @php
-    $chapters = [
-        'convert' => ['01', 'Convert', 'Every conversion tool, one <em>consistent</em> design.', 'Bundles (quantity breaks, mix & match, fixed and gift bundles), progressive gifts, cart upsells, countdowns, sticky add-to-cart and trust badges — sharing your brand colours, fonts and analytics.', 'bundles'],
-        'checkout' => ['02', 'Checkout', 'Keep selling <em>after</em> the Buy button.', 'Add reviews, trust, shipping progress and offers to checkout where Shopify supports it, and turn Thank You, Order Status and Customer Account pages into reorders, reviews and referrals.', 'checkout'],
-        'grow' => ['03', 'Grow', 'Measure it. Test it. <em>Automate</em> it.', 'Consent-aware analytics, A/B tests with honest results, audience rules and lifecycle workflows — all reading from the same numbers.', 'automation'],
-    ];
-    $thumbFor = ['bundles' => 'bundle', 'progressive-gifts' => 'gift', 'cart-upsells' => 'upsell', 'countdown-timer' => 'countdown', 'sticky-add-to-cart' => 'sticky', 'trust-social-proof' => 'trust', 'customer-accounts' => 'account', 'checkout' => 'thankyou'];
+    $features = \App\Support\Content::features();
+    $live = array_filter($features, fn ($f) => ($f['status'] ?? 'live') === 'live');
+    $soon = array_filter($features, fn ($f) => ($f['status'] ?? 'live') === 'soon');
 @endphp
 
 @section('content')
-{{-- Hero: product screens in orbit --}}
-<section class="orbit-hero sky">
-    <div class="wrap">
-        <span class="eyebrow"><span class="dot"></span>Shopify CRO, checkout &amp; customer experience<span class="dot"></span></span>
-        <h1>Convert more customers. <em>Increase order value.</em> Bring customers back.</h1>
-        <p class="lead">OrderOrbit Space gives your Shopify store bundles, progressive gifts and free shipping, upsells, checkout and thank-you blocks, lifecycle automation, analytics and A/B testing — in one app, placed natively through the Theme Editor.</p>
-        <div class="ctas">
-            <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
-            <a class="btn lg" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How It Works</a>
-        </div>
-        <div class="assure"><span>No theme code edits</span><span>·</span><span>Billed through Shopify</span><span>·</span><span>Remove any block in one click</span></div>
-    </div>
-    <div class="orbit-stage" aria-label="OrderOrbit Space experiences on a Shopify store">
-        <div class="ring r2"></div>
-        <div class="ring r1"></div>
-        <div class="planet"></div>
-        @foreach ([['s1', 'gift', 'Progressive gifts', 'Product page'], ['s2', 'bundle', 'Bundle', 'Product page'], ['s3', 'countdown', 'Countdown', 'Any page'], ['s4', 'trust', 'Reviews', 'Product page'], ['s5', 'thankyou', 'Thank You', 'Post-purchase']] as [$pos, $type, $label, $where])
-            <div class="sat {{ $pos }}">
-                <div class="sat-label"><span>{{ $label }}</span><b>{{ $where }}</b></div>
-                @include('site.partials.thumb', ['type' => $type, 'v' => $loop->index])
-            </div>
-        @endforeach
-    </div>
-</section>
-
-<div class="marquee" aria-hidden="true">
-    <div class="track">
-        @foreach ([1, 2] as $copy)
-            @foreach (['Bundles', 'Quantity breaks', 'Mix & match', 'Progressive gifts', 'Free shipping', 'Cart upsells', 'Countdowns', 'Sticky add to cart', 'Trust & reviews', 'Checkout blocks', 'Thank You pages', 'Customer accounts', 'Automation', 'Analytics', 'A/B testing', 'Personalization'] as $word)
-                <span>{{ $word }}</span>
-            @endforeach
-        @endforeach
-    </div>
-</div>
-
-{{-- Problem --}}
-<section class="section">
-    <div class="wrap">
-        <div class="problem reveal">
-            <div>
-                <span class="tag"><x-icon name="alert"/>The problem</span>
-                <h2>Too many apps. Not enough answers.</h2>
-                <p>Most stores run one app for bundles, another for upsells, another for timers and another for email — each with its own settings, styles and reports. Pages slow down, themes break, and nobody can say which change actually moved revenue.</p>
-                <a class="link-arrow" style="margin-top:26px" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How OrderOrbit Space Works <x-icon name="arrow"/></a>
-            </div>
-            <div class="stack-art" aria-hidden="true">
-                @foreach ([['bundle', 'Bundle app'], ['sparkle', 'Upsell app'], ['clock', 'Timer app'], ['mail', 'Email app'], ['shield', 'Badges app'], ['chart', 'Analytics app']] as [$icon, $name])
-                    <div class="app x"><x-icon :name="$icon"/>{{ $name }}<div class="line" style="width:80%"></div><div class="line" style="width:55%"></div></div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- The loop --}}
-<section class="section invert sky">
-    <div class="wrap split">
-        <div class="reveal">@include('site.diagrams.orbit')</div>
-        <div class="split-copy reveal">
-            <span class="eyebrow"><span class="dot"></span>The core loop</span>
-            <h2>One loop <em>for growth.</em></h2>
-            <p class="lead">Build an experience, place it in your theme, see what it earns, test a better version, show it to the right shoppers and follow up automatically.</p>
-            <ol class="num-list" style="margin-top:28px">
-                <li><strong>Create</strong><p>Start from a proven template.</p></li>
-                <li><strong>Publish</strong><p>Place it natively through the Theme Editor.</p></li>
-                <li><strong>Measure</strong><p>Consent-aware analytics on every view, click and order.</p></li>
-                <li><strong>Test, personalize, automate</strong><p>From the same data, in the same app.</p></li>
-            </ol>
-        </div>
-    </div>
-</section>
-
-{{-- How it works --}}
-<section class="section" id="how-it-works">
-    <div class="wrap">
-        <div class="section-head reveal">
-            <span class="eyebrow"><span class="dot"></span>How it works</span>
-            <h2>From install to your first test <em>in minutes.</em></h2>
-        </div>
-        <ol class="steps horizontal">
-            @foreach ([
-                ['Connect Shopify', 'Install and choose your goal: conversion, AOV, repeat purchase or checkout.'],
-                ['Pick a template', 'Start from a proven bundle, upsell, gift or shipping design.'],
-                ['Customise and place', 'Match your brand, then drop the block anywhere in the Theme Editor.'],
-                ['Measure and improve', 'Track views, clicks and revenue, then A/B test your next idea.'],
-            ] as [$title, $text])
-                <li class="step reveal"><span class="num">{{ $loop->iteration }}</span><div><h3>{{ $title }}</h3><p>{{ $text }}</p></div></li>
-            @endforeach
-        </ol>
-    </div>
-</section>
-
-{{-- Chapters --}}
-@foreach ($chapters as $group => [$chNumber, $chLabel, $chHeading, $chBody, $chHero])
-    <section class="section {{ $loop->iteration === 2 ? 'invert' : ($loop->odd ? 'alt' : '') }}" id="{{ $group }}">
-        <div class="wrap chapter">
-            <div class="chapter-side reveal">
-                <div class="chapter-mark">{{ $chNumber }}</div>
-                <span class="eyebrow"><span class="dot"></span>{{ $chLabel }}</span>
-                <h2>{!! $chHeading !!}</h2>
-                <p>{{ $chBody }}</p>
-                <a class="link-arrow" href="{{ route('site.features') }}#{{ $group }}">All {{ strtolower($chLabel) }} features <x-icon name="arrow"/></a>
-            </div>
-            <div class="bento">
-                @foreach ($groups[$group] as $slug => $f)
-                    @php
-                        // Hero tile spans the row; the rest fill rows of three (checkout: two), and a
-                        // lone last tile stretches so no row is left with one card.
-                        $big = $slug === $chHero;
-                        $rest = count($groups[$group]) - 1;
-                        $perRow = $rest === 2 ? 2 : 3;
-                        $position = array_search($slug, array_keys(array_filter($groups[$group], fn ($k) => $k !== $chHero, ARRAY_FILTER_USE_KEY)), true);
-                        $lonely = ! $big && $rest % $perRow === 1 && $position === $rest - 1;
-                        $width = $big || $lonely ? 'w6' : ($perRow === 2 ? 'w3' : 'w2');
-                        $screen = $big || $group === 'grow' ? 'visual' : (isset($thumbFor[$slug]) ? 'thumb' : null);
-                    @endphp
-                    <a class="b-tile go-arrow reveal {{ $width }}" href="{{ route('site.feature', $slug) }}">
-                        <span class="tile-tag">{{ $f['eyebrow'] }}</span>
-                        <h3>{{ $f['name'] }}</h3>
-                        <p>{{ $big ? $f['hero'] : $f['menu'] }}</p>
-                        @if ($screen === 'visual')
-                            <div class="bento-screen">@include('site.visuals.'.$slug)</div>
-                        @elseif ($screen === 'thumb')
-                            <div class="bento-screen"><div>@include('site.partials.thumb', ['type' => $thumbFor[$slug], 'v' => $loop->index])</div></div>
-                        @endif
-                    </a>
-                @endforeach
+<div class="mn">
+    <section class="mn-hero center">
+        <div class="wrap">
+            <span class="mn-kicker">A Shopify app for higher order value</span>
+            <h1>Sell more to every shopper, <em>without fighting your theme.</em></h1>
+            <p class="mn-lead">Bundles, progressive gifts, cart upsells, countdowns and trust blocks that look like part of your store, apply their savings at checkout, and show you exactly what they earn.</p>
+            <div class="ctas">
+                <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+                <a class="btn lg" href="{{ route('site.how') }}">How it works</a>
             </div>
         </div>
     </section>
-@endforeach
 
-{{-- Built the Shopify way --}}
-<section class="section invert">
-    <div class="wrap">
-        <div class="section-head reveal">
-            <span class="eyebrow"><span class="dot"></span>Built the Shopify way</span>
-            <h2>Theme-safe <em>by design.</em></h2>
-            <p class="lead">No theme code edits, no forced cart drawers, no duplicate add-to-cart logic. You place every block in the Theme Editor, and removing it is one click.</p>
-        </div>
-        <div class="stat-band reveal">
-            <div><b>0</b><span>lines of theme code edited</span></div>
-            <div><b>0</b><span>forced cart drawers or pop-ups</span></div>
-            <div><b>1</b><span>click to remove any block</span></div>
-            <div><b>1</b><span>app, one design, one set of numbers</span></div>
-        </div>
-    </div>
-</section>
+    <div class="mn-shot">@include('site.visuals.bundles')</div>
 
-{{-- Templates --}}
-<section class="section alt">
-    <div class="wrap">
-        <div class="section-head reveal">
-            <span class="eyebrow"><span class="dot"></span>Templates</span>
-            <h2>Start from <em>a template.</em></h2>
-            <p class="lead">Browse bundle, gift, shipping, upsell, countdown, trust, checkout and automation templates.</p>
+    <section class="mn-section" style="margin-top:clamp(48px,7vw,88px)">
+        <div class="mn-narrow">
+            <h2>Why stores add OrderOrbit Space</h2>
+            <div class="mn-prose">
+                <p>Most growth apps bolt a widget onto your product page and hope for the best. The widget fights your theme's add-to-cart, the discount needs a code nobody remembers, and you never find out whether it made money.</p>
+                <p>OrderOrbit Space takes a different approach. Every offer is placed through Shopify's Theme Editor or right above your add-to-cart button, uses your store's fonts and colours, and applies its price at checkout automatically. A built-in Shopify pixel then shows how much revenue each offer brought in.</p>
+            </div>
         </div>
-        <div class="tpl-grid tpl-teaser">
-            @foreach ($templateTeaser as $tpl)
-                <a class="tpl reveal" href="{{ route('site.templates', ['type' => $tpl['type']]) }}" style="text-decoration:none">
-                    <div class="thumb"><div>@include('site.partials.thumb', ['type' => $tpl['type'], 'v' => $loop->index])</div></div>
-                    <div class="meta"><b>{{ $tpl['name'] }}</b><span><span class="pill">{{ $tpl['label'] }}</span></span></div>
-                </a>
-            @endforeach
-        </div>
-        <div class="ctas" style="margin-top:36px"><a class="btn lg" href="{{ route('site.templates') }}" data-event="template_previewed">Browse Templates</a></div>
-    </div>
-</section>
+    </section>
 
-{{-- Use cases --}}
-<section class="section">
-    <div class="wrap chapter">
-        <div class="chapter-side reveal">
-            <span class="eyebrow"><span class="dot"></span>Use cases</span>
-            <h2>Built for growing <em>Shopify brands.</em></h2>
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>What you get</h2>
+            <p class="mn-intro">Everything below is in the app today. Each feature has ready-made templates you can restyle to match your store.</p>
+            <ul class="mn-rows">
+                @foreach ($live as $slug => $f)
+                    <li><a href="{{ route('site.feature', $slug) }}"><b>{{ $f['name'] }}</b><span>{{ $f['summary'] ?? $f['menu'] }}</span><i>Learn more →</i></a></li>
+                @endforeach
+            </ul>
+            @if ($soon)
+                <p class="mn-group" style="margin-top:36px">Coming soon</p>
+                <p class="mn-intro" style="margin-bottom:0">{{ collect($soon)->pluck('name')->implode(' · ') }}</p>
+            @endif
         </div>
-        <ol class="num-list">
-            @foreach ($solutions as $slug => $s)
-                <li class="reveal">
-                    <a class="uc-row" href="{{ route('site.solution', $slug) }}">
-                        <span class="uc-name">{{ $s['name'] }}</span>
-                        <span class="link-arrow">Explore <x-icon name="arrow"/></span>
-                    </a>
-                    <p>{{ $s['h1'] }}</p>
-                </li>
-            @endforeach
-        </ol>
-    </div>
-</section>
+    </section>
 
-{{-- Pricing --}}
-<section class="section alt">
-    <div class="wrap">
-        <div class="section-head reveal">
-            <span class="eyebrow"><span class="dot"></span>Pricing</span>
-            <h2>Plans that grow <em>with your store.</em></h2>
-            <p class="lead">Starter $9.99/mo • Growth $29.99/mo • Scale $59.99/mo — billed through Shopify.</p>
+    <section class="mn-section">
+        <div class="mn-narrow">
+            <h2>From install to your first sale in minutes</h2>
+            <ol class="mn-steps">
+                <li><div><b>Install from the Shopify App Store</b><span>One click. Billing runs through your Shopify invoice.</span></div></li>
+                <li><div><b>Pick a feature and a template</b><span>Start from a ready-made layout — quantity breaks, a gift bar, a countdown — and preview it with your own product.</span></div></li>
+                <li><div><b>Make it yours</b><span>Set offers, products and variants, then adjust colours, sizes and text. The preview updates as you type.</span></div></li>
+                <li><div><b>Publish and measure</b><span>It appears on your store right away; savings apply at checkout and Analytics shows the revenue it brings in.</span></div></li>
+            </ol>
         </div>
-        @include('site.partials.plan-cards')
-        <div class="ctas" style="margin-top:28px"><a class="link-arrow" href="{{ route('site.pricing') }}">Compare every plan <x-icon name="arrow"/></a></div>
-    </div>
-</section>
+    </section>
 
-{{-- FAQ --}}
-<section class="section">
-    <div class="wrap faq-layout">
-        <div class="section-head reveal">
-            <span class="eyebrow"><span class="dot"></span>FAQ</span>
-            <h2>Frequently asked <em>questions.</em></h2>
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>Built the careful way</h2>
+            <ul class="mn-list">
+                <li><b>Works with your theme</b><span>No theme code edits. Offers sit in Theme Editor blocks or next to your add-to-cart, and come out in one click.</span></li>
+                <li><b>Real prices at checkout</b><span>Bundle prices, gifts and free shipping are applied by Shopify at checkout — no codes to copy.</span></li>
+                <li><b>Real inventory</b><span>Bundles check out as one line, but orders keep every product, so stock is deducted per item.</span></li>
+                <li><b>Honest urgency</b><span>Countdowns only use real deadlines. Timers never reset per visitor.</span></li>
+                <li><b>Measured results</b><span>Revenue is credited to the offer that added each order line, and every offer shows its own numbers.</span></li>
+                <li><b>Respects consent</b><span>Analytics only count shoppers who allow it, and no personal data is collected.</span></li>
+            </ul>
         </div>
-        @include('site.partials.faq', ['faqs' => [
-            ['What is OrderOrbit Space?', 'OrderOrbit Space helps Shopify brands convert more visitors, raise order value and bring customers back with theme-safe CRO blocks, checkout experiences, lifecycle automation, analytics and A/B testing — in one app.'],
-            ['Will OrderOrbit Space slow down or break my theme?', 'Storefront experiences are blocks that load only where you place them in the Theme Editor. There are no theme code edits, and removing a block is one click in the Theme Editor.'],
-            ['Do I need to edit theme code?', 'No. You place and arrange every block in Shopify\'s Theme Editor.'],
-            ['Does it work with my cart drawer?', 'Cart upsells appear in your cart drawer where your theme supports it, and fall back to the cart page where it doesn\'t. OrderOrbit Space never force-opens or intercepts your drawer.'],
-            ['Can I customise checkout?', 'OrderOrbit Space adds blocks to checkout in the ways Shopify supports. Blocks inside the checkout steps require Shopify Plus; Thank You and Order Status blocks are available on all plans that support checkout blocks. We only show the targets your store supports.'],
-            ['How is revenue attributed?', 'Revenue is attributed within a set window using clearly labelled first-touch, last-touch and experience-assisted models. Attribution is an analytical model, not proof of causality — use A/B tests to prove impact.'],
-            ['How does A/B testing decide a winner?', 'At 95% confidence using standard statistical tests, and only after at least 7 days, 1,000 visitors and 100 conversions per variant.'],
-            ['Is analytics consent-aware / GDPR-friendly?', 'Yes. Analytics respect your customers\' consent choices and your store\'s privacy settings in Shopify. You control retention, and we support data export and deletion.'],
-            ['Can I send emails without setting up an email provider?', 'Yes. Sending is included with OrderOrbit Space. You only set a sender name and reply-to address.'],
-            ['What does OrderOrbit Space cost, and is billing through Shopify?', 'Starter is $9.99/mo, Growth $29.99/mo and Scale $59.99/mo, all billed through your Shopify invoice.'],
-        ]])
-    </div>
-</section>
+    </section>
 
-@include('site.partials.cta', ['heading' => 'Convert more. Earn more per order. Win customers back.', 'secondary' => 'how'])
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>Simple pricing, billed by Shopify</h2>
+            <p class="mn-intro">Start on any plan. Upgrade, downgrade or cancel whenever you like from your Shopify admin.</p>
+            <div class="mn-facts">
+                @foreach ($plans as $key => $plan)
+                    <div><b>${{ number_format($plan['price'], 2) }}</b><span><strong style="color:var(--text)">{{ $plan['name'] }}</strong> · per month<br>{{ implode(' · ', array_slice($plan['features'], 0, 3)) }}</span></div>
+                @endforeach
+            </div>
+            <p style="margin:22px 0 0"><a class="btn" href="{{ route('site.pricing') }}">Compare plans</a></p>
+        </div>
+    </section>
+
+    <section class="mn-section">
+        <div class="mn-narrow">
+            <h2>Questions</h2>
+            @include('site.partials.faq', ['faqs' => [
+                ['What is OrderOrbit Space?', 'A Shopify app that helps you raise order value and conversion with bundles, progressive gifts (free gifts, free shipping and discounts), cart upsells, countdowns, sticky add-to-cart and trust blocks — with built-in analytics that show what each offer earns.'],
+                ['Will it slow down or break my theme?', 'No. Offers load only on the pages where they appear, and each one is a small script. There are no theme code edits, and you can remove any block in one click.'],
+                ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
+                ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],
+                ['How do you measure revenue?', 'A Shopify web pixel records completed orders and credits each order line to the offer that added it. Only shoppers who allow analytics are counted.'],
+                ['What does it cost?', 'Starter is $9.99, Growth $29.99 and Scale $59.99 per month, billed through your Shopify invoice.'],
+            ]])
+        </div>
+    </section>
+
+    <section class="mn-section mn-cta">
+        <div class="mn-narrow">
+            <h2>Ready to raise your order value?</h2>
+            <p>Install OrderOrbit Space and publish your first bundle in a few minutes.</p>
+            <div class="ctas">
+                <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+                <a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a>
+            </div>
+        </div>
+    </section>
+</div>
 @endsection

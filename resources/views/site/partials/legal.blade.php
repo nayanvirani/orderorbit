@@ -1,7 +1,7 @@
-<section class="page-hero sky" style="padding-bottom:32px">
+<section class="mn-hero" style="padding-bottom:32px">
     <div class="wrap">
-        <span class="eyebrow"><span class="dot"></span>Legal</span>
+        <span class="mn-kicker">Legal</span>
         <h1>{{ $title }}</h1>
-        <p style="margin-top:18px"><span class="draft"><x-icon name="info"/>Draft — to be finalised with legal counsel before App Store launch.</span></p>
+        <p class="mn-lead">Draft — to be finalised with legal counsel before App Store launch.</p>
     </div>
 </section>

@@ -61,7 +61,7 @@ return [
                 'name' => 'Starter',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
                 'price' => 9.99,
-                'features' => ['5 active experiences', '1 bundle', '1 progressive gifts campaign', '5 workflows', '1,000 automation executions', 'Basic analytics'],
+                'features' => ['5 live offers', '1 bundle', '1 progressive gifts campaign', 'Cart upsells, countdowns, sticky add to cart, trust', 'Analytics', 'Every template'],
                 'limits' => [
                     'active_experiences' => 5,
                     'bundles' => 1,
@@ -75,7 +75,7 @@ return [
                 'name' => 'Growth',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
                 'price' => 29.99,
-                'features' => ['Unlimited CRO experiences', 'Unlimited bundles & progressive gifts', 'Advanced automation', '10,000 automation executions', 'Advanced analytics', 'Checkout & Thank You blocks', 'A/B testing'],
+                'features' => ['Unlimited live offers', 'Unlimited bundles & progressive gifts', 'Everything in Starter', 'Analytics with revenue per offer', 'Checkout blocks and A/B testing when released'],
                 'limits' => [
                     'active_experiences' => null,
                     'bundles' => null,
@@ -89,7 +89,7 @@ return [
                 'name' => 'Scale',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'),
                 'price' => 59.99,
-                'features' => ['Everything in Growth', 'Advanced personalization', 'Experiments', 'Customer Account blocks', 'Higher limits', 'Priority support'],
+                'features' => ['Everything in Growth', 'Priority support', 'Automation and personalization when released', 'Early access to new features'],
                 'limits' => [
                     'active_experiences' => null,
                     'bundles' => null,

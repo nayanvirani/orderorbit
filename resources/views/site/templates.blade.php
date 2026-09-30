@@ -1,82 +1,59 @@
 @extends('layouts.site')
 
-@section('title', 'Shopify CRO Templates | OrderOrbit Space')
-@section('description', 'Preview every OrderOrbit Space template: bundles, progressive gifts, cart upsells, countdowns, trust, checkout, Thank You, customer account and automation.')
+@section('title', 'Templates | OrderOrbit Space')
+@section('description', 'Ready-made layouts for bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart and trust blocks. Pick one and make it yours.')
+
+@php
+    $features = \App\Support\Content::features();
+    // One main template per live feature; the rest are listed by name.
+    $byFeature = collect($templates)->groupBy('feature')->filter(fn ($t, $slug) => isset($features[$slug]) && ($features[$slug]['status'] ?? 'live') === 'live');
+@endphp
 
 @section('content')
-<section class="page-hero sky">
-    <div class="wrap">
-        <span class="eyebrow"><span class="dot"></span>{{ count($templates) }} templates</span>
-        <h1>Start from a <span class="grad-text">proven template.</span></h1>
-        <p class="lead">A template is a ready-made layout to start from, not a fixed design. Pick one in the app, then change every offer, product, text, colour, size and spacing to match your store, with a live preview.</p>
-    </div>
-</section>
-
-<section class="section tight" style="padding-top:0">
-    <div class="wrap">
-        <div class="tpl-explain">
-            <div><b>1 · Pick a feature</b><span>Bundles have six types: quantity breaks, quantity breaks + gifts, variant offers, mix &amp; match, fixed bundles and fixed bundles + gifts. Progressive gifts combines free gifts, free shipping and discounts in one bar.</span></div>
-            <div><b>2 · Choose a template</b><span>Each type has ready-made layouts (vertical, horizontal or grid) and colour presets. Preview them with your own product.</span></div>
-            <div><b>3 · Make it yours</b><span>Settings, offers and design are all editable. Your theme's fonts are used by default; colours, sizes, borders and custom CSS are yours to set.</span></div>
+<div class="mn">
+    <section class="mn-hero">
+        <div class="wrap">
+            <span class="mn-kicker">Templates</span>
+            <h1>Start from a template, <em>finish with your brand.</em></h1>
+            <p class="mn-lead">A template is a ready-made layout, not a fixed design. Pick one in the app, then change every offer, product, text, colour, size and spacing to match your store, with a live preview.</p>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="section tight" style="padding-top:0">
-    <div class="wrap" data-gallery>
-        <div class="filter-label">Surface</div>
-        <div class="filters" role="toolbar" aria-label="Filter by surface">
-            <button class="tab" data-filter="surface" data-value="all">All surfaces</button>
-            @foreach ($surfaces as $key => $label)
-                <button class="tab" data-filter="surface" data-value="{{ $key }}">{{ $label }}</button>
+    <section class="mn-section plain">
+        <div class="mn-wide mn-tpl">
+            @foreach ($byFeature as $slug => $list)
+                @php($names = $list->pluck('name')->unique()->values())
+                <article class="mn-tpl-item">
+                    <div>
+                        <span class="mn-kicker">{{ $names->count() }} {{ \Illuminate\Support\Str::plural('layout', $names->count()) }}</span>
+                        <h3>{{ $features[$slug]['name'] }}</h3>
+                        <p>{{ $features[$slug]['summary'] ?? $features[$slug]['menu'] }}</p>
+                        <ul class="mn-chips">@foreach ($names as $name)<li>{{ $name }}</li>@endforeach</ul>
+                        <a class="btn sm" href="{{ route('site.feature', $slug) }}">About {{ strtolower($features[$slug]['name']) }}</a>
+                    </div>
+                    <div>@include('site.visuals.'.$slug)</div>
+                </article>
             @endforeach
         </div>
-        <div class="filter-label">Type</div>
-        <div class="filters" role="toolbar" aria-label="Filter by type">
-            <button class="tab" data-filter="type" data-value="all">All types</button>
-            @foreach ($types as $key => $label)
-                <button class="tab" data-filter="type" data-value="{{ $key }}">{{ $label }}</button>
-            @endforeach
-        </div>
+    </section>
 
-        <div class="tpl-grid">
-            @foreach ($templates as $tpl)
-                <button type="button" class="tpl" data-surface="{{ $tpl['surface'] }}" data-type="{{ $tpl['type'] }}" data-feature="{{ $tpl['feature'] }}" data-name="{{ $tpl['name'] }}" data-label="{{ $tpl['label'] }} · {{ $surfaces[$tpl['surface']] }}">
-                    <div class="thumb"><div style="filter:hue-rotate({{ [0, 28, -24, 52, -46][$loop->index % 5] }}deg)">@include('site.partials.thumb', ['type' => $tpl['type'], 'v' => $loop->index])</div></div>
-                    <div class="meta"><b>{{ $tpl['name'] }}</b><span><span class="pill">{{ $tpl['label'] }}</span>@if ($surfaces[$tpl['surface']] !== $tpl['label'])<span class="pill gray">{{ $surfaces[$tpl['surface']] }}</span>@endif</span></div>
-                </button>
-            @endforeach
+    <section class="mn-section">
+        <div class="mn-narrow">
+            <h2>How templates work</h2>
+            <ol class="mn-steps">
+                <li><div><b>Pick a feature</b><span>Bundles come in six types; progressive gifts combine free gifts, free shipping and discounts in one bar.</span></div></li>
+                <li><div><b>Choose a template</b><span>Each feature has several layouts. Preview them with one of your own products before you start.</span></div></li>
+                <li><div><b>Make it yours</b><span>Your theme's fonts are used by default. Colours, sizes, borders, text and custom CSS are all editable.</span></div></li>
+            </ol>
         </div>
-        <div class="card center" data-empty hidden style="margin-top:20px">
-            <h3>No templates match those filters.</h3>
-            <button class="btn" style="margin-top:16px" data-clear>Clear filters</button>
-        </div>
-    </div>
-</section>
+    </section>
 
-<div class="modal" data-modal role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="box">
-        <div class="box-head">
-            <div><h3 id="modal-title" data-modal-title></h3><div class="muted" data-modal-sub></div></div>
-            <div style="display:flex;gap:10px;align-items:center">
-                <div class="seg" role="group" aria-label="Preview device">
-                    <button type="button" data-device="desktop" aria-pressed="true"><x-icon name="monitor" style="width:15px;height:15px;display:inline-block;vertical-align:-3px"/> Desktop</button>
-                    <button type="button" data-device="mobile" aria-pressed="false"><x-icon name="smartphone" style="width:15px;height:15px;display:inline-block;vertical-align:-3px"/> Mobile</button>
-                </div>
-                <button class="close" type="button" aria-label="Close" data-modal-close><x-icon name="x"/></button>
-            </div>
+    <section class="mn-section mn-cta">
+        <div class="mn-narrow">
+            <h2>Try the templates on your store</h2>
+            <p>Every template is available on every plan.</p>
+            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a></div>
         </div>
-        <div class="frame" data-frame>
-            @foreach (array_unique(array_column($templates, 'feature')) as $feature)
-                <div data-preview="{{ $feature }}" hidden>@include('site.visuals.'.$feature)</div>
-            @endforeach
-        </div>
-        <div class="ctas center" style="margin-top:28px">
-            <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked"><x-icon name="bag"/>Install to use this template</a>
-            <a class="btn lg" href="#" data-modal-link>About this feature</a>
-        </div>
-    </div>
+    </section>
 </div>
-
-@include('site.partials.cta')
 @endsection
