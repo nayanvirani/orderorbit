@@ -47,7 +47,18 @@ class AuthenticateShopify
         $shop = SessionToken::shopFromClaims($claims);
         $store = Store::firstOrNew(['shop_domain' => $shop]);
 
-        if (! $store->exists || ! $store->isInstalled() || $store->missingScopes() !== []) {
+        // A store without a refresh token holds a legacy non-expiring token, which Shopify rejects.
+        $needsExchange = ! $store->exists || ! $store->isInstalled() || $store->missingScopes() !== [] || $store->refresh_token === null;
+        if (! $needsExchange && $store->needsTokenRefresh()) {
+            try {
+                $this->tokenExchange->refresh($store);
+            } catch (Throwable $e) {
+                // Refresh token expired or revoked: the session token gets a new pair.
+                $needsExchange = true;
+            }
+        }
+
+        if ($needsExchange) {
             $store = $this->tokenExchange->exchange($store, $token);
 
             try {

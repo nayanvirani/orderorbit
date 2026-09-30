@@ -17,9 +17,10 @@
 |
 | Templates may preset content ("content" => [...]) on top of the type defaults.
 |
-| "discount" types apply real savings at checkout through the OrderOrbit
-| discount function (extensions/orderorbit-discounts): publishing one creates
-| a Shopify automatic discount (App\Services\Experiences\OfferSync).
+| "discount" types apply real savings at checkout: bundles merge into one
+| cart line through the OrderOrbit cart transform (BundleSync); the others use
+| the OrderOrbit discount function, one Shopify automatic discount per
+| experience (OfferSync).
 |
 */
 
@@ -47,7 +48,7 @@ return [
         'content' => [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Build your bundle and save', 'max' => 120],
             'subheadline' => ['type' => 'text', 'label' => 'Subheadline', 'default' => 'Pick your favourites', 'max' => 160],
-            'products' => ['type' => 'products', 'label' => 'Products in the bundle', 'required' => true, 'max_items' => 12],
+            'products' => ['type' => 'products', 'label' => 'Products in the bundle', 'required' => true, 'max_items' => 12, 'quantities' => true],
             'bundle_mode' => ['type' => 'select', 'label' => 'Bundle type', 'default' => 'mix', 'options' => ['mix' => 'Mix & match: shopper picks any of these', 'fixed' => 'Fixed: all products together'], 'help' => 'Fixed bundles add every product; the saving applies when all of them are in the cart.'],
             'min_items' => ['type' => 'number', 'label' => 'Minimum selections', 'default' => 2, 'min' => 1, 'max' => 12, 'help' => 'Mix & match only: items needed to unlock the saving.'],
             'max_items' => ['type' => 'number', 'label' => 'Maximum selections', 'default' => 3, 'min' => 1, 'max' => 12],
@@ -57,7 +58,7 @@ return [
             'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add bundle to cart', 'max' => 40],
             'badge' => ['type' => 'text', 'label' => 'Badge', 'default' => 'Save 15%', 'max' => 24],
             'show_compare_at' => ['type' => 'toggle', 'label' => 'Show compare-at prices', 'default' => true],
-            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Bundle discount', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
+            'checkout_label' => ['type' => 'text', 'label' => 'Bundle name in cart and checkout', 'default' => 'Bundle', 'max' => 60, 'help' => 'The bundle items show as one line with this name. Each product\'s inventory is still deducted.'],
         ],
     ],
 

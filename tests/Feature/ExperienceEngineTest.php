@@ -31,6 +31,10 @@ class ExperienceEngineTest extends TestCase
             $query = $request['query'] ?? '';
 
             return match (true) {
+                str_contains($query, 'productCreate') => Http::response(['data' => ['productCreate' => ['product' => ['id' => 'gid://shopify/Product/500', 'variants' => ['nodes' => [['id' => 'gid://shopify/ProductVariant/501']]]], 'userErrors' => []]]]),
+                str_contains($query, 'productVariantsBulkUpdate') => Http::response(['data' => ['productVariantsBulkUpdate' => ['userErrors' => []]]]),
+                str_contains($query, 'productUpdate') => Http::response(['data' => ['productUpdate' => ['product' => ['id' => 'gid://shopify/Product/500'], 'userErrors' => []]]]),
+                str_contains($query, 'cartTransformCreate') => Http::response(['data' => ['cartTransformCreate' => ['cartTransform' => ['id' => 'gid://shopify/CartTransform/7'], 'userErrors' => []]]]),
                 str_contains($query, 'discountAutomaticAppCreate') => Http::response(['data' => ['discountAutomaticAppCreate' => ['automaticAppDiscount' => ['discountId' => 'gid://shopify/DiscountAutomaticNode/77'], 'userErrors' => []]]]),
                 str_contains($query, 'discountAutomaticDelete') => Http::response(['data' => ['discountAutomaticDelete' => ['userErrors' => []]]]),
                 str_contains($query, 'currentAppInstallation { id }') => Http::response(['data' => ['currentAppInstallation' => ['id' => 'gid://shopify/AppInstallation/1']]]),
@@ -116,7 +120,7 @@ class ExperienceEngineTest extends TestCase
         $manager->publish($manager->create($store, 'shipping-bar', 'progress', null), null);
     }
 
-    public function test_bundles_publish_with_a_real_checkout_discount(): void
+    public function test_bundles_publish_through_the_cart_transform(): void
     {
         $this->fakeShopify();
         $store = $this->installedStore(['plan' => 'growth']);
@@ -124,33 +128,41 @@ class ExperienceEngineTest extends TestCase
         $experience = $manager->create($store, 'bundles', 'mix-and-match', null);
         $config = $experience->draft_config;
         $config['content']['products'] = [
-            ['id' => 'gid://shopify/Product/11', 'title' => 'Serum', 'handle' => 'serum', 'variant_id' => 'gid://shopify/ProductVariant/111'],
-            ['id' => 'gid://shopify/Product/12', 'title' => 'Cream', 'handle' => 'cream', 'variant_id' => 'gid://shopify/ProductVariant/121'],
+            ['id' => 'gid://shopify/Product/11', 'title' => 'Serum', 'handle' => 'serum', 'price' => 20, 'variant_id' => 'gid://shopify/ProductVariant/111'],
+            ['id' => 'gid://shopify/Product/12', 'title' => 'Cream', 'handle' => 'cream', 'price' => 30, 'variant_id' => 'gid://shopify/ProductVariant/121'],
         ];
         $config['content']['checkout_label'] = 'Skincare bundle';
         $experience->update(['draft_config' => $config]);
 
         $manager->publish($experience->fresh(), null);
 
-        $this->assertSame('gid://shopify/DiscountAutomaticNode/77', $experience->fresh()->shopify_discount_id);
-        Http::assertSent(function (Request $request) use ($experience) {
-            if (! str_contains($request['query'] ?? '', 'discountAutomaticAppCreate')) {
+        $fresh = $experience->fresh();
+        $this->assertSame('gid://shopify/ProductVariant/501', $fresh->bundle_variant_id);
+        $this->assertNull($fresh->shopify_discount_id, 'Bundles are priced by the cart transform, not a discount.');
+        $this->assertSame('gid://shopify/CartTransform/7', $store->fresh()->cart_transform_id);
+
+        // Hidden parent: app-owned, sold only with components, stock from the components.
+        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productCreate')
+            && json_decode($r->body(), true)['variables']['product']['claimOwnership'] === ['bundles' => true] && json_decode($r->body(), true)['variables']['product']['title'] === 'Skincare bundle');
+        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productVariantsBulkUpdate')
+            && json_decode($r->body(), true)['variables']['variants'][0]['requiresComponents'] === true && json_decode($r->body(), true)['variables']['variants'][0]['inventoryItem'] === ['tracked' => false]
+            && json_decode($r->body(), true)['variables']['variants'][0]['price'] === '50.00');
+        Http::assertSent(function (Request $r) use ($experience) {
+            if (! str_contains($r['query'] ?? '', 'cartTransformCreate')) {
                 return false;
             }
-            $discount = json_decode($request->body(), true)['variables']['discount'];
-            $offer = json_decode($discount['metafields'][0]['value'], true)['offers'][0];
+            $bundle = json_decode(json_decode($r->body(), true)['variables']['metafields'][0]['value'], true)['bundles'][0];
 
-            return $discount['functionHandle'] === 'orderorbit-discounts'
-                && $discount['title'] === 'Skincare bundle'
-                && $discount['discountClasses'] === ['PRODUCT']
-                && $offer === ['k' => 'bundle', 'p' => ['11', '12'], 'mode' => 'mix', 'min' => 2, 't' => 'percentage', 'v' => 15, 'id' => $experience->handle, 'm' => 'Skincare bundle'];
+            return json_decode($r->body(), true)['variables']['handle'] === 'orderorbit-bundles'
+                && $bundle['id'] === $experience->handle && $bundle['parent'] === 'gid://shopify/ProductVariant/501'
+                && $bundle['p'] === ['11', '12'] && $bundle['mode'] === 'mix' && $bundle['min'] === 2 && $bundle['v'] == 15;
         });
 
-        // Pausing takes the saving away with the widget.
+        // Pausing takes the bundle out of the transform and drafts the parent.
         $manager->pause($experience->fresh());
-        $this->assertNull($experience->fresh()->shopify_discount_id);
-        Http::assertSent(fn (Request $request) => str_contains($request['query'] ?? '', 'discountAutomaticDelete')
-            && json_decode($request->body(), true)['variables']['id'] === 'gid://shopify/DiscountAutomaticNode/77');
+        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productUpdate') && (json_decode($r->body(), true)['variables']['product']['status'] ?? null) === 'DRAFT');
+        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'metafieldsSet') && (json_decode($r->body(), true)['variables']['metafields'][0]['ownerId'] ?? null) === 'gid://shopify/CartTransform/7'
+            && json_decode(json_decode($r->body(), true)['variables']['metafields'][0]['value'], true) === ['bundles' => []]);
     }
 
     public function test_experiences_without_a_saving_create_no_discount(): void

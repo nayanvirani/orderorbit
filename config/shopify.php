@@ -23,7 +23,7 @@ return [
     // Header "Sign In": merchants authenticate through Shopify, not a separate password.
     'sign_in_url' => env('SHOPIFY_SIGN_IN_URL', 'https://admin.shopify.com'),
 
-    'scopes' => env('SHOPIFY_SCOPES', 'read_products,read_themes,write_discounts,write_pixels,read_customer_events'),
+    'scopes' => env('SHOPIFY_SCOPES', 'read_products,write_products,read_themes,write_discounts,write_cart_transforms,write_publications,write_pixels,read_customer_events'),
 
     /*
     |--------------------------------------------------------------------------

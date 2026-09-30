@@ -24,6 +24,7 @@ class StorefrontPublisher
     public function __construct(
         private readonly AdminApi $api,
         private readonly OfferSync $offers,
+        private readonly BundleSync $bundles,
     ) {}
 
     public function payload(Store $store): array
@@ -67,7 +68,8 @@ class StorefrontPublisher
 
     public function sync(Store $store): array
     {
-        // Savings go live (or stop) before the storefront starts (or stops) promising them.
+        // Bundles and savings go live (or stop) before the storefront starts (or stops) promising them.
+        $this->bundles->sync($store);
         $this->offers->sync($store);
 
         $payload = $this->payload($store);

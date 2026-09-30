@@ -28,7 +28,7 @@ class AdminApi
             ]);
 
         if ($response->failed()) {
-            throw new RuntimeException("Admin API request failed for {$store->shop_domain}: HTTP {$response->status()}");
+            throw new RuntimeException("Admin API request failed for {$store->shop_domain}: HTTP {$response->status()} ".mb_substr((string) $response->body(), 0, 500));
         }
 
         $body = $response->json();

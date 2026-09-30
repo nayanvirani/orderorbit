@@ -22,7 +22,7 @@ class Experience extends Model
     protected $fillable = [
         'store_id', 'handle', 'type', 'name', 'description', 'cro_template_version_id', 'template_key', 'status',
         'draft_config', 'has_unpublished_changes', 'published_version_id', 'published_at', 'starts_at', 'ends_at',
-        'placement_status', 'placement_checked_at', 'created_by', 'updated_by', 'archived_at', 'shopify_discount_id',
+        'placement_status', 'placement_checked_at', 'created_by', 'updated_by', 'archived_at', 'shopify_discount_id', 'bundle_product_id', 'bundle_variant_id',
     ];
 
     protected function casts(): array

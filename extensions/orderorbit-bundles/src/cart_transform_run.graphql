@@ -1,0 +1,30 @@
+query CartTransformRunInput {
+  presentmentCurrencyRate
+  cart {
+    lines {
+      id
+      quantity
+      bundle: attribute(key: "_oo_bundle") {
+        value
+      }
+      cost {
+        amountPerQuantity {
+          amount
+        }
+      }
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          product {
+            id
+          }
+        }
+      }
+    }
+  }
+  cartTransform {
+    metafield(namespace: "$app", key: "bundles") {
+      jsonValue
+    }
+  }
+}

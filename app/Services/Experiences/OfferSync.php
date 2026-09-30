@@ -11,7 +11,7 @@ use RuntimeException;
 
 /**
  * Real savings at checkout. Every live experience that promises a saving
- * (bundle, quantity break, BOGO, upsell incentive, free gift, free shipping)
+ * (quantity break, BOGO, upsell incentive, free gift, free shipping)
  * gets its own Shopify automatic discount powered by the OrderOrbit discount
  * function (extensions/orderorbit-discounts). The discount's "offers" metafield
  * tells the function what to apply; Shopify handles the start and end dates,
@@ -35,14 +35,6 @@ class OfferSync
         )));
 
         $offer = match ($experience->type) {
-            'bundles' => ($c['discount_type'] ?? 'none') !== 'none' && (float) ($c['discount_value'] ?? 0) > 0 ? [
-                'k' => 'bundle',
-                'p' => $ids($c['products'] ?? []),
-                'mode' => ($c['bundle_mode'] ?? 'mix') === 'fixed' ? 'fixed' : 'mix',
-                'min' => max(1, (int) ($c['min_items'] ?? 1)),
-                't' => $c['discount_type'] === 'amount' ? 'amount' : 'percentage',
-                'v' => (float) $c['discount_value'],
-            ] : null,
             'quantity-breaks' => ($tiers = collect($c['tiers'] ?? [])
                 ->filter(fn ($t) => (float) ($t['discount'] ?? 0) > 0 && (int) ($t['quantity'] ?? 0) > 0)
                 ->map(fn ($t) => [(int) $t['quantity'], (float) $t['discount']])
@@ -50,6 +42,8 @@ class OfferSync
                     'k' => 'tiers',
                     'p' => $ids($c['products'] ?? []) ?: $ids($config['targeting']['products'] ?? []),
                     'tiers' => $tiers,
+                    // Bundle lines are priced by the cart transform; tiers never apply to them.
+                    'x' => self::bundleParents($experience),
                 ] : null,
             'bogo' => [
                 'k' => 'bogo',
@@ -73,7 +67,19 @@ class OfferSync
             return null;
         }
 
+        if (($offer['x'] ?? null) === []) {
+            unset($offer['x']);
+        }
+
         return $offer + array_filter(['id' => $experience->handle, 'm' => trim((string) ($c['checkout_label'] ?? '')) ?: null]);
+    }
+
+    private static function bundleParents(Experience $experience): array
+    {
+        return Experience::where('store_id', $experience->store_id)->whereNotNull('bundle_product_id')
+            ->pluck('bundle_product_id')
+            ->map(fn ($id) => preg_replace('/\D/', '', $id))
+            ->values()->all();
     }
 
     /**

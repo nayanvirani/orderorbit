@@ -1,7 +1,7 @@
 {
   "payload": {
-    "export": "cart-lines-discounts-generate-run",
-    "target": "cart.lines.discounts.generate.run",
+    "export": "cart-transform-run",
+    "target": "cart.transform.run",
     "input": {
       "presentmentCurrencyRate": "1.0",
       "cart": {
@@ -9,7 +9,9 @@
           {
             "id": "gid://shopify/CartLine/0",
             "quantity": 1,
-            "offer": null,
+            "bundle": {
+              "value": "b1|g1"
+            },
             "cost": {
               "amountPerQuantity": {
                 "amount": "20"
@@ -24,22 +26,22 @@
           }
         ]
       },
-      "discount": {
-        "discountClasses": [
-          "PRODUCT"
-        ],
+      "cartTransform": {
         "metafield": {
           "jsonValue": {
-            "offers": [
+            "bundles": [
               {
-                "k": "bundle",
                 "id": "b1",
-                "p": [
-                  "1",
-                  "2"
-                ],
+                "parent": "gid://shopify/ProductVariant/900",
+                "title": "Skincare bundle",
+                "image": "https://cdn.shopify.com/a.jpg",
                 "mode": "mix",
                 "min": 2,
+                "p": [
+                  "1",
+                  "2",
+                  "3"
+                ],
                 "t": "percentage",
                 "v": 15
               }
