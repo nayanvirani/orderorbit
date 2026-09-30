@@ -321,3 +321,4 @@
 .oo-type-bundles, .oo-type-progressive-gifts { letter-spacing: normal; line-height: 1.45; }
 .oo-bthumb { aspect-ratio: 1 / 1; }
 .oo-bthumb img.oo-img { height: 100% !important; border-radius: 8px; }
+.oo-mslot small em { display: block; font-style: normal; font-weight: 500; color: var(--b-muted, #6b6b6b); font-size: 12px; }

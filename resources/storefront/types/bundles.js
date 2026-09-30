@@ -47,7 +47,7 @@
 
   function select(name, variants, ctx) {
     return '<select class="oo-variant" data-oo-v="' + name + '">' + variants.map(function (v, i) {
-      return '<option value="' + v.id + '"' + (v.available === false ? ' disabled' : '') + '>' + h.esc(v.title || v.public_title || 'Option ' + (i + 1)) + (v.available === false ? ' (sold out)' : '') + '</option>';
+      return '<option value="' + v.id + '" data-price="' + (v.price != null ? v.price : '') + '"' + (v.available === false ? ' disabled' : '') + '>' + h.esc(v.title || v.public_title || 'Option ' + (i + 1)) + (v.available === false ? ' (sold out)' : '') + '</option>';
     }).join('') + '</select>';
   }
 
@@ -216,7 +216,7 @@
           if (same) same.quantity += qty; else list.push({ id: id, quantity: qty, properties: props });
         };
         if (mix) {
-          picks.forEach(function (p) { add(v('m:' + p.j, c.mix.pool[p.j].variant_id), 1); });
+          picks.forEach(function (p) { add(p.v, 1); });
         } else {
           var i = current();
           var o = c.offers[i];
@@ -242,7 +242,16 @@
       root.addEventListener('click', function (e) {
         var pick = e.target.closest('[data-oo-pick]');
         var unpick = e.target.closest('[data-oo-unpick]');
-        if (pick && picks.length < c.mix.slots) { picks.push({ j: Number(pick.getAttribute('data-oo-pick')) }); update(); }
+        if (pick && picks.length < c.mix.slots) {
+          // Each pick keeps the variant chosen at that moment, so one product can fill
+          // several slots in different variants.
+          var j = Number(pick.getAttribute('data-oo-pick'));
+          var p = c.mix.pool[j];
+          var sel = root.querySelector('[data-oo-v="m:' + j + '"]');
+          var opt = sel && sel.options[sel.selectedIndex];
+          picks.push({ j: j, v: sel ? sel.value : p.variant_id, label: opt ? opt.text : '', price: opt && opt.getAttribute('data-price') !== '' ? Number(opt.getAttribute('data-price')) : Number(p.price || 0) });
+          update();
+        }
         if (unpick) { e.preventDefault(); picks.splice(Number(unpick.getAttribute('data-oo-unpick')), 1); update(); }
       });
       btn.addEventListener('click', function () {

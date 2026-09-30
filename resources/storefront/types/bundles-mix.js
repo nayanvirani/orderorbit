@@ -10,9 +10,10 @@
 
   function img(p) { return '<span class="oo-mimg">' + h.productImage(p || {}) + '</span>'; }
 
-  function slot(c, p, k) {
+  function slot(c, pick, k) {
+    var p = pick && c.mix.pool[pick.j];
     return p
-      ? '<span class="oo-mslot oo-mslot-on">' + img(p) + '<small>' + h.esc(p.title) + '</small><button type="button" class="oo-mx" aria-label="Remove ' + h.esc(p.title) + '" data-oo-unpick="' + k + '">×</button></span>'
+      ? '<span class="oo-mslot oo-mslot-on">' + img(p) + '<small>' + h.esc(p.title) + (pick.label ? '<em>' + h.esc(pick.label) + '</em>' : '') + '</small><button type="button" class="oo-mx" aria-label="Remove ' + h.esc(p.title) + '" data-oo-unpick="' + k + '">×</button></span>'
       : '<span class="oo-mslot"><i aria-hidden="true">+</i><small>' + h.esc(c.mix.slot_text) + '</small></span>';
   }
 
@@ -33,9 +34,9 @@
     // Redraws the slots and progress; returns the saving for the summary.
     update: function (root, c, ctx, picks, btn, B, extra) {
       root.querySelectorAll('[data-oo-slot]').forEach(function (el, k) {
-        el.innerHTML = slot(c, picks[k] && c.mix.pool[picks[k].j], k);
+        el.innerHTML = slot(c, picks[k], k);
       });
-      var total = picks.reduce(function (sum, p) { return sum + Number(c.mix.pool[p.j].price || 0); }, 0);
+      var total = picks.reduce(function (sum, p) { return sum + p.price; }, 0);
       var tier = tierFor(c, picks.length);
       var next = c.mix.tiers.filter(function (t) { return t.count > picks.length; })[0];
       var saving = tier ? total * tier.discount / 100 : 0;
