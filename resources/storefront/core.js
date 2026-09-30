@@ -270,7 +270,7 @@
       } else if (state.ctx.designMode) {
         // Only merchants in the Theme Editor see this; shoppers see nothing.
         el.hidden = false;
-        el.innerHTML = '<div class="oo-editor-note">OrderOrbit: nothing published matches this block here yet.</div>';
+        el.innerHTML = '<div class="oo-editor-note">OrderOrbit Space: nothing published matches this block here yet.</div>';
       } else {
         el.hidden = true;
       }

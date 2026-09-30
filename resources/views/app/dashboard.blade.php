@@ -44,7 +44,7 @@
     </s-section>
 
     @unless ($checklistDone)
-        <s-section heading="Set up OrderOrbit">
+        <s-section heading="Set up OrderOrbit Space">
             <div class="ob-progress" aria-label="{{ $done }} of {{ $total }} done"><i style="width:{{ round($done / $total * 100) }}%"></i></div>
             <p class="oo-muted oo-small" style="margin:0 0 6px">{{ $done }} of {{ $total }} done</p>
             <ol class="ob-checklist">
@@ -63,7 +63,7 @@
 
     <s-section heading="Recent activity">
         @forelse ($recent as $log)
-            <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit' }}</strong> · {{ str_replace(['.', '_'], [' ', ' '], $log->action) }} <span class="oo-muted">· {{ $log->created_at?->diffForHumans() }}</span></s-paragraph>
+            <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit Space' }}</strong> · {{ str_replace(['.', '_'], [' ', ' '], $log->action) }} <span class="oo-muted">· {{ $log->created_at?->diffForHumans() }}</span></s-paragraph>
         @empty
             <x-app.empty title="Nothing here yet" text="Your team's changes — new experiences, publishes, plan changes — show up here." />
         @endforelse

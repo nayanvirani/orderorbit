@@ -14,7 +14,7 @@
 
     @if ($missingScopes)
         <s-banner tone="critical" heading="Your Shopify connection needs attention">
-            <s-paragraph>OrderOrbit is missing permissions it needs: {{ implode(', ', $missingScopes) }}. Reconnect to approve them.</s-paragraph>
+            <s-paragraph>OrderOrbit Space is missing permissions it needs: {{ implode(', ', $missingScopes) }}. Reconnect to approve them.</s-paragraph>
         </s-banner>
     @endif
 
@@ -49,7 +49,7 @@
             <dt>Live theme</dt><dd>{{ $store->theme_name ?? '—' }}</dd>
             <dt>App blocks</dt>
             <dd>@php([$tone, $text] = $yesNo($cap('online_store_2'), 'Supported (Online Store 2.0)', 'Not supported — switch to an Online Store 2.0 theme'))<s-badge tone="{{ $tone }}">{{ $text }}</s-badge></dd>
-            <dt>OrderOrbit app embed</dt><dd><s-badge>Available with the first OrderOrbit block</s-badge></dd>
+            <dt>OrderOrbit Space app embed</dt><dd><s-badge>Available with the first OrderOrbit Space block</s-badge></dd>
         </dl>
         <s-stack direction="inline" gap="small-200" style="margin-top:16px">
             <s-button href="{{ $store->adminUrl('themes/current/editor') }}" target="_top">Open Theme Editor</s-button>
@@ -57,7 +57,7 @@
     </s-section>
 
     <s-section heading="What your store supports">
-        <s-paragraph>OrderOrbit only shows the Shopify surfaces your store can use.</s-paragraph>
+        <s-paragraph>OrderOrbit Space only shows the Shopify surfaces your store can use.</s-paragraph>
         <div class="oo-scroll">
             <table class="oo-table">
                 <thead><tr><th>Surface</th><th>Status</th><th>Notes</th></tr></thead>

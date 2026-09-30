@@ -12,7 +12,7 @@
 
     @if ($notPlaced)
         <s-banner tone="warning">
-            <s-paragraph>{{ $notPlaced }} published {{ \Illuminate\Support\Str::plural('experience', $notPlaced) }} {{ $notPlaced === 1 ? 'isn\'t' : 'aren\'t' }} placed in your theme yet. Add the OrderOrbit experience block in the Theme Editor.</s-paragraph>
+            <s-paragraph>{{ $notPlaced }} published {{ \Illuminate\Support\Str::plural('experience', $notPlaced) }} {{ $notPlaced === 1 ? 'isn\'t' : 'aren\'t' }} placed in your theme yet. Add the OrderOrbit Space block in the Theme Editor.</s-paragraph>
             <s-button slot="secondary-actions" href="{{ app_route('app.cro.experiences.index', ['status' => 'not_placed']) }}">View experiences</s-button>
         </s-banner>
     @endif

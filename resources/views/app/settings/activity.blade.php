@@ -4,12 +4,12 @@
 
 @php
     $labels = [
-        'store.installed' => 'Installed OrderOrbit',
+        'store.installed' => 'Installed OrderOrbit Space',
         'store.token_refreshed' => 'Shopify connection refreshed',
         'store.reconnected' => 'Reconnected Shopify',
         'store.capabilities_checked' => 'Re-checked store capabilities',
-        'store.uninstalled' => 'Uninstalled OrderOrbit',
-        'user.joined' => 'Joined OrderOrbit',
+        'store.uninstalled' => 'Uninstalled OrderOrbit Space',
+        'user.joined' => 'Joined OrderOrbit Space',
         'user.invited' => 'Invited a staff member',
         'user.invite_cancelled' => 'Cancelled an invite',
         'user.role_changed' => 'Changed a role',
@@ -36,7 +36,7 @@
                         @foreach ($logs as $log)
                             <tr>
                                 <td title="{{ $log->created_at?->toDayDateTimeString() }}">{{ $log->created_at?->diffForHumans() }}</td>
-                                <td data-label="Who">{{ $log->actor?->displayName() ?? 'OrderOrbit' }}</td>
+                                <td data-label="Who">{{ $log->actor?->displayName() ?? 'OrderOrbit Space' }}</td>
                                 <td>{{ $labels[$log->action] ?? $log->action }}</td>
                                 <td class="oo-muted oo-small">{{ collect($log->context ?? [])->map(fn ($v, $k) => str_replace('_', ' ', $k).': '.(is_array($v) ? implode(', ', $v) : $v))->implode(' · ') }}</td>
                                 <td>@if ($log->request_id)<span class="oo-code">{{ \Illuminate\Support\Str::limit($log->request_id, 8, '') }}</span>@endif</td>
