@@ -1,14 +1,24 @@
 @extends('layouts.site')
 
 @section('title', 'Shopify CRO Templates | OrderOrbit')
-@section('description', 'Preview every OrderOrbit template: bundles, free gifts, shipping bars, upsells, countdowns, trust, checkout, Thank You, customer account and automation.')
+@section('description', 'Preview every OrderOrbit template: bundles, progressive gifts, cart upsells, countdowns, trust, checkout, Thank You, customer account and automation.')
 
 @section('content')
 <section class="page-hero sky">
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>{{ count($templates) }} templates</span>
         <h1>Start from a <span class="grad-text">proven template.</span></h1>
-        <p class="lead">Preview every OrderOrbit template. Install the app to customise and publish.</p>
+        <p class="lead">A template is a ready-made layout to start from, not a fixed design. Pick one in the app, then change every offer, product, text, colour, size and spacing to match your store, with a live preview.</p>
+    </div>
+</section>
+
+<section class="section tight" style="padding-top:0">
+    <div class="wrap">
+        <div class="tpl-explain">
+            <div><b>1 · Pick a feature</b><span>Bundles have six types: quantity breaks, quantity breaks + gifts, variant offers, mix &amp; match, fixed bundles and fixed bundles + gifts. Progressive gifts combines free gifts, free shipping and discounts in one bar.</span></div>
+            <div><b>2 · Choose a template</b><span>Each type has ready-made layouts (vertical, horizontal or grid) and colour presets. Preview them with your own product.</span></div>
+            <div><b>3 · Make it yours</b><span>Settings, offers and design are all editable. Your theme's fonts are used by default; colours, sizes, borders and custom CSS are yours to set.</span></div>
+        </div>
     </div>
 </section>
 

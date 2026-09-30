@@ -11,8 +11,8 @@ class ExperienceSchemaTest extends TestCase
     public function test_every_type_has_valid_defaults_except_required_picks(): void
     {
         foreach (array_keys(Registry::types()) as $type) {
-            if ($type === 'bundles') {
-                continue; // BundleSchemaTest
+            if ($type === 'bundles' || $type === 'progressive-gifts') {
+                continue; // Modules: BundleModuleTest, GiftModuleTest
             }
             [$config, $errors] = Schema::normalize($type, Schema::defaults($type));
             $this->assertSame(Schema::SECTIONS, array_keys($config), $type);

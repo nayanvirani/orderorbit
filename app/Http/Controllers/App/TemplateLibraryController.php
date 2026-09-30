@@ -25,7 +25,7 @@ class TemplateLibraryController extends Controller
             ->mapWithKeys(fn ($row) => ["{$row->type}:{$row->template_key}" => (int) $row->total]);
 
         $templates = [];
-        foreach (Registry::types() as $typeKey => $definition) {
+        foreach (Registry::creatable() as $typeKey => $definition) {
             if ($type && $type !== $typeKey) {
                 continue;
             }

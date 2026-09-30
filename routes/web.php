@@ -8,6 +8,7 @@ use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\BundleController;
 use App\Http\Controllers\App\ExperienceController;
 use App\Http\Controllers\App\FeatureController;
+use App\Http\Controllers\App\GiftController;
 use App\Http\Controllers\App\OnboardingController;
 use App\Http\Controllers\App\StoreSettingsController;
 use App\Http\Controllers\App\TemplateLibraryController;
@@ -62,7 +63,19 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
             });
         });
 
-        // Feature pages (app navigation): Bundles, Volume discounts, BOGO, ...
+        // Progressive gifts module: list, template, editor
+        Route::prefix('progressive-gifts')->name('gifts.')->group(function () {
+            Route::get('/', [GiftController::class, 'index'])->name('index');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::get('/new', [GiftController::class, 'models'])->name('models');
+                Route::post('/', [GiftController::class, 'store'])->name('store');
+                Route::get('/{gift}', [GiftController::class, 'edit'])->whereNumber('gift')->name('edit');
+                Route::post('/{gift}', [GiftController::class, 'update'])->whereNumber('gift')->name('update');
+                Route::post('/{gift}/toggle', [GiftController::class, 'toggle'])->whereNumber('gift')->name('toggle');
+            });
+        });
+
+        // Feature pages (app navigation): Cart upsells, Countdown timer, Sticky add to cart, Trust badges
         Route::get('/features/{feature}', [FeatureController::class, 'show'])->whereIn('feature', array_keys(Registry::features()))->name('features.show');
 
         // CRO experiences (section 15, D2)

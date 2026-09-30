@@ -1,0 +1,162 @@
+{
+  "payload": {
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 2,
+            "offer": null,
+            "bundle": null,
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "30"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/1"
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 2,
+            "offer": {
+              "value": "p1"
+            },
+            "bundle": null,
+            "gift": {
+              "value": "0"
+            },
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "15"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/8"
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/2",
+            "quantity": 1,
+            "offer": {
+              "value": "p1"
+            },
+            "bundle": null,
+            "gift": {
+              "value": "2"
+            },
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/9"
+              }
+            }
+          }
+        ]
+      },
+      "discount": {
+        "discountClasses": [
+          "PRODUCT",
+          "ORDER"
+        ],
+        "metafield": {
+          "jsonValue": {
+            "offers": [
+              {
+                "k": "pg",
+                "id": "p1",
+                "by": "value",
+                "n": "Rewards",
+                "m": [
+                  {
+                    "t": 50,
+                    "r": "gift",
+                    "q": 1
+                  },
+                  {
+                    "t": 55,
+                    "r": "percent",
+                    "v": 10
+                  },
+                  {
+                    "t": 100,
+                    "r": "choice",
+                    "q": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "productDiscountsAdd": {
+            "candidates": [
+              {
+                "message": "Rewards",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/1",
+                      "quantity": 1
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 100
+                  }
+                }
+              }
+            ],
+            "selectionStrategy": "ALL"
+          }
+        },
+        {
+          "orderDiscountsAdd": {
+            "candidates": [
+              {
+                "message": "Rewards",
+                "targets": [
+                  {
+                    "orderSubtotal": {
+                      "excludedCartLineIds": [
+                        "gid://shopify/CartLine/1",
+                        "gid://shopify/CartLine/2"
+                      ]
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 10
+                  }
+                }
+              }
+            ],
+            "selectionStrategy": "FIRST"
+          }
+        }
+      ]
+    }
+  }
+}

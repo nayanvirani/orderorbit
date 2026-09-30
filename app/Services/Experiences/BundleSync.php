@@ -7,17 +7,15 @@ use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Shopify\AdminApi;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
  * Real bundles through Shopify's Cart Transform (extensions/orderorbit-bundles).
  *
- * Each live bundle gets a hidden parent product in the merchant's store (app-owned,
- * untracked inventory, "requires components" so it can't be bought on its own).
- * In the cart, the items a shopper adds from the bundle widget merge into one line
- * on that parent at the bundle price. Orders keep the component lines, so Shopify
- * deducts inventory from each product in the bundle.
+ * In the cart, the items a shopper adds from a bundle widget merge into one line
+ * on the main product's own variant, at the bundle price. No extra product is
+ * created. Orders keep the component lines, so Shopify deducts inventory from
+ * each product in the bundle.
  */
 class BundleSync
 {
@@ -27,26 +25,16 @@ class BundleSync
 
     public function sync(Store $store): void
     {
-        $bundles = Experience::with('publishedVersion')
+        $config = Experience::with('publishedVersion')
             ->where('store_id', $store->id)
             ->where('type', 'bundles')
-            ->where(fn ($q) => $q->where('status', 'published')->orWhereNotNull('bundle_product_id'))
-            ->get();
-
-        $config = [];
-        foreach ($bundles as $bundle) {
-            $live = $bundle->status === 'published' && $bundle->publishedVersion !== null
-                && ($bundle->ends_at === null || $bundle->ends_at->isFuture());
-            $settings = $live ? BundleSchema::normalize($bundle->publishedVersion->config)[0] : null;
-
-            if ($settings && self::merges($settings)) {
-                $this->ensureParent($store, $bundle, $settings);
-                $config[] = self::entry($bundle, $settings);
-            } elseif ($bundle->bundle_product_id) {
-                // Not live (or nothing to merge): the parent goes back to draft so it can't reach a cart.
-                $this->setParentStatus($store, $bundle, 'DRAFT');
-            }
-        }
+            ->where('status', 'published')
+            ->get()
+            ->filter(fn (Experience $b) => $b->publishedVersion !== null && ($b->ends_at === null || $b->ends_at->isFuture()))
+            ->map(fn (Experience $b) => [$b, BundleSchema::normalize($b->publishedVersion->config)[0]])
+            ->filter(fn ($pair) => self::merges($pair[1]))
+            ->map(fn ($pair) => self::entry(...$pair))
+            ->values()->all();
 
         if ($config === [] && ! $store->cart_transform_id) {
             return;
@@ -73,12 +61,12 @@ class BundleSync
             fn ($p) => preg_match('#(\d+)$#', (string) ($p['id'] ?? ''), $m) ? $m[1] : null,
             $items,
         )));
+        $multi = collect($config['offers'])->first(fn ($o) => $o['kind'] === 'multi' && $o['products']);
 
         return array_filter([
             'id' => $bundle->handle,
-            'parent' => $bundle->bundle_variant_id,
-            'title' => self::title($bundle, $config),
-            'image' => self::image($config),
+            'title' => $config['settings']['title'] ?: $bundle->name,
+            'image' => ($multi['products'][0]['image'] ?? null) ?? ($config['mix']['pool'][0]['image'] ?? null),
             'o' => array_map(fn ($o) => $o['kind'] === 'multi' ? array_filter([
                 'p' => $ids($o['products']),
                 't' => $o['discount_type'],
@@ -90,144 +78,6 @@ class BundleSync
                 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $config['mix']['tiers']),
             ] : null,
         ], fn ($v) => $v !== null);
-    }
-
-    private static function title(Experience $bundle, array $config): string
-    {
-        return $bundle->name;
-    }
-
-    private static function image(array $config): ?string
-    {
-        $multi = collect($config['offers'])->first(fn ($o) => $o['kind'] === 'multi' && $o['products']);
-
-        return ($multi['products'][0]['image'] ?? null) ?? ($config['mix']['pool'][0]['image'] ?? null);
-    }
-
-    private function ensureParent(Store $store, Experience $bundle, array $config): void
-    {
-        $title = self::title($bundle, $config);
-        $multi = collect($config['offers'])->first(fn ($o) => $o['kind'] === 'multi' && $o['products']);
-        $items = $multi['products'] ?? array_slice($config['mix']['pool'], 0, $config['mix']['slots']);
-        $price = number_format(collect($items)->sum(fn ($p) => (float) ($p['price'] ?? 0) * (int) ($p['quantity'] ?? 1)), 2, '.', '');
-        $image = self::image($config);
-        // One cached state per bundle: what we last told Shopify (title, price, status).
-        $state = 'bundle-state:'.$bundle->id;
-        if ($bundle->bundle_product_id && Cache::get($state) === md5($title.$price.$bundle->bundle_variant_id.'ACTIVE')) {
-            return;
-        }
-
-        if ($bundle->bundle_product_id && $this->updateParent($store, $bundle, $title, $price)) {
-            Cache::forever($state, md5($title.$price.$bundle->bundle_variant_id.'ACTIVE'));
-
-            return;
-        }
-
-        $this->assertEligible($store);
-
-        $created = $this->api->graphql($store, <<<'GQL'
-            mutation CreateBundle($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
-              productCreate(product: $product, media: $media) {
-                product { id variants(first: 1) { nodes { id } } }
-                userErrors { field message }
-              }
-            }
-            GQL, [
-            'product' => [
-                'title' => $title,
-                'status' => 'ACTIVE',
-                'productType' => 'Bundle',
-                'tags' => ['OrderOrbit bundle'],
-                'descriptionHtml' => '<p>Bundle created by OrderOrbit. Items are sold and fulfilled as the individual products.</p>',
-                'claimOwnership' => ['bundles' => true],
-                // Keep it out of storefront search and sitemaps.
-                'metafields' => [['namespace' => 'seo', 'key' => 'hidden', 'type' => 'number_integer', 'value' => '1']],
-            ],
-            'media' => $image ? [['originalSource' => $image, 'mediaContentType' => 'IMAGE', 'alt' => $title]] : [],
-        ]);
-        $this->assertNoErrors($created['productCreate']['userErrors'] ?? []);
-
-        $productId = $created['productCreate']['product']['id'] ?? null;
-        $variantId = $created['productCreate']['product']['variants']['nodes'][0]['id'] ?? null;
-        if (! $productId || ! $variantId) {
-            throw new RuntimeException('Shopify did not return the bundle product.');
-        }
-
-        $this->updateVariant($store, $productId, $variantId, $price);
-        $this->publish($store, $productId);
-
-        $bundle->forceFill(['bundle_product_id' => $productId, 'bundle_variant_id' => $variantId])->saveQuietly();
-        Cache::forever($state, md5($title.$price.$variantId.'ACTIVE'));
-    }
-
-    /**
-     * Returns false when the parent was deleted in Shopify admin, so it's recreated.
-     */
-    private function updateParent(Store $store, Experience $bundle, string $title, string $price): bool
-    {
-        $result = $this->api->graphql($store, <<<'GQL'
-            mutation UpdateBundle($product: ProductUpdateInput!) {
-              productUpdate(product: $product) { product { id } userErrors { field message } }
-            }
-            GQL, ['product' => ['id' => $bundle->bundle_product_id, 'title' => $title, 'status' => 'ACTIVE']]);
-
-        if (($result['productUpdate']['product'] ?? null) === null) {
-            $bundle->forceFill(['bundle_product_id' => null, 'bundle_variant_id' => null])->saveQuietly();
-
-            return false;
-        }
-        $this->assertNoErrors($result['productUpdate']['userErrors'] ?? []);
-        $this->updateVariant($store, $bundle->bundle_product_id, $bundle->bundle_variant_id, $price);
-
-        return true;
-    }
-
-    private function updateVariant(Store $store, string $productId, string $variantId, string $price): void
-    {
-        $result = $this->api->graphql($store, <<<'GQL'
-            mutation BundleVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-              productVariantsBulkUpdate(productId: $productId, variants: $variants) { userErrors { field message } }
-            }
-            GQL, ['productId' => $productId, 'variants' => [[
-            'id' => $variantId,
-            'price' => $price,
-            // Sold only as a bundle; stock comes from the component products.
-            'requiresComponents' => true,
-            'inventoryItem' => ['tracked' => false],
-        ]]]);
-        $this->assertNoErrors($result['productVariantsBulkUpdate']['userErrors'] ?? []);
-    }
-
-    private function setParentStatus(Store $store, Experience $bundle, string $status): void
-    {
-        $state = 'bundle-state:'.$bundle->id;
-        if (Cache::get($state) === $bundle->bundle_product_id.$status) {
-            return;
-        }
-        $this->api->graphql($store, <<<'GQL'
-            mutation BundleStatus($product: ProductUpdateInput!) {
-              productUpdate(product: $product) { userErrors { field message } }
-            }
-            GQL, ['product' => ['id' => $bundle->bundle_product_id, 'status' => $status]]);
-        Cache::forever($state, $bundle->bundle_product_id.$status);
-    }
-
-    // The parent must be on the Online Store for the bundle line to check out.
-    private function publish(Store $store, string $productId): void
-    {
-        try {
-            $publications = $this->api->graphql($store, '{ publications(first: 25) { nodes { id name } } }')['publications']['nodes'] ?? [];
-            $online = collect($publications)->first(fn ($p) => stripos($p['name'] ?? '', 'online store') !== false);
-            if ($online) {
-                $this->api->graphql($store, <<<'GQL'
-                    mutation PublishBundle($id: ID!, $input: [PublicationInput!]!) {
-                      publishablePublish(id: $id, input: $input) { userErrors { field message } }
-                    }
-                    GQL, ['id' => $productId, 'input' => [['publicationId' => $online['id']]]]);
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Bundle parent could not be published to the Online Store', ['store' => $store->shop_domain, 'error' => $e->getMessage()]);
-        }
     }
 
     private function assertEligible(Store $store): void
@@ -249,6 +99,7 @@ class BundleSync
         $metafield = ['namespace' => '$app', 'key' => 'bundles', 'type' => 'json', 'value' => $value];
 
         if (! $store->cart_transform_id) {
+            $this->assertEligible($store);
             $created = $this->api->graphql($store, <<<'GQL'
                 mutation RegisterBundles($handle: String!, $metafields: [MetafieldInput!]) {
                   cartTransformCreate(functionHandle: $handle, blockOnFailure: false, metafields: $metafields) {
@@ -258,18 +109,16 @@ class BundleSync
                 }
                 GQL, ['handle' => self::FUNCTION_HANDLE, 'metafields' => [$metafield]]);
 
-            $id = $created['cartTransformCreate']['cartTransform']['id'] ?? null;
-            if (! $id) {
-                // Already registered (e.g. after a reinstall): reuse it.
-                $id = $this->api->graphql($store, '{ cartTransforms(first: 5) { nodes { id } } }')['cartTransforms']['nodes'][0]['id'] ?? null;
-                if (! $id) {
-                    $this->assertNoErrors($created['cartTransformCreate']['userErrors'] ?? [['message' => 'cart transform not created']]);
-                }
-            } else {
+            if ($id = $created['cartTransformCreate']['cartTransform']['id'] ?? null) {
                 $store->forceFill(['cart_transform_id' => $id])->save();
                 Cache::forever('bundle-config:'.$store->id.':'.md5($value.$id), true);
 
                 return;
+            }
+            // Already registered (e.g. after a reinstall): reuse it.
+            $id = $this->api->graphql($store, '{ cartTransforms(first: 5) { nodes { id } } }')['cartTransforms']['nodes'][0]['id'] ?? null;
+            if (! $id) {
+                $this->assertNoErrors($created['cartTransformCreate']['userErrors'] ?? [['message' => 'cart transform not created']]);
             }
             $store->forceFill(['cart_transform_id' => $id])->save();
         }

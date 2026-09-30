@@ -95,8 +95,8 @@ class Schema
      */
     public static function fields(string $type): array
     {
-        if ($type === 'bundles') {
-            // The Bundles module has its own editor and schema (BundleSchema).
+        if ($type === 'bundles' || $type === 'progressive-gifts') {
+            // Modules with their own editor and schema (BundleSchema, GiftSchema).
             return ['content' => []];
         }
 
@@ -113,6 +113,9 @@ class Schema
     {
         if ($type === 'bundles') {
             return BundleSchema::defaults(BundleSchema::firstModel('quantity-breaks'), $branding);
+        }
+        if ($type === 'progressive-gifts') {
+            return GiftSchema::defaults('pg-classic', $branding);
         }
 
         $config = [];
@@ -138,6 +141,9 @@ class Schema
     {
         if ($type === 'bundles') {
             return BundleSchema::normalize($input, $timezone);
+        }
+        if ($type === 'progressive-gifts') {
+            return GiftSchema::normalize($input, $timezone);
         }
 
         $config = [];

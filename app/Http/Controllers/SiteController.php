@@ -23,9 +23,9 @@ class SiteController extends Controller
 
     public const TEMPLATE_TYPES = [
         'bundle' => 'Bundles',
-        'gift' => 'Free Gift',
-        'shipping' => 'Shipping Bar',
-        'qty' => 'Quantity Breaks',
+        'qty' => 'Quantity & variant bundles',
+        'gift' => 'Progressive Gifts',
+        'shipping' => 'Checkout shipping',
         'upsell' => 'Upsells',
         'countdown' => 'Countdown',
         'sticky' => 'Sticky ATC',
@@ -53,8 +53,14 @@ class SiteController extends Controller
         return view('site.features', ['groups' => Content::featureGroups()]);
     }
 
-    public function feature(string $slug): View
+    // Pages merged into Bundles, Progressive Gifts and Cart Upsells.
+    private const MOVED = ['free-gift' => 'progressive-gifts', 'free-shipping-bar' => 'progressive-gifts', 'quantity-breaks' => 'bundles', 'upsell-cross-sell' => 'cart-upsells'];
+
+    public function feature(string $slug): View|\Illuminate\Http\RedirectResponse
     {
+        if (isset(self::MOVED[$slug])) {
+            return redirect()->route('site.feature', self::MOVED[$slug], 301);
+        }
         $feature = Content::feature($slug) ?? abort(404);
 
         $siblings = array_filter(Content::features(), fn ($f, $s) => $s !== $slug, ARRAY_FILTER_USE_BOTH);

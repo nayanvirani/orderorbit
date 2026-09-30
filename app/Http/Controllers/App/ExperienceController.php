@@ -73,8 +73,8 @@ class ExperienceController extends Controller
     public function create(Request $request, Store $store): View|RedirectResponse
     {
         $type = Registry::has($request->query('type')) ? $request->query('type') : null;
-        if ($type === 'bundles') {
-            return redirect()->to(app_route('app.bundles.types'));
+        if ($type === 'bundles' || $type === 'progressive-gifts') {
+            return redirect()->to(app_route($type === 'bundles' ? 'app.bundles.types' : 'app.gifts.models'));
         }
 
         return view('app.cro.create', [
@@ -113,8 +113,11 @@ class ExperienceController extends Controller
     {
         $experience = $this->find($store, $experience);
         if ($experience->type === 'bundles') {
-            // Bundles have their own editor (Settings / Offers / Design).
+            // Bundles and progressive gifts have their own editors.
             return redirect()->to(app_route('app.bundles.edit', array_filter(['bundle' => $experience->id, 'notice' => $request->query('notice')])));
+        }
+        if ($experience->type === 'progressive-gifts') {
+            return redirect()->to(app_route('app.gifts.edit', array_filter(['gift' => $experience->id, 'notice' => $request->query('notice')])));
         }
 
         return $this->builder($store, $experience, $experience->draft_config, []);

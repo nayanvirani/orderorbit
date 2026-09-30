@@ -11,5 +11,5 @@
             </div>
         @endforeach
     </div>
-    <div style="margin-top:14px;font-size:12px;color:#6b6889">Recommended for order value: <span class="chip">Bundles</span> <span class="chip">Quantity Breaks</span> <span class="chip">Free Gift</span></div>
+    <div style="margin-top:14px;font-size:12px;color:#6b6889">Recommended for order value: <span class="chip">Bundles</span> <span class="chip">Progressive Gifts</span> <span class="chip">Free Gift</span></div>
 </x-browser>

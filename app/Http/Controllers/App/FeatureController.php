@@ -18,11 +18,11 @@ class FeatureController extends Controller
 {
     public function show(Store $store, string $feature): View|RedirectResponse
     {
-        if ($feature === 'bundles') {
-            return redirect()->to(app_route('app.bundles.index'));
-        }
-
         $definition = Registry::feature($feature) ?? abort(404);
+        if (isset($definition['module'])) {
+            // Bundles and Progressive gifts have their own screens.
+            return redirect()->to(app_route($definition['module']));
+        }
         $types = $definition['types'];
 
         $experiences = $store->experiences()

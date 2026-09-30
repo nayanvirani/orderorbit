@@ -3,6 +3,7 @@
 namespace App\Services\Experiences;
 
 use App\Experiences\BundleSchema;
+use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
 use App\Experiences\Schema;
 use App\Models\CroTemplate;
@@ -82,6 +83,9 @@ class TemplateLibrary
         if ($type === 'bundles') {
             return BundleSchema::defaults($templateKey, $branding);
         }
+        if ($type === 'progressive-gifts') {
+            return GiftSchema::defaults($templateKey, $branding);
+        }
 
         $template = Registry::template($type, $templateKey) ?? [];
         $style = $template['style'] ?? 'card';
@@ -106,6 +110,9 @@ class TemplateLibrary
     {
         if ($type === 'bundles') {
             return self::bundlePreview($templateKey, $branding);
+        }
+        if ($type === 'progressive-gifts') {
+            return self::giftPreview($templateKey);
         }
 
         $config = self::defaults($type, $templateKey, $branding);
@@ -147,6 +154,22 @@ class TemplateLibrary
 
         return ['id' => "tpl-bundles-{$modelKey}", 'type' => 'bundles', 'template' => $modelKey, 'style' => BundleSchema::model($modelKey)['layout'] ?? 'vertical', 'version' => 0, 'priority' => 0]
             + BundleSchema::payload($config);
+    }
+
+    /**
+     * A progressive gifts model with sample gifts, in the storefront payload shape.
+     */
+    public static function giftPreview(string $modelKey): array
+    {
+        $config = GiftSchema::defaults($modelKey);
+        foreach ($config['milestones'] as $i => $m) {
+            if (in_array($m['reward'], ['gift', 'choice'], true)) {
+                $config['milestones'][$i]['products'] = $m['reward'] === 'choice' ? array_slice(self::SAMPLE_PRODUCTS, 0, 3) : [['id' => 'gid://shopify/Product/9', 'title' => 'Free gift', 'price' => 12.0]];
+            }
+        }
+
+        return ['id' => "tpl-progressive-gifts-{$modelKey}", 'type' => 'progressive-gifts', 'template' => $modelKey, 'style' => GiftSchema::model($modelKey)['layout'] ?? 'classic', 'version' => 0, 'priority' => 0]
+            + GiftSchema::payload($config);
     }
 
     private const SAMPLE_PRODUCTS = [

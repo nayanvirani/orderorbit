@@ -7,18 +7,18 @@
     'name' => 'OrderOrbit',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Shopify',
-    'description' => 'Bundles, upsells, free gifts, shipping bars, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
+    'description' => 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
     'offers' => array_values(array_map(fn ($p) => ['@type' => 'Offer', 'name' => $p['name'], 'price' => $p['price'], 'priceCurrency' => 'USD'], $plans)),
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @php
     $chapters = [
-        'convert' => ['01', 'Convert', 'Every conversion tool, one <em>consistent</em> design.', 'Bundles, free gifts, shipping progress, quantity breaks, product and cart upsells, countdowns, sticky add-to-cart and trust badges — sharing your brand colours, fonts and analytics.', 'bundles'],
+        'convert' => ['01', 'Convert', 'Every conversion tool, one <em>consistent</em> design.', 'Bundles (quantity breaks, mix & match, fixed and gift bundles), progressive gifts, cart upsells, countdowns, sticky add-to-cart and trust badges — sharing your brand colours, fonts and analytics.', 'bundles'],
         'checkout' => ['02', 'Checkout', 'Keep selling <em>after</em> the Buy button.', 'Add reviews, trust, shipping progress and offers to checkout where Shopify supports it, and turn Thank You, Order Status and Customer Account pages into reorders, reviews and referrals.', 'checkout'],
         'grow' => ['03', 'Grow', 'Measure it. Test it. <em>Automate</em> it.', 'Consent-aware analytics, A/B tests with honest results, audience rules and lifecycle workflows — all reading from the same numbers.', 'automation'],
     ];
-    $thumbFor = ['bundles' => 'bundle', 'free-gift' => 'gift', 'free-shipping-bar' => 'shipping', 'quantity-breaks' => 'qty', 'upsell-cross-sell' => 'upsell', 'countdown-timer' => 'countdown', 'sticky-add-to-cart' => 'sticky', 'trust-social-proof' => 'trust', 'customer-accounts' => 'account', 'checkout' => 'thankyou'];
+    $thumbFor = ['bundles' => 'bundle', 'progressive-gifts' => 'gift', 'cart-upsells' => 'upsell', 'countdown-timer' => 'countdown', 'sticky-add-to-cart' => 'sticky', 'trust-social-proof' => 'trust', 'customer-accounts' => 'account', 'checkout' => 'thankyou'];
 @endphp
 
 @section('content')
@@ -27,7 +27,7 @@
     <div class="wrap">
         <span class="eyebrow"><span class="dot"></span>Shopify CRO, checkout &amp; customer experience<span class="dot"></span></span>
         <h1>Convert more customers. <em>Increase order value.</em> Bring customers back.</h1>
-        <p class="lead">OrderOrbit gives your Shopify store bundles, upsells, free-gift and shipping incentives, checkout and thank-you blocks, lifecycle automation, analytics and A/B testing — in one app, placed natively through the Theme Editor.</p>
+        <p class="lead">OrderOrbit gives your Shopify store bundles, progressive gifts and free shipping, upsells, checkout and thank-you blocks, lifecycle automation, analytics and A/B testing — in one app, placed natively through the Theme Editor.</p>
         <div class="ctas">
             <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
             <a class="btn lg" href="{{ route('site.how') }}" data-event="cta_how_it_works_clicked">See How It Works</a>
@@ -38,7 +38,7 @@
         <div class="ring r2"></div>
         <div class="ring r1"></div>
         <div class="planet"></div>
-        @foreach ([['s1', 'shipping', 'Shipping bar', 'Cart'], ['s2', 'bundle', 'Bundle', 'Product page'], ['s3', 'countdown', 'Countdown', 'Any page'], ['s4', 'trust', 'Reviews', 'Product page'], ['s5', 'thankyou', 'Thank You', 'Post-purchase']] as [$pos, $type, $label, $where])
+        @foreach ([['s1', 'gift', 'Progressive gifts', 'Product page'], ['s2', 'bundle', 'Bundle', 'Product page'], ['s3', 'countdown', 'Countdown', 'Any page'], ['s4', 'trust', 'Reviews', 'Product page'], ['s5', 'thankyou', 'Thank You', 'Post-purchase']] as [$pos, $type, $label, $where])
             <div class="sat {{ $pos }}">
                 <div class="sat-label"><span>{{ $label }}</span><b>{{ $where }}</b></div>
                 @include('site.partials.thumb', ['type' => $type, 'v' => $loop->index])
@@ -50,7 +50,7 @@
 <div class="marquee" aria-hidden="true">
     <div class="track">
         @foreach ([1, 2] as $copy)
-            @foreach (['Bundles', 'Free gifts', 'Shipping bar', 'Quantity breaks', 'Upsells', 'Countdowns', 'Sticky add to cart', 'Trust & reviews', 'Checkout blocks', 'Thank You pages', 'Customer accounts', 'Automation', 'Analytics', 'A/B testing', 'Personalization'] as $word)
+            @foreach (['Bundles', 'Quantity breaks', 'Mix & match', 'Progressive gifts', 'Free shipping', 'Cart upsells', 'Countdowns', 'Sticky add to cart', 'Trust & reviews', 'Checkout blocks', 'Thank You pages', 'Customer accounts', 'Automation', 'Analytics', 'A/B testing', 'Personalization'] as $word)
                 <span>{{ $word }}</span>
             @endforeach
         @endforeach

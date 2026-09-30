@@ -23,7 +23,7 @@ return [
     // Header "Sign In": merchants authenticate through Shopify, not a separate password.
     'sign_in_url' => env('SHOPIFY_SIGN_IN_URL', 'https://admin.shopify.com'),
 
-    'scopes' => env('SHOPIFY_SCOPES', 'read_products,write_products,read_themes,write_discounts,write_cart_transforms,write_publications,write_pixels,read_customer_events'),
+    'scopes' => env('SHOPIFY_SCOPES', 'read_products,read_themes,write_discounts,write_cart_transforms,write_pixels,read_customer_events'),
 
     /*
     |--------------------------------------------------------------------------
@@ -61,7 +61,7 @@ return [
                 'name' => 'Starter',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
                 'price' => 9.99,
-                'features' => ['5 active experiences', '1 bundle', '1 free-gift campaign', '1 shipping bar', '5 workflows', '1,000 automation executions', 'Basic analytics'],
+                'features' => ['5 active experiences', '1 bundle', '1 progressive gifts campaign', '5 workflows', '1,000 automation executions', 'Basic analytics'],
                 'limits' => [
                     'active_experiences' => 5,
                     'bundles' => 1,
@@ -75,7 +75,7 @@ return [
                 'name' => 'Growth',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
                 'price' => 29.99,
-                'features' => ['Unlimited CRO experiences', 'Bundles, free gifts & shipping bars', 'Advanced automation', '10,000 automation executions', 'Advanced analytics', 'Checkout & Thank You blocks', 'A/B testing'],
+                'features' => ['Unlimited CRO experiences', 'Unlimited bundles & progressive gifts', 'Advanced automation', '10,000 automation executions', 'Advanced analytics', 'Checkout & Thank You blocks', 'A/B testing'],
                 'limits' => [
                     'active_experiences' => null,
                     'bundles' => null,

@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'OrderOrbit | Shopify CRO, Checkout & Upsell App')</title>
-    <meta name="description" content="@yield('description', 'Bundles, upsells, free gifts, shipping bars, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
+    <meta name="description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta property="og:site_name" content="OrderOrbit">
     <meta property="og:type" content="website">
     <meta property="og:title" content="@yield('title', 'OrderOrbit | Shopify CRO, Checkout & Upsell App')">
-    <meta property="og:description" content="@yield('description', 'Bundles, upsells, free gifts, shipping bars, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
+    <meta property="og:description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#ffffff">

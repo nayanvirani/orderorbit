@@ -20,6 +20,7 @@
             },
             "merchandise": {
               "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/10",
               "product": {
                 "id": "gid://shopify/Product/1"
               }
@@ -33,7 +34,6 @@
             "bundles": [
               {
                 "id": "b1",
-                "parent": "gid://shopify/ProductVariant/900",
                 "title": "Skincare set",
                 "image": "https://cdn.shopify.com/a.jpg",
                 "o": [

@@ -20,7 +20,7 @@
     @if (! $type)
         <s-section>
             <div class="ob-types">
-                @foreach (\App\Experiences\Registry::types() as $key => $t)
+                @foreach (\App\Experiences\Registry::creatable() as $key => $t)
                     <a class="ob-type" href="{{ app_route('app.cro.experiences.create', ['type' => $key]) }}">
                         <h4>{{ $t['label'] }}</h4>
                         <p>{{ $t['description'] }}</p>

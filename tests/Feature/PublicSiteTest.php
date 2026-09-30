@@ -21,6 +21,16 @@ class PublicSiteTest extends TestCase
         }
     }
 
+    public function test_merged_feature_pages_redirect(): void
+    {
+        $this->get('/features/free-gift')->assertRedirect('/features/progressive-gifts')->assertStatus(301);
+        $this->get('/features/free-shipping-bar')->assertRedirect('/features/progressive-gifts');
+        $this->get('/features/quantity-breaks')->assertRedirect('/features/bundles');
+        $this->get('/features/upsell-cross-sell')->assertRedirect('/features/cart-upsells');
+        $this->get('/features/progressive-gifts')->assertOk()->assertSee('Rewards that grow with the cart.');
+        $this->get('/templates')->assertOk()->assertSee('A template is a ready-made layout')->assertSee('Quantity inversion offer')->assertSee('Radial counter');
+    }
+
     public function test_unknown_feature_is_a_404_page(): void
     {
         $this->get('/features/not-a-feature')->assertNotFound()->assertSee('drifted');

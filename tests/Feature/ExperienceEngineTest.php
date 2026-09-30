@@ -136,16 +136,12 @@ class ExperienceEngineTest extends TestCase
         $manager->publish($experience->fresh(), null);
 
         $fresh = $experience->fresh();
-        $this->assertSame('gid://shopify/ProductVariant/501', $fresh->bundle_variant_id);
+        $this->assertNull($fresh->bundle_product_id);
         $this->assertNull($fresh->shopify_discount_id, 'The pack is priced by the cart transform; the single-product offer has no saving.');
         $this->assertSame('gid://shopify/CartTransform/7', $store->fresh()->cart_transform_id);
 
-        // Hidden parent: app-owned, sold only with components, stock from the components.
-        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productCreate')
-            && json_decode($r->body(), true)['variables']['product']['claimOwnership'] === ['bundles' => true] && json_decode($r->body(), true)['variables']['product']['title'] === 'Skincare bundle');
-        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productVariantsBulkUpdate')
-            && json_decode($r->body(), true)['variables']['variants'][0]['requiresComponents'] === true && json_decode($r->body(), true)['variables']['variants'][0]['inventoryItem'] === ['tracked' => false]
-            && json_decode($r->body(), true)['variables']['variants'][0]['price'] === '50.00');
+        // No extra product: the bundle line uses the main product's own variant.
+        Http::assertNotSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productCreate'));
         Http::assertSent(function (Request $r) use ($experience) {
             if (! str_contains($r['query'] ?? '', 'cartTransformCreate')) {
                 return false;
@@ -153,13 +149,12 @@ class ExperienceEngineTest extends TestCase
             $bundle = json_decode(json_decode($r->body(), true)['variables']['metafields'][0]['value'], true)['bundles'][0];
 
             return json_decode($r->body(), true)['variables']['handle'] === 'orderorbit-bundles'
-                && $bundle['id'] === $experience->handle && $bundle['parent'] === 'gid://shopify/ProductVariant/501'
+                && $bundle['id'] === $experience->handle && ! isset($bundle['parent'])
                 && $bundle['o'][0] === null && $bundle['o'][1]['p'] === ['11', '12'] && $bundle['o'][1]['t'] === 'percentage' && $bundle['o'][1]['v'] == 15;
         });
 
-        // Pausing takes the bundle out of the transform and drafts the parent.
+        // Pausing takes the bundle out of the transform.
         $manager->pause($experience->fresh());
-        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'productUpdate') && (json_decode($r->body(), true)['variables']['product']['status'] ?? null) === 'DRAFT');
         Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'metafieldsSet') && (json_decode($r->body(), true)['variables']['metafields'][0]['ownerId'] ?? null) === 'gid://shopify/CartTransform/7'
             && json_decode(json_decode($r->body(), true)['variables']['metafields'][0]['value'], true) === ['bundles' => []]);
     }
@@ -214,17 +209,18 @@ class ExperienceEngineTest extends TestCase
         $bundle = $manager->create($store, 'bundles', 'fx-fbt', null, 'Skincare routine');
         $this->assertSame('fbt', $bundle->draft_config['settings']['style'], 'Models preset their layout.');
 
-        // Every type belongs to exactly one feature.
+        // Every type merchants can create belongs to exactly one feature.
         $grouped = collect(\App\Experiences\Registry::features())->flatMap(fn ($f) => $f['types'])->sort()->values()->all();
-        $this->assertSame(collect(array_keys(\App\Experiences\Registry::types()))->sort()->values()->all(), $grouped);
+        $this->assertSame(collect(array_keys(\App\Experiences\Registry::creatable()))->sort()->values()->all(), $grouped);
 
         $this->get('/app', $this->as($owner))->assertOk()
-            ->assertSee('Volume discounts')->assertSee('/app/features/bogo', false)->assertSee('All offers');
-        foreach (array_diff(array_keys(\App\Experiences\Registry::features()), ['bundles']) as $feature) {
+            ->assertSee('Progressive gifts')->assertSee('/app/progressive-gifts', false)->assertSee('All offers')
+            ->assertDontSee('Volume discounts');
+        foreach (['cart-upsells', 'countdown', 'sticky-atc', 'trust'] as $feature) {
             $this->get("/app/features/{$feature}", $this->as($owner))->assertOk()->assertSee('How it works');
         }
+        $this->get('/app/features/progressive-gifts', $this->as($owner))->assertRedirectContains('/app/progressive-gifts');
         $this->get('/app/features/bundles', $this->as($owner))->assertRedirectContains('/app/bundles');
-        $this->get('/app/features/upsells', $this->as($owner))->assertSee('Create cart upsell');
         $this->get('/app/features/nope', $this->as($owner))->assertNotFound();
     }
 
@@ -244,7 +240,7 @@ class ExperienceEngineTest extends TestCase
         $this->get("/app/cro/experiences/{$experience->id}/edit", $this->as($owner))->assertOk()->assertSee('Campaign ends');
         $this->get("/app/cro/experiences/{$experience->id}", $this->as($owner))->assertOk()->assertSee($experience->handle);
         $this->get('/app/cro/countdown', $this->as($owner))->assertOk()->assertSee($experience->name);
-        $this->get('/app/templates', $this->as($owner))->assertOk()->assertSee('Reward Ladder');
+        $this->get('/app/templates', $this->as($owner))->assertOk()->assertSee('Radial counter')->assertDontSee('Reward Ladder');
 
         // Invalid publish re-renders the builder with the error; the draft is still saved.
         $config = $experience->draft_config;

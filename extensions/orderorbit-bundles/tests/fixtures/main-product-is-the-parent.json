@@ -1,0 +1,131 @@
+{
+  "payload": {
+    "export": "cart-transform-run",
+    "target": "cart.transform.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|1|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "30"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/20",
+              "product": {
+                "id": "gid://shopify/Product/2"
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|1|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/10",
+              "product": {
+                "id": "gid://shopify/Product/1"
+              }
+            }
+          }
+        ]
+      },
+      "cartTransform": {
+        "metafield": {
+          "jsonValue": {
+            "bundles": [
+              {
+                "id": "b1",
+                "title": "Skincare set",
+                "image": "https://cdn.shopify.com/a.jpg",
+                "o": [
+                  null,
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "percentage",
+                    "v": 15,
+                    "n": "Complete bundle"
+                  },
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "fixed_price",
+                    "v": 40
+                  }
+                ],
+                "mix": {
+                  "p": [
+                    "1",
+                    "2",
+                    "3"
+                  ],
+                  "tiers": [
+                    [
+                      2,
+                      10
+                    ],
+                    [
+                      3,
+                      15
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "linesMerge": {
+            "cartLines": [
+              {
+                "cartLineId": "gid://shopify/CartLine/0",
+                "quantity": 1
+              },
+              {
+                "cartLineId": "gid://shopify/CartLine/1",
+                "quantity": 1
+              }
+            ],
+            "parentVariantId": "gid://shopify/ProductVariant/10",
+            "title": "Complete bundle",
+            "image": {
+              "url": "https://cdn.shopify.com/a.jpg"
+            },
+            "price": {
+              "percentageDecrease": {
+                "value": 15
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

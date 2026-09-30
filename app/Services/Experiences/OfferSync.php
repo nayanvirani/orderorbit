@@ -3,6 +3,7 @@
 namespace App\Services\Experiences;
 
 use App\Experiences\BundleSchema;
+use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
 use App\Models\Experience;
 use App\Models\Store;
@@ -29,6 +30,17 @@ class OfferSync
      */
     public static function offersFor(Experience $experience, array $config): array
     {
+        if ($experience->type === 'progressive-gifts') {
+            [$gifts] = GiftSchema::normalize($config);
+            $milestones = array_map(fn ($m) => array_filter([
+                't' => $m['threshold'],
+                'r' => $m['reward'],
+                'v' => in_array($m['reward'], ['percent', 'amount'], true) ? $m['value'] : null,
+                'q' => in_array($m['reward'], ['gift', 'choice'], true) ? $m['quantity'] : null,
+            ], fn ($v) => $v !== null), $gifts['milestones']);
+
+            return $milestones ? [['k' => 'pg', 'id' => $experience->handle, 'by' => $gifts['settings']['unlock'], 'm' => $milestones, 'n' => $gifts['settings']['title'] ?: 'Reward unlocked']] : [];
+        }
         if ($experience->type !== 'bundles') {
             return array_values(array_filter([self::offer($experience, $config)]));
         }
@@ -72,8 +84,6 @@ class OfferSync
                     'k' => 'tiers',
                     'p' => $ids($c['products'] ?? []) ?: $ids($config['targeting']['products'] ?? []),
                     'tiers' => $tiers,
-                    // Bundle lines are priced by the cart transform; tiers never apply to them.
-                    'x' => self::bundleParents($experience),
                 ] : null,
             'bogo' => [
                 'k' => 'bogo',
@@ -97,19 +107,7 @@ class OfferSync
             return null;
         }
 
-        if (($offer['x'] ?? null) === []) {
-            unset($offer['x']);
-        }
-
         return $offer + array_filter(['id' => $experience->handle, 'm' => trim((string) ($c['checkout_label'] ?? '')) ?: null]);
-    }
-
-    private static function bundleParents(Experience $experience): array
-    {
-        return Experience::where('store_id', $experience->store_id)->whereNotNull('bundle_product_id')
-            ->pluck('bundle_product_id')
-            ->map(fn ($id) => preg_replace('/\D/', '', $id))
-            ->values()->all();
     }
 
     /**
@@ -140,13 +138,22 @@ class OfferSync
     private function upsert(Store $store, Experience $experience, array $offers): void
     {
         $shipping = $offers[0]['k'] === 'ship';
+        $classes = [$shipping ? 'SHIPPING' : 'PRODUCT'];
+        if ($offers[0]['k'] === 'pg') {
+            $rewards = array_column($offers[0]['m'], 'r');
+            $classes = array_values(array_filter([
+                array_intersect($rewards, ['gift', 'choice']) ? 'PRODUCT' : null,
+                array_intersect($rewards, ['percent', 'amount']) ? 'ORDER' : null,
+                in_array('shipping', $rewards, true) ? 'SHIPPING' : null,
+            ]));
+        }
         $input = [
-            'title' => $offers[0]['m'] ?? $experience->name,
+            'title' => $offers[0]['m'] ?? $offers[0]['n'] ?? $experience->name,
             'startsAt' => ($experience->starts_at ?? $experience->published_at ?? now())->toIso8601String(),
             'endsAt' => $experience->ends_at?->toIso8601String(),
-            'discountClasses' => [$shipping ? 'SHIPPING' : 'PRODUCT'],
+            'discountClasses' => $classes,
             // OrderOrbit product offers don't stack with each other; Shopify applies the best one.
-            'combinesWith' => ['productDiscounts' => $shipping, 'orderDiscounts' => true, 'shippingDiscounts' => ! $shipping],
+            'combinesWith' => ['productDiscounts' => $shipping || $offers[0]['k'] === 'pg', 'orderDiscounts' => true, 'shippingDiscounts' => ! $shipping],
         ];
         $value = json_encode(['offers' => $offers], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

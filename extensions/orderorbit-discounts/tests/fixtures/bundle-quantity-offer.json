@@ -78,7 +78,8 @@
       },
       "discount": {
         "discountClasses": [
-          "PRODUCT"
+          "PRODUCT",
+          "ORDER"
         ],
         "metafield": {
           "jsonValue": {

@@ -40,7 +40,22 @@ return [
         'content' => [],
     ],
 
+    // Progressive gifts: free shipping, gifts and order discounts in one progress bar (GiftSchema).
+    'progressive-gifts' => [
+        'label' => 'Progressive gifts',
+        'discount' => true,
+        'singular' => 'Progressive gifts',
+        'icon' => 'gift',
+        'meter' => 'free_gifts',
+        'surface' => 'any',
+        'description' => 'Rewards that unlock as the cart grows: free gifts, free shipping and discounts.',
+        'empty' => 'Reward bigger carts with milestones shoppers can see.',
+        'templates' => \App\Experiences\GiftSchema::templates(),
+        'content' => [],
+    ],
+
     'free-gifts' => [
+        'retired' => true, // Replaced by Bundles / Progressive gifts; existing experiences keep working.
         'label' => 'Free Gifts',
         'discount' => true,
         'singular' => 'Free gift',
@@ -70,6 +85,7 @@ return [
     ],
 
     'shipping-bar' => [
+        'retired' => true, // Replaced by Bundles / Progressive gifts; existing experiences keep working.
         'label' => 'Shipping Bar',
         'discount' => true,
         'singular' => 'Shipping bar',
@@ -97,6 +113,7 @@ return [
     ],
 
     'quantity-breaks' => [
+        'retired' => true, // Replaced by Bundles / Progressive gifts; existing experiences keep working.
         'label' => 'Quantity Breaks',
         'discount' => true,
         'singular' => 'Quantity break',
@@ -126,6 +143,7 @@ return [
     ],
 
     'bogo' => [
+        'retired' => true, // Replaced by Bundles / Progressive gifts; existing experiences keep working.
         'label' => 'BOGO',
         'discount' => true,
         'singular' => 'BOGO offer',
@@ -156,6 +174,7 @@ return [
     ],
 
     'product-upsells' => [
+        'retired' => true, // Replaced by Bundles / Progressive gifts; existing experiences keep working.
         'label' => 'Product Upsells',
         'discount' => true,
         'singular' => 'Product upsell',

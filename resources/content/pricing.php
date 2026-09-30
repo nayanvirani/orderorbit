@@ -10,7 +10,7 @@ return [
     ],
     'rows' => [
         ['Active experiences', '5', 'Unlimited', 'Unlimited'],
-        ['Bundles / free-gift campaigns / shipping bars', '1 / 1 / 1', 'Unlimited', 'Unlimited'],
+        ['Bundles / progressive gift campaigns', '1 / 1', 'Unlimited', 'Unlimited'],
         ['Workflows / executions per month', '5 / 1,000', 'Advanced / 10,000', 'Advanced / higher limit'],
         ['Analytics', 'Basic', 'Advanced', 'Advanced'],
         ['Checkout & Thank You blocks', false, true, true],
