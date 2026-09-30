@@ -1,33 +1,47 @@
 @extends('layouts.site')
 
 @section('title', 'Security & Privacy | OrderOrbit Space')
-@section('description', 'Least-privilege Shopify scopes, store data isolation, encrypted secrets, consent-aware analytics, webhook validation and audit logs.')
+@section('description', 'How OrderOrbit Space protects your store and your customers: Shopify sign-in, minimal permissions, staff roles, audit logs, consent-aware analytics and data deletion.')
 
 @section('content')
-<section class="page-hero sky">
-    <div class="wrap">
-        <span class="eyebrow"><span class="dot"></span>Security</span>
-        <h1>Security and privacy are <span class="grad-text">part of the product.</span></h1>
-    </div>
-</section>
-<section class="section tight" style="padding-top:0">
-    <div class="wrap grid two">
-        @foreach ([
-            ['lock', 'Access', ['Secure sign-in through Shopify', 'Only the permissions the app needs', 'Role-based access for your staff', 'A record of important account activity']],
-            ['shield', 'Data', ['Each store\'s data is kept separate', 'Sensitive information is protected', 'You choose how long data is kept', 'Export and deletion on request']],
-            ['chart', 'Analytics', ['Respects your customers\' consent choices', 'Follows your store\'s privacy settings in Shopify', 'Only the data needed to measure results']],
-            ['zap', 'Reliability', ['Every update from Shopify is verified', 'No duplicate actions or emails', 'Continuous monitoring']],
-        ] as [$icon, $title, $items])
-            <div class="card reveal">
-                <div class="icon-badge"><x-icon :name="$icon"/></div>
-                <h3>{{ $title }}</h3>
-                <ul class="bullet-list">@foreach ($items as $item)<li><x-icon name="check-circle"/>{{ $item }}</li>@endforeach</ul>
-            </div>
-        @endforeach
-    </div>
-    <div class="wrap">
-        <div class="note" style="margin-top:28px;background:var(--tint);border-color:#e3deff;color:var(--ink-2)"><x-icon name="alert" style="color:var(--indigo)"/><span><b>Report an issue:</b> found a vulnerability? Please tell us through the <a href="{{ route('site.contact') }}">contact form</a> with the topic "Support" and we'll respond promptly.</span></div>
-    </div>
-</section>
-@include('site.partials.cta')
+<div class="mn">
+    <section class="mn-hero">
+        <div class="wrap">
+            <span class="mn-kicker">Security &amp; privacy</span>
+            <h1>Security and privacy are <em>part of the product.</em></h1>
+            <p class="mn-lead">Here's how we protect your store, your team and your customers.</p>
+        </div>
+    </section>
+
+    <section class="mn-section plain">
+        <div class="mn-wide">
+            <h2>Your store</h2>
+            <ul class="mn-list">
+                <li><b>Secure sign-in through Shopify</b><span>Your team signs in through Shopify admin; there are no separate passwords to manage.</span></li>
+                <li><b>Only the permissions the app needs</b><span>We ask Shopify for the minimum access required for the features you use.</span></li>
+                <li><b>Roles for your staff</b><span>Owners, admins and staff each see and do only what their role allows.</span></li>
+                <li><b>A record of changes</b><span>Publishing, pausing, plan and team changes are logged with who made them.</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>Your customers</h2>
+            <ul class="mn-list">
+                <li><b>Respects consent</b><span>Analytics only count shoppers who allow it, following your store's privacy settings.</span></li>
+                <li><b>No personal data in analytics</b><span>We record views, adds to cart and order totals — not names, emails or addresses.</span></li>
+                <li><b>Kept only as long as needed</b><span>Analytics events are deleted automatically after 13 months.</span></li>
+                <li><b>Deletion on request</b><span>We handle Shopify's customer and store data requests, and remove your data when you uninstall and request deletion.</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="mn-section">
+        <div class="mn-narrow mn-prose">
+            <h2>Report an issue</h2>
+            <p>Found a vulnerability or have a privacy question? Please tell us through the <a href="{{ route('site.contact') }}">contact form</a> with the topic "Support" and we'll respond promptly. You can also read our <a href="{{ route('site.privacy') }}">privacy policy</a> and <a href="{{ route('site.dpa') }}">data processing terms</a>.</p>
+        </div>
+    </section>
+</div>
 @endsection

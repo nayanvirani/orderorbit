@@ -40,7 +40,7 @@
                                 @foreach ($navGroups['convert'] as $slug => $f)
                                     <a class="dd-link" href="{{ route('site.feature', $slug) }}">
                                         <span class="ico"><x-icon :name="$f['icon']"/></span>
-                                        <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
+                                        <span><strong>{{ $f['name'] }}@if (($f['status'] ?? 'live') === 'soon') <small class="nav-soon">Soon</small>@endif</strong><span>{{ $f['menu'] }}</span></span>
                                     </a>
                                 @endforeach
                             </div>
@@ -50,7 +50,7 @@
                             @foreach ($navGroups['checkout'] as $slug => $f)
                                 <a class="dd-link" href="{{ route('site.feature', $slug) }}">
                                     <span class="ico"><x-icon :name="$f['icon']"/></span>
-                                    <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
+                                    <span><strong>{{ $f['name'] }}@if (($f['status'] ?? 'live') === 'soon') <small class="nav-soon">Soon</small>@endif</strong><span>{{ $f['menu'] }}</span></span>
                                 </a>
                             @endforeach
                             <a class="mega-feature" href="{{ route('site.templates') }}">
@@ -63,7 +63,7 @@
                             @foreach ($navGroups['grow'] as $slug => $f)
                                 <a class="dd-link" href="{{ route('site.feature', $slug) }}">
                                     <span class="ico"><x-icon :name="$f['icon']"/></span>
-                                    <span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span>
+                                    <span><strong>{{ $f['name'] }}@if (($f['status'] ?? 'live') === 'soon') <small class="nav-soon">Soon</small>@endif</strong><span>{{ $f['menu'] }}</span></span>
                                 </a>
                             @endforeach
                         </div>
@@ -111,7 +111,7 @@
             <div class="links">
                 @foreach ($navGroups as $group)
                     @foreach ($group as $slug => $f)
-                        <a class="dd-link" href="{{ route('site.feature', $slug) }}"><span class="ico"><x-icon :name="$f['icon']"/></span><span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span></a>
+                        <a class="dd-link" href="{{ route('site.feature', $slug) }}"><span class="ico"><x-icon :name="$f['icon']"/></span><span><strong>{{ $f['name'] }}@if (($f['status'] ?? 'live') === 'soon') <small class="nav-soon">Soon</small>@endif</strong><span>{{ $f['menu'] }}</span></span></a>
                     @endforeach
                 @endforeach
             </div>
@@ -148,7 +148,7 @@
             <div class="footer-top">
                 <div class="brand">
                     <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit Space</a>
-                    <p>Convert more customers. Increase order value. <em class="grad-text">Bring customers back.</em></p>
+                    <p>Bundles, gifts, upsells and countdowns that raise order value — <em>and show what they earn.</em></p>
                     <div class="ctas" style="margin-top:24px">
                         <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
                     </div>
@@ -189,7 +189,7 @@
             </div>
             <div class="footer-bottom">
                 <span>© {{ date('Y') }} OrderOrbit Space. Built for Shopify.</span>
-                <span>Placed in the Theme Editor · Checkout blocks · Consent-aware analytics</span>
+                <span>Placed in the Theme Editor · Prices applied at checkout · Consent-aware analytics</span>
             </div>
         </div>
         <div class="wordmark" aria-hidden="true">OrderOrbit Space</div>

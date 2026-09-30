@@ -13,7 +13,14 @@ class Content
 
     public static function features(): array
     {
-        return self::load('features');
+        // Long-form copy (status, summary, overview, benefits) lives in feature-copy.php.
+        $features = self::load('features');
+        $copy = self::load('feature-copy');
+        foreach ($features as $slug => $feature) {
+            $features[$slug] = $feature + ($copy[$slug] ?? []);
+        }
+
+        return $features;
     }
 
     public static function feature(string $slug): ?array

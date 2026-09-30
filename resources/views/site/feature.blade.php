@@ -4,143 +4,116 @@
 @section('description', $feature['seo_description'])
 
 @php
-    $toc = ['problem' => 'The problem', 'how' => 'How it works'] + ($templates ? ['templates' => 'Templates'] : []) + ['features' => 'Features', 'example' => 'Example setup', 'results' => 'Results', 'faq' => 'FAQ'];
+    $soon = ($feature['status'] ?? 'live') === 'soon';
+    $names = collect($templates)->pluck('name')->unique()->values();
 @endphp
 
 @section('content')
-<section class="ed-hero sky">
-    <div class="wrap">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">Home</a><x-icon name="chev-right"/><a href="{{ route('site.features') }}">Features</a><x-icon name="chev-right"/><span>{{ $feature['name'] }}</span></nav>
-        <span class="eyebrow"><span class="dot"></span>{{ $feature['eyebrow'] }}<span class="dot"></span></span>
-        <h1>{{ $feature['h1'] }}</h1>
-        <p class="lead">{{ $feature['hero'] }}</p>
-        <div class="ctas">
-            <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
-            @isset($feature['secondary_cta'])
-                <a class="btn lg" href="{{ $feature['secondary_cta']['href'] }}">{{ $feature['secondary_cta']['label'] }}</a>
-            @else
-                <a class="btn lg" href="{{ route('site.pricing') }}">See Pricing</a>
-            @endisset
+<div class="mn">
+    <section class="mn-hero">
+        <div class="wrap">
+            <nav class="mn-crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">Home</a><span>/</span><a href="{{ route('site.features') }}">Features</a><span>/</span><span>{{ $feature['name'] }}</span></nav>
+            <span class="mn-kicker">{{ $feature['name'] }}@if ($soon)<span class="soon">Coming soon</span>@endif</span>
+            <h1>{{ $feature['h1'] }}</h1>
+            <p class="mn-lead">{{ $feature['hero'] }}</p>
+            <div class="ctas">
+                @if ($soon)
+                    <a class="btn primary lg" href="{{ route('site.contact') }}">Ask about early access</a>
+                @else
+                    <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+                @endif
+                <a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a>
+            </div>
         </div>
-        <div class="screen">@include('site.visuals.'.$feature['slug'])</div>
-    </div>
-</section>
+    </section>
 
-<section class="section" style="padding-top:40px">
-    <div class="wrap doc">
-        <nav class="doc-rail" aria-label="On this page">
-            <p>On this page</p>
-            @foreach ($toc as $id => $label)<a href="#{{ $id }}" data-toc>{{ $label }}</a>@endforeach
-        </nav>
+    <div class="mn-shot">@include('site.visuals.'.$feature['slug'])</div>
 
-        <div class="doc-body">
-            <section id="problem">
-                <div class="problem reveal">
-                    <div>
-                        <span class="tag"><x-icon name="alert"/>The problem</span>
-                        <h2>{{ $feature['problem'][0] }}</h2>
-                        <p>{{ $feature['problem'][1] }}</p>
-                    </div>
-                    <div>
-                        <span class="eyebrow"><span class="dot"></span>How OrderOrbit Space fixes it</span>
-                        <ul class="bullet-list">
-                            @foreach (array_slice($feature['grid'], 0, 3) as $point)<li><x-icon name="check"/>{{ $point }}</li>@endforeach
-                        </ul>
-                    </div>
+    @if (! empty($feature['overview']))
+        <section class="mn-section" style="margin-top:clamp(48px,7vw,88px)">
+            <div class="mn-narrow">
+                <h2>Overview</h2>
+                <div class="mn-prose">
+                    @foreach ($feature['overview'] as $paragraph)<p>{{ $paragraph }}</p>@endforeach
                 </div>
-            </section>
+            </div>
+        </section>
+    @endif
 
-            <section id="how">
-                <div class="section-head reveal">
-                    <span class="eyebrow"><span class="dot"></span>How it works</span>
-                    <h2>{{ $feature['steps_heading'] ?? 'Live in '.count($feature['steps']).' steps.' }}</h2>
+    @if (! empty($feature['benefits']))
+        <section class="mn-section">
+            <div class="mn-wide">
+                <h2>What it gives you</h2>
+                <ul class="mn-list">
+                    @foreach ($feature['benefits'] as [$title, $text])<li><b>{{ $title }}</b><span>{{ $text }}</span></li>@endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
+
+    <section class="mn-section">
+        <div class="mn-narrow">
+            <h2>How it works</h2>
+            <ol class="mn-steps">
+                @foreach ($feature['steps'] as $step)<li><div>{{ $step }}</div></li>@endforeach
+            </ol>
+        </div>
+    </section>
+
+    @if (! empty($feature['example']))
+        <section class="mn-section">
+            <div class="mn-narrow">
+                <div class="mn-note">
+                    <h3>Example: {{ rtrim($feature['example']['title'], '.') }}</h3>
+                    <p>{{ $feature['example']['text'] }}</p>
                 </div>
-                <ol class="steps">
-                    @foreach ($feature['steps'] as $step)
-                        <li class="step reveal"><span class="num">{{ $loop->iteration }}</span><div><h3>{{ $step }}</h3></div></li>
-                    @endforeach
-                </ol>
-            </section>
+            </div>
+        </section>
+    @endif
 
-            @if ($templates)
-                <section id="templates">
-                    <div class="section-head reveal">
-                        <span class="eyebrow"><span class="dot"></span>Templates</span>
-                        <h2>{{ count($templates) }} {{ \Illuminate\Support\Str::plural('template', count($templates)) }}, <em>ready to customise.</em></h2>
-                        <p class="lead">Start from a proven design, then match your brand colours, fonts and spacing.</p>
-                    </div>
-                    <div class="tpl-grid">
-                        @foreach ($templates as $tpl)
-                            <a class="tpl reveal" href="{{ route('site.templates', ['type' => $tpl['type']]) }}" style="text-decoration:none">
-                                <div class="thumb"><div style="filter:hue-rotate({{ [0, 28, -24, 52, -46][$loop->index % 5] }}deg)">@include('site.partials.thumb', ['type' => $tpl['type'], 'v' => $loop->index])</div></div>
-                                <div class="meta"><b>{{ $tpl['name'] }}</b><span><span class="pill">{{ $tpl['label'] }}</span>@if ($surfaces[$tpl['surface']] !== $tpl['label'])<span class="pill gray">{{ $surfaces[$tpl['surface']] }}</span>@endif</span></div>
-                            </a>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
+    @if ($names->isNotEmpty() && ! $soon)
+        <section class="mn-section">
+            <div class="mn-narrow">
+                <h2>Templates</h2>
+                <p class="mn-intro">{{ $names->count() }} ready-made {{ \Illuminate\Support\Str::plural('layout', $names->count()) }}. Pick one in the app, then change the text, colours, sizes and spacing to match your store.</p>
+                <ul class="mn-chips">@foreach ($names as $name)<li>{{ $name }}</li>@endforeach</ul>
+                <a class="btn" href="{{ route('site.templates') }}">See the template gallery</a>
+            </div>
+        </section>
+    @endif
 
-            <section id="features">
-                <div class="section-head reveal">
-                    <span class="eyebrow"><span class="dot"></span>Features</span>
-                    <h2>Everything you need, <em>nothing that fights your theme.</em></h2>
-                </div>
-                <ol class="num-list cols">
-                    @foreach ($feature['grid'] as $item)<li class="reveal">{{ $item }}</li>@endforeach
-                </ol>
-                @isset($feature['note'])
-                    <div class="note reveal" style="margin-top:28px"><x-icon name="info"/><span>{{ $feature['note'] }}</span></div>
-                @endisset
-            </section>
-
-            <section id="example">
-                <div class="example-card reveal">
-                    <div>
-                        <span class="label">Example setup</span>
-                        <h3>{{ $feature['example']['title'] }}</h3>
-                        <p>{{ $feature['example']['text'] }}</p>
-                    </div>
-                    <div class="flow-wrap">@include('site.diagrams.flow', ['steps' => $feature['example']['flow'], 'vertical' => true])</div>
-                </div>
-            </section>
-
-            <section id="results">
-                <div class="split">
-                    <div class="split-copy reveal">
-                        <span class="eyebrow"><span class="dot"></span>Analytics</span>
-                        <h2>See exactly <em>what it earns.</em></h2>
-                        <p class="lead">Every {{ strtolower($feature['name']) }} view, interaction and purchase is tracked with consent-aware analytics, so you can compare experiences with one set of numbers — and A/B test the next idea.</p>
-                        <a class="link-arrow" href="{{ route('site.feature', 'analytics') }}">Explore Analytics <x-icon name="arrow"/></a>
-                    </div>
-                    @include('site.partials.metrics', ['title' => $feature['name'], 'metrics' => $feature['metrics'], 'id' => $feature['slug']])
-                </div>
-            </section>
-
-            <section id="faq">
-                <div class="section-head reveal">
-                    <span class="eyebrow"><span class="dot"></span>FAQ</span>
-                    <h2>{{ $feature['name'] }}, <em>answered.</em></h2>
-                </div>
+    @if (! empty($feature['faqs']))
+        <section class="mn-section">
+            <div class="mn-narrow">
+                <h2>Questions</h2>
                 @include('site.partials.faq', ['faqs' => $feature['faqs']])
-            </section>
+            </div>
+        </section>
+    @endif
 
-            <section>
-                <div class="section-head reveal" style="margin-bottom:28px">
-                    <span class="eyebrow"><span class="dot"></span>Works even better with</span>
-                </div>
-                <div class="bento">
-                    @foreach ($related as $slug => $r)
-                        <a class="b-tile go-arrow w2 reveal" href="{{ route('site.feature', $slug) }}">
-                            <span class="tile-tag">{{ $r['eyebrow'] }}</span>
-                            <h3>{{ $r['name'] }}</h3>
-                            <p>{{ $r['h1'] }}</p>
-                        </a>
-                    @endforeach
-                </div>
-            </section>
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>Works well with</h2>
+            <ul class="mn-rows">
+                @foreach ($related as $slug => $r)
+                    <li><a href="{{ route('site.feature', $slug) }}"><b>{{ $r['name'] }}@if (($r['status'] ?? 'live') === 'soon')<span class="soon">Soon</span>@endif</b><span>{{ $r['summary'] ?? $r['menu'] }}</span><i>Learn more →</i></a></li>
+                @endforeach
+            </ul>
         </div>
-    </div>
-</section>
+    </section>
 
-@include('site.partials.cta')
+    <section class="mn-section mn-cta">
+        <div class="mn-narrow">
+            <h2>{{ $soon ? 'Want it first?' : 'Try '.$feature['name'].' on your store' }}</h2>
+            <p>{{ $soon ? 'Tell us about your store and we\'ll let you know when it\'s ready.' : 'Install OrderOrbit Space, pick a template and publish in a few minutes.' }}</p>
+            <div class="ctas">
+                @if ($soon)
+                    <a class="btn primary lg" href="{{ route('site.contact') }}">Contact us</a>
+                @else
+                    <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
+                @endif
+            </div>
+        </div>
+    </section>
+</div>
 @endsection

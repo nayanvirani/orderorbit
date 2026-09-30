@@ -1,33 +1,34 @@
 @extends('layouts.site')
 
 @section('title', 'Solutions | OrderOrbit Space')
-@section('description', 'OrderOrbit Space setups for DTC brands, repeat-purchase brands, fashion & apparel and Shopify Plus.')
+@section('description', 'How DTC, repeat-purchase, fashion and Shopify Plus brands use OrderOrbit Space to raise order value.')
 
 @section('content')
-<section class="page-hero sky">
-    <div class="wrap">
-        <span class="eyebrow"><span class="dot"></span>Solutions</span>
-        <h1>Growth tools shaped for <span class="grad-text">your kind of store.</span></h1>
-        <p class="lead">Pick your model to see the OrderOrbit Space setup that fits.</p>
-    </div>
-</section>
-<section class="section tight" style="padding-top:0">
-    <div class="wrap grid two">
-        @foreach ($solutions as $slug => $s)
-            <a class="card reveal" href="{{ route('site.solution', $slug) }}" style="padding:0;overflow:hidden">
-                <div style="padding:28px 28px 0">
-                    <div class="icon-badge"><x-icon :name="$s['icon']"/></div>
-                    <h3 style="font-size:24px">{{ $s['name'] }}</h3>
-                    <p style="margin-top:8px">{{ $s['hero'] }}</p>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px">
-                        @foreach ($s['setup'] as $item)<span class="pill">{{ $item }}</span>@endforeach
-                    </div>
-                    <span class="more">See the setup <x-icon name="arrow"/></span>
-                </div>
-                <div style="padding:28px;background:var(--tint);margin-top:24px">@include('site.diagrams.flow', ['steps' => $s['example']['flow']])</div>
-            </a>
-        @endforeach
-    </div>
-</section>
-@include('site.partials.cta')
+<div class="mn">
+    <section class="mn-hero">
+        <div class="wrap">
+            <span class="mn-kicker">Solutions</span>
+            <h1>A setup for <em>your kind of store.</em></h1>
+            <p class="mn-lead">Pick the model closest to yours to see which offers to start with and why.</p>
+        </div>
+    </section>
+
+    <section class="mn-section plain">
+        <div class="mn-wide">
+            <ul class="mn-rows">
+                @foreach ($solutions as $slug => $s)
+                    <li><a href="{{ route('site.solution', $slug) }}"><b>{{ $s['name'] }}</b><span>{{ $s['hero'] }}</span><i>See the setup →</i></a></li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+
+    <section class="mn-section mn-cta">
+        <div class="mn-narrow">
+            <h2>Not sure where to start?</h2>
+            <p>Most stores begin with a quantity-break bundle on their best-selling product and a free-shipping bar.</p>
+            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a><a class="btn lg" href="{{ route('site.contact') }}">Ask us</a></div>
+        </div>
+    </section>
+</div>
 @endsection
