@@ -46,8 +46,8 @@
   }
 
   function select(name, variants, ctx) {
-    return '<select class="oo-variant" data-oo-v="' + name + '">' + variants.map(function (v) {
-      return '<option value="' + v.id + '"' + (v.available === false ? ' disabled' : '') + '>' + h.esc(v.title) + '</option>';
+    return '<select class="oo-variant" data-oo-v="' + name + '">' + variants.map(function (v, i) {
+      return '<option value="' + v.id + '"' + (v.available === false ? ' disabled' : '') + '>' + h.esc(v.title || v.public_title || 'Option ' + (i + 1)) + (v.available === false ? ' (sold out)' : '') + '</option>';
     }).join('') + '</select>';
   }
 
