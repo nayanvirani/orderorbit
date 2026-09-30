@@ -25,6 +25,15 @@
 
 @section('content')
 <s-page heading="{{ $experience->name }}">
+    @if ($featureKey = \App\Experiences\Registry::featureFor($experience->type))
+        <s-link slot="breadcrumb-actions" href="{{ app_route('app.features.show', ['feature' => $featureKey]) }}">{{ \App\Experiences\Registry::feature($featureKey)['label'] }}</s-link>
+    @endif
+    @if ($experience->shopify_discount_id)
+        <s-banner tone="success" heading="Saving applies automatically at checkout">
+            <s-paragraph>OrderOrbit created a Shopify automatic discount for this {{ lower_label($type['singular']) }}. It stays in step with this experience: pausing or archiving removes it.</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ $store->adminUrl('discounts/'.preg_replace('/\D/', '', $experience->shopify_discount_id)) }}" target="_top">View in Shopify</s-button>
+        </s-banner>
+    @endif
     @if ($canEdit && $experience->status !== 'archived')
         <s-button slot="primary-action" variant="primary" href="{{ app_route('app.cro.experiences.edit', ['experience' => $experience->id]) }}">Edit</s-button>
     @endif

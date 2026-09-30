@@ -1,0 +1,19 @@
+query DeliveryInput {
+  presentmentCurrencyRate
+  cart {
+    cost {
+      subtotalAmount {
+        amount
+      }
+    }
+    deliveryGroups {
+      id
+    }
+  }
+  discount {
+    discountClasses
+    metafield(namespace: "$app", key: "offers") {
+      jsonValue
+    }
+  }
+}

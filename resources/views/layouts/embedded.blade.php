@@ -66,8 +66,10 @@
         @if (! request()->attributes->get('store')?->goal)
             <s-link href="{{ app_route('app.onboarding') }}">Get started</s-link>
         @endif
-        <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
-        <s-link href="{{ app_route('app.cro.experiences.index') }}">Experiences</s-link>
+        @foreach (\App\Experiences\Registry::features() as $featureKey => $feature)
+            <s-link href="{{ app_route('app.features.show', ['feature' => $featureKey]) }}">{{ $feature['label'] }}</s-link>
+        @endforeach
+        <s-link href="{{ app_route('app.cro.experiences.index') }}">All offers</s-link>
         <s-link href="{{ app_route('app.templates') }}">Templates</s-link>
         <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     </s-app-nav>

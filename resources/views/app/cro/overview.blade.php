@@ -32,12 +32,11 @@
                 <div class="ob-type">
                     <h4>{{ $type['label'] }}
                         @if ($byType[$key] ?? 0)<span class="ob-badge soft">{{ $byType[$key] }}</span>@endif
-                        @unless ($type['publishable'])<span class="ob-badge soft">Preview</span>@endunless
                     </h4>
                     <p>{{ $type['description'] }}</p>
                     <div class="ob-row">
                         <a href="{{ app_route('app.cro.experiences.create', ['type' => $key]) }}">Create →</a>
-                        <a href="{{ app_route('app.cro.type', ['type' => $key]) }}" style="color:var(--ob-muted)">View all</a>
+                        <a href="{{ app_route('app.features.show', ['feature' => \App\Experiences\Registry::featureFor($key)]) }}" style="color:var(--ob-muted)">View all</a>
                     </div>
                 </div>
             @endforeach

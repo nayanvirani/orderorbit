@@ -10,9 +10,9 @@
 @section('content')
 <s-page heading="Dashboard">
     <x-app.hero :eyebrow="$store->name ?? $store->shop_domain" title="Your store, <em>in orbit.</em>"
-        lead="Create an experience, place it in your theme, and watch what it earns — then test, personalize and automate from the same numbers.">
-        <s-button variant="primary" href="{{ app_route('app.cro.experiences.create') }}">Create experience</s-button>
-        <s-button href="{{ app_route('app.templates') }}">Browse templates</s-button>
+        lead="Bundles, volume discounts, BOGO, free gifts, upsells and more — each one live on your storefront, with savings applied automatically at checkout.">
+        <s-button variant="primary" href="{{ app_route('app.features.show', ['feature' => 'bundles']) }}">Create a bundle</s-button>
+        <s-button href="{{ app_route('app.cro.experiences.index') }}">All offers</s-button>
     </x-app.hero>
 
     @foreach ($alerts as $alert)
@@ -21,6 +21,19 @@
             <s-button slot="secondary-actions" href="{{ app_route($alert['route']) }}">{{ $alert['action'] }}</s-button>
         </s-banner>
     @endforeach
+
+    <s-section heading="Features">
+        <div class="ob-types">
+            @foreach ($features as $featureKey => $feature)
+                <a class="ob-type" href="{{ app_route('app.features.show', ['feature' => $featureKey]) }}">
+                    <span class="ob-live {{ $feature['live'] ? 'on' : '' }}">{{ $feature['live'] ? $feature['live'].' live' : 'Not live' }}</span>
+                    <h4>{{ $feature['label'] }}</h4>
+                    <p>{{ $feature['description'] }}</p>
+                    <div class="ob-row"><span style="color:var(--ob-sun)">{{ $feature['total'] ? 'Manage' : 'Set up' }} →</span></div>
+                </a>
+            @endforeach
+        </div>
+    </s-section>
 
     <s-section heading="Performance">
         <div class="ob-kpis">

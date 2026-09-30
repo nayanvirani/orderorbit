@@ -55,8 +55,8 @@
 
 .b-templates { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .b-template { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 2px solid #ebebeb; border-radius: 12px; cursor: pointer; background: #fafafa; }
-.b-template:has(input:checked) { border-color: #1a1a1a; background: #fff; box-shadow: 0 0 0 3px rgba(26, 26, 26, .1); }
-.b-template input { position: absolute; top: 10px; right: 10px; }
+.b-template:has(> input:checked) { border-color: #1a1a1a; background: #fff; box-shadow: 0 0 0 3px rgba(26, 26, 26, .1); }
+.b-template > input { position: absolute; top: 10px; right: 10px; }
 .b-template-preview { display: block; max-height: 190px; overflow: hidden; pointer-events: none; zoom: .7; }
 .b-template-name { font-weight: 600; }
 .b-summary { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin: 0; }

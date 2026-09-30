@@ -28,7 +28,7 @@ class Notices
         'version_restored' => ['Version loaded into your draft. Publish to make it live.', false],
         'placement_checked' => ['Theme placement checked.', false],
         'bulk_done' => ['Changes applied.', false],
-        'publish_unavailable' => ['This experience type can be built and previewed now. Publishing opens in an upcoming release.', true],
+        'publish_unavailable' => ['This experience has no published version yet. Publish it from the builder first.', true],
         'invalid' => ['Fix the highlighted fields before publishing.', true],
         'plan_updated' => ['Your plan is active. Thanks for choosing OrderOrbit!', false],
         'plan_pending' => ['We\'re waiting for Shopify to confirm your plan. This page updates once it does.', false],

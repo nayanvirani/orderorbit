@@ -207,9 +207,6 @@ class ExperienceManager
         $type = Registry::type($experience->type);
         $store = $experience->store;
 
-        if (! ($type['publishable'] ?? false)) {
-            throw new PublishException("{$type['label']} can be built and previewed now. Publishing to your store opens in an upcoming release.");
-        }
         if (! $store->hasPlanAccess()) {
             throw new PublishException('Choose a plan to start publishing.', 'plan');
         }

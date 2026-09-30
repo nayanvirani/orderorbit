@@ -15,9 +15,11 @@
 | Template "style" picks the renderer variant: minimal, card, banner,
 | premium, compact, ladder, grid, carousel, slider, table, row.
 |
-| "publishable" types can go live now. The rest change the cart or promise
-| savings, so they stay draft/preview-only until their storefront cart and
-| discount logic ships (build phases 4–5).
+| Templates may preset content ("content" => [...]) on top of the type defaults.
+|
+| "discount" types apply real savings at checkout through the OrderOrbit
+| discount function (extensions/orderorbit-discounts): publishing one creates
+| a Shopify automatic discount (App\Services\Experiences\OfferSync).
 |
 */
 
@@ -25,7 +27,7 @@ return [
 
     'bundles' => [
         'label' => 'Bundles',
-        'publishable' => false,
+        'discount' => true,
         'singular' => 'Bundle',
         'icon' => 'package',
         'meter' => 'bundles',
@@ -34,6 +36,8 @@ return [
         'empty' => 'Build your first bundle. Let shoppers mix, match and save in a few clicks.',
         'templates' => [
             'premium-bundle' => ['name' => 'Premium Bundle', 'style' => 'premium'],
+            'frequently-bought-together' => ['name' => 'Frequently Bought Together', 'style' => 'row', 'content' => ['bundle_mode' => 'fixed', 'headline' => 'Frequently bought together', 'subheadline' => 'Get all of them and save', 'badge' => 'Bundle deal']],
+            'fixed-bundle' => ['name' => 'Fixed Bundle / Multipack', 'style' => 'card', 'content' => ['bundle_mode' => 'fixed', 'headline' => 'Get the complete set', 'subheadline' => 'Everything you need, one click']],
             'mix-and-match' => ['name' => 'Mix & Match', 'style' => 'grid'],
             'tiered' => ['name' => 'Tiered / Buy More Save More', 'style' => 'card'],
             'routine-builder' => ['name' => 'Routine Builder', 'style' => 'card'],
@@ -44,7 +48,8 @@ return [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Build your bundle and save', 'max' => 120],
             'subheadline' => ['type' => 'text', 'label' => 'Subheadline', 'default' => 'Pick your favourites', 'max' => 160],
             'products' => ['type' => 'products', 'label' => 'Products in the bundle', 'required' => true, 'max_items' => 12],
-            'min_items' => ['type' => 'number', 'label' => 'Minimum selections', 'default' => 2, 'min' => 1, 'max' => 12],
+            'bundle_mode' => ['type' => 'select', 'label' => 'Bundle type', 'default' => 'mix', 'options' => ['mix' => 'Mix & match: shopper picks any of these', 'fixed' => 'Fixed: all products together'], 'help' => 'Fixed bundles add every product; the saving applies when all of them are in the cart.'],
+            'min_items' => ['type' => 'number', 'label' => 'Minimum selections', 'default' => 2, 'min' => 1, 'max' => 12, 'help' => 'Mix & match only: items needed to unlock the saving.'],
             'max_items' => ['type' => 'number', 'label' => 'Maximum selections', 'default' => 3, 'min' => 1, 'max' => 12],
             'discount_type' => ['type' => 'select', 'label' => 'Saving', 'default' => 'percentage', 'options' => ['percentage' => 'Percentage off', 'amount' => 'Amount off', 'none' => 'No discount']],
             'discount_value' => ['type' => 'number', 'label' => 'Saving value', 'default' => 15, 'min' => 0, 'max' => 1000],
@@ -52,12 +57,13 @@ return [
             'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add bundle to cart', 'max' => 40],
             'badge' => ['type' => 'text', 'label' => 'Badge', 'default' => 'Save 15%', 'max' => 24],
             'show_compare_at' => ['type' => 'toggle', 'label' => 'Show compare-at prices', 'default' => true],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Bundle discount', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
 
     'free-gifts' => [
         'label' => 'Free Gifts',
-        'publishable' => false,
+        'discount' => true,
         'singular' => 'Free gift',
         'icon' => 'gift',
         'meter' => 'free_gifts',
@@ -76,16 +82,17 @@ return [
             'thresholds' => ['type' => 'list', 'label' => 'Thresholds', 'required' => true, 'max_items' => 4,
                 'fields' => ['amount' => ['type' => 'money', 'label' => 'Spend', 'min' => 0], 'reward' => ['type' => 'text', 'label' => 'Reward', 'max' => 60]],
                 'default' => [['amount' => 50, 'reward' => 'Free sample kit'], ['amount' => 100, 'reward' => 'Free full-size product']]],
-            'gift_products' => ['type' => 'products', 'label' => 'Gift products', 'max_items' => 4],
+            'gift_products' => ['type' => 'products', 'label' => 'Gift products', 'required' => true, 'max_items' => 4, 'help' => 'One gift unit is free for every threshold the cart reaches.'],
             'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => 'Spend {remaining} more to unlock {reward}', 'help' => 'Use {remaining} and {reward}.'],
             'unlocked_message' => ['type' => 'text', 'label' => 'Unlocked message', 'default' => 'You\'ve unlocked {reward}!'],
             'claim_mode' => ['type' => 'select', 'label' => 'When unlocked', 'default' => 'claim', 'options' => ['claim' => 'Shopper claims the gift', 'auto' => 'Add the gift automatically']],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Free gift', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
 
     'shipping-bar' => [
         'label' => 'Shipping Bar',
-        'publishable' => true,
+        'discount' => true,
         'singular' => 'Shipping bar',
         'icon' => 'truck',
         'meter' => 'shipping_bars',
@@ -105,12 +112,14 @@ return [
             'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => 'You\'re {remaining} away from {reward}'],
             'unlocked_message' => ['type' => 'text', 'label' => 'Unlocked message', 'default' => 'You\'ve unlocked {reward}!'],
             'empty_message' => ['type' => 'text', 'label' => 'Empty cart message', 'default' => 'Free shipping on orders over {threshold}'],
+            'free_shipping' => ['type' => 'toggle', 'label' => 'Give free shipping at the first threshold', 'default' => false, 'help' => 'Turn on if your shipping rates don\'t already include free shipping. OrderOrbit then applies it at checkout.'],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Free shipping', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
 
     'quantity-breaks' => [
         'label' => 'Quantity Breaks',
-        'publishable' => false,
+        'discount' => true,
         'singular' => 'Quantity break',
         'icon' => 'layers',
         'meter' => null,
@@ -129,14 +138,47 @@ return [
             'tiers' => ['type' => 'list', 'label' => 'Tiers', 'required' => true, 'max_items' => 6,
                 'fields' => ['quantity' => ['type' => 'number', 'label' => 'Quantity', 'min' => 1, 'max' => 1000], 'discount' => ['type' => 'number', 'label' => '% off', 'min' => 0, 'max' => 100], 'badge' => ['type' => 'text', 'label' => 'Badge', 'max' => 24]],
                 'default' => [['quantity' => 1, 'discount' => 0, 'badge' => ''], ['quantity' => 2, 'discount' => 10, 'badge' => ''], ['quantity' => 3, 'discount' => 20, 'badge' => 'Most popular']]],
+            'products' => ['type' => 'products', 'label' => 'Products with quantity breaks', 'max_items' => 50, 'help' => 'Leave empty to use Targeting → Only these products. If both are empty, every product gets these tiers.'],
             'default_tier' => ['type' => 'number', 'label' => 'Selected tier', 'default' => 2, 'min' => 1, 'max' => 6, 'help' => 'Which tier is pre-selected (1 = first).'],
             'price_display' => ['type' => 'select', 'label' => 'Show price as', 'default' => 'per_unit', 'options' => ['per_unit' => 'Price per unit', 'total' => 'Total price']],
+            'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add to cart', 'max' => 40],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Volume discount', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
+        ],
+    ],
+
+    'bogo' => [
+        'label' => 'BOGO',
+        'discount' => true,
+        'singular' => 'BOGO offer',
+        'icon' => 'tag',
+        'meter' => 'bundles',
+        'surface' => 'product',
+        'description' => 'Buy X, get Y free or discounted.',
+        'empty' => 'Run a buy one, get one offer that applies at checkout.',
+        'templates' => [
+            'bogo-card' => ['name' => 'BOGO Card', 'style' => 'card'],
+            'bogo-banner' => ['name' => 'Offer Banner', 'style' => 'banner'],
+            'bogo-premium' => ['name' => 'Premium Offer', 'style' => 'premium'],
+            'buy-x-get-y' => ['name' => 'Buy X Get Y', 'style' => 'row', 'content' => ['headline' => 'Buy 2, get 1 free', 'buy_quantity' => 2]],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Buy 1, get 1 free', 'max' => 80],
+            'subheadline' => ['type' => 'text', 'label' => 'Subheadline', 'default' => 'Add two to your cart. The cheaper one is on us.', 'max' => 160],
+            'buy_products' => ['type' => 'products', 'label' => 'Customer buys', 'required' => true, 'max_items' => 20],
+            'buy_quantity' => ['type' => 'number', 'label' => 'Buy quantity', 'default' => 1, 'min' => 1, 'max' => 20],
+            'get_products' => ['type' => 'products', 'label' => 'Customer gets', 'max_items' => 20, 'help' => 'Leave empty for the same products.'],
+            'get_quantity' => ['type' => 'number', 'label' => 'Get quantity', 'default' => 1, 'min' => 1, 'max' => 20],
+            'get_discount' => ['type' => 'number', 'label' => 'Discount on the items they get (%)', 'default' => 100, 'min' => 1, 'max' => 100, 'help' => '100 = free.'],
+            'repeat' => ['type' => 'toggle', 'label' => 'Repeat for every set in the cart', 'default' => true],
+            'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add offer to cart', 'max' => 40],
+            'badge' => ['type' => 'text', 'label' => 'Badge', 'default' => 'BOGO', 'max' => 24],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Buy one, get one', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
 
     'product-upsells' => [
         'label' => 'Product Upsells',
-        'publishable' => false,
+        'discount' => true,
         'singular' => 'Product upsell',
         'icon' => 'sparkle',
         'meter' => null,
@@ -153,14 +195,15 @@ return [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Frequently added', 'max' => 80],
             'products' => ['type' => 'products', 'label' => 'Recommended products', 'required' => true, 'max_items' => 4],
             'offer_message' => ['type' => 'text', 'label' => 'Offer message', 'default' => 'Add it now and save 10%', 'max' => 80],
-            'discount_percent' => ['type' => 'number', 'label' => 'Incentive (% off)', 'default' => 10, 'min' => 0, 'max' => 100],
+            'discount_percent' => ['type' => 'number', 'label' => 'Incentive (% off)', 'default' => 10, 'min' => 0, 'max' => 100, 'help' => 'Applies only to items added from this offer.'],
             'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add', 'max' => 24],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Add-on offer', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
 
     'cart-upsells' => [
         'label' => 'Cart Upsells',
-        'publishable' => false,
+        'discount' => true,
         'singular' => 'Cart upsell',
         'icon' => 'bag',
         'meter' => null,
@@ -178,13 +221,14 @@ return [
             'products' => ['type' => 'products', 'label' => 'Recommended products', 'required' => true, 'max_items' => 8],
             'max_shown' => ['type' => 'number', 'label' => 'Products shown', 'default' => 3, 'min' => 1, 'max' => 8],
             'incentive' => ['type' => 'text', 'label' => 'Incentive text', 'default' => '', 'max' => 60],
+            'discount_percent' => ['type' => 'number', 'label' => 'Incentive (% off)', 'default' => 0, 'min' => 0, 'max' => 100, 'help' => 'Applies only to items added from this offer.'],
             'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add', 'max' => 24],
+            'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Cart offer', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
 
     'countdown' => [
         'label' => 'Countdown',
-        'publishable' => true,
         'singular' => 'Countdown',
         'icon' => 'clock',
         'meter' => null,
@@ -209,7 +253,6 @@ return [
 
     'sticky-atc' => [
         'label' => 'Sticky ATC',
-        'publishable' => false,
         'singular' => 'Sticky add to cart',
         'icon' => 'cursor',
         'meter' => null,
@@ -229,7 +272,6 @@ return [
 
     'trust' => [
         'label' => 'Trust & Social Proof',
-        'publishable' => true,
         'singular' => 'Trust block',
         'icon' => 'shield',
         'meter' => null,

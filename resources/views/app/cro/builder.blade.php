@@ -10,7 +10,6 @@
     $sectionFor = ['content' => ['content'], 'design' => ['design'], 'behavior' => ['behavior'], 'targeting' => ['targeting', 'schedule'], 'analytics' => ['analytics']];
     $stepErrors = collect($fieldErrors)->keys()->map(fn ($k) => explode('.', $k)[0])->map(fn ($s) => $s === 'schedule' ? 'targeting' : $s)->unique()->values()->all();
     $firstErrorStep = $stepErrors[0] ?? null;
-    $publishable = $type['publishable'] ?? false;
 @endphp
 
 @push('head')
@@ -25,9 +24,6 @@
     @if ($banner)
         <s-banner tone="{{ $fieldErrors ? 'warning' : 'info' }}">{{ $banner }}</s-banner>
     @endif
-    @unless ($publishable)
-        <s-banner tone="info">{{ $type['label'] }} can be built, saved and previewed now. Publishing to your store opens in an upcoming release, once cart and discount handling for {{ strtolower($type['label']) }} ships.</s-banner>
-    @endunless
 
     <form method="POST" action="{{ app_route('app.cro.experiences.update', ['experience' => $experience->id]) }}" id="builder" data-builder
           data-type="{{ $experience->type }}" data-handle="{{ $experience->handle }}" data-currency="{{ $store->currency ?? 'USD' }}"
@@ -100,9 +96,12 @@
                     <div class="b-field"><label for="f-name">Internal name</label><input id="f-name" name="name" value="{{ $experience->name }}" maxlength="120" required></div>
                     <div class="b-field"><label for="f-description">Description</label><textarea id="f-description" name="description" rows="2" maxlength="500">{{ $experience->description }}</textarea></div>
                     <div class="b-field"><label for="f-note">Change note</label><input id="f-note" name="change_note" maxlength="190" placeholder="What changed in this version?"></div>
+                    @if ($type['discount'] ?? false)
+                        <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
+                    @endif
                     <p class="b-muted">After publishing, add the <strong>OrderOrbit experience</strong> block in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>
                     <div class="b-actions">
-                        <button type="submit" name="action" value="publish" class="b-btn b-primary" @disabled(! $publishable)>
+                        <button type="submit" name="action" value="publish" class="b-btn b-primary">
                             {{ ! empty($config['schedule']['starts_at']) ? 'Schedule' : 'Publish' }}
                         </button>
                         <a class="b-btn" target="_top" href="{{ $store->adminUrl('themes/current/editor?template='.($type['surface'] === 'product' ? 'product' : ($type['surface'] === 'cart' ? 'cart' : 'index')).'&addAppBlockId='.config('shopify.api_key').'/experience&target=newAppsSection') }}">Open Theme Editor</a>

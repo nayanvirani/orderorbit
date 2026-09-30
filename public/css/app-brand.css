@@ -84,3 +84,13 @@
 .oo-meter i.full { background: #c70a24 !important; }
 .oo-steps span.done { background: #ececeb !important; color: #1a1a1a !important; }
 .oo-steps span.current { background: var(--ob-ink) !important; }
+
+/* Feature pages: numbered "how it works" steps */
+.ob-how { list-style: none; margin: 0; padding: 0; counter-reset: h; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.ob-how li { counter-increment: h; position: relative; padding: 16px 16px 16px 58px; border-radius: 12px; background: var(--ob-cream); color: #303030; line-height: 1.45; }
+.ob-how li::before { content: counter(h); position: absolute; left: 16px; top: 14px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 400 17px/1 var(--ob-serif); color: #fff; background: var(--ob-ink); }
+
+/* Dashboard feature grid */
+.ob-type .ob-live { font: 500 10.5px/1 var(--ob-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ob-muted); }
+.ob-type .ob-live.on { color: var(--ob-ink); }
+.ob-type .ob-live.on::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #1a7f37; vertical-align: 1px; }

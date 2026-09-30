@@ -77,9 +77,7 @@ class ExperienceController extends Controller
         return view('app.cro.create', [
             'store' => $store,
             'type' => $type,
-            'previews' => $type ? collect(Registry::templates($type))->map(fn ($t, $key) => [
-                'id' => 'tpl-'.$key, 'type' => $type, 'template' => $key, 'style' => $t['style'], 'version' => 0, 'priority' => 0,
-            ] + TemplateLibrary::defaults($type, $key))->values()->all() : [],
+            'previews' => $type ? collect(Registry::templates($type))->map(fn ($t, $key) => TemplateLibrary::preview($type, $key))->values()->all() : [],
         ]);
     }
 

@@ -31,6 +31,8 @@ class ExperienceEngineTest extends TestCase
             $query = $request['query'] ?? '';
 
             return match (true) {
+                str_contains($query, 'discountAutomaticAppCreate') => Http::response(['data' => ['discountAutomaticAppCreate' => ['automaticAppDiscount' => ['discountId' => 'gid://shopify/DiscountAutomaticNode/77'], 'userErrors' => []]]]),
+                str_contains($query, 'discountAutomaticDelete') => Http::response(['data' => ['discountAutomaticDelete' => ['userErrors' => []]]]),
                 str_contains($query, 'currentAppInstallation { id }') => Http::response(['data' => ['currentAppInstallation' => ['id' => 'gid://shopify/AppInstallation/1']]]),
                 str_contains($query, 'metafieldsSet') => Http::response(['data' => ['metafieldsSet' => ['userErrors' => []]]]),
                 str_contains($query, 'themes(first: 1') => Http::response(['data' => ['themes' => ['nodes' => []]]]),
@@ -114,20 +116,52 @@ class ExperienceEngineTest extends TestCase
         $manager->publish($manager->create($store, 'shipping-bar', 'progress', null), null);
     }
 
-    public function test_cart_changing_types_stay_preview_only_for_now(): void
+    public function test_bundles_publish_with_a_real_checkout_discount(): void
     {
         $this->fakeShopify();
         $store = $this->installedStore(['plan' => 'growth']);
         $manager = app(ExperienceManager::class);
         $experience = $manager->create($store, 'bundles', 'mix-and-match', null);
+        $config = $experience->draft_config;
+        $config['content']['products'] = [
+            ['id' => 'gid://shopify/Product/11', 'title' => 'Serum', 'handle' => 'serum', 'variant_id' => 'gid://shopify/ProductVariant/111'],
+            ['id' => 'gid://shopify/Product/12', 'title' => 'Cream', 'handle' => 'cream', 'variant_id' => 'gid://shopify/ProductVariant/121'],
+        ];
+        $config['content']['checkout_label'] = 'Skincare bundle';
+        $experience->update(['draft_config' => $config]);
 
-        try {
-            $manager->publish($experience, null);
-            $this->fail('Bundles should not publish yet.');
-        } catch (PublishException $e) {
-            $this->assertSame('unavailable', $e->reason);
-        }
-        Http::assertNothingSent();
+        $manager->publish($experience->fresh(), null);
+
+        $this->assertSame('gid://shopify/DiscountAutomaticNode/77', $experience->fresh()->shopify_discount_id);
+        Http::assertSent(function (Request $request) use ($experience) {
+            if (! str_contains($request['query'] ?? '', 'discountAutomaticAppCreate')) {
+                return false;
+            }
+            $discount = json_decode($request->body(), true)['variables']['discount'];
+            $offer = json_decode($discount['metafields'][0]['value'], true)['offers'][0];
+
+            return $discount['functionHandle'] === 'orderorbit-discounts'
+                && $discount['title'] === 'Skincare bundle'
+                && $discount['discountClasses'] === ['PRODUCT']
+                && $offer === ['k' => 'bundle', 'p' => ['11', '12'], 'mode' => 'mix', 'min' => 2, 't' => 'percentage', 'v' => 15, 'id' => $experience->handle, 'm' => 'Skincare bundle'];
+        });
+
+        // Pausing takes the saving away with the widget.
+        $manager->pause($experience->fresh());
+        $this->assertNull($experience->fresh()->shopify_discount_id);
+        Http::assertSent(fn (Request $request) => str_contains($request['query'] ?? '', 'discountAutomaticDelete')
+            && json_decode($request->body(), true)['variables']['id'] === 'gid://shopify/DiscountAutomaticNode/77');
+    }
+
+    public function test_experiences_without_a_saving_create_no_discount(): void
+    {
+        $this->fakeShopify();
+        $store = $this->installedStore(['plan' => 'growth']);
+        $manager = app(ExperienceManager::class);
+        $manager->publish($manager->create($store, 'shipping-bar', 'minimal', null), null);
+        $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
+
+        Http::assertNotSent(fn (Request $request) => str_contains($request['query'] ?? '', 'discountAutomatic'));
     }
 
     public function test_no_plan_means_no_publishing(): void
@@ -158,6 +192,29 @@ class ExperienceEngineTest extends TestCase
 
         $manager->discardChanges($experience->fresh());
         $this->assertSame('Changed', $experience->fresh()->draft_config['content']['headline']);
+    }
+
+    public function test_feature_navigation_and_pages(): void
+    {
+        $this->fakeShopify();
+        $store = $this->installedStore(['plan' => 'growth']);
+        $owner = $this->member($store, 'owner');
+        $manager = app(ExperienceManager::class);
+        $bundle = $manager->create($store, 'bundles', 'frequently-bought-together', null);
+        $this->assertSame('fixed', $bundle->draft_config['content']['bundle_mode'], 'Templates preset their content.');
+
+        // Every type belongs to exactly one feature.
+        $grouped = collect(\App\Experiences\Registry::features())->flatMap(fn ($f) => $f['types'])->sort()->values()->all();
+        $this->assertSame(collect(array_keys(\App\Experiences\Registry::types()))->sort()->values()->all(), $grouped);
+
+        $this->get('/app', $this->as($owner))->assertOk()
+            ->assertSee('Volume discounts')->assertSee('/app/features/bogo', false)->assertSee('All offers');
+        foreach (array_keys(\App\Experiences\Registry::features()) as $feature) {
+            $this->get("/app/features/{$feature}", $this->as($owner))->assertOk()->assertSee('How it works');
+        }
+        $this->get('/app/features/bundles', $this->as($owner))->assertSee($bundle->name)->assertSee('Frequently Bought Together');
+        $this->get('/app/features/upsells', $this->as($owner))->assertSee('Create cart upsell');
+        $this->get('/app/features/nope', $this->as($owner))->assertNotFound();
     }
 
     public function test_builder_pages_and_permissions(): void

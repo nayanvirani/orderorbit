@@ -1,11 +1,11 @@
 @extends('layouts.embedded')
 
 @php($typeDef = $type ? \App\Experiences\Registry::type($type) : null)
-@section('title', $typeDef['label'] ?? 'Experiences')
+@section('title', $typeDef['label'] ?? 'All offers')
 
 @section('content')
-<s-page heading="{{ $typeDef['label'] ?? 'Experiences' }}">
-    <s-button slot="primary-action" variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.strtolower($typeDef['singular']) : 'Create experience' }}</s-button>
+<s-page heading="{{ $typeDef['label'] ?? 'All offers' }}">
+    <s-button slot="primary-action" variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.lower_label($typeDef['singular']) : 'Create experience' }}</s-button>
     <s-button slot="secondary-actions" data-download="{{ app_route('app.cro.experiences.export') }}">Export CSV</s-button>
 
     <s-section>
@@ -38,8 +38,8 @@
             @if ($filters['q'] || $filters['status'] || (! $type && $filters['type']))
                 <s-paragraph>No experiences match those filters.</s-paragraph>
             @else
-                <x-app.empty :title="$typeDef ? 'No '.strtolower($typeDef['label']).' yet' : 'No experiences yet'" :text="$typeDef['empty'] ?? 'Create your first experience. Pick a template, customise it and publish it from the Theme Editor.'">
-                    <s-button variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.strtolower($typeDef['singular']) : 'Create experience' }}</s-button>
+                <x-app.empty :title="$typeDef ? 'No '.lower_label($typeDef['label']).' yet' : 'No experiences yet'" :text="$typeDef['empty'] ?? 'Create your first experience. Pick a template, customise it and publish it from the Theme Editor.'">
+                    <s-button variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.lower_label($typeDef['singular']) : 'Create experience' }}</s-button>
                 </x-app.empty>
             @endif
         @else

@@ -16,7 +16,7 @@ class ExperienceSchemaTest extends TestCase
 
             // Only "choose products" and the countdown deadline need merchant input.
             foreach (array_keys($errors) as $key) {
-                $this->assertContains($key, ['content.products', 'content.ends_at'], "{$type}: unexpected default error {$key}");
+                $this->assertContains($key, ['content.products', 'content.gift_products', 'content.buy_products', 'content.ends_at'], "{$type}: unexpected default error {$key}");
             }
         }
     }
