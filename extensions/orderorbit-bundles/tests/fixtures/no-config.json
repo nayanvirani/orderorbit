@@ -10,8 +10,9 @@
             "id": "gid://shopify/CartLine/0",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|1|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "20"
@@ -28,8 +29,9 @@
             "id": "gid://shopify/CartLine/1",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|1|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "30"

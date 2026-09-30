@@ -7,6 +7,9 @@ query CartTransformRunInput {
       bundle: attribute(key: "_oo_bundle") {
         value
       }
+      gift: attribute(key: "_oo_gift") {
+        value
+      }
       cost {
         amountPerQuantity {
           amount

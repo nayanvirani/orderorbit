@@ -2,6 +2,7 @@
 
 namespace App\Services\Experiences;
 
+use App\Experiences\BundleSchema;
 use App\Experiences\Registry;
 use App\Experiences\Schema;
 use App\Models\CroTemplate;
@@ -78,6 +79,10 @@ class TemplateLibrary
      */
     public static function defaults(string $type, string $templateKey, array $branding = []): array
     {
+        if ($type === 'bundles') {
+            return BundleSchema::defaults($templateKey, $branding);
+        }
+
         $template = Registry::template($type, $templateKey) ?? [];
         $style = $template['style'] ?? 'card';
         $config = Schema::defaults($type, $branding);
@@ -99,6 +104,10 @@ class TemplateLibrary
      */
     public static function preview(string $type, string $templateKey, array $branding = []): array
     {
+        if ($type === 'bundles') {
+            return self::bundlePreview($templateKey, $branding);
+        }
+
         $config = self::defaults($type, $templateKey, $branding);
         foreach (Registry::type($type)['content'] as $name => $field) {
             if ($field['type'] === 'products' && empty($config['content'][$name])) {
@@ -107,6 +116,37 @@ class TemplateLibrary
         }
 
         return ['id' => "tpl-{$type}-{$templateKey}", 'type' => $type, 'template' => $templateKey, 'style' => Registry::template($type, $templateKey)['style'] ?? 'card', 'version' => 0, 'priority' => 0] + $config;
+    }
+
+    /**
+     * A bundle model rendered with sample products, in the storefront payload shape.
+     */
+    public static function bundlePreview(string $modelKey, array $branding = [], ?string $preset = null): array
+    {
+        $config = BundleSchema::defaults($modelKey, $branding);
+        if ($preset) {
+            $config['design'] = array_merge($config['design'], BundleSchema::designDefaults($preset));
+        }
+        $samples = self::SAMPLE_PRODUCTS;
+        foreach ($config['offers'] as $i => $offer) {
+            if ($offer['kind'] === 'multi' && $offer['products'] === []) {
+                $config['offers'][$i]['products'] = array_slice($samples, 0, 3);
+            }
+            if ($offer['kind'] === 'mono' && $offer['product'] === []) {
+                $config['offers'][$i]['product'] = [$samples[$i % 3]];
+            }
+            foreach ($offer['gifts'] as $g => $gift) {
+                if ($gift['product'] === []) {
+                    $config['offers'][$i]['gifts'][$g]['product'] = [['id' => 'gid://shopify/Product/9', 'title' => 'Free gift', 'price' => 12.0]];
+                }
+            }
+        }
+        if ($config['mix']['pool'] === []) {
+            $config['mix']['pool'] = $samples;
+        }
+
+        return ['id' => "tpl-bundles-{$modelKey}", 'type' => 'bundles', 'template' => $modelKey, 'style' => BundleSchema::model($modelKey)['layout'] ?? 'vertical', 'version' => 0, 'priority' => 0]
+            + BundleSchema::payload($config);
     }
 
     private const SAMPLE_PRODUCTS = [

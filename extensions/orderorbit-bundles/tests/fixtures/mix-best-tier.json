@@ -10,8 +10,9 @@
             "id": "gid://shopify/CartLine/0",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|m|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "20"
@@ -28,8 +29,9 @@
             "id": "gid://shopify/CartLine/1",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|m|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "30"
@@ -46,29 +48,12 @@
             "id": "gid://shopify/CartLine/2",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g2"
+              "value": "b1|m|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
-                "amount": "20"
-              }
-            },
-            "merchandise": {
-              "__typename": "ProductVariant",
-              "product": {
-                "id": "gid://shopify/Product/1"
-              }
-            }
-          },
-          {
-            "id": "gid://shopify/CartLine/3",
-            "quantity": 1,
-            "bundle": {
-              "value": "b1|g2"
-            },
-            "cost": {
-              "amountPerQuantity": {
-                "amount": "10"
+                "amount": "50"
               }
             },
             "merchandise": {
@@ -87,17 +72,45 @@
               {
                 "id": "b1",
                 "parent": "gid://shopify/ProductVariant/900",
-                "title": "Skincare bundle",
+                "title": "Skincare set",
                 "image": "https://cdn.shopify.com/a.jpg",
-                "mode": "mix",
-                "min": 2,
-                "p": [
-                  "1",
-                  "2",
-                  "3"
+                "o": [
+                  null,
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "percentage",
+                    "v": 15,
+                    "n": "Complete bundle"
+                  },
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "fixed_price",
+                    "v": 40
+                  }
                 ],
-                "t": "percentage",
-                "v": 15
+                "mix": {
+                  "p": [
+                    "1",
+                    "2",
+                    "3"
+                  ],
+                  "tiers": [
+                    [
+                      2,
+                      10
+                    ],
+                    [
+                      3,
+                      15
+                    ]
+                  ]
+                }
               }
             ]
           }
@@ -116,34 +129,14 @@
               {
                 "cartLineId": "gid://shopify/CartLine/1",
                 "quantity": 1
-              }
-            ],
-            "parentVariantId": "gid://shopify/ProductVariant/900",
-            "title": "Skincare bundle",
-            "image": {
-              "url": "https://cdn.shopify.com/a.jpg"
-            },
-            "price": {
-              "percentageDecrease": {
-                "value": 15
-              }
-            }
-          }
-        },
-        {
-          "linesMerge": {
-            "cartLines": [
+              },
               {
                 "cartLineId": "gid://shopify/CartLine/2",
                 "quantity": 1
-              },
-              {
-                "cartLineId": "gid://shopify/CartLine/3",
-                "quantity": 1
               }
             ],
             "parentVariantId": "gid://shopify/ProductVariant/900",
-            "title": "Skincare bundle",
+            "title": "Skincare set",
             "image": {
               "url": "https://cdn.shopify.com/a.jpg"
             },

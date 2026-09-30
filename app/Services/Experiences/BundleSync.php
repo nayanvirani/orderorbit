@@ -2,6 +2,7 @@
 
 namespace App\Services\Experiences;
 
+use App\Experiences\BundleSchema;
 use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Shopify\AdminApi;
@@ -36,13 +37,13 @@ class BundleSync
         foreach ($bundles as $bundle) {
             $live = $bundle->status === 'published' && $bundle->publishedVersion !== null
                 && ($bundle->ends_at === null || $bundle->ends_at->isFuture());
-            $content = $live ? ($bundle->publishedVersion->config['content'] ?? []) : [];
+            $settings = $live ? BundleSchema::normalize($bundle->publishedVersion->config)[0] : null;
 
-            if ($live && ! empty($content['products'])) {
-                $this->ensureParent($store, $bundle, $content);
-                $config[] = self::entry($bundle, $content);
+            if ($settings && self::merges($settings)) {
+                $this->ensureParent($store, $bundle, $settings);
+                $config[] = self::entry($bundle, $settings);
             } elseif ($bundle->bundle_product_id) {
-                // Not live: the parent goes back to draft so it can't reach a cart.
+                // Not live (or nothing to merge): the parent goes back to draft so it can't reach a cart.
                 $this->setParentStatus($store, $bundle, 'DRAFT');
             }
         }
@@ -54,38 +55,62 @@ class BundleSync
     }
 
     /**
-     * The cart transform's view of one bundle.
+     * Whether any of the bundle's offers merge into one cart line (several products, or mix & match).
      */
-    public static function entry(Experience $bundle, array $content): array
+    public static function merges(array $bundle): bool
     {
-        $ids = array_values(array_filter(array_map(
+        return $bundle['bundle_type'] === 'mix-match'
+            || collect($bundle['offers'])->contains(fn ($o) => $o['kind'] === 'multi' && $o['products'] !== []);
+    }
+
+    /**
+     * The cart transform's view of one bundle. Offers are indexed like the bundle's
+     * offers (the storefront tags each add with "<bundle>|<offer index>|<group>").
+     */
+    public static function entry(Experience $bundle, array $config): array
+    {
+        $ids = fn (array $items) => array_values(array_filter(array_map(
             fn ($p) => preg_match('#(\d+)$#', (string) ($p['id'] ?? ''), $m) ? $m[1] : null,
-            $content['products'] ?? [],
+            $items,
         )));
-        $type = $content['discount_type'] ?? 'none';
 
         return array_filter([
             'id' => $bundle->handle,
             'parent' => $bundle->bundle_variant_id,
-            'title' => self::title($bundle, $content),
-            'image' => $content['products'][0]['image'] ?? null,
-            'mode' => ($content['bundle_mode'] ?? 'mix') === 'fixed' ? 'fixed' : 'mix',
-            'min' => max(1, (int) ($content['min_items'] ?? 1)),
-            'p' => $ids,
-            't' => $type === 'amount' ? 'amount' : 'percentage',
-            'v' => $type === 'none' ? 0 : (float) ($content['discount_value'] ?? 0),
+            'title' => self::title($bundle, $config),
+            'image' => self::image($config),
+            'o' => array_map(fn ($o) => $o['kind'] === 'multi' ? array_filter([
+                'p' => $ids($o['products']),
+                't' => $o['discount_type'],
+                'v' => $o['discount_value'],
+                'n' => $o['title'] ?: null,
+            ], fn ($v) => $v !== null) : null, $config['offers']),
+            'mix' => $config['bundle_type'] === 'mix-match' ? [
+                'p' => $ids($config['mix']['pool']),
+                'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $config['mix']['tiers']),
+            ] : null,
         ], fn ($v) => $v !== null);
     }
 
-    private static function title(Experience $bundle, array $content): string
+    private static function title(Experience $bundle, array $config): string
     {
-        return trim((string) ($content['checkout_label'] ?? '')) ?: $bundle->name;
+        return $bundle->name;
     }
 
-    private function ensureParent(Store $store, Experience $bundle, array $content): void
+    private static function image(array $config): ?string
     {
-        $title = self::title($bundle, $content);
-        $price = number_format(collect($content['products'])->sum(fn ($p) => (float) ($p['price'] ?? 0) * (int) ($p['quantity'] ?? 1)), 2, '.', '');
+        $multi = collect($config['offers'])->first(fn ($o) => $o['kind'] === 'multi' && $o['products']);
+
+        return ($multi['products'][0]['image'] ?? null) ?? ($config['mix']['pool'][0]['image'] ?? null);
+    }
+
+    private function ensureParent(Store $store, Experience $bundle, array $config): void
+    {
+        $title = self::title($bundle, $config);
+        $multi = collect($config['offers'])->first(fn ($o) => $o['kind'] === 'multi' && $o['products']);
+        $items = $multi['products'] ?? array_slice($config['mix']['pool'], 0, $config['mix']['slots']);
+        $price = number_format(collect($items)->sum(fn ($p) => (float) ($p['price'] ?? 0) * (int) ($p['quantity'] ?? 1)), 2, '.', '');
+        $image = self::image($config);
         // One cached state per bundle: what we last told Shopify (title, price, status).
         $state = 'bundle-state:'.$bundle->id;
         if ($bundle->bundle_product_id && Cache::get($state) === md5($title.$price.$bundle->bundle_variant_id.'ACTIVE')) {
@@ -100,7 +125,6 @@ class BundleSync
 
         $this->assertEligible($store);
 
-        $image = $content['products'][0]['image'] ?? null;
         $created = $this->api->graphql($store, <<<'GQL'
             mutation CreateBundle($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
               productCreate(product: $product, media: $media) {

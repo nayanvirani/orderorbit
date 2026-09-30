@@ -11,7 +11,7 @@
 <s-page heading="Dashboard">
     <x-app.hero :eyebrow="$store->name ?? $store->shop_domain" title="Your store, <em>in orbit.</em>"
         lead="Bundles, volume discounts, BOGO, free gifts, upsells and more — each one live on your storefront, with savings applied automatically at checkout.">
-        <s-button variant="primary" href="{{ app_route('app.features.show', ['feature' => 'bundles']) }}">Create a bundle</s-button>
+        <s-button variant="primary" href="{{ app_route('app.bundles.types') }}">Create a bundle</s-button>
         <s-button href="{{ app_route('app.cro.experiences.index') }}">All offers</s-button>
     </x-app.hero>
 

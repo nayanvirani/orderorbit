@@ -125,20 +125,19 @@ class ExperienceEngineTest extends TestCase
         $this->fakeShopify();
         $store = $this->installedStore(['plan' => 'growth']);
         $manager = app(ExperienceManager::class);
-        $experience = $manager->create($store, 'bundles', 'mix-and-match', null);
+        $experience = $manager->create($store, 'bundles', 'fx-classic', null, 'Skincare bundle');
         $config = $experience->draft_config;
-        $config['content']['products'] = [
+        $config['offers'][1]['products'] = [
             ['id' => 'gid://shopify/Product/11', 'title' => 'Serum', 'handle' => 'serum', 'price' => 20, 'variant_id' => 'gid://shopify/ProductVariant/111'],
             ['id' => 'gid://shopify/Product/12', 'title' => 'Cream', 'handle' => 'cream', 'price' => 30, 'variant_id' => 'gid://shopify/ProductVariant/121'],
         ];
-        $config['content']['checkout_label'] = 'Skincare bundle';
         $experience->update(['draft_config' => $config]);
 
         $manager->publish($experience->fresh(), null);
 
         $fresh = $experience->fresh();
         $this->assertSame('gid://shopify/ProductVariant/501', $fresh->bundle_variant_id);
-        $this->assertNull($fresh->shopify_discount_id, 'Bundles are priced by the cart transform, not a discount.');
+        $this->assertNull($fresh->shopify_discount_id, 'The pack is priced by the cart transform; the single-product offer has no saving.');
         $this->assertSame('gid://shopify/CartTransform/7', $store->fresh()->cart_transform_id);
 
         // Hidden parent: app-owned, sold only with components, stock from the components.
@@ -155,7 +154,7 @@ class ExperienceEngineTest extends TestCase
 
             return json_decode($r->body(), true)['variables']['handle'] === 'orderorbit-bundles'
                 && $bundle['id'] === $experience->handle && $bundle['parent'] === 'gid://shopify/ProductVariant/501'
-                && $bundle['p'] === ['11', '12'] && $bundle['mode'] === 'mix' && $bundle['min'] === 2 && $bundle['v'] == 15;
+                && $bundle['o'][0] === null && $bundle['o'][1]['p'] === ['11', '12'] && $bundle['o'][1]['t'] === 'percentage' && $bundle['o'][1]['v'] == 15;
         });
 
         // Pausing takes the bundle out of the transform and drafts the parent.
@@ -212,8 +211,8 @@ class ExperienceEngineTest extends TestCase
         $store = $this->installedStore(['plan' => 'growth']);
         $owner = $this->member($store, 'owner');
         $manager = app(ExperienceManager::class);
-        $bundle = $manager->create($store, 'bundles', 'frequently-bought-together', null);
-        $this->assertSame('fixed', $bundle->draft_config['content']['bundle_mode'], 'Templates preset their content.');
+        $bundle = $manager->create($store, 'bundles', 'fx-fbt', null, 'Skincare routine');
+        $this->assertSame('fbt', $bundle->draft_config['settings']['style'], 'Models preset their layout.');
 
         // Every type belongs to exactly one feature.
         $grouped = collect(\App\Experiences\Registry::features())->flatMap(fn ($f) => $f['types'])->sort()->values()->all();
@@ -221,10 +220,10 @@ class ExperienceEngineTest extends TestCase
 
         $this->get('/app', $this->as($owner))->assertOk()
             ->assertSee('Volume discounts')->assertSee('/app/features/bogo', false)->assertSee('All offers');
-        foreach (array_keys(\App\Experiences\Registry::features()) as $feature) {
+        foreach (array_diff(array_keys(\App\Experiences\Registry::features()), ['bundles']) as $feature) {
             $this->get("/app/features/{$feature}", $this->as($owner))->assertOk()->assertSee('How it works');
         }
-        $this->get('/app/features/bundles', $this->as($owner))->assertSee($bundle->name)->assertSee('Frequently Bought Together');
+        $this->get('/app/features/bundles', $this->as($owner))->assertRedirectContains('/app/bundles');
         $this->get('/app/features/upsells', $this->as($owner))->assertSee('Create cart upsell');
         $this->get('/app/features/nope', $this->as($owner))->assertNotFound();
     }

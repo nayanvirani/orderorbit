@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CroSetting;
 use App\Models\Store;
 use App\Services\Experiences\TemplateLibrary;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
@@ -15,8 +16,12 @@ use Illuminate\View\View;
  */
 class FeatureController extends Controller
 {
-    public function show(Store $store, string $feature): View
+    public function show(Store $store, string $feature): View|RedirectResponse
     {
+        if ($feature === 'bundles') {
+            return redirect()->to(app_route('app.bundles.index'));
+        }
+
         $definition = Registry::feature($feature) ?? abort(404);
         $types = $definition['types'];
 

@@ -95,6 +95,11 @@ class Schema
      */
     public static function fields(string $type): array
     {
+        if ($type === 'bundles') {
+            // The Bundles module has its own editor and schema (BundleSchema).
+            return ['content' => []];
+        }
+
         // Shared fields marked with "types" only apply to those types.
         $shared = array_map(fn ($fields) => array_filter($fields, fn ($f) => ! isset($f['types']) || in_array($type, $f['types'], true)), self::shared());
 
@@ -106,6 +111,10 @@ class Schema
      */
     public static function defaults(string $type, array $branding = []): array
     {
+        if ($type === 'bundles') {
+            return BundleSchema::defaults(BundleSchema::firstModel('quantity-breaks'), $branding);
+        }
+
         $config = [];
         foreach (self::fields($type) as $section => $fields) {
             foreach ($fields as $key => $field) {
@@ -127,6 +136,10 @@ class Schema
      */
     public static function normalize(string $type, array $input, string $timezone = 'UTC'): array
     {
+        if ($type === 'bundles') {
+            return BundleSchema::normalize($input, $timezone);
+        }
+
         $config = [];
         $errors = [];
 
@@ -244,6 +257,14 @@ class Schema
     /**
      * Product/collection picks are stored as small snapshots for rendering.
      */
+    /**
+     * A cleaned product or collection list (used by BundleSchema), trimmed to the field's maximum.
+     */
+    public static function resourceList(array $field, array $items, string $kind): array
+    {
+        return array_slice(self::resources($field, $items, $kind)[0], 0, $field['max_items'] ?? 50);
+    }
+
     private static function resources(array $field, mixed $raw, string $kind): array
     {
         $items = is_string($raw) ? json_decode($raw, true) : $raw;

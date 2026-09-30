@@ -2,19 +2,32 @@
 
 /**
  * OrderOrbit bundles. Items added from a bundle widget carry the line property
- * _oo_bundle = "<bundle id>|<group>", one group per "add bundle" click. When a
- * group still qualifies (every product for a fixed bundle, enough items for mix
- * & match), its lines merge into one bundle line priced with the bundle saving.
+ * _oo_bundle = "<bundle id>|<offer index or m>|<group>", one group per "add to
+ * cart" click; free gifts in the group also carry _oo_gift. When a group still
+ * qualifies, its lines (gifts included) merge into one bundle line priced so the
+ * shopper pays the offer price for the paid items and nothing for the gifts.
  * Orders keep the component lines, so Shopify deducts each product's inventory.
  *
  * Config (cart transform metafield $app:bundles), money in shop currency:
- *   { bundles: [{ id, parent, title, image, mode: "mix"|"fixed", min, p: [productIds], t: "percentage"|"amount", v }] }
+ *   { bundles: [{ id, parent, title, image,
+ *       o: [ null | { p: [productIds], t: "percentage"|"amount"|"fixed_price"|"none", v, n } ],
+ *       mix: { p: [productIds], tiers: [[count, percent], ...] } }] }
  *
  * @typedef {import("../generated/api").CartTransformRunInput} CartTransformRunInput
  * @typedef {import("../generated/api").CartTransformRunResult} CartTransformRunResult
  */
 
 const numericId = (gid) => String(gid || '').split('/').pop();
+const units = (lines) => lines.reduce((sum, line) => sum + line.qty, 0);
+const total = (lines) => lines.reduce((sum, line) => sum + line.unit * line.qty, 0);
+
+// What the paid items should cost after the offer.
+function offerPrice(paid, type, value, rate) {
+  if (type === 'percentage') return paid * (1 - Math.min(100, value) / 100);
+  if (type === 'amount') return Math.max(0, paid - value * rate);
+  if (type === 'fixed_price') return Math.min(paid, value * rate);
+  return paid;
+}
 
 /**
  * @param {CartTransformRunInput} input
@@ -32,6 +45,7 @@ export function cartTransformRun(input) {
     (groups[tag] = groups[tag] || []).push({
       id: line.id,
       qty: line.quantity,
+      gift: !!line.gift?.value,
       product: numericId(line.merchandise.product.id),
       unit: Number(line.cost.amountPerQuantity.amount),
     });
@@ -39,29 +53,38 @@ export function cartTransformRun(input) {
 
   const operations = [];
   for (const [tag, lines] of Object.entries(groups)) {
-    const bundle = bundles.find((b) => b.id === tag.split('|')[0]);
+    const [bundleId, index] = tag.split('|');
+    const bundle = bundles.find((b) => b.id === bundleId);
     if (!bundle || !bundle.parent) continue;
 
-    const ids = bundle.p || [];
-    if (!lines.every((line) => ids.includes(line.product))) continue;
-    const items = lines.reduce((sum, line) => sum + line.qty, 0);
-    const qualifies = bundle.mode === 'fixed'
-      ? ids.every((id) => lines.some((line) => line.product === id))
-      : items >= Math.max(1, Number(bundle.min) || 1);
-    // A merge needs at least two lines; a single line is just a product.
-    if (!qualifies || lines.length < 2 && items < 2) continue;
+    const paid = lines.filter((line) => !line.gift);
+    if (!paid.length || lines.length < 2 && units(lines) < 2) continue;
 
-    const total = lines.reduce((sum, line) => sum + line.unit * line.qty, 0);
-    const value = Number(bundle.v) || 0;
-    const percent = bundle.t === 'amount'
-      ? (total > 0 ? Math.min(100, (value * rate / total) * 100) : 0)
-      : Math.min(100, value);
+    let target;
+    let title = bundle.title;
+    if (index === 'm') {
+      const mix = bundle.mix;
+      if (!mix || !paid.every((line) => mix.p.includes(line.product))) continue;
+      const count = units(paid);
+      const tier = [...(mix.tiers || [])].sort((a, b) => b[0] - a[0]).find(([need]) => count >= need);
+      target = offerPrice(total(paid), 'percentage', tier ? Number(tier[1]) : 0, rate);
+    } else {
+      const offer = (bundle.o || [])[Number(index)];
+      if (!offer) continue;
+      const ids = offer.p || [];
+      // The pack is complete and holds nothing else.
+      if (!paid.every((line) => ids.includes(line.product)) || !ids.every((id) => paid.some((line) => line.product === id))) continue;
+      target = offerPrice(total(paid), offer.t, Number(offer.v) || 0, rate);
+      title = offer.n || title;
+    }
 
+    const all = total(lines);
+    const percent = all > 0 ? Math.max(0, Math.min(100, (1 - target / all) * 100)) : 0;
     operations.push({
       linesMerge: {
         cartLines: lines.map((line) => ({cartLineId: line.id, quantity: line.qty})),
         parentVariantId: bundle.parent,
-        ...(bundle.title ? {title: bundle.title} : {}),
+        ...(title ? {title} : {}),
         ...(bundle.image ? {image: {url: bundle.image}} : {}),
         ...(percent > 0 ? {price: {percentageDecrease: {value: Math.round(percent * 100) / 100}}} : {}),
       },

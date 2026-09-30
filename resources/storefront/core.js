@@ -114,6 +114,7 @@
     if (dismissed(exp)) return false;
 
     if (t.page_types && t.page_types.length && t.page_types.indexOf(ctx.page) === -1) return false;
+    if (t.exclude && t.exclude.some(function (p) { return numericId(p.id) === String(ctx.product); })) return false;
     if (t.products && t.products.length) {
       var ids = t.products.map(function (p) { return numericId(p.id); });
       if (!ctx.product || ids.indexOf(String(ctx.product)) === -1) return false;
@@ -152,19 +153,30 @@
     if (m) { assetBase = m[1]; assetQuery = m[2] || ''; }
   }
 
-  function load(type) {
-    if (renderers[type]) return Promise.resolve(renderers[type]);
-    if (!loading[type]) {
-      loading[type] = new Promise(function (resolve) {
+  // Shared helpers loaded first: oo-commerce.js (cart, products) for types that add to the cart,
+  // oo-timer.js for countdowns.
+  function needs(type) {
+    return (/^(shipping-bar|countdown|trust)$/.test(type) ? [] : ['commerce']).concat(/^(bundles|countdown)$/.test(type) ? ['timer'] : []);
+  }
+
+  function script(name) {
+    if (!loading[name]) {
+      loading[name] = new Promise(function (resolve) {
         var s = document.createElement('script');
-        s.src = assetBase + 'oo-' + type + '.js' + assetQuery;
+        s.src = assetBase + 'oo-' + name + '.js' + assetQuery;
         s.async = true;
-        s.onload = function () { resolve(renderers[type] || null); };
-        s.onerror = function () { resolve(null); };
+        s.onload = s.onerror = resolve;
         document.head.appendChild(s);
       });
     }
-    return loading[type];
+    return loading[name];
+  }
+
+  function load(type) {
+    if (renderers[type]) return Promise.resolve(renderers[type]);
+    return Promise.all(needs(type).map(script))
+      .then(function () { return script(type); })
+      .then(function () { return renderers[type] || null; });
   }
 
   /** hook: { prepare(exp, ctx) -> Promise (e.g. load live products), setup(root, exp, ctx) (bind buttons) } */
@@ -204,7 +216,7 @@
     el.innerHTML = scopedCss(exp) + '<div class="' + cls.join(' ') + '" data-oo-exp="' + esc(exp.id) + '" style="' + styleVars(d) + '">' +
       (b.dismissible ? '<button type="button" class="oo-close" aria-label="Dismiss" data-oo-dismiss>×</button>' : '') + inner + '</div>';
 
-    startTimers(el);
+    if (OrderOrbit.timers) OrderOrbit.timers(el);
     el.__ooExp = exp.id;
     var hook = hooks[exp.type] || {};
     if (hook.setup) hook.setup(el.querySelector('.oo-exp'), exp, ctx);
@@ -229,27 +241,10 @@
     ctx = ctx || {};
     return load(exp.type).then(function (renderer) {
       var hook = hooks[exp.type] || {};
-      return Promise.resolve(hook.prepare && !ctx.preview ? hook.prepare(exp, ctx) : null)
+      return Promise.resolve(hook.prepare && (!ctx.preview || hook.always) ? hook.prepare(exp, ctx) : null)
         .catch(function () { /* live data unavailable: render with saved data */ })
         .then(function () { return paint(el, exp, ctx, renderer); });
     });
-  }
-
-  var timer = null;
-  function startTimers(root) {
-    function tick() {
-      var nodes = document.querySelectorAll('[data-oo-end]');
-      if (!nodes.length) { clearInterval(timer); timer = null; return; }
-      nodes.forEach(function (node) {
-        var left = Math.max(0, Math.floor((Number(node.getAttribute('data-oo-end')) - Date.now()) / 1000));
-        var parts = [Math.floor(left / 86400), Math.floor((left % 86400) / 3600), Math.floor((left % 3600) / 60), left % 60];
-        node.querySelectorAll('b').forEach(function (b, i) { b.textContent = String(parts[i]).padStart(2, '0'); });
-      });
-    }
-    if (root.querySelector('[data-oo-end]')) {
-      tick();
-      if (!timer) timer = setInterval(tick, 1000);
-    }
   }
 
   // ---------------------------------------------------------------- storefront mounting
@@ -260,10 +255,31 @@
 
   var state = { data: null, ctx: null };
 
+  // Experiences set to sit above or below the theme's add-to-cart are placed there by the
+  // app embed, unless the merchant placed a block for them in the Theme Editor.
+  function inject() {
+    var form = state.ctx.page === 'product' && document.querySelector('form[action*="/cart/add"]');
+    if (!form) return;
+    state.data.experiences.forEach(function (e) {
+      var pos = e.behavior && e.behavior.position;
+      if (!pos || pos === 'block' || document.querySelector('[data-oo-id="' + e.id + '"],[data-oo-block][data-oo-type="' + e.type + '"]:not([data-oo-auto])')) return;
+      var el = document.createElement('div');
+      el.className = 'oo-root oo-auto';
+      el.setAttribute('data-oo-block', '');
+      el.setAttribute('data-oo-type', e.type);
+      el.setAttribute('data-oo-id', e.id);
+      el.setAttribute('data-oo-auto', '');
+      var btn = form.querySelector('[type="submit"],[name="add"]');
+      var anchor = (btn && (btn.closest('.product-form__buttons') || btn)) || form;
+      anchor.parentNode.insertBefore(el, pos === 'below_atc' ? anchor.nextSibling : anchor);
+    });
+  }
+
   function mountAll(reason) {
     state.data = state.data || readJson('script[data-oo-data]') || { experiences: [] };
     state.ctx = state.ctx || readJson('script[data-oo-context]') || {};
     setAssets(state.ctx.assets);
+    if (reason !== 'cart') inject();
     document.querySelectorAll('[data-oo-block]').forEach(function (el) {
       var exp = choose(state.data.experiences, el.getAttribute('data-oo-type'), (el.getAttribute('data-oo-id') || '').trim(), state.ctx);
       if (exp && reason === 'cart' && el.__ooExp === exp.id && CART_TYPES.indexOf(exp.type) === -1) {
@@ -273,7 +289,7 @@
       } else if (state.ctx.designMode) {
         // Only merchants in the Theme Editor see this; shoppers see nothing.
         el.hidden = false;
-        el.innerHTML = '<div class="oo-editor-note">OrderOrbit: no published ' + esc(el.getAttribute('data-oo-type') || '') + ' experience matches this page yet. Publish one in the OrderOrbit app, or check its targeting.</div>';
+        el.innerHTML = '<div class="oo-editor-note">OrderOrbit: nothing published matches this block here yet.</div>';
       } else {
         el.hidden = true;
       }
@@ -308,12 +324,12 @@
     } catch (e) { /* unsupported */ }
   }
 
-  window.OrderOrbit = { version: '1.2.0', render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
+  window.OrderOrbit = { version: '1.3.0', need: script, render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
 
   var self = document.currentScript;
   if (self) setAssets(self.src);
 
-  if (document.querySelector('[data-oo-block]')) {
+  if (document.querySelector('script[data-oo-data]')) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountAll); else mountAll();
     watchCart();
     document.addEventListener('shopify:section:load', function () { state.data = null; state.ctx = null; mountAll(); });

@@ -10,6 +10,8 @@
             "id": "gid://shopify/CartLine/0",
             "quantity": 3,
             "offer": null,
+            "bundle": null,
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "10"

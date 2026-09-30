@@ -10,6 +10,10 @@ import {DiscountClass, ProductDiscountSelectionStrategy} from '../generated/api'
  * Offer shapes (product ids are numeric strings, money in shop currency):
  *   tiers  { id, p (empty = every product), x (products never included), tiers: [[quantity, percent], ...] }
  *   bogo   { id, p, g (empty = same as p), bq, gq, v, once }
+ *   bq     { id, o: [ null | { q, t: "percentage"|"amount"|"fixed_price"|"none", v, g } ] }
+ *          one-product bundle offers: lines tagged _oo_bundle = "<id>|<offer index>|<group>";
+ *          the group gets the offer price once it holds q items, and up to g gift lines
+ *          (_oo_gift) in the group are free
  *   upsell { id, v }          lines added by the widget carry _oo_offer = id
  *   gift   { id, th: [amounts] } lines added by the widget carry _oo_offer = id
  *
@@ -77,6 +81,30 @@ const RULES = {
     return [candidate(offer.m || 'Buy more, get more', takeUnits(pool, free), percent(offer.v || 100))];
   },
 
+  bq(offer, lines, rate) {
+    const groups = {};
+    lines.forEach((line) => {
+      if (line.bundle && line.bundle.indexOf(offer.id + '|') === 0) (groups[line.bundle] = groups[line.bundle] || []).push(line);
+    });
+    const found = [];
+    for (const [tag, group] of Object.entries(groups)) {
+      const o = (offer.o || [])[Number(tag.split('|')[1])];
+      if (!o) continue;
+      const paid = group.filter((line) => !line.gift);
+      if (units(paid) < (Number(o.q) || 1)) continue;
+      const total = paid.reduce((sum, line) => sum + line.unit * line.qty, 0);
+      const v = Number(o.v) || 0;
+      const pct = o.t === 'percentage' ? v
+        : o.t === 'amount' && total > 0 ? (v * rate / total) * 100
+          : o.t === 'fixed_price' && total > 0 ? Math.max(0, 1 - (v * rate) / total) * 100
+            : 0;
+      if (pct > 0) found.push(candidate(offer.m || 'Bundle discount', paid.map((line) => ({line})), percent(Math.round(pct * 100) / 100)));
+      const gifts = group.filter((line) => line.gift);
+      if (o.g && gifts.length) found.push(candidate('Free gift', takeUnits(gifts, Number(o.g)), percent(100)));
+    }
+    return found;
+  },
+
   upsell(offer, lines) {
     const tagged = lines.filter((line) => line.offer === offer.id);
     return tagged.length && Number(offer.v) ? [candidate(offer.m || 'Special offer', tagged.map((line) => ({line})), percent(offer.v))] : null;
@@ -110,6 +138,8 @@ export function cartLinesDiscountsGenerateRun(input) {
       qty: line.quantity,
       product: numericId(line.merchandise.product.id),
       offer: line.offer?.value || null,
+      bundle: line.bundle?.value || null,
+      gift: !!line.gift?.value,
       unit: Number(line.cost.amountPerQuantity.amount),
     }));
 

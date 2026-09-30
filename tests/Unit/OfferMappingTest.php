@@ -54,9 +54,27 @@ class OfferMappingTest extends TestCase
         $this->assertSame(['k' => 'ship', 'min' => 60.0, 'id' => 'exp-1', 'm' => 'Free shipping'], $this->offer('shipping-bar', ['free_shipping' => true]));
     }
 
-    public function test_bundles_never_use_the_discount_function(): void
+    public function test_bundle_offers_map_one_product_offers_and_upsells(): void
     {
-        // The cart transform prices bundles.
-        $this->assertNull($this->offer('bundles', ['products' => $this->products(1, 2)]));
+        $config = \App\Experiences\BundleSchema::defaults('qg-classic');
+        $config['offers'][1]['gifts'][0]['product'] = $this->products(9);
+        $config['upsells'] = ['enabled' => true, 'title' => 'Add', 'products' => $this->products(4), 'discount_percent' => 10];
+
+        $offers = OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $config);
+
+        $this->assertSame('bq', $offers[0]['k']);
+        $this->assertNull($offers[0]['o'][0]['v'] ?? null, 'The one-product tier at full price has no saving.');
+        $this->assertSame(['q' => 2, 't' => 'percentage', 'v' => 10.0, 'g' => 1], $offers[0]['o'][1]);
+        $this->assertSame(['k' => 'upsell', 'id' => 'b-1:u', 'v' => 10.0, 'm' => 'Add'], $offers[1]);
+    }
+
+    public function test_pack_offers_are_left_to_the_cart_transform(): void
+    {
+        $config = \App\Experiences\BundleSchema::defaults('fx-classic');
+        $config['offers'][1]['products'] = $this->products(1, 2);
+
+        $offers = OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $config);
+
+        $this->assertSame([], $offers, 'The pack is priced by the cart transform and the single product has no saving, so no discount is needed.');
     }
 }

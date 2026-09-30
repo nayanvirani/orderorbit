@@ -2,6 +2,7 @@
 
 namespace App\Services\Experiences;
 
+use App\Experiences\BundleSchema;
 use App\Experiences\Registry;
 use App\Models\Experience;
 use App\Models\Store;
@@ -24,7 +25,36 @@ class OfferSync
     public function __construct(private readonly AdminApi $api) {}
 
     /**
-     * The function offer for an experience config, or null when it gives no saving.
+     * Every discount-function offer for an experience (one Shopify discount carries them all).
+     */
+    public static function offersFor(Experience $experience, array $config): array
+    {
+        if ($experience->type !== 'bundles') {
+            return array_values(array_filter([self::offer($experience, $config)]));
+        }
+
+        [$bundle] = BundleSchema::normalize($config);
+        $offers = [];
+        // One-product offers (quantity breaks, variant offers) and their gifts. Offers of several
+        // products are merged and priced by the cart transform, so they're null here.
+        $perOffer = array_map(fn ($o) => $o['kind'] === 'multi' ? null : array_filter([
+            'q' => $o['quantity'],
+            't' => $o['discount_type'],
+            'v' => $o['discount_value'],
+            'g' => array_sum(array_map(fn ($g) => $g['product'] ? $g['quantity'] : 0, $o['gifts'])),
+        ], fn ($v) => $v !== 0 && $v !== 0.0), $bundle['offers']);
+        if (array_filter($perOffer, fn ($o) => $o !== null && (($o['t'] ?? 'none') !== 'none' || ($o['g'] ?? 0) > 0))) {
+            $offers[] = ['k' => 'bq', 'id' => $experience->handle, 'o' => $perOffer, 'm' => $bundle['settings']['title'] ?: 'Bundle discount'];
+        }
+        if ($bundle['upsells']['enabled'] && $bundle['upsells']['discount_percent'] > 0 && $bundle['upsells']['products']) {
+            $offers[] = ['k' => 'upsell', 'id' => $experience->handle.':u', 'v' => $bundle['upsells']['discount_percent'], 'm' => $bundle['upsells']['title'] ?: 'Add-on offer'];
+        }
+
+        return $offers;
+    }
+
+    /**
+     * The function offer for a (non-bundle) experience config, or null when it gives no saving.
      */
     public static function offer(Experience $experience, array $config): ?array
     {
@@ -97,28 +127,28 @@ class OfferSync
                 && $experience->publishedVersion !== null
                 && Registry::has($experience->type)
                 && ($experience->ends_at === null || $experience->ends_at->isFuture());
-            $offer = $live ? self::offer($experience, $experience->publishedVersion->config) : null;
+            $offers = $live ? self::offersFor($experience, $experience->publishedVersion->config) : [];
 
-            if ($offer !== null) {
-                $this->upsert($store, $experience, $offer);
+            if ($offers !== []) {
+                $this->upsert($store, $experience, $offers);
             } elseif ($experience->shopify_discount_id) {
                 $this->remove($store, $experience);
             }
         }
     }
 
-    private function upsert(Store $store, Experience $experience, array $offer): void
+    private function upsert(Store $store, Experience $experience, array $offers): void
     {
-        $shipping = $offer['k'] === 'ship';
+        $shipping = $offers[0]['k'] === 'ship';
         $input = [
-            'title' => $offer['m'] ?? $experience->name,
+            'title' => $offers[0]['m'] ?? $experience->name,
             'startsAt' => ($experience->starts_at ?? $experience->published_at ?? now())->toIso8601String(),
             'endsAt' => $experience->ends_at?->toIso8601String(),
             'discountClasses' => [$shipping ? 'SHIPPING' : 'PRODUCT'],
             // OrderOrbit product offers don't stack with each other; Shopify applies the best one.
             'combinesWith' => ['productDiscounts' => $shipping, 'orderDiscounts' => true, 'shippingDiscounts' => ! $shipping],
         ];
-        $value = json_encode(['offers' => [$offer]], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $value = json_encode(['offers' => $offers], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $fingerprint = 'offer:'.$experience->id.':'.md5($value.json_encode($input).$experience->shopify_discount_id);
         if (Cache::has($fingerprint)) {
