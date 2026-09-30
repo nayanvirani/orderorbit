@@ -17,8 +17,12 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
+// Owner access to the public website while it's "coming soon".
+Route::post('/site-access', [SiteController::class, 'unlock'])->middleware('throttle:5,1')->name('site.unlock');
+Route::get('/site-access/lock', [SiteController::class, 'lock'])->name('site.lock');
+
 // Public website (Part A)
-Route::controller(SiteController::class)->name('site.')->group(function () {
+Route::controller(SiteController::class)->name('site.')->middleware(\App\Http\Middleware\SitePreviewGate::class)->group(function () {
     Route::get('/', 'home')->name('home');
     Route::get('/how-it-works', 'how')->name('how');
     Route::get('/features', 'features')->name('features');

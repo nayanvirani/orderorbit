@@ -210,4 +210,24 @@ class SiteController extends Controller
 
         return response($xml.'</urlset>', 200, ['Content-Type' => 'application/xml']);
     }
+
+    /**
+     * Unlocks the "coming soon" site for the owner (30-day cookie).
+     */
+    public function unlock(\Illuminate\Http\Request $request): \Symfony\Component\HttpFoundation\Response
+    {
+        $password = (string) config('site.preview_password');
+        if ($password === '' || ! hash_equals($password, (string) $request->input('password'))) {
+            return response()->view('site.coming-soon', ['failed' => true], 403)->header('X-Robots-Tag', 'noindex, nofollow');
+        }
+
+        return redirect()->route('site.home')->withCookie(cookie(
+            \App\Http\Middleware\SitePreviewGate::COOKIE, \App\Http\Middleware\SitePreviewGate::token(), 60 * 24 * 30, secure: $request->isSecure(), httpOnly: true, sameSite: 'lax'
+        ));
+    }
+
+    public function lock(): \Illuminate\Http\RedirectResponse
+    {
+        return redirect()->route('site.home')->withCookie(cookie()->forget(\App\Http\Middleware\SitePreviewGate::COOKIE));
+    }
 }
