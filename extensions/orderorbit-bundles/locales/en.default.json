@@ -1,0 +1,4 @@
+{
+  "name": "OrderOrbit bundles",
+  "description": "Combines bundle items into one cart line with the bundle price. Inventory is deducted from each product."
+}

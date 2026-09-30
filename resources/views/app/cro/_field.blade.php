@@ -61,9 +61,12 @@
             <span class="b-label">{{ $field['label'] }}</span>
             <input type="hidden" name="{{ $name }}" value="{{ json_encode($value ?: []) }}" data-resource-input>
             <ul class="b-chips" data-resource-list></ul>
-            <button type="button" class="b-btn" data-picker="{{ $field['type'] === 'products' ? 'product' : 'collection' }}" data-max="{{ $field['max_items'] ?? 20 }}">
+            <button type="button" class="b-btn" data-picker="{{ $field['type'] === 'products' ? 'product' : 'collection' }}" data-max="{{ $field['max_items'] ?? 20 }}" @if ($field['quantities'] ?? false) data-quantities @endif>
                 {{ $field['type'] === 'products' ? 'Choose products' : 'Choose collections' }}
             </button>
+            @if ($field['type'] === 'products')
+                <p class="b-help">For products with options, tick the variants to offer in the picker; shoppers choose only from those.</p>
+            @endif
             @break
 
         @case('list')

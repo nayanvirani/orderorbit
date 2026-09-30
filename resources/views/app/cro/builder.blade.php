@@ -96,7 +96,9 @@
                     <div class="b-field"><label for="f-name">Internal name</label><input id="f-name" name="name" value="{{ $experience->name }}" maxlength="120" required></div>
                     <div class="b-field"><label for="f-description">Description</label><textarea id="f-description" name="description" rows="2" maxlength="500">{{ $experience->description }}</textarea></div>
                     <div class="b-field"><label for="f-note">Change note</label><input id="f-note" name="change_note" maxlength="190" placeholder="What changed in this version?"></div>
-                    @if ($type['discount'] ?? false)
+                    @if ($experience->type === 'bundles')
+                        <p class="b-muted">In the cart, the items a shopper adds from this bundle combine into one line with the bundle price. Orders still list each product, so Shopify deducts inventory from each one. Publishing creates a hidden bundle product in your store for this; pausing or archiving sets it back to draft.</p>
+                    @elseif ($type['discount'] ?? false)
                         <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
                     @endif
                     <p class="b-muted">After publishing, add the <strong>OrderOrbit experience</strong> block in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>

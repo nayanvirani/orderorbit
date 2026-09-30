@@ -85,4 +85,23 @@ class ExperienceSchemaTest extends TestCase
         $this->assertSame([], $errors);
         $this->assertSame([['quantity' => 2, 'discount' => 10, 'badge' => 'x']], $config['content']['tiers']);
     }
+
+    public function test_bundle_products_keep_mapped_variants_and_quantities(): void
+    {
+        $input = Schema::defaults('bundles');
+        $input['content']['products'] = [[
+            'id' => 'gid://shopify/Product/1', 'title' => 'Tee', 'quantity' => 99,
+            'variants' => [['id' => 'gid://shopify/ProductVariant/11', 'title' => 'Blue / M', 'price' => '20'], ['id' => 'nope'], ['id' => 'gid://shopify/ProductVariant/12', 'title' => '<b>Red</b>']],
+        ]];
+        [$config] = Schema::normalize('bundles', $input);
+
+        $product = $config['content']['products'][0];
+        $this->assertSame(20, $product['quantity'], 'Quantities are capped.');
+        $this->assertSame([['id' => 'gid://shopify/ProductVariant/11', 'title' => 'Blue / M', 'price' => 20.0], ['id' => 'gid://shopify/ProductVariant/12', 'title' => 'Red']], $product['variants']);
+
+        // Quantities only apply where the field allows them (bundles), not e.g. upsells.
+        $upsell = Schema::defaults('product-upsells');
+        $upsell['content']['products'] = [['id' => 'gid://shopify/Product/1', 'quantity' => 3]];
+        $this->assertArrayNotHasKey('quantity', Schema::normalize('product-upsells', $upsell)[0]['content']['products'][0]);
+    }
 }

@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Obtains offline access tokens via token exchange (Shopify managed installation).
+ * Obtains expiring offline access tokens via token exchange (Shopify managed
+ * installation) and refreshes them with their refresh token.
  *
  * @see https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/token-exchange
  */
@@ -23,6 +24,8 @@ class TokenExchange
             'subject_token' => $sessionToken,
             'subject_token_type' => 'urn:ietf:params:oauth:token-type:id_token',
             'requested_token_type' => 'urn:shopify:params:oauth:token-type:offline-access-token',
+            // Shopify only accepts expiring offline tokens (refreshed with the refresh token).
+            'expiring' => 1,
         ]);
 
         if ($response->failed()) {

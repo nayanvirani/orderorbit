@@ -71,6 +71,25 @@ class Schema
         ];
     }
 
+    private static function variants(mixed $raw): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+        $clean = [];
+        foreach (array_slice($raw, 0, 100) as $variant) {
+            if (is_array($variant) && preg_match('#^gid://shopify/ProductVariant/\d+$#', (string) ($variant['id'] ?? ''))) {
+                $clean[] = array_filter([
+                    'id' => $variant['id'],
+                    'title' => mb_substr(strip_tags((string) ($variant['title'] ?? '')), 0, 120),
+                    'price' => isset($variant['price']) && is_numeric($variant['price']) ? round((float) $variant['price'], 2) : null,
+                ], fn ($v) => $v !== null && $v !== '');
+            }
+        }
+
+        return $clean ?: null;
+    }
+
     /**
      * All fields for a type, grouped by section.
      */
@@ -243,7 +262,10 @@ class Schema
                 'price' => isset($item['price']) && is_numeric($item['price']) ? round((float) $item['price'], 2) : null,
                 'compare_at' => isset($item['compare_at']) && is_numeric($item['compare_at']) ? round((float) $item['compare_at'], 2) : null,
                 'variant_id' => preg_match('#^gid://shopify/ProductVariant/\d+$#', (string) ($item['variant_id'] ?? '')) ? $item['variant_id'] : null,
-            ], fn ($v) => $v !== null && $v !== '');
+                // Variants the merchant mapped for this product (only when it has options).
+                'variants' => self::variants($item['variants'] ?? null),
+                'quantity' => ($field['quantities'] ?? false) && isset($item['quantity']) ? max(1, min(20, (int) $item['quantity'])) : null,
+            ], fn ($v) => $v !== null && $v !== '' && $v !== []);
         }
 
         $label = $field['label'] ?? 'Products';

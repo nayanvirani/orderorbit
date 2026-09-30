@@ -1,7 +1,7 @@
 {
   "payload": {
-    "export": "cart-lines-discounts-generate-run",
-    "target": "cart.lines.discounts.generate.run",
+    "export": "cart-transform-run",
+    "target": "cart.transform.run",
     "input": {
       "presentmentCurrencyRate": "1.0",
       "cart": {
@@ -9,7 +9,9 @@
           {
             "id": "gid://shopify/CartLine/0",
             "quantity": 1,
-            "offer": null,
+            "bundle": {
+              "value": "f1|g1"
+            },
             "cost": {
               "amountPerQuantity": {
                 "amount": "20"
@@ -24,8 +26,10 @@
           },
           {
             "id": "gid://shopify/CartLine/1",
-            "quantity": 2,
-            "offer": null,
+            "quantity": 1,
+            "bundle": {
+              "value": "f1|g1"
+            },
             "cost": {
               "amountPerQuantity": {
                 "amount": "30"
@@ -40,21 +44,18 @@
           }
         ]
       },
-      "discount": {
-        "discountClasses": [
-          "PRODUCT"
-        ],
+      "cartTransform": {
         "metafield": {
           "jsonValue": {
-            "offers": [
+            "bundles": [
               {
-                "k": "bundle",
-                "id": "b1",
+                "id": "f1",
+                "parent": "gid://shopify/ProductVariant/900",
+                "mode": "fixed",
                 "p": [
                   "1",
                   "2"
                 ],
-                "mode": "fixed",
                 "t": "amount",
                 "v": 10
               }
@@ -66,31 +67,23 @@
     "output": {
       "operations": [
         {
-          "productDiscountsAdd": {
-            "candidates": [
+          "linesMerge": {
+            "cartLines": [
               {
-                "message": "Bundle discount",
-                "targets": [
-                  {
-                    "cartLine": {
-                      "id": "gid://shopify/CartLine/0"
-                    }
-                  },
-                  {
-                    "cartLine": {
-                      "id": "gid://shopify/CartLine/1"
-                    }
-                  }
-                ],
-                "value": {
-                  "fixedAmount": {
-                    "amount": "10.00",
-                    "appliesToEachItem": false
-                  }
-                }
+                "cartLineId": "gid://shopify/CartLine/0",
+                "quantity": 1
+              },
+              {
+                "cartLineId": "gid://shopify/CartLine/1",
+                "quantity": 1
               }
             ],
-            "selectionStrategy": "ALL"
+            "parentVariantId": "gid://shopify/ProductVariant/900",
+            "price": {
+              "percentageDecrease": {
+                "value": 20
+              }
+            }
           }
         }
       ]

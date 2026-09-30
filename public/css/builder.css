@@ -77,3 +77,7 @@
 .b-fake-page i { display: block; height: 10px; border-radius: 6px; background: #ececec; }
 .b-fake-page i.short { width: 60%; }
 .b-empty-preview { padding: 16px; text-align: center; }
+.b-chip { max-width: 100%; }
+.b-chip-label { display: flex; flex-direction: column; min-width: 0; }
+.b-chip-label small { font-weight: 450; color: #616161; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-chip-qty { width: 52px; font: inherit; font-size: 12px; padding: 3px 6px; border: 1px solid #8a8a8a; border-radius: 6px; }

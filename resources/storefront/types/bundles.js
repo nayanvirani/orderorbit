@@ -1,4 +1,5 @@
-/* OrderOrbit · bundles: mix & match (pick any N) or fixed (all together, e.g. frequently bought together). */
+/* OrderOrbit · bundles: mix & match (pick any N) or fixed (all together, e.g. frequently bought together).
+   Added items merge into one bundle line in the cart (OrderOrbit cart transform). */
 (function () {
   var S = OrderOrbit.shop;
 
@@ -15,7 +16,8 @@
 
     var tiles = list.map(function (p, i) {
       var price = p.price != null ? '<span class="oo-price">' + (c.show_compare_at && p.compare_at > p.price ? '<s>' + h.esc(h.money(p.compare_at, ctx.currency)) + '</s> ' : '') + h.esc(h.money(p.price, ctx.currency)) + '</span>' : '';
-      var inner = h.productImage(p) + '<span class="oo-name">' + h.esc(p.title) + '</span>' + price;
+      var qty = Number(p.quantity || 1);
+      var inner = h.productImage(p) + '<span class="oo-name">' + (qty > 1 ? qty + ' × ' : '') + h.esc(p.title) + '</span>' + price;
       return fixed
         ? (i ? '<span class="oo-plus" aria-hidden="true">+</span>' : '') + '<div class="oo-tile oo-fixed">' + inner + S.variantSelect(p, i, ctx) + '</div>'
         : '<div class="oo-pick"><label class="oo-tile"><input type="checkbox" data-oo-pick="' + i + '"' + (i < min ? ' checked' : '') + '>' + inner + '</label>' + S.variantSelect(p, i, ctx) + '</div>';
@@ -53,7 +55,7 @@
       function update() {
         var chosen = picks();
         root.querySelectorAll('[data-oo-pick]').forEach(function (el) { el.disabled = !el.checked && chosen.length >= max; });
-        var total = chosen.reduce(function (sum, i) { return sum + unitPrice(list[i], i); }, 0);
+        var total = chosen.reduce(function (sum, i) { return sum + unitPrice(list[i], i) * Number(list[i].quantity || 1); }, 0);
         var remaining = Math.max(0, min - chosen.length);
         var after = remaining ? total : S.saving(total, c.discount_type, c.discount_value);
         var msg = root.querySelector('[data-oo-msg]');
@@ -66,7 +68,9 @@
 
       root.addEventListener('change', update);
       btn.addEventListener('click', function () {
-        S.add(exp, ctx, picks().map(function (i) { return { id: S.chosenVariant(root, list[i], i), quantity: 1 }; }), btn, root);
+        // One group per click: the cart transform merges each group into one bundle line.
+        var group = exp.id + '|' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        S.add(exp, ctx, picks().map(function (i) { return { id: S.chosenVariant(root, list[i], i), quantity: Number(list[i].quantity || 1), properties: { _oo_bundle: group } }; }), btn, root);
       });
       update();
     }

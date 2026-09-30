@@ -2,13 +2,13 @@ import {DiscountClass, ProductDiscountSelectionStrategy} from '../generated/api'
 
 /**
  * OrderOrbit offers. One automatic discount per store runs this function; its
- * "offers" metafield lists every live bundle, quantity break, BOGO, upsell and
- * free gift (written by the app on publish). Offers are applied in priority
+ * "offers" metafield lists every live quantity break, BOGO, upsell and free
+ * gift (written by the app on publish). Bundles are priced by the OrderOrbit
+ * cart transform instead. Offers are applied in priority
  * order and each cart line gets at most one OrderOrbit discount.
  *
  * Offer shapes (product ids are numeric strings, money in shop currency):
- *   bundle { id, p, mode: "mix"|"fixed", min, t: "percentage"|"amount", v }
- *   tiers  { id, p (empty = every product), tiers: [[quantity, percent], ...] }
+ *   tiers  { id, p (empty = every product), x (products never included), tiers: [[quantity, percent], ...] }
  *   bogo   { id, p, g (empty = same as p), bq, gq, v, once }
  *   upsell { id, v }          lines added by the widget carry _oo_offer = id
  *   gift   { id, th: [amounts] } lines added by the widget carry _oo_offer = id
@@ -42,25 +42,12 @@ function takeUnits(lines, count) {
 const units = (lines) => lines.reduce((sum, line) => sum + line.qty, 0);
 
 const RULES = {
-  bundle(offer, lines, rate) {
-    const ids = offer.p || [];
-    const eligible = lines.filter((line) => ids.includes(line.product));
-    if (!eligible.length || !Number(offer.v)) return null;
-    const qualifies = offer.mode === 'fixed'
-      ? ids.every((id) => eligible.some((line) => line.product === id))
-      : units(eligible) >= Math.max(1, Number(offer.min) || 1);
-    if (!qualifies) return null;
-    const value = offer.t === 'amount'
-      ? {fixedAmount: {amount: (Number(offer.v) * rate).toFixed(2), appliesToEachItem: false}}
-      : percent(offer.v);
-    return [candidate(offer.m || 'Bundle discount', eligible.map((line) => ({line})), value)];
-  },
-
   tiers(offer, lines) {
     const ids = offer.p || [];
+    const excluded = offer.x || [];
     const tiers = (offer.tiers || []).filter(([, pct]) => Number(pct) > 0).sort((a, b) => b[0] - a[0]);
     const byProduct = {};
-    lines.filter((line) => !ids.length || ids.includes(line.product)).forEach((line) => {
+    lines.filter((line) => !excluded.includes(line.product) && (!ids.length || ids.includes(line.product))).forEach((line) => {
       (byProduct[line.product] = byProduct[line.product] || []).push(line);
     });
     return Object.values(byProduct).map((group) => {

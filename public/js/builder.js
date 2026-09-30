@@ -197,7 +197,28 @@
         const li = document.createElement('li');
         li.className = 'b-chip';
         if (item.image) { const img = new Image(24, 24); img.src = item.image; img.alt = ''; li.appendChild(img); }
-        li.appendChild(document.createTextNode(item.title || item.id));
+        const label = document.createElement('span');
+        label.className = 'b-chip-label';
+        label.textContent = item.title || item.id;
+        if (item.variants && item.variants.length) {
+          const v = document.createElement('small');
+          v.textContent = item.variants.length + ' variant' + (item.variants.length > 1 ? 's' : '') + ': ' + item.variants.map((x) => x.title).join(', ');
+          v.title = v.textContent;
+          label.appendChild(v);
+        }
+        li.appendChild(label);
+        if (button.hasAttribute('data-quantities')) {
+          const qty = document.createElement('input');
+          Object.assign(qty, { type: 'number', min: 1, max: 20, value: item.quantity || 1, className: 'b-chip-qty' });
+          qty.setAttribute('aria-label', `Quantity of ${item.title || 'item'} in the bundle`);
+          qty.addEventListener('change', () => {
+            const next = items();
+            next[i].quantity = Math.max(1, Math.min(20, Number(qty.value) || 1));
+            input.value = JSON.stringify(next);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+          li.appendChild(qty);
+        }
         const x = document.createElement('button');
         x.type = 'button';
         x.setAttribute('aria-label', `Remove ${item.title || 'item'}`);
@@ -214,12 +235,20 @@
       const picked = await shopify.resourcePicker({
         type: button.dataset.picker,
         multiple: Number(button.dataset.max) > 1 ? Number(button.dataset.max) : false,
-        selectionIds: current.map((c) => ({ id: c.id })),
+        // Re-opening keeps the variants already mapped for each product.
+        selectionIds: current.map((c) => (c.variants && c.variants.length ? { id: c.id, variants: c.variants.map((v) => ({ id: v.id })) } : { id: c.id })),
+        filter: { variants: true },
       });
       if (!picked) return;
       const mapped = picked.map((r) => {
-        const variant = (r.variants || [])[0] || {};
+        const chosen = (r.variants || []).filter((v) => v && v.id);
+        const variant = chosen[0] || {};
+        const before = current.find((c) => c.id === r.id) || {};
         return {
+          variants: r.hasOnlyDefaultVariant === false || chosen.length > 1
+            ? chosen.map((v) => ({ id: v.id, title: v.title || v.displayName, price: v.price != null ? Number(v.price) : null }))
+            : undefined,
+          quantity: before.quantity,
           id: r.id, title: r.title, handle: r.handle,
           image: (r.images && r.images[0] && (r.images[0].originalSrc || r.images[0].url)) || (r.image && (r.image.originalSrc || r.image.url)) || null,
           price: variant.price != null ? Number(variant.price) : null,

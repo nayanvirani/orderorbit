@@ -157,6 +157,24 @@ class EmbeddedAppTest extends TestCase
         $this->get('/app/onboarding', $this->as($owner))->assertOk()->assertSee('Store connection');
     }
 
+    public function test_legacy_non_expiring_tokens_are_swapped_for_expiring_ones(): void
+    {
+        $store = $this->installedStore(['refresh_token' => null, 'access_token_expires_at' => null]);
+        $owner = $this->member($store, 'owner');
+        Http::fake([
+            "{$this->shop}/admin/oauth/access_token" => Http::response(['access_token' => 'shpat_new', 'scope' => $store->scopes, 'expires_in' => 3600, 'refresh_token' => 'shprt_new']),
+            '*' => Http::response(['data' => []]),
+        ]);
+
+        $this->get('/app', $this->as($owner));
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'oauth/access_token') && ($request['expiring'] ?? null) === 1);
+        $store->refresh();
+        $this->assertSame('shpat_new', $store->access_token);
+        $this->assertSame('shprt_new', $store->refresh_token);
+        $this->assertTrue($store->access_token_expires_at->isFuture());
+    }
+
     public function test_every_response_has_a_request_id(): void
     {
         $this->get('/')->assertHeader('X-Request-Id');

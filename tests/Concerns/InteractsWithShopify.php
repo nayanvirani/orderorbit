@@ -24,6 +24,8 @@ trait InteractsWithShopify
         return Store::create(array_merge([
             'shop_domain' => $this->shop,
             'access_token' => 'shpat_test',
+            'refresh_token' => 'shprt_test',
+            'access_token_expires_at' => now()->addHour(),
             'scopes' => 'read_products,write_discounts',
             'name' => 'Demo Store',
             'currency' => 'USD',

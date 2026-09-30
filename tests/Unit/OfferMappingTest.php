@@ -5,10 +5,13 @@ namespace Tests\Unit;
 use App\Experiences\Schema;
 use App\Models\Experience;
 use App\Services\Experiences\OfferSync;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class OfferMappingTest extends TestCase
 {
+    use RefreshDatabase;
+
     private function offer(string $type, array $content, array $targeting = []): ?array
     {
         $config = Schema::defaults($type);
@@ -51,9 +54,9 @@ class OfferMappingTest extends TestCase
         $this->assertSame(['k' => 'ship', 'min' => 60.0, 'id' => 'exp-1', 'm' => 'Free shipping'], $this->offer('shipping-bar', ['free_shipping' => true]));
     }
 
-    public function test_bundles_without_a_saving_create_no_discount(): void
+    public function test_bundles_never_use_the_discount_function(): void
     {
-        $this->assertNull($this->offer('bundles', ['products' => $this->products(1, 2), 'discount_type' => 'none']));
-        $this->assertSame('fixed', $this->offer('bundles', ['products' => $this->products(1, 2), 'bundle_mode' => 'fixed'])['mode']);
+        // The cart transform prices bundles.
+        $this->assertNull($this->offer('bundles', ['products' => $this->products(1, 2)]));
     }
 }

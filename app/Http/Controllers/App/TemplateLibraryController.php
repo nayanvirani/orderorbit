@@ -10,7 +10,6 @@ use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Experiences\TemplateLibrary;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class TemplateLibraryController extends Controller
@@ -19,8 +18,11 @@ class TemplateLibraryController extends Controller
     {
         $type = Registry::has($request->query('type')) ? $request->query('type') : null;
         $branding = CroSetting::brandingFor($store);
-        $versions = CroTemplate::pluck('current_version', DB::raw("type || ':' || key"));
-        $usedBy = Experience::where('store_id', $store->id)->notArchived()->selectRaw("type || ':' || template_key as k, count(*) as total")->groupBy('k')->pluck('total', 'k');
+        // Keyed in PHP so the query stays portable (Postgres in production, SQLite in tests).
+        $versions = CroTemplate::get(['type', 'key', 'current_version'])->mapWithKeys(fn ($t) => ["{$t->type}:{$t->key}" => $t->current_version]);
+        $usedBy = Experience::where('store_id', $store->id)->notArchived()
+            ->selectRaw('type, template_key, count(*) as total')->groupBy('type', 'template_key')->get()
+            ->mapWithKeys(fn ($row) => ["{$row->type}:{$row->template_key}" => (int) $row->total]);
 
         $templates = [];
         foreach (Registry::types() as $typeKey => $definition) {

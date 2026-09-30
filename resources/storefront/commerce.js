@@ -12,8 +12,12 @@
     if (!p || !p.handle) return Promise.resolve(p);
     products[p.handle] = products[p.handle] || fetch(root() + 'products/' + p.handle + '.js', { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+    // Variants the merchant mapped in the app (kept across re-renders as p.mapped).
+    if (!p.mapped) p.mapped = (p.variants || []).map(function (v) { return h.numericId(v.id); });
     return products[p.handle].then(function (live) {
-      var variants = (live.variants || []).map(function (v) {
+      var variants = (live.variants || []).filter(function (v) {
+        return !p.mapped.length || p.mapped.indexOf(String(v.id)) !== -1;
+      }).map(function (v) {
         return { id: v.id, title: v.public_title || v.title, price: v.price / 100, compare_at: v.compare_at_price ? v.compare_at_price / 100 : null, available: v.available };
       });
       var first = variants.filter(function (v) { return v.available; })[0] || variants[0] || {};
@@ -65,7 +69,7 @@
     return fetch(root() + 'cart/add.js', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: { _oo_offer: exp.id } }; }) })
+      body: JSON.stringify({ items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }; }) })
     }).then(function (r) {
       return r.json().then(function (body) { if (!r.ok) throw new Error(body.description || body.message || 'Could not add to cart'); return body; });
     }).then(function () {
