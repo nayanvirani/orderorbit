@@ -217,22 +217,8 @@
 .oo-bup input { accent-color: var(--b-accent, #111); }
 .oo-bsum { margin: 0; padding: 8px 12px; border-radius: var(--b-radius, 10px); background: var(--b-sbg, #effaf4); color: var(--b-sfg, #12704a); font-weight: 700; text-align: center; }
 .oo-badd { width: 100%; background: var(--b-btn, var(--oo-primary)); color: var(--b-btnfg, #fff); font-weight: 800; }
-.oo-bslots { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
-.oo-bl-vertical .oo-bslots { grid-template-columns: 1fr; }
-.oo-bslot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 96px; padding: 8px; border: 2px dashed var(--b-line, #d4d4d4); border-radius: var(--b-radius, 10px); text-align: center; font-size: .82em; }
-.oo-bl-vertical .oo-bslot { flex-direction: row; justify-content: flex-start; min-height: 56px; }
-.oo-bslot i { display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid var(--b-accent, #111); border-radius: 8px; color: var(--b-accent, #111); font-style: normal; font-weight: 800; font-size: 18px; }
-.oo-bslot.oo-bfilled { border-style: solid; border-color: var(--b-accent, #111); background: var(--b-sel, #f4f4f4); }
-.oo-bslot .oo-img { width: 44px; }
-.oo-bslot button { position: absolute; top: 4px; right: 6px; border: 0; background: none; font-size: 16px; cursor: pointer; color: inherit; }
 .oo-bmsg { margin: 0; text-align: center; font-weight: 700; font-size: .9em; }
 .oo-bmsg:empty { display: none; }
-.oo-bpoollist { display: grid; gap: 8px; }
-.oo-bl-grid .oo-bpoollist, .oo-bl-horizontal .oo-bpoollist { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-.oo-bl-grid .oo-bpool, .oo-bl-horizontal .oo-bpool { grid-template-columns: 1fr; text-align: center; padding: 8px; border: 1px solid var(--b-line, #d4d4d4); border-radius: var(--b-radius, 10px); }
-.oo-bl-grid .oo-bpool .oo-img, .oo-bl-horizontal .oo-bpool .oo-img { width: 100%; }
-.oo-bpool .oo-btn-sm { grid-column: 3; grid-row: 1 / span 2; }
-.oo-bl-grid .oo-bpool .oo-btn-sm, .oo-bl-horizontal .oo-bpool .oo-btn-sm { grid-column: auto; grid-row: auto; }
 .oo-bs-compact .oo-boffer { padding: 10px 12px; }
 .oo-bs-compact .oo-bthumb { display: none; }
 .oo-bs-fbt .oo-boffers { grid-template-columns: 1fr; }
@@ -247,7 +233,6 @@
 .oo-bl-horizontal .oo-blabel, .oo-bl-grid .oo-blabel { left: 50%; right: auto; transform: translateX(-50%); white-space: nowrap; }
 .oo-bl-horizontal .oo-bunits, .oo-bl-horizontal .oo-bpack, .oo-bl-horizontal .oo-bgifts, .oo-bl-grid .oo-bunits, .oo-bl-grid .oo-bpack, .oo-bl-grid .oo-bgifts { margin-left: 0; align-items: center; justify-content: center; }
 .oo-bl-horizontal .oo-bunit .oo-variant, .oo-bl-grid .oo-bunit .oo-variant { min-width: 0; width: 100%; }
-.oo-bpool .oo-img { max-width: 96px; margin: 0 auto; }
 
 /* A bundle on the product page replaces the theme's own buying controls. */
 .oo-bundle-on .product-form__buttons, .oo-bundle-on .shopify-payment-button, .oo-bundle-on variant-selects, .oo-bundle-on variant-radios,
@@ -295,3 +280,44 @@
 .oo-pg-gift .oo-img { width: 56px; }
 .oo-pg-gift b { position: absolute; top: -7px; right: 6px; padding: 1px 6px; border-radius: 4px; background: var(--pg-accent); color: #fff; font-size: .9em; }
 .oo-pg-claimed { display: flex; align-items: center; gap: 6px; margin: 0; font-size: .85em; font-weight: 700; }
+
+/* Bundles: theme-proof basics (themes often restyle img, button and select) */
+.oo-bundle img.oo-img { display: block !important; width: 100% !important; height: 100% !important; max-width: none !important; aspect-ratio: 1 / 1; object-fit: cover !important; margin: 0 !important; border-radius: inherit; }
+.oo-bundle button, .oo-bundle select { font: inherit; letter-spacing: normal; text-transform: none; min-height: 0; margin: 0; box-shadow: none; }
+.oo-bundle .oo-variant { height: auto; padding: 6px 28px 6px 10px; font-size: 13px; line-height: 1.3; border-radius: 8px; border: 1px solid var(--b-line, #d4d4d4); background-color: var(--b-bg, #fff); color: var(--b-text, #111); }
+
+/* Mix & match */
+.oo-mimg { display: block; flex: none; overflow: hidden; border-radius: calc(var(--b-radius, 10px) * .7); background: #f2f2f2; aspect-ratio: 1 / 1; }
+.oo-mslots { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 10px; }
+.oo-mslot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 108px; height: 100%; padding: 10px 8px; border: 2px dashed var(--b-line, #d4d4d4); border-radius: var(--b-radius, 10px); background: var(--b-bg, #fff); text-align: center; }
+.oo-mslot i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--b-accent, #111); color: #fff; font-style: normal; font-size: 20px; font-weight: 700; line-height: 1; }
+.oo-mslot small { font-size: 13px; font-weight: 600; line-height: 1.25; color: var(--b-muted, #6b6b6b); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.oo-mslot-on { border-style: solid; border-color: var(--b-accent, #111); background: var(--b-sel, #f4f4f4); }
+.oo-mslot-on .oo-mimg { width: 56px; }
+.oo-mslot-on small { color: var(--b-text, #111); }
+.oo-mx { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .06); color: inherit; font-size: 16px; line-height: 1; cursor: pointer; }
+.oo-bmsg { margin: 0; padding: 8px 12px; border-radius: 999px; background: var(--b-sel, #f4f4f4); text-align: center; font-size: 14px; }
+.oo-bmsg:empty { display: none; }
+.oo-mpool { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.oo-mcard { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--b-line, #d4d4d4); border-radius: var(--b-radius, 10px); background: var(--b-bg, #fff); }
+.oo-minfo { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.oo-mname { font-size: 14px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.oo-mprice { font-size: 14px; font-weight: 700; }
+.oo-minfo .oo-variant { width: 100%; }
+.oo-madd { width: 100%; padding: 9px 12px; border: 0; border-radius: calc(var(--b-radius, 10px) * .7); background: var(--b-btn, #111); color: var(--b-btnfg, #fff); font-weight: 700; font-size: 13px; cursor: pointer; }
+.oo-madd:disabled { opacity: .45; cursor: default; }
+/* Vertical layout ("bundler"): slots and products as rows */
+.oo-bl-vertical .oo-mslots { grid-template-columns: 1fr; }
+.oo-bl-vertical .oo-mslot { flex-direction: row; justify-content: flex-start; min-height: 64px; padding: 8px 40px 8px 10px; text-align: left; }
+.oo-bl-vertical .oo-mslot-on .oo-mimg { width: 46px; }
+.oo-bl-vertical .oo-mpool { grid-template-columns: 1fr; }
+.oo-bl-vertical .oo-mcard { flex-direction: row; align-items: center; gap: 12px; }
+.oo-bl-vertical .oo-mcard > .oo-mimg { width: 64px; }
+.oo-bl-vertical .oo-madd { width: auto; flex: none; }
+@media (max-width: 480px) { .oo-mpool { grid-template-columns: repeat(2, minmax(0, 1fr)); } .oo-bl-vertical .oo-mpool { grid-template-columns: 1fr; } .oo-mslot { min-height: 90px; } }
+/* Square product frames whatever the image's shape; the theme's text spacing stays out. */
+.oo-mimg { position: relative; min-height: 0; }
+.oo-mimg img.oo-img { position: absolute !important; inset: 0; }
+.oo-type-bundles, .oo-type-progressive-gifts { letter-spacing: normal; line-height: 1.45; }
+.oo-bthumb { aspect-ratio: 1 / 1; }
+.oo-bthumb img.oo-img { height: 100% !important; border-radius: 8px; }

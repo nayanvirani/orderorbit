@@ -18,7 +18,7 @@
       var variants = (live.variants || []).filter(function (v) {
         return !p.mapped.length || p.mapped.indexOf(String(v.id)) !== -1;
       }).map(function (v) {
-        return { id: v.id, title: v.public_title || v.title, price: v.price / 100, compare_at: v.compare_at_price ? v.compare_at_price / 100 : null, available: v.available };
+        return { id: v.id, title: v.public_title || v.title || v.option1, price: v.price / 100, compare_at: v.compare_at_price ? v.compare_at_price / 100 : null, available: v.available };
       });
       var first = variants.filter(function (v) { return v.available; })[0] || variants[0] || {};
       var img = live.featured_image || (live.images || [])[0];
