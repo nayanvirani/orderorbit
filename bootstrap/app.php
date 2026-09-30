@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Embedded requests authenticate with App Bridge session tokens (third-party
         // iframe cookies are unreliable); webhooks authenticate with HMAC.
-        $middleware->validateCsrfTokens(except: ['app/*', 'app', 'webhooks/*']);
+        $middleware->validateCsrfTokens(except: ['app/*', 'app', 'webhooks/*', 'api/pixel']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

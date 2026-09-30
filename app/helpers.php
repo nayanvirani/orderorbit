@@ -24,3 +24,20 @@ if (! function_exists('lower_label')) {
         return preg_replace_callback('/\b[A-Z][a-z]+\b/', fn ($m) => strtolower($m[0]), $label);
     }
 }
+
+if (! function_exists('money')) {
+    /**
+     * Formats an amount in a currency, with or without the intl extension.
+     */
+    function money(float|int|null $amount, ?string $currency = 'USD'): string
+    {
+        $currency = strtoupper($currency ?: 'USD');
+        if (class_exists(NumberFormatter::class)) {
+            return (new NumberFormatter('en', NumberFormatter::CURRENCY))->formatCurrency((float) $amount, $currency);
+        }
+        $symbols = ['USD' => '$', 'CAD' => 'CA$', 'AUD' => 'A$', 'NZD' => 'NZ$', 'EUR' => '€', 'GBP' => '£', 'INR' => '₹', 'JPY' => '¥', 'CNY' => 'CN¥', 'BRL' => 'R$', 'MXN' => 'MX$', 'SEK' => 'SEK ', 'CHF' => 'CHF '];
+        $decimals = in_array($currency, ['JPY', 'KRW'], true) ? 0 : 2;
+
+        return ($amount < 0 ? '-' : '').($symbols[$currency] ?? $currency.' ').number_format(abs((float) $amount), $decimals);
+    }
+}

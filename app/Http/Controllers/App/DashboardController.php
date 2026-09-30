@@ -18,7 +18,7 @@ class DashboardController extends Controller
             ['label' => 'Choose a plan', 'done' => $store->hasPlanAccess(), 'route' => 'app.settings.billing'],
             ['label' => 'Create your first experience', 'done' => $store->experiences()->exists(), 'route' => 'app.cro.experiences.create'],
             ['label' => 'Place it in the Theme Editor', 'done' => $store->experiences()->where('placement_status', 'placed')->exists(), 'route' => 'app.cro.experiences.index'],
-            ['label' => 'Verify analytics', 'done' => false],
+            ['label' => 'Verify analytics', 'done' => \App\Models\AnalyticsEvent::where('store_id', $store->id)->exists(), 'route' => 'app.analytics'],
         ];
 
         $alerts = [];
@@ -37,8 +37,12 @@ class DashboardController extends Controller
             'total' => (int) $byType->whereIn('type', $feature['types'])->sum('total'),
         ])->all();
 
+        // The analytics pixel connects on install; this covers stores installed before it existed.
+        app(\App\Services\Analytics\PixelConnector::class)->ensure($store);
+
         return view('app.dashboard', [
             'store' => $store,
+            'summary' => app(\App\Services\Analytics\Analytics::class)->summary($store, 30),
             'features' => $features,
             'checklist' => $checklist,
             'checklistDone' => collect($checklist)->every('done'),

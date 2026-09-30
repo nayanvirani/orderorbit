@@ -6,7 +6,15 @@
     $type = \App\Experiences\Registry::type($experience->type);
     $published = $experience->publishedVersion;
     $config = $experience->draft_config;
-    $tabs = ['overview' => 'Overview', 'configuration' => 'Configuration', 'targeting' => 'Targeting', 'analytics' => 'Analytics', 'experiment' => 'Experiment', 'history' => 'History'];
+    // Bundles and progressive gifts keep their settings in their own editors.
+    $module = match ($experience->type) {
+        'bundles' => ['route' => app_route('app.bundles.edit', ['bundle' => $experience->id]), 'summary' => \App\Experiences\BundleSchema::TYPES[\App\Experiences\BundleSchema::normalize($config)[0]['bundle_type']]['label'] ?? 'Bundle'],
+        'progressive-gifts' => ['route' => app_route('app.gifts.edit', ['gift' => $experience->id]), 'summary' => collect(\App\Experiences\GiftSchema::normalize($config)[0]['milestones'])->pluck('label')->implode(' · ')],
+        default => null,
+    };
+    $tabs = $module
+        ? ['overview' => 'Overview', 'configuration' => 'Configuration', 'analytics' => 'Analytics', 'history' => 'History']
+        : ['overview' => 'Overview', 'configuration' => 'Configuration', 'targeting' => 'Targeting', 'analytics' => 'Analytics', 'experiment' => 'Experiment', 'history' => 'History'];
     $canEdit = request()->attributes->get('storeUser')?->can('manage_experiences');
     $editorUrl = $store->adminUrl('themes/current/editor?template='.($type['surface'] === 'product' ? 'product' : ($type['surface'] === 'cart' ? 'cart' : 'index')).'&addAppBlockId='.config('shopify.api_key').'/experience&target=newAppsSection');
     $describe = function ($field, $value) {
@@ -78,13 +86,15 @@
             </dl>
         </s-section>
 
-        <s-section heading="Performance">
-            <s-grid gridTemplateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="base">
-                @foreach (['Views', 'Interactions', 'Conversions', 'Revenue'] as $kpi)
-                    <s-box padding="base" border="base" borderRadius="base"><s-text color="subdued">{{ $kpi }}</s-text><s-heading>—</s-heading></s-box>
-                @endforeach
-            </s-grid>
-            <s-paragraph><span class="oo-muted">Performance appears here once analytics is connected.</span></s-paragraph>
+        @php($perf = app(\App\Services\Analytics\Analytics::class)->forExperiences($store, [$experience->handle])[$experience->handle] ?? ['views' => 0, 'clicks' => 0, 'adds' => 0, 'orders' => 0, 'revenue' => 0])
+        <s-section heading="Performance · last 30 days">
+            <div class="ob-kpis">
+                <div class="ob-kpi"><small>Views</small><b>{{ number_format($perf['views']) }}</b></div>
+                <div class="ob-kpi"><small>Added to cart</small><b>{{ number_format($perf['adds']) }}</b></div>
+                <div class="ob-kpi"><small>Orders</small><b>{{ number_format($perf['orders']) }}</b></div>
+                <div class="ob-kpi"><small>Revenue</small><b>{{ money($perf['revenue'], $store->currency) }}</b></div>
+            </div>
+            <s-paragraph><span class="oo-muted">From the OrderOrbit Space pixel, for shoppers who allow analytics. <s-link href="{{ app_route('app.analytics') }}">All analytics</s-link></span></s-paragraph>
         </s-section>
 
         @if ($canEdit)
@@ -111,6 +121,15 @@
             </s-section>
         @endif
 
+    @elseif ($module && in_array($tab, ['configuration', 'targeting', 'experiment'], true))
+        <s-section heading="Configuration">
+            <s-paragraph>{{ $module['summary'] }}</s-paragraph>
+            <s-paragraph><span class="oo-muted">Offers, products, settings and design are managed in the editor.</span></s-paragraph>
+            @if ($canEdit && $experience->status !== 'archived')
+                <s-button variant="primary" href="{{ $module['route'] }}">Open editor</s-button>
+            @endif
+        </s-section>
+
     @elseif ($tab === 'configuration' || $tab === 'targeting')
         @foreach ($tab === 'configuration' ? ['content', 'design', 'behavior'] : ['targeting', 'schedule'] as $section)
             <s-section heading="{{ ucfirst($section) }}">
@@ -131,7 +150,7 @@
                 <dt>Track views</dt><dd>{{ ($config['analytics']['track_views'] ?? true) ? 'On' : 'Off' }}</dd>
                 <dt>Track clicks</dt><dd>{{ ($config['analytics']['track_clicks'] ?? true) ? 'On' : 'Off' }}</dd>
             </dl>
-            <s-paragraph><span class="oo-muted">Events, funnels and revenue for this experience appear once analytics is connected.</span></s-paragraph>
+            <s-paragraph><span class="oo-muted">Views, adds to cart, orders and revenue for this offer are on the Overview tab and in <s-link href="{{ app_route('app.analytics') }}">Analytics</s-link>.</span></s-paragraph>
         </s-section>
 
     @elseif ($tab === 'experiment')

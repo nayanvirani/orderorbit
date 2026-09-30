@@ -10,6 +10,7 @@ class Notices
 {
     public const MESSAGES = [
         'saved' => ['Changes saved successfully.', false],
+        'analytics_connected' => ['Analytics is connected. New visits and orders will appear here.', false],
         'deleted' => ['The item was deleted successfully.', false],
         'invited' => ['Invite saved. They get this role when they first open OrderOrbit Space.', false],
         'role_changed' => ['Role updated.', false],

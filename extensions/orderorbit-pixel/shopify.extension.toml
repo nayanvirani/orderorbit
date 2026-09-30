@@ -1,0 +1,22 @@
+name = "orderorbit-pixel"
+type = "web_pixel_extension"
+uid = "bef7df44-353b-8d6c-647f-9137f896306fb0848702"
+
+runtime_context = "strict"
+
+[customer_privacy]
+analytics = true
+marketing = false
+preferences = false
+sale_of_data = "disabled"
+
+[settings]
+type = "object"
+
+[settings.fields.token]
+name = "Store token"
+description = "Identifies the store to OrderOrbit Space analytics."
+type = "single_line_text_field"
+validations = [
+  { name = "min", value = "16" }
+]

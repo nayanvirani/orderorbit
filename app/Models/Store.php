@@ -12,7 +12,7 @@ class Store extends Model
     protected $fillable = [
         'shop_domain', 'access_token', 'refresh_token', 'access_token_expires_at', 'scopes',
         'name', 'email', 'currency', 'timezone', 'shopify_plan', 'theme_name', 'capabilities', 'capabilities_checked_at', 'plan', 'plan_expires_at', 'goal',
-        'onboarding_completed_at', 'installed_at', 'uninstalled_at', 'cart_transform_id',
+        'onboarding_completed_at', 'installed_at', 'uninstalled_at', 'cart_transform_id', 'pixel_token', 'web_pixel_id',
     ];
 
     protected $hidden = ['access_token', 'refresh_token'];

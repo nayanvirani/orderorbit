@@ -17,6 +17,10 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
+// Storefront analytics from the OrderOrbit Space web pixel.
+Route::post('/api/pixel', [\App\Http\Controllers\PixelController::class, 'collect'])->middleware('throttle:240,1')->name('pixel.collect');
+Route::options('/api/pixel', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'));
+
 // Owner access to the public website while it's "coming soon".
 Route::post('/site-access', [SiteController::class, 'unlock'])->middleware('throttle:5,1')->name('site.unlock');
 Route::get('/site-access/lock', [SiteController::class, 'lock'])->name('site.lock');
@@ -55,7 +59,7 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
 
         // Bundles module (MoonBundle-style): list, type, model, editor
-        Route::prefix('bundles')->name('bundles.')->group(function () {
+        Route::prefix('cro/bundles')->name('bundles.')->group(function () {
             Route::get('/', [BundleController::class, 'index'])->name('index');
             Route::middleware('store.can:manage_experiences')->group(function () {
                 Route::get('/new', [BundleController::class, 'types'])->name('types');
@@ -68,7 +72,7 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         });
 
         // Progressive gifts module: list, template, editor
-        Route::prefix('progressive-gifts')->name('gifts.')->group(function () {
+        Route::prefix('cro/progressive-gifts')->name('gifts.')->group(function () {
             Route::get('/', [GiftController::class, 'index'])->name('index');
             Route::middleware('store.can:manage_experiences')->group(function () {
                 Route::get('/new', [GiftController::class, 'models'])->name('models');
@@ -80,7 +84,7 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         });
 
         // Feature pages (app navigation): Cart upsells, Countdown timer, Sticky add to cart, Trust badges
-        Route::get('/features/{feature}', [FeatureController::class, 'show'])->whereIn('feature', array_keys(Registry::features()))->name('features.show');
+        Route::get('/cro/features/{feature}', [FeatureController::class, 'show'])->whereIn('feature', array_keys(Registry::features()))->name('features.show');
 
         // CRO experiences (section 15, D2)
         Route::prefix('cro')->name('cro.')->group(function () {
@@ -104,10 +108,16 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
                 Route::get('/{experience}', [ExperienceController::class, 'show'])->whereNumber('experience')->name('show');
             });
 
-            Route::get('/{type}', [ExperienceController::class, 'index'])->whereIn('type', array_keys(Registry::types()))->name('type');
+            Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
         });
 
-        Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
+        Route::get('/analytics', [\App\Http\Controllers\App\AnalyticsController::class, 'index'])->middleware('store.can:view_dashboard')->name('analytics');
+        Route::post('/analytics/connect', [\App\Http\Controllers\App\AnalyticsController::class, 'connect'])->middleware('store.can:manage_settings')->name('analytics.connect');
+
+        // Older links
+        Route::get('/templates', fn () => redirect()->to(app_route('app.cro.templates')))->name('templates');
+        Route::get('/bundles', fn () => redirect()->to(app_route('app.bundles.index')));
+        Route::get('/progressive-gifts', fn () => redirect()->to(app_route('app.gifts.index')));
 
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', fn () => redirect()->to(app_route('app.settings.store')))->name('index');
@@ -128,6 +138,9 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
 
             Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
         });
+
+        Route::get('/analytics', [\App\Http\Controllers\App\AnalyticsController::class, 'index'])->middleware('store.can:view_dashboard')->name('analytics');
+        Route::post('/analytics/connect', [\App\Http\Controllers\App\AnalyticsController::class, 'connect'])->middleware('store.can:manage_settings')->name('analytics.connect');
 
         // Older links before the move to Settings.
         Route::get('/billing', fn () => redirect()->to(app_route('app.settings.billing')))->name('billing');

@@ -49,37 +49,37 @@ class BundleModuleTest extends TestCase
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
 
-        $this->get('/app/bundles', $this->as($owner))->assertOk()->assertSee('No bundles yet')->assertSee('Create bundle');
-        $this->get('/app/bundles/new', $this->as($owner))->assertOk()
+        $this->get('/app/cro/bundles', $this->as($owner))->assertOk()->assertSee('No bundles yet')->assertSee('Create bundle');
+        $this->get('/app/cro/bundles/new', $this->as($owner))->assertOk()
             ->assertSee('Quantity breaks')->assertSee('Bundle builder &amp; mix and match', false)->assertSee('Fixed bundle + gifts');
-        $this->get('/app/bundles/new/quantity-breaks', $this->as($owner))->assertOk()
+        $this->get('/app/cro/bundles/new/quantity-breaks', $this->as($owner))->assertOk()
             ->assertSee('Classic quantity breaks')->assertSee('1 bought = 1 free')->assertSee('Use this template');
-        $this->get('/app/bundles/new/nope', $this->as($owner))->assertNotFound();
+        $this->get('/app/cro/bundles/new/nope', $this->as($owner))->assertNotFound();
 
-        $this->post('/app/bundles', ['model' => 'qb-inversion', 'preset' => 'blue'], $this->as($owner))->assertRedirectContains('/app/bundles/');
+        $this->post('/app/cro/bundles', ['model' => 'qb-inversion', 'preset' => 'blue'], $this->as($owner))->assertRedirectContains('/app/cro/bundles/');
         $bundle = Experience::where('type', 'bundles')->firstOrFail();
         $this->assertSame('Quantity inversion offer', $bundle->name);
         $this->assertSame('#2448ff', $bundle->draft_config['design']['accent']);
         $this->assertSame('20% Additional discount', $bundle->draft_config['offers'][0]['label']);
 
-        $this->get("/app/bundles/{$bundle->id}", $this->as($owner))->assertOk()->assertSee('BundleEditor')->assertSee('Save as draft');
-        $this->get("/app/cro/experiences/{$bundle->id}/edit", $this->as($owner))->assertRedirectContains("/app/bundles/{$bundle->id}");
-        $this->get('/app/cro/experiences/new?type=bundles', $this->as($owner))->assertRedirectContains('/app/bundles/new');
-        $this->get('/app/bundles', $this->as($owner))->assertOk()->assertSee('Quantity inversion offer')->assertSee('All products');
+        $this->get("/app/cro/bundles/{$bundle->id}", $this->as($owner))->assertOk()->assertSee('BundleEditor')->assertSee('Save as draft');
+        $this->get("/app/cro/experiences/{$bundle->id}/edit", $this->as($owner))->assertRedirectContains("/app/cro/bundles/{$bundle->id}");
+        $this->get('/app/cro/experiences/new?type=bundles', $this->as($owner))->assertRedirectContains('/app/cro/bundles/new');
+        $this->get('/app/cro/bundles', $this->as($owner))->assertOk()->assertSee('Quantity inversion offer')->assertSee('All products');
     }
 
     public function test_save_validate_publish_and_toggle(): void
     {
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
-        $this->post('/app/bundles', ['model' => 'qb-classic'], $this->as($owner));
+        $this->post('/app/cro/bundles', ['model' => 'qb-classic'], $this->as($owner));
         $bundle = Experience::firstOrFail();
 
         // Invalid: shown on the chosen products, but none chosen. The draft still saves.
         $config = $bundle->draft_config;
         $config['settings']['visibility'] = 'products';
         $config['offers'][2]['discount_value'] = 25;
-        $this->post("/app/bundles/{$bundle->id}", ['config_json' => json_encode($config), 'name' => 'Serum tiers', 'action' => 'publish'], $this->as($owner))
+        $this->post("/app/cro/bundles/{$bundle->id}", ['config_json' => json_encode($config), 'name' => 'Serum tiers', 'action' => 'publish'], $this->as($owner))
             ->assertOk()->assertSee('Fix the highlighted settings before publishing.');
         $this->assertSame('draft', $bundle->fresh()->status);
         $this->assertEquals(25, $bundle->fresh()->draft_config['offers'][2]['discount_value']);
@@ -87,7 +87,7 @@ class BundleModuleTest extends TestCase
 
         // Valid: publishes with the tier discounts.
         $config['settings']['visibility'] = 'all';
-        $this->post("/app/bundles/{$bundle->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
+        $this->post("/app/cro/bundles/{$bundle->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
             ->assertRedirectContains('notice=published');
         $this->assertSame('published', $bundle->fresh()->status);
         $this->assertSame('gid://shopify/DiscountAutomaticNode/77', $bundle->fresh()->shopify_discount_id);
@@ -101,7 +101,7 @@ class BundleModuleTest extends TestCase
         });
 
         // The list switch pauses it and removes the discount.
-        $this->post("/app/bundles/{$bundle->id}/toggle", [], $this->as($owner))->assertRedirectContains('notice=paused');
+        $this->post("/app/cro/bundles/{$bundle->id}/toggle", [], $this->as($owner))->assertRedirectContains('notice=paused');
         $this->assertSame('paused', $bundle->fresh()->status);
         $this->assertNull($bundle->fresh()->shopify_discount_id);
     }

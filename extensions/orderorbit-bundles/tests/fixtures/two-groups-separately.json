@@ -154,6 +154,12 @@
               }
             ],
             "parentVariantId": "gid://shopify/ProductVariant/10",
+            "attributes": [
+              {
+                "key": "_oo_offer",
+                "value": "b1"
+              }
+            ],
             "title": "Complete bundle",
             "image": {
               "url": "https://cdn.shopify.com/a.jpg"
@@ -178,6 +184,12 @@
               }
             ],
             "parentVariantId": "gid://shopify/ProductVariant/10",
+            "attributes": [
+              {
+                "key": "_oo_offer",
+                "value": "b1"
+              }
+            ],
             "title": "Complete bundle",
             "image": {
               "url": "https://cdn.shopify.com/a.jpg"

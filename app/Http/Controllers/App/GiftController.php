@@ -23,9 +23,12 @@ class GiftController extends Controller
 
     public function index(Store $store): View
     {
+        $items = $store->experiences()->where('type', 'progressive-gifts')->where('status', '!=', 'archived')->latest('updated_at')->get();
+
         return view('app.gifts.index', [
             'store' => $store,
-            'items' => $store->experiences()->where('type', 'progressive-gifts')->where('status', '!=', 'archived')->latest('updated_at')->get(),
+            'items' => $items,
+            'stats' => app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $items->pluck('handle')->all()),
         ]);
     }
 
