@@ -101,7 +101,7 @@
                     @elseif ($type['discount'] ?? false)
                         <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
                     @endif
-                    <p class="b-muted">After publishing, add the <strong>OrderOrbit experience</strong> block in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>
+                    <p class="b-muted">After publishing, add the <strong>OrderOrbit Space block</strong> in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>
                     <div class="b-actions">
                         <button type="submit" name="action" value="publish" class="b-btn b-primary">
                             {{ ! empty($config['schedule']['starts_at']) ? 'Schedule' : 'Publish' }}

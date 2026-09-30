@@ -1,5 +1,5 @@
 @extends('layouts.site')
-@section('title', 'Page not found | OrderOrbit')
+@section('title', 'Page not found | OrderOrbit Space')
 @section('content')
 <section class="page-hero sky" style="padding:96px 0">
     <div class="wrap">

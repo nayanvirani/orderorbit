@@ -30,7 +30,7 @@
     @endif
     @if ($experience->shopify_discount_id)
         <s-banner tone="success" heading="Saving applies automatically at checkout">
-            <s-paragraph>OrderOrbit created a Shopify automatic discount for this {{ lower_label($type['singular']) }}. It stays in step with this experience: pausing or archiving removes it.</s-paragraph>
+            <s-paragraph>OrderOrbit Space created a Shopify automatic discount for this {{ lower_label($type['singular']) }}. It stays in step with this experience: pausing or archiving removes it.</s-paragraph>
             <s-button slot="secondary-actions" href="{{ $store->adminUrl('discounts/'.preg_replace('/\D/', '', $experience->shopify_discount_id)) }}" target="_top">View in Shopify</s-button>
         </s-banner>
     @endif
@@ -40,7 +40,7 @@
 
     @if ($experience->status === 'published' && $experience->placement_status === 'not_placed')
         <s-banner tone="warning" heading="Published but not placed">
-            <s-paragraph>Shoppers can't see this yet. Add the OrderOrbit experience block in the Theme Editor and choose “{{ $type['singular'] }}”.</s-paragraph>
+            <s-paragraph>Shoppers can't see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “{{ $type['singular'] }}”.</s-paragraph>
             <s-button slot="secondary-actions" href="{{ $editorUrl }}" target="_top">Open Theme Editor</s-button>
         </s-banner>
     @endif
@@ -167,7 +167,7 @@
         </s-section>
         <s-section heading="Activity">
             @forelse ($activity as $log)
-                <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit' }}</strong> · {{ $actionLabels[$log->action] ?? $log->action }}@if (isset($log->context['version'])) v{{ $log->context['version'] }}@endif <span class="oo-muted">· {{ $log->created_at->diffForHumans() }}</span></s-paragraph>
+                <s-paragraph><strong>{{ $log->actor?->displayName() ?? 'OrderOrbit Space' }}</strong> · {{ $actionLabels[$log->action] ?? $log->action }}@if (isset($log->context['version'])) v{{ $log->context['version'] }}@endif <span class="oo-muted">· {{ $log->created_at->diffForHumans() }}</span></s-paragraph>
             @empty
                 <s-paragraph>No activity yet.</s-paragraph>
             @endforelse

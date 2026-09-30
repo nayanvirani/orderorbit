@@ -7,7 +7,7 @@
     @include('app.settings._tabs')
 
     <s-section heading="Staff">
-        <s-paragraph>Everyone with access to OrderOrbit in Shopify admin appears here the first time they open the app. Give someone a role in advance by inviting their Shopify staff email.</s-paragraph>
+        <s-paragraph>Everyone with access to OrderOrbit Space in Shopify admin appears here the first time they open the app. Give someone a role in advance by inviting their Shopify staff email.</s-paragraph>
         <div class="oo-scroll">
             <table class="oo-table stack">
                 <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th></th></tr></thead>
@@ -47,7 +47,7 @@
                                     @if ($user->disabled_at)
                                         <form method="POST" action="{{ app_route('app.settings.users.restore', ['user' => $user->id]) }}"><s-button type="submit" variant="tertiary">Restore access</s-button></form>
                                     @else
-                                        <form method="POST" action="{{ app_route('app.settings.users.remove', ['user' => $user->id]) }}" data-confirm="{{ $user->isPendingInvite() ? 'Cancel this invite?' : 'Remove '.$user->displayName().'\'s access to OrderOrbit?' }}">
+                                        <form method="POST" action="{{ app_route('app.settings.users.remove', ['user' => $user->id]) }}" data-confirm="{{ $user->isPendingInvite() ? 'Cancel this invite?' : 'Remove '.$user->displayName().'\'s access to OrderOrbit Space?' }}">
                                             <s-button type="submit" variant="tertiary" tone="critical">{{ $user->isPendingInvite() ? 'Cancel invite' : 'Remove' }}</s-button>
                                         </form>
                                     @endif
@@ -68,7 +68,7 @@
             </label>
             <s-button type="submit" variant="primary">Invite</s-button>
         </form>
-        <s-paragraph><span class="oo-muted oo-small">They also need access to OrderOrbit in Shopify admin (Settings → Users). When they first open the app, they get this role.</span></s-paragraph>
+        <s-paragraph><span class="oo-muted oo-small">They also need access to OrderOrbit Space in Shopify admin (Settings → Users). When they first open the app, they get this role.</span></s-paragraph>
     </s-section>
 
     <s-section heading="What each role can do">

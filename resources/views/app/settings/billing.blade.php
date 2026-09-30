@@ -13,7 +13,7 @@
         @include('app.settings._tabs')
     @else
         <x-app.hero eyebrow="Plans" title="Choose your <em>orbit.</em>"
-            lead="Choose a plan below to start using OrderOrbit. Experiences, templates and settings are unavailable until you subscribe. Billing runs through your Shopify invoice." />
+            lead="Choose a plan below to start using OrderOrbit Space. Experiences, templates and settings are unavailable until you subscribe. Billing runs through your Shopify invoice." />
     @endif
 
     @if ($syncError)
@@ -54,7 +54,7 @@
     @elseif ($latest && in_array($latest->status, ['PENDING', 'FROZEN', 'DECLINED', 'EXPIRED', 'CANCELLED'], true))
         @php($state = [
             'PENDING' => ['warning', 'Waiting for approval', 'Approve the plan on Shopify to activate it.'],
-            'FROZEN' => ['critical', 'Frozen', 'Your Shopify account has a billing issue. Resolve it in Shopify to reactivate OrderOrbit. Your data is kept.'],
+            'FROZEN' => ['critical', 'Frozen', 'Your Shopify account has a billing issue. Resolve it in Shopify to reactivate OrderOrbit Space. Your data is kept.'],
             'DECLINED' => ['warning', 'Not approved', 'The plan wasn\'t approved. Choose a plan below to continue.'],
             'EXPIRED' => ['warning', 'Approval expired', 'The approval request expired. Choose a plan below to continue.'],
             'CANCELLED' => ['warning', 'Cancelled', 'Your plan was cancelled. Choose a plan below to continue. Your data is kept.'],
@@ -71,7 +71,7 @@
                     <s-text color="subdued">{{ $meter['label'] }}</s-text>
                     <div><strong>{{ number_format($meter['used']) }}</strong> <span class="oo-muted">/ {{ $meter['limit'] === null ? 'Unlimited' : number_format($meter['limit']) }}</span></div>
                     <div class="oo-meter"><i class="{{ $full ? 'full' : '' }}" style="width:{{ $meter['limit'] ? min(100, round($meter['used'] / $meter['limit'] * 100)) : 0 }}%"></i></div>
-                    @if ($full)<s-text tone="critical">You've reached your current OrderOrbit plan limit.</s-text>@endif
+                    @if ($full)<s-text tone="critical">You've reached your current OrderOrbit Space plan limit.</s-text>@endif
                 </s-box>
             @endforeach
         </s-grid>

@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "6c6351ce074785f2db1fee2ac2ee484c"
-name = "OrderOrbit"
+name = "OrderOrbit Space"
 application_url = "https://orderorbit.space/app"
 embedded = true
 

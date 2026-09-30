@@ -21,7 +21,7 @@ return [
         'lead' => 'Mix & match, fixed bundles, frequently bought together and gift boxes. Shoppers add the whole bundle in one click and the saving applies automatically at checkout.',
         'steps' => [
             'Pick the products, bundle type and saving.',
-            'Add the OrderOrbit block to your product page in the Theme Editor.',
+            'Add the OrderOrbit Space block to your product page in the Theme Editor.',
             'Shoppers add the bundle in one click; the discount applies in cart and checkout.',
         ],
     ],

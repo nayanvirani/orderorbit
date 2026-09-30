@@ -31,7 +31,7 @@
             <div class="ob-kpi"><small>Live</small><b>{{ $counts['published'] ?? 0 }}</b><span>Showing to shoppers</span></div>
             <div class="ob-kpi"><small>Drafts</small><b>{{ $counts['draft'] ?? 0 }}</b><span>Not live yet</span></div>
             <div class="ob-kpi"><small>Paused</small><b>{{ $counts['paused'] ?? 0 }}</b><span>Hidden from shoppers</span></div>
-            <div class="ob-kpi"><small>Checkout saving</small><b style="font-size:26px">{{ $discounts ? 'Automatic' : 'Not needed' }}</b><span>{{ $discounts ? 'Applied by OrderOrbit in cart and checkout' : 'This feature doesn\'t change prices' }}</span></div>
+            <div class="ob-kpi"><small>Checkout saving</small><b style="font-size:26px">{{ $discounts ? 'Automatic' : 'Not needed' }}</b><span>{{ $discounts ? 'Applied by OrderOrbit Space in cart and checkout' : 'This feature doesn\'t change prices' }}</span></div>
         </div>
     </s-section>
 
