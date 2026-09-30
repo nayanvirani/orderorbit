@@ -16,7 +16,10 @@ use Illuminate\Http\Response;
  */
 class PixelController extends Controller
 {
-    private const EVENTS = ['experience_viewed' => 'view', 'experience_clicked' => 'click', 'added_to_cart' => 'add'];
+    private const EVENTS = [
+        'experience_viewed' => 'view', 'experience_clicked' => 'click', 'added_to_cart' => 'add',
+        'reward_unlocked' => 'unlock', 'upsell_accepted' => 'accept', 'upsell_declined' => 'decline',
+    ];
 
     public function collect(Request $request): Response
     {

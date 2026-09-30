@@ -106,6 +106,14 @@
       });
       if (ctx.preview) return;
 
+      // Each milestone reports "reward unlocked" once per session.
+      c.milestones.forEach(function (m) {
+        if (st.progress < m.threshold) return;
+        var seen = 'oo_pgu_' + exp.id + '_' + m.index;
+        try { if (sessionStorage.getItem(seen)) return; sessionStorage.setItem(seen, '1'); } catch (err) { return; }
+        OrderOrbit.track('reward_unlocked', exp, { milestone: m.index, reward: m.reward });
+      });
+
       var gifts = (ctx.cartLines || []).filter(function (l) { return isGift(l, exp); });
       // Gifts whose milestone is no longer reached would be charged, so take them out.
       var lost = gifts.filter(function (l) {

@@ -32,7 +32,8 @@ class WebhookProcessingTest extends TestCase
 
     public function test_uninstall_clears_tokens_once(): void
     {
-        $store = $this->installedStore(['plan' => 'growth']);
+        $store = $this->installedStore(['plan' => 'growth', 'web_pixel_id' => 'gid://shopify/WebPixel/1', 'cart_transform_id' => 'gid://shopify/CartTransform/1']);
+        $live = \App\Models\Experience::create(['store_id' => $store->id, 'type' => 'countdown', 'name' => 'Sale', 'template_key' => 'minimal', 'status' => 'published', 'draft_config' => [], 'shopify_discount_id' => 'gid://shopify/DiscountAutomaticNode/1']);
 
         $this->webhook('app/uninstalled', ['id' => 1])->assertNoContent();
         $this->webhook('app/uninstalled', ['id' => 1])->assertNoContent();
@@ -41,6 +42,11 @@ class WebhookProcessingTest extends TestCase
         $this->assertNull($store->access_token);
         $this->assertNull($store->plan);
         $this->assertNotNull($store->uninstalled_at);
+        // Shopify removed the app's pixel, transform and discounts; offers pause until reinstall.
+        $this->assertNull($store->web_pixel_id);
+        $this->assertNull($store->cart_transform_id);
+        $this->assertSame('paused', $live->fresh()->status);
+        $this->assertNull($live->fresh()->shopify_discount_id);
         $this->assertSame(1, AuditLog::where('action', 'store.uninstalled')->count());
         $this->assertSame('system', AuditLog::where('action', 'store.uninstalled')->value('actor_type'));
     }

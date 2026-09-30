@@ -16,7 +16,7 @@
 
 @section('content')
 <s-page heading="Analytics">
-    <x-app.hero eyebrow="Analytics" title="What your offers <em>earn.</em>"
+    <x-app.hero eyebrow="Analytics" icon="chart" tone="analytics" title="What your offers <em>earn.</em>"
         lead="Revenue, orders and conversion from your store, and how much of it came from lines your bundles, gifts and upsells added." />
 
     @if (! $connected)
@@ -36,19 +36,21 @@
         @endforeach
     </nav>
 
-    <s-section heading="OrderOrbit Space impact">
+    @php($p = $s['previous'])
+    @php($t = fn ($a, $b) => \App\Services\Analytics\Analytics::trend($a, $b))
+    <s-section heading="OrderOrbit Space impact · vs previous {{ $s['days'] }} days">
         <div class="ob-kpis">
-            <div class="ob-kpi"><small>Revenue from offers</small><b>{{ $money($s['influenced_revenue']) }}</b><span>Lines added by bundles, gifts and upsells</span></div>
-            <div class="ob-kpi"><small>Orders with an offer</small><b>{{ number_format($s['influenced_orders']) }}</b><span>{{ $s['orders'] ? round($s['influenced_orders'] / $s['orders'] * 100).'% of orders' : 'No orders yet' }}</span></div>
-            <div class="ob-kpi"><small>AOV with an offer</small><b>{{ $money($s['influenced_aov']) }}</b><span>{{ $s['aov'] && $s['influenced_aov'] ? (($d = $s['influenced_aov'] - $s['aov']) >= 0 ? '+' : '−').$money(abs($d)).' vs all orders' : 'Average order value' }}</span></div>
+            <x-app.kpi label="Revenue from offers" icon="sparkle" tone="analytics" :value="$money($s['influenced_revenue'])" :trend="$t($s['influenced_revenue'], $p['influenced_revenue'])" sub="Lines added by bundles, gifts and upsells" :spark="collect($s['daily'])->pluck('influenced')->all()" />
+            <x-app.kpi label="Orders with an offer" icon="cart" tone="bundles" :value="number_format($s['influenced_orders'])" :trend="$t($s['influenced_orders'], $p['influenced_orders'])" :sub="$s['orders'] ? round($s['influenced_orders'] / $s['orders'] * 100).'% of orders' : 'No orders yet'" />
+            <x-app.kpi label="AOV with an offer" icon="target" tone="gifts" :value="$money($s['influenced_aov'])" :sub="$s['aov'] && $s['influenced_aov'] ? (($d = $s['influenced_aov'] - $s['aov']) >= 0 ? '+' : '−').$money(abs($d)).' vs all orders' : 'Average order value'" />
         </div>
     </s-section>
 
     <s-section heading="Store">
         <div class="ob-kpis">
-            <div class="ob-kpi"><small>Revenue</small><b>{{ $money($s['revenue']) }}</b><span>{{ number_format($s['orders']) }} {{ \Illuminate\Support\Str::plural('order', $s['orders']) }}</span></div>
-            <div class="ob-kpi"><small>AOV</small><b>{{ $money($s['aov']) }}</b><span>Average order value</span></div>
-            <div class="ob-kpi"><small>Conversion rate</small><b>{{ $s['conversion'] === null ? '—' : number_format($s['conversion'], 2).'%' }}</b><span>{{ number_format($s['sessions']) }} {{ \Illuminate\Support\Str::plural('session', $s['sessions']) }}</span></div>
+            <x-app.kpi label="Revenue" icon="chart" tone="upsells" :value="$money($s['revenue'])" :trend="$t($s['revenue'], $p['revenue'])" :sub="number_format($s['orders']).' '.\Illuminate\Support\Str::plural('order', $s['orders'])" />
+            <x-app.kpi label="AOV" icon="cart" tone="gifts" :value="$money($s['aov'])" :trend="$t($s['aov'], $p['aov'])" sub="Average order value" />
+            <x-app.kpi label="Conversion rate" icon="target" tone="countdown" :value="$s['conversion'] === null ? '—' : number_format($s['conversion'], 2).'%'" :trend="$t($s['conversion'], $p['conversion'])" :sub="number_format($s['sessions']).' '.\Illuminate\Support\Str::plural('session', $s['sessions'])" />
         </div>
         <div class="an-chart" role="img" aria-label="Daily revenue, with the part from offers highlighted">
             @foreach ($s['daily'] as $day => $v)
@@ -66,7 +68,7 @@
         @else
             <div class="oo-scroll">
                 <table class="oo-table stack">
-                    <thead><tr><th>Offer</th><th>Type</th><th>Views</th><th>Added to cart</th><th>Orders</th><th>Revenue</th><th>Conversion</th></tr></thead>
+                    <thead><tr><th>Offer</th><th>Type</th><th>Views</th><th>Added to cart</th><th>Rewards unlocked</th><th>Upsell take rate</th><th>Orders</th><th>Revenue</th><th>Conversion</th></tr></thead>
                     <tbody>
                         @foreach ($rows as $r)
                             <tr>
@@ -74,6 +76,8 @@
                                 <td data-label="Type">{{ $typeLabel($r['experience']) }}</td>
                                 <td data-label="Views">{{ number_format($r['views']) }}</td>
                                 <td data-label="Added to cart">{{ number_format($r['adds']) }}</td>
+                                <td data-label="Rewards unlocked">{{ $r['unlocks'] ? number_format($r['unlocks']) : '—' }}</td>
+                                <td data-label="Upsell take rate">{{ ($r['accepts'] + $r['declines']) ? round($r['accepts'] / ($r['accepts'] + $r['declines']) * 100).'%' : '—' }}</td>
                                 <td data-label="Orders">{{ number_format($r['orders']) }}</td>
                                 <td data-label="Revenue">{{ $money($r['revenue']) }}</td>
                                 <td data-label="Conversion">{{ $r['views'] ? number_format($r['orders'] / $r['views'] * 100, 1).'%' : '—' }}</td>

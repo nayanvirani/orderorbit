@@ -17,7 +17,7 @@
 
 @section('content')
 <s-page heading="{{ $feature['label'] }}">
-    <x-app.hero :eyebrow="$feature['label']" :title="$feature['tagline']" :lead="$feature['lead']">
+    <x-app.hero :eyebrow="$feature['label']" :title="$feature['tagline']" :lead="$feature['lead']" :icon="$feature['icon'] ?? null" :tone="$feature['tone'] ?? null">
         @if ($canManage)
             @foreach ($types as $typeKey => $type)
                 <s-button variant="{{ $loop->first ? 'primary' : 'secondary' }}" href="{{ app_route('app.cro.experiences.create', ['type' => $typeKey]) }}">Create {{ lower_label($type['singular']) }}</s-button>

@@ -42,6 +42,7 @@
           var btn = e.target.closest('[data-oo-add]');
           if (!btn) return;
           var i = Number(btn.getAttribute('data-oo-add'));
+          OrderOrbit.track('upsell_accepted', exp);
           S.add(exp, ctx, [{ id: S.chosenVariant(root, list[i], i), quantity: 1 }], btn, root);
         });
       }

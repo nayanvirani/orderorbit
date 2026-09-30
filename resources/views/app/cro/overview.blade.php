@@ -4,7 +4,7 @@
 
 @section('content')
 <s-page heading="CRO overview">
-    <x-app.hero eyebrow="CRO" title="Every conversion tool, <em>one design.</em>"
+    <x-app.hero eyebrow="CRO" icon="sparkle" title="Every conversion tool, <em>one design.</em>"
         lead="Bundles, progressive gifts, cart upsells, countdowns, sticky add to cart and trust badges — sharing your brand, with savings applied at checkout and one set of numbers.">
         <s-button variant="primary" href="{{ app_route('app.bundles.types') }}">Create a bundle</s-button>
         <s-button href="{{ app_route('app.analytics') }}">View analytics</s-button>
@@ -30,10 +30,10 @@
         <div class="ob-features">
             @foreach ($features as $f)
                 @php($href = isset($f['module']) ? app_route($f['module']) : app_route('app.features.show', ['feature' => $f['key']]))
-                <a class="ob-feature" href="{{ $href }}">
+                <a class="ob-feature t-{{ $f['tone'] ?? 'default' }}" href="{{ $href }}">
                     <span class="ob-feature-shot"><span class="oo-preview" data-render="{{ json_encode($f['preview']) }}"></span></span>
                     <span class="ob-feature-body">
-                        <strong>{{ $f['label'] }} @if ($n = collect($f['types'])->sum(fn ($t) => $byType[$t] ?? 0))<span class="ob-badge soft">{{ $n }}</span>@endif</strong>
+                        <strong><x-app.icon :name="$f['icon'] ?? 'sparkle'" size="sm" />{{ $f['label'] }} @if ($n = collect($f['types'])->sum(fn ($t) => $byType[$t] ?? 0))<span class="ob-badge soft">{{ $n }}</span>@endif</strong>
                         <span>{{ strip_tags($f['lead']) }}</span>
                         <em>Open →</em>
                     </span>

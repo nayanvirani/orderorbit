@@ -82,3 +82,9 @@
 .b-chip-label small { font-weight: 450; color: #616161; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .b-chip-qty { width: 52px; font: inherit; font-size: 12px; padding: 3px 6px; border: 1px solid #8a8a8a; border-radius: 6px; }
 .b-field[hidden] { display: none !important; }
+/* Polaris-native refresh */
+.b-step { border-color: transparent; background: #f1f1f1; color: #616161; }
+.b-step[aria-current="step"] { background: #fff; color: #1a1a1a; border-color: transparent; box-shadow: 0 1px 2px rgba(0, 0, 0, .12), 0 0 0 1px rgba(0, 0, 0, .06); }
+.b-step[aria-current="step"] span { background: var(--ob-accent, #4f46e5); color: #fff; }
+.b-template:has(> input:checked) { border-color: var(--ob-accent, #4f46e5); box-shadow: 0 0 0 3px var(--ob-accent-soft, #eef2ff); }
+.b-seg button[aria-pressed="true"] { color: #1a1a1a; }

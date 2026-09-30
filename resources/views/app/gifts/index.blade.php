@@ -14,7 +14,7 @@
         <s-button slot="primary-action" variant="primary" href="{{ app_route('app.gifts.models') }}">Create progressive gifts</s-button>
     @endif
 
-    <x-app.hero eyebrow="Progressive gifts" title="Rewards that grow <em>with the cart.</em>"
+    <x-app.hero eyebrow="Progressive gifts" icon="gift" tone="gifts" title="Rewards that grow <em>with the cart.</em>"
         lead="Free gifts, free shipping and order discounts that unlock by cart value or item count, in one progress bar. Rewards apply automatically at checkout." />
 
     <s-section>
