@@ -35,7 +35,7 @@
     </div>
 </section>
 
-<section class="section alt sky" id="setup">
+<section class="section invert sky" id="setup">
     <div class="wrap split">
         <div class="split-copy reveal">
             <span class="eyebrow"><span class="dot"></span>Recommended setup</span>

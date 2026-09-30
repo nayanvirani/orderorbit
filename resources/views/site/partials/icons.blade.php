@@ -52,8 +52,8 @@
     <symbol id="i-smartphone" viewBox="0 0 24 24" {!! $s !!}><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
     <symbol id="i-monitor" viewBox="0 0 24 24" {!! $s !!}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></symbol>
     <symbol id="i-orbit" viewBox="0 0 32 32">
-        <circle cx="16" cy="16" r="6.5" fill="url(#oo-grad)"/>
-        <ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="url(#oo-grad)" stroke-width="2.2" transform="rotate(-30 16 16)"/>
-        <circle cx="27.2" cy="9.6" r="2.6" fill="#ffe3a8"/>
+        <circle cx="16" cy="16" r="6.5" fill="currentColor"/>
+        <ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-30 16 16)"/>
+        <circle cx="27.2" cy="9.6" r="2.6" fill="currentColor"/>
     </symbol>
 </svg>

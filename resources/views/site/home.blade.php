@@ -77,7 +77,7 @@
 </section>
 
 {{-- The loop --}}
-<section class="section alt sky">
+<section class="section invert sky">
     <div class="wrap split">
         <div class="reveal">@include('site.diagrams.orbit')</div>
         <div class="split-copy reveal">
@@ -116,7 +116,7 @@
 
 {{-- Chapters --}}
 @foreach ($chapters as $group => [$chNumber, $chLabel, $chHeading, $chBody, $chHero])
-    <section class="section {{ $loop->odd ? 'alt' : '' }}" id="{{ $group }}">
+    <section class="section {{ $loop->iteration === 2 ? 'invert' : ($loop->odd ? 'alt' : '') }}" id="{{ $group }}">
         <div class="wrap chapter">
             <div class="chapter-side reveal">
                 <div class="chapter-mark">{{ $chNumber }}</div>
@@ -155,7 +155,7 @@
 @endforeach
 
 {{-- Built the Shopify way --}}
-<section class="section">
+<section class="section invert">
     <div class="wrap">
         <div class="section-head reveal">
             <span class="eyebrow"><span class="dot"></span>Built the Shopify way</span>
