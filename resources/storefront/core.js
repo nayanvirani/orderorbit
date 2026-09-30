@@ -1,9 +1,11 @@
 /*!
  * OrderOrbit storefront runtime (core). Renders published experiences inside
  * OrderOrbit app blocks that merchants place in the Theme Editor. It never edits
- * theme markup, opens cart drawers or intercepts add-to-cart; it only reads the
- * cart to show progress. Each experience type's renderer is a separate small file
- * loaded only when a page shows that type. Also powers the in-app preview.
+ * theme markup or intercepts the theme's own add-to-cart; bundle, upsell, gift
+ * and quantity-break buttons add their own items through the cart API, and the
+ * OrderOrbit discount applies the saving at checkout. Each experience type's
+ * renderer is a separate small file loaded only when a page shows that type.
+ * Also powers the in-app preview.
  */
 (function () {
   'use strict';
@@ -13,6 +15,9 @@
   var MOBILE = '(max-width: 749px)';
   var events = [];
   var renderers = {};
+  var hooks = {};
+  // Types that depend on the cart re-render when it changes; others keep the shopper's selections.
+  var CART_TYPES = ['shipping-bar', 'free-gifts', 'cart-upsells'];
   var loading = {};
   var assetBase = '';
   var assetQuery = '';
@@ -162,7 +167,8 @@
     return loading[type];
   }
 
-  function define(type, fn) { renderers[type] = fn; }
+  /** hook: { prepare(exp, ctx) -> Promise (e.g. load live products), setup(root, exp, ctx) (bind buttons) } */
+  function define(type, fn, hook) { renderers[type] = fn; hooks[type] = hook || {}; }
 
   // ---------------------------------------------------------------- rendering
   function styleVars(d) {
@@ -199,6 +205,9 @@
       (b.dismissible ? '<button type="button" class="oo-close" aria-label="Dismiss" data-oo-dismiss>×</button>' : '') + inner + '</div>';
 
     startTimers(el);
+    el.__ooExp = exp.id;
+    var hook = hooks[exp.type] || {};
+    if (hook.setup) hook.setup(el.querySelector('.oo-exp'), exp, ctx);
     if (!ctx.preview && !el.__ooBound) {
       el.__ooBound = true;
       track('experience_viewed', exp, { page_type: ctx.page });
@@ -218,7 +227,12 @@
   /** Renders one experience into el. Returns a Promise<boolean> (false when nothing shows). */
   function render(el, exp, ctx) {
     ctx = ctx || {};
-    return load(exp.type).then(function (renderer) { return paint(el, exp, ctx, renderer); });
+    return load(exp.type).then(function (renderer) {
+      var hook = hooks[exp.type] || {};
+      return Promise.resolve(hook.prepare && !ctx.preview ? hook.prepare(exp, ctx) : null)
+        .catch(function () { /* live data unavailable: render with saved data */ })
+        .then(function () { return paint(el, exp, ctx, renderer); });
+    });
   }
 
   var timer = null;
@@ -246,13 +260,15 @@
 
   var state = { data: null, ctx: null };
 
-  function mountAll() {
+  function mountAll(reason) {
     state.data = state.data || readJson('script[data-oo-data]') || { experiences: [] };
     state.ctx = state.ctx || readJson('script[data-oo-context]') || {};
     setAssets(state.ctx.assets);
     document.querySelectorAll('[data-oo-block]').forEach(function (el) {
       var exp = choose(state.data.experiences, el.getAttribute('data-oo-type'), (el.getAttribute('data-oo-id') || '').trim(), state.ctx);
-      if (exp) {
+      if (exp && reason === 'cart' && el.__ooExp === exp.id && CART_TYPES.indexOf(exp.type) === -1) {
+        return;
+      } else if (exp) {
         render(el, exp, Object.assign({ currency: state.data.currency }, state.ctx));
       } else if (state.ctx.designMode) {
         // Only merchants in the Theme Editor see this; shoppers see nothing.
@@ -264,12 +280,18 @@
     });
   }
 
-  // Re-render cart-aware experiences when the cart changes. Read-only: we watch for
-  // completed cart requests; we never wrap or block the theme's own calls.
+  // Re-render cart-aware experiences when the cart changes. We watch for completed
+  // cart requests; we never wrap or block the theme's own calls.
   function refreshCart() {
-    fetch(((window.Shopify && Shopify.routes && Shopify.routes.root) || '/') + 'cart.js', { credentials: 'same-origin' })
+    return fetch(((window.Shopify && Shopify.routes && Shopify.routes.root) || '/') + 'cart.js', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
-      .then(function (cart) { state.ctx = Object.assign({}, state.ctx, { cartTotal: cart.total_price }); mountAll(); })
+      .then(function (cart) {
+        state.ctx = Object.assign({}, state.ctx || {}, {
+          cartTotal: cart.total_price,
+          cartLines: (cart.items || []).map(function (i) { return { key: i.key, variant: i.variant_id, product: i.product_id, qty: i.quantity, price: i.final_line_price, offer: (i.properties || {})._oo_offer || null }; })
+        });
+        mountAll('cart');
+      })
       .catch(function () { /* offline or blocked */ });
   }
 
@@ -286,7 +308,7 @@
     } catch (e) { /* unsupported */ }
   }
 
-  window.OrderOrbit = { version: '1.1.0', render: render, define: define, setAssets: setAssets, mountAll: mountAll, matches: matches, choose: choose, events: events, h: h };
+  window.OrderOrbit = { version: '1.2.0', render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
 
   var self = document.currentScript;
   if (self) setAssets(self.src);

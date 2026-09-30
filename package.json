@@ -1,0 +1,7 @@
+{
+  "name": "orderorbit",
+  "private": true,
+  "workspaces": [
+    "extensions/*"
+  ]
+}

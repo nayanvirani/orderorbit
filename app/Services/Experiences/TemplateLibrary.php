@@ -78,8 +78,10 @@ class TemplateLibrary
      */
     public static function defaults(string $type, string $templateKey, array $branding = []): array
     {
-        $style = Registry::template($type, $templateKey)['style'] ?? 'card';
+        $template = Registry::template($type, $templateKey) ?? [];
+        $style = $template['style'] ?? 'card';
         $config = Schema::defaults($type, $branding);
+        $config['content'] = array_merge($config['content'], $template['content'] ?? []);
         $preset = self::STYLE_PRESETS[$style] ?? [];
 
         // Premium templates keep their own dark palette; other presets never override branding colours.
@@ -90,6 +92,28 @@ class TemplateLibrary
 
         return $config;
     }
+
+    /**
+     * A render-ready template preview for the app (template pickers and galleries).
+     * Empty product pickers get sample products so the template shows its layout.
+     */
+    public static function preview(string $type, string $templateKey, array $branding = []): array
+    {
+        $config = self::defaults($type, $templateKey, $branding);
+        foreach (Registry::type($type)['content'] as $name => $field) {
+            if ($field['type'] === 'products' && empty($config['content'][$name])) {
+                $config['content'][$name] = array_slice(self::SAMPLE_PRODUCTS, 0, min(3, $field['max_items'] ?? 3));
+            }
+        }
+
+        return ['id' => "tpl-{$type}-{$templateKey}", 'type' => $type, 'template' => $templateKey, 'style' => Registry::template($type, $templateKey)['style'] ?? 'card', 'version' => 0, 'priority' => 0] + $config;
+    }
+
+    private const SAMPLE_PRODUCTS = [
+        ['id' => 'gid://shopify/Product/1', 'title' => 'Glow Serum', 'price' => 29.0, 'compare_at' => 36.0],
+        ['id' => 'gid://shopify/Product/2', 'title' => 'Night Cream', 'price' => 34.0],
+        ['id' => 'gid://shopify/Product/3', 'title' => 'Gentle Cleanser', 'price' => 18.0],
+    ];
 
     public static function currentVersion(string $type, string $key): ?CroTemplateVersion
     {

@@ -36,8 +36,7 @@ class TemplateLibraryController extends Controller
                     'surface' => $definition['surface'],
                     'version' => $versions["{$typeKey}:{$key}"] ?? 1,
                     'used_by' => $usedBy["{$typeKey}:{$key}"] ?? 0,
-                    'preview' => ['id' => "tpl-{$typeKey}-{$key}", 'type' => $typeKey, 'template' => $key, 'style' => $template['style'], 'version' => 0, 'priority' => 0]
-                        + TemplateLibrary::defaults($typeKey, $key, $branding),
+                    'preview' => TemplateLibrary::preview($typeKey, $key, $branding),
                 ];
             }
         }

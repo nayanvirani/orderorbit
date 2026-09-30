@@ -1,24 +1,53 @@
-/* OrderOrbit · product and cart upsells (preview; cart handling ships with the AOV release) */
+/* OrderOrbit · product and cart upsells. Items added here carry the offer, so its incentive applies at checkout. */
 (function () {
-  function cards(h, products, c, ctx, limit) {
-    return (products || []).slice(0, limit || 4).map(function (p) {
-      var price = p.price != null ? Number(p.price) : null;
-      var offer = c.discount_percent && price != null ? price * (1 - c.discount_percent / 100) : price;
-      return '<div class="oo-card">' + h.productImage(p) + '<div class="oo-card-meta"><span class="oo-name">' + h.esc(p.title) + '</span>' +
-        (price != null ? '<span class="oo-price">' + (c.discount_percent ? '<s>' + h.esc(h.money(price, ctx.currency)) + '</s> ' : '') + h.esc(h.money(offer, ctx.currency)) + '</span>' : '') +
-        '</div><button type="button" class="oo-btn oo-btn-sm" data-oo-click="upsell_accepted">' + h.esc(c.cta_text || 'Add') + '</button></div>';
-    }).join('') || '<p class="oo-empty">Choose products to recommend.</p>';
+  var S = OrderOrbit.shop;
+
+  function visible(exp, ctx, limit) {
+    return (exp.content.products || []).filter(function (p) {
+      if (ctx.preview) return true;
+      if (p.available === false) return false;
+      if (ctx.product && OrderOrbit.h.numericId(p.id) === String(ctx.product)) return false;
+      return !S.inCart(ctx, p);
+    }).slice(0, limit);
   }
 
-  OrderOrbit.define('product-upsells', function (exp, ctx, h) {
-    var c = exp.content;
-    return '<div class="oo-body"><p class="oo-title">' + h.esc(c.headline) + '</p>' + (c.offer_message ? '<p class="oo-sub">' + h.esc(c.offer_message) + '</p>' : '') +
-      '<div class="oo-cards">' + cards(h, c.products, c, ctx, 4) + '</div></div>';
-  });
+  function cards(h, list, c, ctx) {
+    return list.map(function (p, i) {
+      var price = p.price != null ? Number(p.price) : null;
+      var pct = Number(c.discount_percent || 0);
+      var offer = pct && price != null ? price * (1 - pct / 100) : price;
+      return '<div class="oo-card">' + h.productImage(p) + '<div class="oo-card-meta"><span class="oo-name">' + h.esc(p.title) + '</span>' +
+        (price != null ? '<span class="oo-price">' + (pct ? '<s>' + h.esc(h.money(price, ctx.currency)) + '</s> ' : '') + h.esc(h.money(offer, ctx.currency)) + '</span>' : '') +
+        S.variantSelect(p, i, ctx) + '</div><button type="button" class="oo-btn oo-btn-sm" data-oo-click="upsell_accepted" data-oo-add="' + i + '">' + h.esc(c.cta_text || 'Add') + '</button></div>';
+    }).join('');
+  }
 
-  OrderOrbit.define('cart-upsells', function (exp, ctx, h) {
-    var c = exp.content;
-    return '<div class="oo-body"><p class="oo-title">' + h.esc(c.headline) + '</p>' + (c.incentive ? '<p class="oo-sub">' + h.esc(c.incentive) + '</p>' : '') +
-      '<div class="oo-cards">' + cards(h, c.products, c, ctx, c.max_shown) + '</div></div>';
-  });
+  function render(limitKey, subKey) {
+    return function (exp, ctx, h) {
+      var c = exp.content;
+      var list = visible(exp, ctx, limitKey ? Number(c[limitKey] || 3) : 4);
+      if (!list.length) return ctx.preview ? '<div class="oo-body"><p class="oo-empty">Choose products to recommend.</p></div>' : null;
+      return '<div class="oo-body"><p class="oo-title">' + h.esc(c.headline) + '</p>' + (c[subKey] ? '<p class="oo-sub">' + h.esc(c[subKey]) + '</p>' : '') +
+        '<div class="oo-cards">' + cards(h, list, c, ctx) + '</div><p class="oo-status" data-oo-status role="status"></p></div>';
+    };
+  }
+
+  function hook(limitKey) {
+    return {
+      prepare: function (exp) { return S.hydrate(exp, ['products']); },
+      setup: function (root, exp, ctx) {
+        if (!root) return;
+        var list = visible(exp, ctx, limitKey ? Number(exp.content[limitKey] || 3) : 4);
+        root.addEventListener('click', function (e) {
+          var btn = e.target.closest('[data-oo-add]');
+          if (!btn) return;
+          var i = Number(btn.getAttribute('data-oo-add'));
+          S.add(exp, ctx, [{ id: S.chosenVariant(root, list[i], i), quantity: 1 }], btn, root);
+        });
+      }
+    };
+  }
+
+  OrderOrbit.define('product-upsells', render(null, 'offer_message'), hook(null));
+  OrderOrbit.define('cart-upsells', render('max_shown', 'incentive'), hook('max_shown'));
 })();

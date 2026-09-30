@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Experiences\Registry;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Store;
@@ -28,8 +29,17 @@ class DashboardController extends Controller
             $alerts[] = ['tone' => 'warning', 'text' => 'Your current theme doesn\'t support app blocks. OrderOrbit storefront blocks need an Online Store 2.0 theme.', 'route' => 'app.settings.store', 'action' => 'View details'];
         }
 
+        $byType = $store->experiences()->where('status', '!=', 'archived')
+            ->selectRaw('type, status, count(*) as total')->groupBy('type', 'status')->get();
+        $features = collect(Registry::features())->map(fn ($feature) => $feature + [
+            'description' => Registry::type($feature['types'][0])['description'],
+            'live' => (int) $byType->whereIn('type', $feature['types'])->where('status', 'published')->sum('total'),
+            'total' => (int) $byType->whereIn('type', $feature['types'])->sum('total'),
+        ])->all();
+
         return view('app.dashboard', [
             'store' => $store,
+            'features' => $features,
             'checklist' => $checklist,
             'checklistDone' => collect($checklist)->every('done'),
             'alerts' => $alerts,

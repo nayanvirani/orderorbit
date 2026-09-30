@@ -1,0 +1,31 @@
+query CartInput {
+  presentmentCurrencyRate
+  cart {
+    lines {
+      id
+      quantity
+      offer: attribute(key: "_oo_offer") {
+        value
+      }
+      cost {
+        amountPerQuantity {
+          amount
+        }
+      }
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          product {
+            id
+          }
+        }
+      }
+    }
+  }
+  discount {
+    discountClasses
+    metafield(namespace: "$app", key: "offers") {
+      jsonValue
+    }
+  }
+}

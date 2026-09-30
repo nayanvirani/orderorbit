@@ -6,6 +6,7 @@ use App\Http\Controllers\App\BillingController;
 use App\Http\Controllers\App\BrandingController;
 use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\ExperienceController;
+use App\Http\Controllers\App\FeatureController;
 use App\Http\Controllers\App\OnboardingController;
 use App\Http\Controllers\App\StoreSettingsController;
 use App\Http\Controllers\App\TemplateLibraryController;
@@ -46,6 +47,9 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         Route::get('/', DashboardController::class)->middleware('store.can:view_dashboard')->name('dashboard');
         Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
         Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
+
+        // Feature pages (app navigation): Bundles, Volume discounts, BOGO, ...
+        Route::get('/features/{feature}', [FeatureController::class, 'show'])->whereIn('feature', array_keys(Registry::features()))->name('features.show');
 
         // CRO experiences (section 15, D2)
         Route::prefix('cro')->name('cro.')->group(function () {

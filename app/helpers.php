@@ -14,3 +14,13 @@ if (! function_exists('app_route')) {
         ], $parameters)));
     }
 }
+
+if (! function_exists('lower_label')) {
+    /**
+     * Lower-cases a label for use mid-sentence but keeps acronyms: "BOGO offer", "sticky add to cart".
+     */
+    function lower_label(string $label): string
+    {
+        return preg_replace_callback('/\b[A-Z][a-z]+\b/', fn ($m) => strtolower($m[0]), $label);
+    }
+}

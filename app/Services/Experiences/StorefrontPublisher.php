@@ -21,7 +21,10 @@ class StorefrontPublisher
 
     public const KEY = 'experiences';
 
-    public function __construct(private readonly AdminApi $api) {}
+    public function __construct(
+        private readonly AdminApi $api,
+        private readonly OfferSync $offers,
+    ) {}
 
     public function payload(Store $store): array
     {
@@ -30,7 +33,7 @@ class StorefrontPublisher
             ->where('status', 'published')
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->get()
-            ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type) && (Registry::type($e->type)['publishable'] ?? false))
+            ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
             ->map(function (Experience $e) {
                 $config = $e->publishedVersion->config;
 
@@ -64,6 +67,9 @@ class StorefrontPublisher
 
     public function sync(Store $store): array
     {
+        // Savings go live (or stop) before the storefront starts (or stops) promising them.
+        $this->offers->sync($store);
+
         $payload = $this->payload($store);
         $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

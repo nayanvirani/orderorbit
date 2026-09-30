@@ -16,6 +16,9 @@ class Schema
 {
     public const SECTIONS = ['content', 'design', 'behavior', 'targeting', 'schedule', 'analytics'];
 
+    /** Types whose buttons add items to the cart. */
+    public const CART_TYPES = ['bundles', 'quantity-breaks', 'bogo', 'product-upsells', 'cart-upsells', 'free-gifts', 'sticky-atc'];
+
     public const PAGE_TYPES = ['index' => 'Home', 'product' => 'Product pages', 'collection' => 'Collection pages', 'cart' => 'Cart page', 'search' => 'Search', 'page' => 'Other pages'];
 
     /**
@@ -41,6 +44,8 @@ class Schema
             'behavior' => [
                 'animation' => ['type' => 'select', 'label' => 'Entrance animation', 'default' => 'fade', 'options' => ['none' => 'None', 'fade' => 'Fade in', 'slide' => 'Slide up']],
                 'dismissible' => ['type' => 'toggle', 'label' => 'Shoppers can dismiss it', 'default' => false],
+                'after_add' => ['type' => 'select', 'label' => 'After adding to cart', 'default' => 'cart', 'types' => self::CART_TYPES,
+                    'options' => ['cart' => 'Go to the cart', 'stay' => 'Stay on the page', 'checkout' => 'Go to checkout']],
                 'priority' => ['type' => 'number', 'label' => 'Priority', 'default' => 50, 'min' => 1, 'max' => 100, 'help' => 'When several experiences match the same block, the highest priority shows.'],
             ],
             'targeting' => [
@@ -71,7 +76,10 @@ class Schema
      */
     public static function fields(string $type): array
     {
-        return ['content' => Registry::type($type)['content']] + self::shared();
+        // Shared fields marked with "types" only apply to those types.
+        $shared = array_map(fn ($fields) => array_filter($fields, fn ($f) => ! isset($f['types']) || in_array($type, $f['types'], true)), self::shared());
+
+        return ['content' => Registry::type($type)['content']] + $shared;
     }
 
     /**
