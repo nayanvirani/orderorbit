@@ -14,6 +14,8 @@
 return [
 
     'bundles' => [
+        'icon' => 'package',
+        'tone' => 'bundles',
         'label' => 'Bundles',
         'types' => ['bundles'],
         'module' => 'app.bundles.index',
@@ -27,6 +29,8 @@ return [
     ],
 
     'progressive-gifts' => [
+        'icon' => 'gift',
+        'tone' => 'gifts',
         'label' => 'Progressive gifts',
         'types' => ['progressive-gifts'],
         'module' => 'app.gifts.index',
@@ -40,6 +44,8 @@ return [
     ],
 
     'cart-upsells' => [
+        'icon' => 'cart',
+        'tone' => 'upsells',
         'label' => 'Cart upsells',
         'types' => ['cart-upsells'],
         'tagline' => 'One last add-on <em>in the cart.</em>',
@@ -52,6 +58,8 @@ return [
     ],
 
     'countdown' => [
+        'icon' => 'clock',
+        'tone' => 'countdown',
         'label' => 'Countdown timer',
         'types' => ['countdown'],
         'tagline' => 'Real deadlines for <em>real campaigns.</em>',
@@ -64,6 +72,8 @@ return [
     ],
 
     'sticky-atc' => [
+        'icon' => 'cursor',
+        'tone' => 'sticky',
         'label' => 'Sticky add to cart',
         'types' => ['sticky-atc'],
         'tagline' => 'Keep the buy button <em>in reach.</em>',
@@ -76,6 +86,8 @@ return [
     ],
 
     'trust' => [
+        'icon' => 'shield',
+        'tone' => 'trust',
         'label' => 'Trust badges',
         'types' => ['trust'],
         'tagline' => 'Show shoppers why they can <em>trust you.</em>',

@@ -40,7 +40,42 @@ class Analytics
             'daily' => $this->daily($orders, $attributed, $from, $days),
             'experiences' => $this->byExperience($events),
             'last_event_at' => AnalyticsEvent::where('store_id', $store->id)->max('occurred_at'),
+            'previous' => $this->totals($store, $from->copy()->subDays($days), $from),
         ];
+    }
+
+    /**
+     * Headline totals for a window (used for "vs previous period" trends).
+     */
+    public function totals(Store $store, Carbon $from, Carbon $to): array
+    {
+        $events = AnalyticsEvent::where('store_id', $store->id)->whereBetween('occurred_at', [$from, $to])
+            ->whereIn('event', ['session', 'order', 'attributed'])->get(['event', 'value', 'order_ref']);
+        $orders = $events->where('event', 'order');
+        $sessions = $events->where('event', 'session')->count();
+        $revenue = (float) $orders->sum('value');
+
+        return [
+            'sessions' => $sessions,
+            'orders' => $orders->count(),
+            'revenue' => $revenue,
+            'aov' => $orders->count() ? $revenue / $orders->count() : null,
+            'conversion' => $sessions ? $orders->count() / $sessions * 100 : null,
+            'influenced_revenue' => (float) $events->where('event', 'attributed')->sum('value'),
+            'influenced_orders' => $events->where('event', 'attributed')->pluck('order_ref')->unique()->count(),
+        ];
+    }
+
+    /**
+     * % change from the previous period, or null when there's nothing to compare with.
+     */
+    public static function trend(?float $now, ?float $before): ?float
+    {
+        if ($now === null || $before === null || $before == 0.0) {
+            return null;
+        }
+
+        return ($now - $before) / $before * 100;
     }
 
     /**
@@ -54,6 +89,9 @@ class Analytics
             'views' => $rows->where('event', 'view')->count(),
             'clicks' => $rows->where('event', 'click')->count(),
             'adds' => $rows->where('event', 'add')->count(),
+            'unlocks' => $rows->where('event', 'unlock')->count(),
+            'accepts' => $rows->where('event', 'accept')->count(),
+            'declines' => $rows->where('event', 'decline')->count(),
             'orders' => $rows->where('event', 'attributed')->count(),
             'revenue' => (float) $rows->where('event', 'attributed')->sum('value'),
         ])->all();

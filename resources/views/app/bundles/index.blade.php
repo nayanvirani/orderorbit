@@ -30,6 +30,9 @@
         <s-button slot="primary-action" variant="primary" href="{{ app_route('app.bundles.types') }}">Create bundle</s-button>
     @endif
 
+    <x-app.hero eyebrow="Bundles" icon="package" tone="bundles" title="Sell more per order with <em>bundles.</em>"
+        lead="Quantity breaks, mix & match, fixed packs and gift bundles. One bundle line in the cart, stock deducted per product." />
+
     <s-section>
         <div class="bx-overview">
             <div class="bx-overview-head"><strong>Overview</strong>

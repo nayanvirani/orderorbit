@@ -56,7 +56,14 @@ class WebhookController extends Controller
             'access_token_expires_at' => null,
             'plan' => null,
             'uninstalled_at' => now(),
+            // Shopify removes the app's pixel, cart transform and discounts on uninstall.
+            'web_pixel_id' => null,
+            'cart_transform_id' => null,
         ])->save();
+
+        // Offers stop with the app; merchants republish after reinstalling.
+        $store->experiences()->where('status', 'published')->update(['status' => 'paused']);
+        $store->experiences()->whereNotNull('shopify_discount_id')->update(['shopify_discount_id' => null]);
 
         $store->subscriptions()->where('status', 'ACTIVE')->update(['status' => 'CANCELLED', 'cancelled_at' => now()]);
 

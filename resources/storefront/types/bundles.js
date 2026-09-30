@@ -255,6 +255,11 @@
         if (unpick) { e.preventDefault(); picks.splice(Number(unpick.getAttribute('data-oo-unpick')), 1); update(); }
       });
       btn.addEventListener('click', function () {
+        // Upsell accept / decline for the bundle's add-ons.
+        if (c.upsells.enabled && c.upsells.products.length) {
+          var taken = root.querySelectorAll('[data-oo-up]:checked').length;
+          OrderOrbit.track(taken ? 'upsell_accepted' : 'upsell_declined', exp, { quantity: taken || 1 });
+        }
         var after = Object.assign({}, exp, { behavior: Object.assign({}, exp.behavior) });
         S.add(after, ctx, items(), btn, root);
       });

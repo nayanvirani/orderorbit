@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 
 /**
- * Railway pre-deploy step: migrate, then sync the template library.
+ * Railway pre-deploy step: migrate, sync the template library, prune old analytics.
  */
 class Deploy extends Command
 {
@@ -19,6 +19,10 @@ class Deploy extends Command
             return self::FAILURE;
         }
 
-        return $this->call('orderorbit:sync-templates');
+        if ($this->call('orderorbit:sync-templates') !== self::SUCCESS) {
+            return self::FAILURE;
+        }
+
+        return $this->call('orderorbit:prune-analytics');
     }
 }

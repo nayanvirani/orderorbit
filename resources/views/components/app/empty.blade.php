@@ -1,10 +1,14 @@
 @props(['title', 'text' => null])
 <div class="ob-empty">
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-        <defs><linearGradient id="ob-e" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a1a"/><stop offset="1" stop-color="#1a1a1a"/></linearGradient></defs>
-        <ellipse cx="32" cy="32" rx="29" ry="12" fill="none" stroke="url(#ob-e)" stroke-width="2" transform="rotate(-24 32 32)"/>
-        <circle cx="32" cy="32" r="12" fill="url(#ob-e)"/>
-        <circle cx="55" cy="21" r="4" fill="#1a1a1a"/>
+    <svg viewBox="0 0 120 90" aria-hidden="true">
+        <ellipse cx="60" cy="80" rx="42" ry="6" fill="#eef2ff"/>
+        <ellipse cx="60" cy="44" rx="50" ry="16" fill="none" stroke="#c7c9f7" stroke-width="2" stroke-dasharray="4 5" transform="rotate(-14 60 44)"/>
+        <rect x="38" y="24" width="44" height="40" rx="10" fill="#4f46e5"/>
+        <path d="M38 38h44" stroke="#7c74ff" stroke-width="3"/>
+        <rect x="54" y="20" width="12" height="16" rx="3" fill="#a5a0ff"/>
+        <circle cx="103" cy="30" r="6" fill="#f59e0b"/>
+        <circle cx="16" cy="56" r="4" fill="#10b981"/>
+        <path d="M96 62l3 3 5-6" stroke="#10b981" stroke-width="2.5" fill="none" stroke-linecap="round"/>
     </svg>
     <h3>{{ $title }}</h3>
     @if ($text)<p>{{ $text }}</p>@endif
