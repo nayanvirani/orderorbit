@@ -234,7 +234,7 @@ class ExperienceEngineTest extends TestCase
         $staff = $this->member($store, 'staff');
         $other = $this->installedStore(['shop_domain' => 'other.myshopify.com']);
 
-        $this->get('/app/cro', $this->as($owner))->assertOk()->assertSee('Create an experience');
+        $this->get('/app/cro', $this->as($owner))->assertOk()->assertSee('Features')->assertSee('Countdown timer');
         $this->get('/app/cro/experiences/new?type=countdown', $this->as($owner))->assertOk()->assertSee('Premium Card');
         $this->post('/app/cro/experiences', ['type' => 'countdown', 'template' => 'banner'], $this->as($owner))->assertRedirectContains('/edit');
 
@@ -249,7 +249,7 @@ class ExperienceEngineTest extends TestCase
         $config['content']['ends_at'] = '';
         $config['content']['headline'] = 'Weekend sale';
         $this->post("/app/cro/experiences/{$experience->id}", ['action' => 'publish', 'config' => $config], $this->as($owner))
-            ->assertOk()->assertSee('Campaign ends is required.');
+            ->assertOk()->assertSee('Set when the campaign ends.');
         $this->assertSame('Weekend sale', $experience->fresh()->draft_config['content']['headline']);
         $this->assertSame('draft', $experience->fresh()->status);
 

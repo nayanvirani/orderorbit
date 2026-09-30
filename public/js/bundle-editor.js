@@ -199,11 +199,7 @@
   // ------------------------------------------------------------------ preview (mirrors BundleSchema::payload)
   let device = 'desktop';
   const previewCtx = { preview: true, currency: meta.currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' };
-  const SAMPLES = [
-    { id: 'gid://shopify/Product/1', title: 'Glow Serum', price: 29, compare_at: 36 },
-    { id: 'gid://shopify/Product/2', title: 'Night Cream', price: 34 },
-    { id: 'gid://shopify/Product/3', title: 'Gentle Cleanser', price: 18 },
-  ];
+  const SAMPLES = meta.samples.slice(0, 3);
 
   function payload() {
     const c = JSON.parse(JSON.stringify(state));
@@ -213,7 +209,7 @@
       o.index = i;
       if (o.kind === 'multi' && !o.products.length) o.products = SAMPLES.slice(0, 2);
       if (o.kind === 'mono' && !o.product.length) o.product = [SAMPLES[i % 3]];
-      (o.gifts || []).forEach((g) => { if (!g.product.length) g.product = [{ title: 'Free gift', price: 12 }]; });
+      (o.gifts || []).forEach((g) => { if (!g.product.length) g.product = [meta.samples[3]]; });
     });
     if (!c.mix.pool.length) c.mix.pool = SAMPLES;
     return {

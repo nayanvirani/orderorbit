@@ -4,7 +4,7 @@
     $error = $fieldErrors["{$section}.{$key}"] ?? null;
     $rowErrors = collect($fieldErrors)->filter(fn ($v, $k) => str_starts_with($k, "{$section}.{$key}."))->all();
 @endphp
-<div class="b-field {{ $field['type'] === 'toggle' ? 'b-toggle' : '' }} {{ $error || $rowErrors ? 'b-has-error' : '' }}" data-field="{{ $section }}.{{ $key }}">
+<div class="b-field {{ $field['type'] === 'toggle' ? 'b-toggle' : '' }} {{ $error || $rowErrors ? 'b-has-error' : '' }}" data-field="{{ $section }}.{{ $key }}" @isset($field['when']) data-when="{{ json_encode($field['when']) }}" @endisset>
     @switch($field['type'])
         @case('toggle')
             <label for="{{ $id }}">

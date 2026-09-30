@@ -325,7 +325,13 @@ class Schema
         if ($type === 'quantity-breaks' && ($c['default_tier'] ?? 1) > count($c['tiers'] ?? [])) {
             $errors['content.default_tier'] = 'Selected tier must be one of your tiers.';
         }
-        if ($type === 'countdown' && ! empty($c['ends_at']) && CarbonImmutable::parse($c['ends_at'])->isPast()) {
+        if ($type === 'countdown' && ($c['mode'] ?? 'date') === 'date' && empty($c['ends_at'])) {
+            $errors['content.ends_at'] = 'Set when the campaign ends.';
+        }
+        if ($type === 'countdown' && ($c['mode'] ?? 'date') === 'daily' && ! preg_match('/^([01]?\d|2[0-3]):[0-5]\d$/', (string) ($c['daily_time'] ?? ''))) {
+            $errors['content.daily_time'] = 'Use a 24-hour time like 14:00.';
+        }
+        if ($type === 'countdown' && ($c['mode'] ?? 'date') === 'date' && ! empty($c['ends_at']) && CarbonImmutable::parse($c['ends_at'])->isPast()) {
             $errors['content.ends_at'] = 'Campaign end must be in the future.';
         }
 

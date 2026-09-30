@@ -89,6 +89,21 @@ class ExperienceSchemaTest extends TestCase
         $this->assertSame([['quantity' => 2, 'discount' => 10, 'badge' => 'x']], $config['content']['tiers']);
     }
 
+    public function test_countdown_deadlines(): void
+    {
+        $input = Schema::defaults('countdown');
+        $this->assertArrayHasKey('content.ends_at', Schema::normalize('countdown', $input)[1], 'A campaign needs an end date.');
+
+        $input['content']['ends_at'] = now()->subDay()->toIso8601String();
+        $this->assertSame('Campaign end must be in the future.', Schema::normalize('countdown', $input)[1]['content.ends_at'] ?? null);
+
+        // Daily cutoffs need a valid 24h time instead of a date.
+        $input['content'] = array_merge($input['content'], ['mode' => 'daily', 'ends_at' => null, 'daily_time' => '25:00']);
+        $this->assertArrayHasKey('content.daily_time', Schema::normalize('countdown', $input)[1]);
+        $input['content']['daily_time'] = '14:30';
+        $this->assertSame([], Schema::normalize('countdown', $input)[1]);
+    }
+
     public function test_upsell_products_keep_mapped_variants_but_no_quantities(): void
     {
         $input = Schema::defaults('product-upsells');

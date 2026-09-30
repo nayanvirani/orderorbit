@@ -4,10 +4,10 @@
 
 @section('content')
 <s-page heading="CRO overview">
-    <x-app.hero eyebrow="Convert" title="Every conversion tool, <em>one design.</em>"
-        lead="Bundles, free gifts, shipping progress, quantity breaks, upsells, countdowns, sticky add-to-cart and trust — sharing your brand and one set of numbers.">
-        <s-button variant="primary" href="{{ app_route('app.cro.experiences.create') }}">Create experience</s-button>
-        <s-button href="{{ app_route('app.cro.experiences.index') }}">All experiences</s-button>
+    <x-app.hero eyebrow="CRO" title="Every conversion tool, <em>one design.</em>"
+        lead="Bundles, progressive gifts, cart upsells, countdowns, sticky add to cart and trust badges — sharing your brand, with savings applied at checkout and one set of numbers.">
+        <s-button variant="primary" href="{{ app_route('app.bundles.types') }}">Create a bundle</s-button>
+        <s-button href="{{ app_route('app.analytics') }}">View analytics</s-button>
     </x-app.hero>
 
     @if ($notPlaced)
@@ -22,23 +22,22 @@
             <div class="ob-kpi"><small>Active experiences</small><b>{{ $activeUsed }}<span style="display:inline;font:400 18px var(--ob-serif);color:var(--ob-muted)"> / {{ $activeLimit === null ? '∞' : $activeLimit }}</span></b><span>On your current plan</span></div>
             <div class="ob-kpi"><small>Drafts</small><b>{{ $counts['draft'] ?? 0 }}</b><span>Not live yet</span></div>
             <div class="ob-kpi"><small>Paused</small><b>{{ $counts['paused'] ?? 0 }}</b><span>Hidden from shoppers</span></div>
-            <div class="ob-kpi"><small>Views · revenue</small><b>—</b><span>Arrives with analytics</span></div>
+            <div class="ob-kpi"><small>Revenue from offers · 30 days</small><b style="font-size:26px">{{ money($summary['influenced_revenue'], $summary['currency']) }}</b><span>{{ number_format($summary['influenced_orders']) }} orders with an offer</span></div>
         </div>
     </s-section>
 
-    <s-section heading="Create an experience">
-        <div class="ob-types">
-            @foreach (\App\Experiences\Registry::creatable() as $key => $type)
-                <div class="ob-type">
-                    <h4>{{ $type['label'] }}
-                        @if ($byType[$key] ?? 0)<span class="ob-badge soft">{{ $byType[$key] }}</span>@endif
-                    </h4>
-                    <p>{{ $type['description'] }}</p>
-                    <div class="ob-row">
-                        <a href="{{ app_route('app.cro.experiences.create', ['type' => $key]) }}">Create →</a>
-                        <a href="{{ app_route('app.features.show', ['feature' => \App\Experiences\Registry::featureFor($key)]) }}" style="color:var(--ob-muted)">View all</a>
-                    </div>
-                </div>
+    <s-section heading="Features">
+        <div class="ob-features">
+            @foreach ($features as $f)
+                @php($href = isset($f['module']) ? app_route($f['module']) : app_route('app.features.show', ['feature' => $f['key']]))
+                <a class="ob-feature" href="{{ $href }}">
+                    <span class="ob-feature-shot"><span class="oo-preview" data-render="{{ json_encode($f['preview']) }}"></span></span>
+                    <span class="ob-feature-body">
+                        <strong>{{ $f['label'] }} @if ($n = collect($f['types'])->sum(fn ($t) => $byType[$t] ?? 0))<span class="ob-badge soft">{{ $n }}</span>@endif</strong>
+                        <span>{{ strip_tags($f['lead']) }}</span>
+                        <em>Open →</em>
+                    </span>
+                </a>
             @endforeach
         </div>
     </s-section>
@@ -59,3 +58,16 @@
     </s-section>
 </s-page>
 @endsection
+
+@push('head')
+    <link rel="stylesheet" href="{{ route('storefront.asset', 'orderorbit.css') }}">
+@endpush
+
+@push('scripts')
+    <script src="{{ route('storefront.asset', 'orderorbit.js') }}"></script>
+    <script>
+        document.querySelectorAll('[data-render]').forEach((el) => {
+            window.OrderOrbit.render(el, JSON.parse(el.dataset.render), { preview: true, currency: @json($store->currency ?? 'USD'), cartTotal: 6000, productPrice: 2900, productTitle: 'Glow Serum', page: 'product' });
+        });
+    </script>
+@endpush

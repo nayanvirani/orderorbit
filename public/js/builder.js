@@ -271,4 +271,17 @@
 
   show(current);
   renderPreview();
+  // ---------------------------------------------------------------- conditional fields ("when")
+  function applyWhen() {
+    $$('[data-when]', form).forEach((field) => {
+      const rules = JSON.parse(field.dataset.when);
+      const section = field.dataset.field.split('.')[0];
+      field.hidden = !Object.entries(rules).every(([key, want]) => {
+        const input = form.querySelector(`[name="config[${section}][${key}]"]:not([type="hidden"])`) || form.querySelector(`[name="config[${section}][${key}]"]`);
+        return input && String(input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value) === String(want);
+      });
+    });
+  }
+  form.addEventListener('change', applyWhen);
+  applyWhen();
 })();
