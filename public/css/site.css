@@ -582,3 +582,9 @@ label.fld .err { display: block; color: #b42318; font: 500 13px/1.4 var(--sans);
     .faq details p { padding-right: 0; }
 }
 @media (max-width: 600px) { .orbit-hero .eyebrow .dot, .ed-hero .eyebrow .dot { display: none; } }
+
+/* Templates page: what a template is */
+.tpl-explain { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 8px; }
+.tpl-explain > div { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border: 1px solid var(--line, #e5e5e5); border-radius: 16px; background: var(--card, #fff); }
+.tpl-explain b { font-family: var(--font-head, inherit); font-size: 16px; }
+.tpl-explain span { color: var(--muted, #666); font-size: 14px; line-height: 1.55; }

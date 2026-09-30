@@ -28,7 +28,7 @@
 
     <s-section heading="Create an experience">
         <div class="ob-types">
-            @foreach (\App\Experiences\Registry::types() as $key => $type)
+            @foreach (\App\Experiences\Registry::creatable() as $key => $type)
                 <div class="ob-type">
                     <h4>{{ $type['label'] }}
                         @if ($byType[$key] ?? 0)<span class="ob-badge soft">{{ $byType[$key] }}</span>@endif

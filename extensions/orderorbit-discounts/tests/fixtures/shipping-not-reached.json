@@ -10,6 +10,18 @@
             "amount": "40"
           }
         },
+        "lines": [
+          {
+            "quantity": 1,
+            "offer": null,
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "40"
+              }
+            }
+          }
+        ],
         "deliveryGroups": [
           {
             "id": "gid://shopify/CartDeliveryGroup/0"

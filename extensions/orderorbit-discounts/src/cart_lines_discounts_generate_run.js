@@ -1,4 +1,4 @@
-import {DiscountClass, ProductDiscountSelectionStrategy} from '../generated/api';
+import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionStrategy} from '../generated/api';
 
 /**
  * OrderOrbit offers. One automatic discount per store runs this function; its
@@ -14,6 +14,10 @@ import {DiscountClass, ProductDiscountSelectionStrategy} from '../generated/api'
  *          one-product bundle offers: lines tagged _oo_bundle = "<id>|<offer index>|<group>";
  *          the group gets the offer price once it holds q items, and up to g gift lines
  *          (_oo_gift) in the group are free
+ *   pg     { id, by: "value"|"count", m: [{ t, r: "gift"|"choice"|"shipping"|"percent"|"amount", v, q }] }
+ *          progressive gifts: gift lines carry _oo_offer = id and _oo_gift = milestone index and are
+ *          free (up to q units) once the milestone is reached; the best reached order discount applies
+ *          to the rest of the order. Gifts never count toward their own milestones.
  *   upsell { id, v }          lines added by the widget carry _oo_offer = id
  *   gift   { id, th: [amounts] } lines added by the widget carry _oo_offer = id
  *
@@ -105,6 +109,29 @@ const RULES = {
     return found;
   },
 
+  pg(offer, lines, rate, all, out) {
+    const isGift = (line) => line.offer === offer.id && line.giftIndex !== null;
+    const paid = all.filter((line) => !isGift(line));
+    const progress = offer.by === 'count' ? units(paid) : paid.reduce((sum, line) => sum + line.unit * line.qty, 0);
+    const reached = (m) => progress >= Number(m.t) * (offer.by === 'count' ? 1 : rate);
+    const found = [];
+    (offer.m || []).forEach((m, i) => {
+      if ((m.r !== 'gift' && m.r !== 'choice') || !reached(m)) return;
+      const gifts = lines.filter((line) => isGift(line) && Number(line.giftIndex) === i);
+      if (gifts.length) found.push(candidate(offer.n || 'Free gift', takeUnits(gifts, Number(m.q) || 1), percent(100)));
+    });
+    // The highest order discount reached.
+    const order = (offer.m || []).filter((m) => (m.r === 'percent' || m.r === 'amount') && reached(m)).pop();
+    if (order && out) {
+      out.order.push({
+        message: offer.n || 'Reward unlocked',
+        targets: [{orderSubtotal: {excludedCartLineIds: all.filter(isGift).map((line) => line.id)}}],
+        value: order.r === 'percent' ? percent(order.v) : {fixedAmount: {amount: (Number(order.v) * rate).toFixed(2)}},
+      });
+    }
+    return found;
+  },
+
   upsell(offer, lines) {
     const tagged = lines.filter((line) => line.offer === offer.id);
     return tagged.length && Number(offer.v) ? [candidate(offer.m || 'Special offer', tagged.map((line) => ({line})), percent(offer.v))] : null;
@@ -126,7 +153,8 @@ const RULES = {
  */
 export function cartLinesDiscountsGenerateRun(input) {
   const offers = input.discount.metafield?.jsonValue?.offers || [];
-  if (!offers.length || !input.discount.discountClasses.includes(DiscountClass.Product)) {
+  const classes = input.discount.discountClasses;
+  if (!offers.length || (!classes.includes(DiscountClass.Product) && !classes.includes(DiscountClass.Order))) {
     return {operations: []};
   }
 
@@ -140,22 +168,29 @@ export function cartLinesDiscountsGenerateRun(input) {
       offer: line.offer?.value || null,
       bundle: line.bundle?.value || null,
       gift: !!line.gift?.value,
+      giftIndex: line.gift?.value ?? null,
       unit: Number(line.cost.amountPerQuantity.amount),
     }));
 
   const used = new Set();
   const candidates = [];
+  const out = {order: []};
   for (const offer of offers) {
     const rule = RULES[offer.k];
     if (!rule) continue;
     const open = all.filter((line) => !used.has(line.id));
-    for (const found of rule(offer, open, rate, all) || []) {
+    for (const found of rule(offer, open, rate, all, out) || []) {
       found.targets.forEach((target) => used.add(target.cartLine.id));
       candidates.push(found);
     }
   }
 
-  return candidates.length
-    ? {operations: [{productDiscountsAdd: {candidates, selectionStrategy: ProductDiscountSelectionStrategy.All}}]}
-    : {operations: []};
+  const operations = [];
+  if (candidates.length && classes.includes(DiscountClass.Product)) {
+    operations.push({productDiscountsAdd: {candidates, selectionStrategy: ProductDiscountSelectionStrategy.All}});
+  }
+  if (out.order.length && classes.includes(DiscountClass.Order)) {
+    operations.push({orderDiscountsAdd: {candidates: out.order, selectionStrategy: OrderDiscountSelectionStrategy.First}});
+  }
+  return {operations};
 }

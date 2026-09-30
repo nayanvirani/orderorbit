@@ -20,6 +20,7 @@
             },
             "merchandise": {
               "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/10",
               "product": {
                 "id": "gid://shopify/Product/1"
               }
@@ -39,6 +40,7 @@
             },
             "merchandise": {
               "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/20",
               "product": {
                 "id": "gid://shopify/Product/2"
               }
@@ -56,6 +58,7 @@
             },
             "merchandise": {
               "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/90",
               "product": {
                 "id": "gid://shopify/Product/9"
               }
@@ -69,7 +72,6 @@
             "bundles": [
               {
                 "id": "b1",
-                "parent": "gid://shopify/ProductVariant/900",
                 "title": "Skincare set",
                 "image": "https://cdn.shopify.com/a.jpg",
                 "o": [
@@ -129,7 +131,7 @@
                 "quantity": 1
               }
             ],
-            "parentVariantId": "gid://shopify/ProductVariant/900",
+            "parentVariantId": "gid://shopify/ProductVariant/10",
             "title": "Complete bundle",
             "image": {
               "url": "https://cdn.shopify.com/a.jpg"

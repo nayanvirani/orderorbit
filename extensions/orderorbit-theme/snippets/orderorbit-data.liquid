@@ -21,7 +21,7 @@
     "country": {{ localization.country.iso_code | json }},
     "currency": {{ cart.currency.iso_code | json }},
     "cartTotal": {{ cart.total_price | json }},
-    "cartLines": [{%- for item in cart.items -%}{"key": {{ item.key | json }}, "variant": {{ item.variant_id | json }}, "product": {{ item.product_id | json }}, "qty": {{ item.quantity }}, "price": {{ item.final_line_price | json }}, "offer": {{ item.properties._oo_offer | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],
+    "cartLines": [{%- for item in cart.items -%}{"key": {{ item.key | json }}, "variant": {{ item.variant_id | json }}, "product": {{ item.product_id | json }}, "qty": {{ item.quantity }}, "price": {{ item.final_line_price | json }}, "offer": {{ item.properties._oo_offer | json }}, "gift": {{ item.properties._oo_gift | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],
     "designMode": {{ request.design_mode | json }},
     "assets": {{ 'orderorbit.js' | asset_url | json }}
   }

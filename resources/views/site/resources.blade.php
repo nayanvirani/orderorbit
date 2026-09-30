@@ -45,7 +45,7 @@
         <div class="split-copy reveal">
             <span class="eyebrow"><span class="dot"></span>Template gallery</span>
             <h2>{{ $templateCount }} templates to start from.</h2>
-            <p class="lead">Bundles, gifts, shipping bars, upsells, countdowns, trust, checkout, Thank You, customer account and automation.</p>
+            <p class="lead">Bundles, progressive gifts, cart upsells, countdowns, trust, checkout, Thank You, customer account and automation.</p>
             <a class="btn dark" href="{{ route('site.templates') }}">Browse Templates <x-icon name="arrow"/></a>
         </div>
         <div class="tpl-grid reveal thumb-pair">

@@ -3,6 +3,7 @@
 namespace App\Services\Experiences;
 
 use App\Experiences\BundleSchema;
+use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
 use App\Models\Experience;
 use App\Models\Store;
@@ -40,6 +41,8 @@ class StorefrontPublisher
                 $config = $e->publishedVersion->config;
                 if ($e->type === 'bundles') {
                     $config = BundleSchema::payload(BundleSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
+                } elseif ($e->type === 'progressive-gifts') {
+                    $config = GiftSchema::payload(GiftSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
                 }
 
                 return [

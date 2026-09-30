@@ -10,13 +10,15 @@ $t = function (string $type, string $surface, string $feature, array $names, str
     return array_map(fn ($name) => ['name' => $name, 'type' => $type, 'surface' => $surface, 'feature' => $feature, 'label' => $label], $names);
 };
 
+// Bundle and progressive gift templates come straight from the app's models, so the site and app always match.
+$bundleTypes = \App\Experiences\BundleSchema::TYPES;
+$bundles = array_map(fn ($m) => ['name' => $m['name'], 'type' => in_array($m['type'], ['quantity-breaks', 'quantity-gifts', 'variant-offers'], true) ? 'qty' : 'bundle', 'surface' => 'product', 'feature' => 'bundles', 'label' => 'Bundle · '.$bundleTypes[$m['type']]['label']], array_values(\App\Experiences\BundleSchema::models()));
+$gifts = array_map(fn ($m) => ['name' => $m['name'], 'type' => 'gift', 'surface' => 'product', 'feature' => 'progressive-gifts', 'label' => 'Progressive Gifts'], array_values(\App\Experiences\GiftSchema::models()));
+
 return array_merge(
-    $t('bundle', 'product', 'bundles', ['Premium Bundle', 'Mix & Match', 'Tiered / Buy More Save More', 'Routine Builder', 'Gift Box', 'Visual Product Bundle'], 'Bundle'),
-    $t('gift', 'cart', 'free-gift', ['Minimal', 'Progress Card', 'Reward Ladder', 'Premium Gift Card', 'Product Reveal', 'Compact Cart Bar'], 'Free Gift'),
-    $t('shipping', 'cart', 'free-shipping-bar', ['Minimal', 'Progress', 'Reward Ladder', 'Premium Card'], 'Shipping Bar'),
-    $t('qty', 'product', 'quantity-breaks', ['Tier Cards', 'Radio Selector', 'Horizontal Tiers', 'Premium Pricing Table', 'Compact Selector'], 'Quantity Breaks'),
-    $t('upsell', 'product', 'upsell-cross-sell', ['Product Card', 'Side-by-Side', 'Compact', 'Premium Offer'], 'Product Upsell'),
-    $t('upsell', 'cart', 'upsell-cross-sell', ['Carousel', 'Grid', 'Horizontal', 'Minimal Card'], 'Cart Upsell'),
+    $bundles,
+    $gifts,
+    $t('upsell', 'cart', 'cart-upsells', ['Carousel', 'Grid', 'Horizontal', 'Minimal Card'], 'Cart Upsell'),
     $t('countdown', 'product', 'countdown-timer', ['Minimal', 'Banner', 'Premium Card', 'Offer Countdown', 'Product Countdown'], 'Countdown'),
     $t('sticky', 'product', 'sticky-add-to-cart', ['Simple sticky bar'], 'Sticky ATC'),
     $t('trust', 'product', 'trust-social-proof', ['Review Card', 'Review Slider', 'Rating Strip', 'Customer Quote', 'Avatar Testimonials', 'Trust Row', 'Guarantee Card'], 'Trust'),

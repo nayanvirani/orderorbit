@@ -18,6 +18,15 @@ class Registry
         return self::$types ??= require resource_path('experiences/types.php');
     }
 
+    /**
+     * Types merchants can create now (retired ones keep working but live in the Bundles and
+     * Progressive gifts modules).
+     */
+    public static function creatable(): array
+    {
+        return array_filter(self::types(), fn ($t) => empty($t['retired']));
+    }
+
     public static function has(?string $type): bool
     {
         return $type !== null && array_key_exists($type, self::types());

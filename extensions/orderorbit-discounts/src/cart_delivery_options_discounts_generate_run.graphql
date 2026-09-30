@@ -6,6 +6,20 @@ query DeliveryInput {
         amount
       }
     }
+    lines {
+      quantity
+      offer: attribute(key: "_oo_offer") {
+        value
+      }
+      gift: attribute(key: "_oo_gift") {
+        value
+      }
+      cost {
+        amountPerQuantity {
+          amount
+        }
+      }
+    }
     deliveryGroups {
       id
     }

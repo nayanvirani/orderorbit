@@ -212,6 +212,8 @@ class BundleSchema
                 'position' => 'above_atc',
                 'after_add' => 'cart',
                 'show_variants' => true,
+                'hide_theme_form' => true,
+                'hide_selectors' => '',
                 'button_text' => 'Add to cart',
                 'countries' => '',
             ],
@@ -305,6 +307,9 @@ class BundleSchema
             'position' => self::pick($s['position'] ?? null, ['above_atc', 'below_atc', 'block'], 'above_atc'),
             'after_add' => self::pick($s['after_add'] ?? null, ['cart', 'stay', 'checkout'], 'cart'),
             'show_variants' => self::bool($s['show_variants'] ?? true),
+            'hide_theme_form' => self::bool($s['hide_theme_form'] ?? true),
+            // Extra CSS selectors to hide for themes with custom product forms.
+            'hide_selectors' => mb_substr(preg_replace('/[{}<>;]/', '', (string) ($s['hide_selectors'] ?? '')), 0, 500),
             'button_text' => self::text($s['button_text'] ?? 'Add to cart', 40) ?: 'Add to cart',
             'countries' => strtoupper(preg_replace('/[^A-Za-z, ]/', '', (string) ($s['countries'] ?? ''))),
         ];

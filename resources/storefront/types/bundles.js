@@ -231,6 +231,13 @@
         return list.concat(upsellItems());
       }
 
+      // The bundle replaces the theme's variant picker, quantity, add to cart, buy-now and
+      // subscription widgets on this page, so shoppers don't add the product twice.
+      if (!ctx.preview && c.settings.hide_theme_form !== false) {
+        document.documentElement.classList.add('oo-bundle-on');
+        try { if (c.settings.hide_selectors) document.querySelectorAll(c.settings.hide_selectors).forEach(function (el) { el.setAttribute('data-oo-hide', ''); }); } catch (err) { /* invalid selector */ }
+      }
+
       root.addEventListener('change', update);
       root.addEventListener('click', function (e) {
         var pick = e.target.closest('[data-oo-pick]');

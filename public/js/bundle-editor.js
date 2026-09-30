@@ -91,6 +91,8 @@
           field('settings.position', 'Bundle position', 'select', { options: { above_atc: 'Above the add to cart button', below_atc: 'Below the add to cart button', block: 'Only where I place the block' }, help: 'Above/below needs the OrderOrbit app embed turned on in the Theme Editor.' })) +
         row(field('settings.button_text', 'Button text', 'text', { max: 40 }), field('settings.after_add', 'After adding to cart', 'select', { options: { cart: 'Go to the cart', stay: 'Stay on the page', checkout: 'Skip cart and go to checkout' } })) +
         field('settings.show_variants', 'Show product variant selection', 'toggle', { help: 'Shoppers choose a variant for each item (#1, #2 …).' }) +
+        field('settings.hide_theme_form', 'Hide the theme’s product form', 'toggle', { help: 'Hides your theme’s variant picker, quantity, add to cart, buy-now and subscription options where the bundle shows, so they don’t conflict.' }) +
+        (s.hide_theme_form ? field('settings.hide_selectors', 'Extra elements to hide (CSS selectors)', 'text', { placeholder: '.my-theme-variant-picker, .my-subscriptions', help: 'Only needed if your theme uses a custom product form.' }) : '') +
         field('behavior.priority', 'Priority', 'number', { min: 1, max: 100, help: 'When several bundles match a product, the highest priority shows.' }));
   }
 
@@ -298,7 +300,7 @@
     if (el.dataset.path && (el.dataset.type === 'toggle' || el.dataset.type === 'select')) {
       set(el.dataset.path, read(el));
       // Choices that change which fields show redraw the panel.
-      if (el.dataset.rerender !== undefined || /kind|discount_type|timer|visibility|gifts\.enabled/.test(el.dataset.path)) rerender(); else changed();
+      if (el.dataset.rerender !== undefined || /kind|discount_type|timer|visibility|gifts\.enabled|hide_theme_form/.test(el.dataset.path)) rerender(); else changed();
     }
     if (el.dataset.preselect !== undefined) {
       state.offers.forEach((o, i) => { o.preselected = i === Number(el.dataset.preselect); });
