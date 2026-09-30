@@ -122,7 +122,7 @@ class TemplateLibrary
         $config = self::defaults($type, $templateKey, $branding);
         foreach (Registry::type($type)['content'] as $name => $field) {
             if ($field['type'] === 'products' && empty($config['content'][$name])) {
-                $config['content'][$name] = array_slice(self::SAMPLE_PRODUCTS, 0, min(3, $field['max_items'] ?? 3));
+                $config['content'][$name] = array_slice(self::samples(), 0, min(3, $field['max_items'] ?? 3));
             }
         }
 
@@ -138,7 +138,7 @@ class TemplateLibrary
         if ($preset) {
             $config['design'] = array_merge($config['design'], BundleSchema::designDefaults($preset));
         }
-        $samples = self::SAMPLE_PRODUCTS;
+        $samples = array_slice(self::samples(), 0, 3);
         foreach ($config['offers'] as $i => $offer) {
             if ($offer['kind'] === 'multi' && $offer['products'] === []) {
                 $config['offers'][$i]['products'] = array_slice($samples, 0, 3);
@@ -148,7 +148,7 @@ class TemplateLibrary
             }
             foreach ($offer['gifts'] as $g => $gift) {
                 if ($gift['product'] === []) {
-                    $config['offers'][$i]['gifts'][$g]['product'] = [['id' => 'gid://shopify/Product/9', 'title' => 'Free gift', 'price' => 12.0]];
+                    $config['offers'][$i]['gifts'][$g]['product'] = [self::samples()[3]];
                 }
             }
         }
@@ -168,7 +168,7 @@ class TemplateLibrary
         $config = GiftSchema::defaults($modelKey);
         foreach ($config['milestones'] as $i => $m) {
             if (in_array($m['reward'], ['gift', 'choice'], true)) {
-                $config['milestones'][$i]['products'] = $m['reward'] === 'choice' ? array_slice(self::SAMPLE_PRODUCTS, 0, 3) : [['id' => 'gid://shopify/Product/9', 'title' => 'Free gift', 'price' => 12.0]];
+                $config['milestones'][$i]['products'] = $m['reward'] === 'choice' ? array_slice(self::samples(), 0, 3) : [self::samples()[3]];
             }
         }
 
@@ -176,11 +176,24 @@ class TemplateLibrary
             + GiftSchema::payload($config);
     }
 
-    private const SAMPLE_PRODUCTS = [
-        ['id' => 'gid://shopify/Product/1', 'title' => 'Glow Serum', 'price' => 29.0, 'compare_at' => 36.0],
-        ['id' => 'gid://shopify/Product/2', 'title' => 'Night Cream', 'price' => 34.0],
-        ['id' => 'gid://shopify/Product/3', 'title' => 'Gentle Cleanser', 'price' => 18.0],
-    ];
+    /**
+     * Sample products for previews, with illustrated images (resources/experiences/sample-images.json).
+     */
+    public static function samples(): array
+    {
+        static $samples;
+        if ($samples === null) {
+            $img = json_decode(file_get_contents(resource_path('experiences/sample-images.json')), true);
+            $samples = [
+                ['id' => 'gid://shopify/Product/1', 'title' => 'Glow Serum', 'price' => 29.0, 'compare_at' => 36.0, 'image' => $img['bottle']],
+                ['id' => 'gid://shopify/Product/2', 'title' => 'Night Cream', 'price' => 34.0, 'image' => $img['jar']],
+                ['id' => 'gid://shopify/Product/3', 'title' => 'Gentle Cleanser', 'price' => 18.0, 'image' => $img['tube']],
+            ];
+            $samples[] = ['id' => 'gid://shopify/Product/9', 'title' => 'Free gift', 'price' => 12.0, 'image' => $img['gift']];
+        }
+
+        return $samples;
+    }
 
     public static function currentVersion(string $type, string $key): ?CroTemplateVersion
     {

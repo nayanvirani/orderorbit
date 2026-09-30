@@ -81,6 +81,7 @@
             config: @json($config),
             errors: @json((object) $fieldErrors),
             meta: {
+                samples: @json(\App\Services\Experiences\TemplateLibrary::samples()),
                 id: @json($experience->handle),
                 currency: @json($store->currency ?? 'USD'),
                 timezone: @json($timezone),

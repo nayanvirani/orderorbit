@@ -35,6 +35,19 @@ class ExperienceController extends Controller
             'recent' => $store->experiences()->notArchived()->latest('updated_at')->limit(6)->get(),
             'activeLimit' => $store->hasPlanAccess() ? $store->planLimit('active_experiences') : 0,
             'activeUsed' => $usage->current($store, 'active_experiences'),
+            'summary' => app(\App\Services\Analytics\Analytics::class)->summary($store, 30),
+            // A live preview of each feature's first template for the feature cards.
+            'features' => collect(Registry::features())->map(function ($feature, $key) {
+                $type = $feature['types'][0];
+                $template = match ($type) {
+                    'bundles' => 'qb-classic',
+                    'progressive-gifts' => 'pg-steps',
+                    'countdown' => 'flip-clock',
+                    default => array_key_first(Registry::templates($type)),
+                };
+
+                return $feature + ['key' => $key, 'type' => $type, 'preview' => TemplateLibrary::preview($type, $template)];
+            })->all(),
         ]);
     }
 

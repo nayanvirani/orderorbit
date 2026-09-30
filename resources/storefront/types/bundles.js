@@ -24,7 +24,7 @@
   function base(ctx) {
     var p = ctx.pageProduct || {};
     return {
-      title: p.title || ctx.productTitle || 'Product', image: p.image || ctx.productImage,
+      title: p.title || ctx.productTitle || 'Product', image: p.image || ctx.productImage || (ctx.preview ? window.OO_SAMPLE_IMAGE : null),
       price: p.price != null ? p.price : (ctx.productPrice != null ? ctx.productPrice / 100 : 29),
       compare: p.compare_at, variants: p.variants || (ctx.preview ? SAMPLE_VARIANTS : null)
     };

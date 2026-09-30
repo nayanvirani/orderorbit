@@ -53,6 +53,8 @@
         }
     </style>
     @stack('head')
+    {{-- Illustrated sample product for previews in the admin. --}}
+    <script>window.OO_SAMPLE_IMAGE = @json(\App\Services\Experiences\TemplateLibrary::samples()[0]['image']);</script>
 </head>
 <body>
     @php($navUser = request()->attributes->get('storeUser'))

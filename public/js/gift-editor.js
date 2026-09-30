@@ -104,7 +104,7 @@
     const c = JSON.parse(JSON.stringify(state));
     c.milestones.sort((a, b) => a.threshold - b.threshold).forEach((m, i) => {
       m.index = i;
-      if ((m.reward === 'gift' || m.reward === 'choice') && !m.products.length) m.products = [{ title: 'Free gift', price: 12 }];
+      if ((m.reward === 'gift' || m.reward === 'choice') && !m.products.length) m.products = m.reward === 'choice' ? meta.samples.slice(0, 3) : [meta.samples[3]];
     });
     const d = c.design;
     const exp = {

@@ -112,3 +112,14 @@
 .an-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; vertical-align: -1px; }
 .an-legend .all { background: #d9d9d6; }
 .an-legend .oo { background: var(--ob-ink); }
+
+/* CRO overview: feature cards with a live preview */
+.ob-features { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.ob-feature { display: flex; flex-direction: column; overflow: hidden; border-radius: 14px; background: #fff; color: inherit; text-decoration: none; box-shadow: 0 1px 0 rgba(26, 26, 26, .07), 0 0 0 1px rgba(26, 26, 26, .08); transition: transform .15s, box-shadow .15s; }
+.ob-feature:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -16px rgba(26, 26, 26, .45), 0 0 0 1px rgba(26, 26, 26, .3); }
+.ob-feature-shot { display: block; height: 170px; overflow: hidden; padding: 14px; background: var(--ob-cream); border-bottom: 1px solid var(--ob-line); pointer-events: none; }
+.ob-feature-shot .oo-preview { display: block; zoom: .72; }
+.ob-feature-body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; flex: 1; }
+.ob-feature-body strong { display: flex; align-items: center; gap: 8px; font: 400 24px/1.1 var(--ob-serif); }
+.ob-feature-body span { color: var(--ob-muted); font-size: 13px; line-height: 1.45; }
+.ob-feature-body em { margin-top: auto; padding-top: 6px; font-style: normal; font-weight: 650; font-size: 13px; }

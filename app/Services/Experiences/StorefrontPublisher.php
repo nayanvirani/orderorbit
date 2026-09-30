@@ -37,12 +37,17 @@ class StorefrontPublisher
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->get()
             ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
-            ->map(function (Experience $e) {
+            ->map(function (Experience $e) use ($store) {
                 $config = $e->publishedVersion->config;
                 if ($e->type === 'bundles') {
                     $config = BundleSchema::payload(BundleSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
                 } elseif ($e->type === 'progressive-gifts') {
                     $config = GiftSchema::payload(GiftSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
+                }
+
+                if ($e->type === 'countdown') {
+                    // Daily cutoffs count in the store's time zone.
+                    $config['content']['tz'] = $store->timezone ?: 'UTC';
                 }
 
                 return [

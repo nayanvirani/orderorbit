@@ -13,6 +13,7 @@
     "productTitle": {{ product.title | json }},
     "productHandle": {{ product.handle | json }},
     "productPrice": {{ product.selected_or_first_available_variant.price | json }},
+    "productCompareAt": {{ product.selected_or_first_available_variant.compare_at_price | json }},
     "productImage": {% if product.featured_image %}{{ product.featured_image | image_url: width: 160 | json }}{% else %}null{% endif %},
     "variant": {{ product.selected_or_first_available_variant.id | json }},
     "collections": {{ product.collections | map: 'id' | json }},
