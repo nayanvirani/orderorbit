@@ -35,12 +35,15 @@
         </div>
     </s-section>
 
-    <s-section heading="Performance">
+    @php($money = fn ($v) => $v === null ? '—' : money($v, $summary['currency']))
+    <s-section heading="Last 30 days">
         <div class="ob-kpis">
-            @foreach (['Revenue influenced', 'Conversion rate', 'AOV', 'CRO revenue'] as $kpi)
-                <div class="ob-kpi"><small>{{ $kpi }}</small><b>—</b><span>Collecting data</span></div>
-            @endforeach
+            <div class="ob-kpi"><small>Revenue from offers</small><b>{{ $money($summary['influenced_revenue']) }}</b><span>{{ number_format($summary['influenced_orders']) }} {{ \Illuminate\Support\Str::plural('order', $summary['influenced_orders']) }} with an offer</span></div>
+            <div class="ob-kpi"><small>Store revenue</small><b>{{ $money($summary['revenue']) }}</b><span>{{ number_format($summary['orders']) }} {{ \Illuminate\Support\Str::plural('order', $summary['orders']) }}</span></div>
+            <div class="ob-kpi"><small>AOV</small><b>{{ $money($summary['aov']) }}</b><span>Average order value</span></div>
+            <div class="ob-kpi"><small>Conversion rate</small><b>{{ $summary['conversion'] === null ? '—' : number_format($summary['conversion'], 2).'%' }}</b><span>{{ number_format($summary['sessions']) }} sessions</span></div>
         </div>
+        <s-link href="{{ app_route('app.analytics') }}">View analytics</s-link>
     </s-section>
 
     @unless ($checklistDone)

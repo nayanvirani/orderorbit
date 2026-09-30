@@ -140,6 +140,12 @@
               }
             ],
             "parentVariantId": "gid://shopify/ProductVariant/10",
+            "attributes": [
+              {
+                "key": "_oo_offer",
+                "value": "b1"
+              }
+            ],
             "title": "Skincare set",
             "image": {
               "url": "https://cdn.shopify.com/a.jpg"

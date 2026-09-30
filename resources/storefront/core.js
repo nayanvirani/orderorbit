@@ -69,6 +69,8 @@
     var detail = Object.assign({ event: 'orderorbit:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, extra || {});
     events.push(detail);
     try { document.dispatchEvent(new CustomEvent('orderorbit:event', { detail: detail })); } catch (e) { /* old browsers */ }
+    // Shopify's analytics bus: the OrderOrbit Space pixel records it (with the shopper's consent).
+    try { if (window.Shopify && Shopify.analytics && Shopify.analytics.publish) Shopify.analytics.publish('orderorbit_event', detail); } catch (e) { /* not a storefront */ }
   }
 
   // ---------------------------------------------------------------- targeting

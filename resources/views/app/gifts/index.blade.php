@@ -25,7 +25,7 @@
         @else
             <div class="oo-scroll">
                 <table class="oo-table stack bx-table">
-                    <thead><tr><th>Status</th><th>Title</th><th>Unlocks by</th><th>Rewards</th><th>Updated</th><th style="text-align:right">Actions</th></tr></thead>
+                    <thead><tr><th>Status</th><th>Title</th><th>Unlocks by</th><th>Rewards</th><th>Views</th><th>Orders</th><th>Revenue</th><th style="text-align:right">Actions</th></tr></thead>
                     <tbody>
                         @foreach ($items as $item)
                             @php($c = $item->draft_config)
@@ -46,7 +46,10 @@
                                 </td>
                                 <td data-label="Unlocks by">{{ ($c['settings']['unlock'] ?? 'value') === 'count' ? 'Item count' : 'Cart value' }}</td>
                                 <td data-label="Rewards">{{ collect($c['milestones'] ?? [])->pluck('label')->implode(' · ') }}</td>
-                                <td data-label="Updated" class="oo-muted">{{ $item->updated_at->diffForHumans() }}</td>
+                                @php($st = $stats[$item->handle] ?? ['views' => 0, 'orders' => 0, 'revenue' => 0])
+                                <td data-label="Views">{{ number_format($st['views']) }}</td>
+                                <td data-label="Orders">{{ number_format($st['orders']) }}</td>
+                                <td data-label="Revenue">{{ money($st['revenue'], $store->currency) }}</td>
                                 <td data-label="Actions">
                                     <div class="bx-actions">
                                         @if ($canManage)

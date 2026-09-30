@@ -9,7 +9,7 @@
     <s-button slot="secondary-actions" data-download="{{ app_route('app.cro.experiences.export') }}">Export CSV</s-button>
 
     <s-section>
-        <form method="GET" action="{{ $type ? app_route('app.cro.type', ['type' => $type]) : app_route('app.cro.experiences.index') }}" class="oo-form-row" data-filter-form>
+        <form method="GET" action="{{ app_route('app.cro.experiences.index') }}" class="oo-form-row" data-filter-form>
             <input type="hidden" name="shop" value="{{ request('shop') }}">
             <input type="hidden" name="host" value="{{ request('host') }}">
             <label class="oo-field" style="flex:1 1 220px">Search<input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Name or ID"></label>
@@ -73,7 +73,7 @@
                 </div>
             </form>
             <s-stack direction="inline" gap="small-200" style="margin-top:12px">
-                @php($pageRoute = $type ? 'app.cro.type' : 'app.cro.experiences.index')
+                @php($pageRoute = 'app.cro.experiences.index')
                 @php($pageParams = array_filter(['type' => $type ?? $filters['type'], 'q' => $filters['q'], 'status' => $filters['status']]))
                 @if ($experiences->currentPage() > 1)<s-button href="{{ app_route($pageRoute, $pageParams + ['page' => $experiences->currentPage() - 1]) }}">Previous</s-button>@endif
                 @if ($experiences->hasMorePages())<s-button href="{{ app_route($pageRoute, $pageParams + ['page' => $experiences->currentPage() + 1]) }}">Next</s-button>@endif

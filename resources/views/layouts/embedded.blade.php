@@ -66,13 +66,15 @@
         @if (! request()->attributes->get('store')?->goal)
             <s-link href="{{ app_route('app.onboarding') }}">Get started</s-link>
         @endif
-        @foreach (\App\Experiences\Registry::features() as $featureKey => $feature)
-            <s-link href="{{ isset($feature['module']) ? app_route($feature['module']) : app_route('app.features.show', ['feature' => $featureKey]) }}">{{ $feature['label'] }}</s-link>
-        @endforeach
-        <s-link href="{{ app_route('app.cro.experiences.index') }}">All offers</s-link>
-        <s-link href="{{ app_route('app.templates') }}">Templates</s-link>
+        {{-- Shopify's app menu has one level; each section has its own sub-menu on its pages. --}}
+        <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
+        <s-link href="{{ app_route('app.analytics') }}">Analytics</s-link>
         <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     </s-app-nav>
+    @endif
+
+    @if (request()->routeIs('app.cro.*', 'app.bundles.*', 'app.gifts.*', 'app.features.*'))
+        @include('app.cro._subnav')
     @endif
 
     @yield('content')

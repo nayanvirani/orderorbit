@@ -89,6 +89,8 @@ export function cartTransformRun(input) {
       linesMerge: {
         cartLines: lines.map((line) => ({cartLineId: line.id, quantity: line.qty})),
         parentVariantId: main.variant,
+        // Keeps the bundle's tag on the merged line so orders are attributed to it.
+        attributes: [{key: '_oo_offer', value: bundle.id}],
         ...(title ? {title} : {}),
         ...(bundle.image ? {image: {url: bundle.image}} : {}),
         ...(percent > 0 ? {price: {percentageDecrease: {value: Math.round(percent * 100) / 100}}} : {}),

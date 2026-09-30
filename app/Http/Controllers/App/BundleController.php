@@ -39,6 +39,7 @@ class BundleController extends Controller
             'store' => $store,
             'tab' => $tab,
             'bundles' => $bundles,
+            'stats' => app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $all->pluck('handle')->all()),
             'counts' => [
                 'all' => $all->where('status', '!=', 'archived')->count(),
                 'active' => $all->filter(fn ($e) => $e->displayStatus() === 'published')->count(),

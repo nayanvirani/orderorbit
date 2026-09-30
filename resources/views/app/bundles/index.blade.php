@@ -39,7 +39,7 @@
                 <div class="ob-kpi"><small>Live bundles</small><b>{{ $counts['active'] }}</b><span>Showing on product pages</span></div>
                 <div class="ob-kpi"><small>Scheduled</small><b>{{ $counts['scheduled'] }}</b><span>Start automatically</span></div>
                 <div class="ob-kpi"><small>Drafts</small><b>{{ $counts['draft'] }}</b><span>Not live yet</span></div>
-                <div class="ob-kpi"><small>Pricing</small><b style="font-size:24px">Automatic</b><span>One bundle line in cart, stock per product</span></div>
+                <div class="ob-kpi"><small>Bundle revenue · 30 days</small><b style="font-size:26px">{{ money(collect($stats)->sum('revenue'), $store->currency) }}</b><span>{{ number_format(collect($stats)->sum('orders')) }} orders</span></div>
             </div>
         </div>
     </s-section>
@@ -58,7 +58,7 @@
         @else
             <div class="oo-scroll">
                 <table class="oo-table stack bx-table">
-                    <thead><tr><th>Status</th><th>Title</th><th>Type</th><th>Offers</th><th>Updated</th><th style="text-align:right">Actions</th></tr></thead>
+                    <thead><tr><th>Status</th><th>Title</th><th>Type</th><th>Views</th><th>Added to cart</th><th>Orders</th><th>Revenue</th><th style="text-align:right">Actions</th></tr></thead>
                     <tbody>
                         @foreach ($bundles as $bundle)
                             @php($live = $bundle->status === 'published')
@@ -77,8 +77,11 @@
                                     <span class="bx-sub">{{ $summary($bundle) }}</span>
                                 </td>
                                 <td data-label="Type">{{ $typeLabel($bundle) }}</td>
-                                <td data-label="Offers">{{ ($bundle->draft_config['bundle_type'] ?? '') === 'mix-match' ? ($bundle->draft_config['mix']['slots'] ?? 3).' slots' : count($bundle->draft_config['offers'] ?? []) }}</td>
-                                <td data-label="Updated" class="oo-muted">{{ $bundle->updated_at->diffForHumans() }}</td>
+                                @php($st = $stats[$bundle->handle] ?? ['views' => 0, 'adds' => 0, 'orders' => 0, 'revenue' => 0])
+                                <td data-label="Views">{{ number_format($st['views']) }}</td>
+                                <td data-label="Added to cart">{{ number_format($st['adds']) }}@if ($st['views']) <span class="oo-muted">({{ round($st['adds'] / $st['views'] * 100, 1) }}%)</span>@endif</td>
+                                <td data-label="Orders">{{ number_format($st['orders']) }}</td>
+                                <td data-label="Revenue">{{ money($st['revenue'], $store->currency) }}</td>
                                 <td data-label="Actions">
                                     <div class="bx-actions">
                                         <a class="bx-icon" href="{{ app_route('app.cro.experiences.show', ['experience' => $bundle->id]) }}" title="Details and history" aria-label="Details">

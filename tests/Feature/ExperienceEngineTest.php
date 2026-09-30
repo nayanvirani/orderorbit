@@ -214,14 +214,16 @@ class ExperienceEngineTest extends TestCase
         $this->assertSame(collect(array_keys(\App\Experiences\Registry::creatable()))->sort()->values()->all(), $grouped);
 
         $this->get('/app', $this->as($owner))->assertOk()
-            ->assertSee('Progressive gifts')->assertSee('/app/progressive-gifts', false)->assertSee('All offers')
-            ->assertDontSee('Volume discounts');
+            ->assertSee('/app/cro?', false)->assertSee('/app/analytics', false)->assertDontSee('Volume discounts');
+        // The CRO sub-menu lists every conversion feature.
+        $this->get('/app/cro', $this->as($owner))->assertOk()
+            ->assertSee('ob-subnav', false)->assertSee('/app/cro/progressive-gifts', false)->assertSee('All offers')->assertSee('Templates');
         foreach (['cart-upsells', 'countdown', 'sticky-atc', 'trust'] as $feature) {
-            $this->get("/app/features/{$feature}", $this->as($owner))->assertOk()->assertSee('How it works');
+            $this->get("/app/cro/features/{$feature}", $this->as($owner))->assertOk()->assertSee('How it works');
         }
-        $this->get('/app/features/progressive-gifts', $this->as($owner))->assertRedirectContains('/app/progressive-gifts');
-        $this->get('/app/features/bundles', $this->as($owner))->assertRedirectContains('/app/bundles');
-        $this->get('/app/features/nope', $this->as($owner))->assertNotFound();
+        $this->get('/app/cro/features/progressive-gifts', $this->as($owner))->assertRedirectContains('/app/cro/progressive-gifts');
+        $this->get('/app/cro/features/bundles', $this->as($owner))->assertRedirectContains('/app/cro/bundles');
+        $this->get('/app/cro/features/nope', $this->as($owner))->assertNotFound();
     }
 
     public function test_builder_pages_and_permissions(): void
@@ -239,8 +241,8 @@ class ExperienceEngineTest extends TestCase
         $experience = Experience::firstOrFail();
         $this->get("/app/cro/experiences/{$experience->id}/edit", $this->as($owner))->assertOk()->assertSee('Campaign ends');
         $this->get("/app/cro/experiences/{$experience->id}", $this->as($owner))->assertOk()->assertSee($experience->handle);
-        $this->get('/app/cro/countdown', $this->as($owner))->assertOk()->assertSee($experience->name);
-        $this->get('/app/templates', $this->as($owner))->assertOk()->assertSee('Radial counter')->assertDontSee('Reward Ladder');
+        $this->get('/app/cro/features/countdown', $this->as($owner))->assertOk()->assertSee($experience->name);
+        $this->get('/app/cro/templates', $this->as($owner))->assertOk()->assertSee('Radial counter')->assertDontSee('Reward Ladder');
 
         // Invalid publish re-renders the builder with the error; the draft is still saved.
         $config = $experience->draft_config;

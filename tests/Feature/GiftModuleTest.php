@@ -38,33 +38,33 @@ class GiftModuleTest extends TestCase
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
 
-        $this->get('/app/progressive-gifts', $this->as($owner))->assertOk()->assertSee('No progressive gifts yet');
-        $this->get('/app/progressive-gifts/new', $this->as($owner))->assertOk()
+        $this->get('/app/cro/progressive-gifts', $this->as($owner))->assertOk()->assertSee('No progressive gifts yet');
+        $this->get('/app/cro/progressive-gifts/new', $this->as($owner))->assertOk()
             ->assertSee('Classic')->assertSee('Expressive')->assertSee('Minimal strip')->assertSee('Radial counter');
-        $this->post('/app/progressive-gifts', ['model' => 'pg-steps'], $this->as($owner))->assertRedirectContains('/app/progressive-gifts/');
+        $this->post('/app/cro/progressive-gifts', ['model' => 'pg-steps'], $this->as($owner))->assertRedirectContains('/app/cro/progressive-gifts/');
 
         $gift = Experience::where('type', 'progressive-gifts')->firstOrFail();
         $this->assertSame('steps', $gift->draft_config['settings']['layout']);
-        $this->get("/app/progressive-gifts/{$gift->id}", $this->as($owner))->assertOk()->assertSee('GiftEditor');
-        $this->get("/app/cro/experiences/{$gift->id}/edit", $this->as($owner))->assertRedirectContains("/app/progressive-gifts/{$gift->id}");
-        $this->get('/app/progressive-gifts', $this->as($owner))->assertSee('Free gift · Free shipping · Choose your gift');
+        $this->get("/app/cro/progressive-gifts/{$gift->id}", $this->as($owner))->assertOk()->assertSee('GiftEditor');
+        $this->get("/app/cro/experiences/{$gift->id}/edit", $this->as($owner))->assertRedirectContains("/app/cro/progressive-gifts/{$gift->id}");
+        $this->get('/app/cro/progressive-gifts', $this->as($owner))->assertSee('Free gift · Free shipping · Choose your gift');
     }
 
     public function test_validate_then_publish_with_the_right_discount_classes(): void
     {
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
-        $this->post('/app/progressive-gifts', ['model' => 'pg-classic'], $this->as($owner));
+        $this->post('/app/cro/progressive-gifts', ['model' => 'pg-classic'], $this->as($owner));
         $gift = Experience::firstOrFail();
 
         // Gift rewards without a product can't publish.
         $config = $gift->draft_config;
-        $this->post("/app/progressive-gifts/{$gift->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
+        $this->post("/app/cro/progressive-gifts/{$gift->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
             ->assertOk()->assertSee('Fix the highlighted settings before publishing.');
 
         $config['milestones'][0]['products'] = [['id' => 'gid://shopify/Product/9', 'title' => 'Tote', 'variant_id' => 'gid://shopify/ProductVariant/90']];
         $config['milestones'][2] = GiftSchema::milestone(120, 'percent', '10% off', 10);
-        $this->post("/app/progressive-gifts/{$gift->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
+        $this->post("/app/cro/progressive-gifts/{$gift->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
             ->assertRedirectContains('notice=published');
 
         $this->assertSame('gid://shopify/DiscountAutomaticNode/88', $gift->fresh()->shopify_discount_id);

@@ -74,6 +74,9 @@ class AuthenticateShopify
             } catch (Throwable $e) {
                 report($e);
             }
+
+            // Analytics: register the web pixel for this store.
+            app(\App\Services\Analytics\PixelConnector::class)->ensure($store);
         }
 
         $request->attributes->set('store', $store);

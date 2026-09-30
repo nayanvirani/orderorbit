@@ -134,7 +134,7 @@ class ManagedPricingTest extends TestCase
         $owner = $this->member($store, 'owner');
         $this->shopifyReports([]);
 
-        foreach (['/app', '/app/cro', '/app/templates', '/app/settings/store', '/app/onboarding'] as $path) {
+        foreach (['/app', '/app/cro', '/app/cro/templates', '/app/settings/store', '/app/onboarding'] as $path) {
             $this->get($path, $this->as($owner))->assertRedirectContains('/app/settings/billing');
         }
         $this->get('/app/settings/billing', $this->as($owner))->assertOk()
