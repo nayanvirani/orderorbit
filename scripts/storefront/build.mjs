@@ -11,13 +11,12 @@ const src = join(root, 'resources/storefront');
 const out = join(root, 'extensions/orderorbit-theme/assets');
 const LIMIT = 10_000;
 
-// Types that add to the cart get the shared commerce helpers prepended (they
-// define themselves once, whichever file loads first).
-const COMMERCE = ['bundles.js', 'quantity-breaks.js', 'bogo.js', 'upsells.js', 'free-gifts.js', 'sticky-atc.js'];
-
-// One source file can serve several types.
+// One source file can serve several types. Shared helpers (commerce, timer) are
+// their own files; the core loads them before the types that need them.
 const outputs = {
   'core.js': ['orderorbit.js'],
+  'commerce.js': ['oo-commerce.js'],
+  'timer.js': ['oo-timer.js'],
   'types/upsells.js': ['oo-product-upsells.js', 'oo-cart-upsells.js'],
 };
 for (const file of readdirSync(join(src, 'types'))) {
@@ -30,8 +29,7 @@ for (const file of readdirSync(out)) {
 
 let failed = false;
 for (const [input, targets] of Object.entries(outputs)) {
-  const prefix = COMMERCE.includes(input.replace('types/', '')) ? readFileSync(join(src, 'commerce.js'), 'utf8') + '\n' : '';
-  const result = await minify(prefix + readFileSync(join(src, input), 'utf8'), {
+  const result = await minify(readFileSync(join(src, input), 'utf8'), {
     compress: { passes: 2 },
     mangle: true,
     format: { comments: /^!/ },

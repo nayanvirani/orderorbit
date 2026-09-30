@@ -67,7 +67,7 @@
             <s-link href="{{ app_route('app.onboarding') }}">Get started</s-link>
         @endif
         @foreach (\App\Experiences\Registry::features() as $featureKey => $feature)
-            <s-link href="{{ app_route('app.features.show', ['feature' => $featureKey]) }}">{{ $feature['label'] }}</s-link>
+            <s-link href="{{ $featureKey === 'bundles' ? app_route('app.bundles.index') : app_route('app.features.show', ['feature' => $featureKey]) }}">{{ $feature['label'] }}</s-link>
         @endforeach
         <s-link href="{{ app_route('app.cro.experiences.index') }}">All offers</s-link>
         <s-link href="{{ app_route('app.templates') }}">Templates</s-link>

@@ -7,6 +7,12 @@ query CartInput {
       offer: attribute(key: "_oo_offer") {
         value
       }
+      bundle: attribute(key: "_oo_bundle") {
+        value
+      }
+      gift: attribute(key: "_oo_gift") {
+        value
+      }
       cost {
         amountPerQuantity {
           amount

@@ -10,9 +10,11 @@
             "id": "gid://shopify/CartLine/0",
             "quantity": 2,
             "offer": {
-              "value": "u1"
+              "value": "b1"
             },
-            "bundle": null,
+            "bundle": {
+              "value": "b1|1|g1"
+            },
             "gift": null,
             "cost": {
               "amountPerQuantity": {
@@ -22,25 +24,53 @@
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/1"
+                "id": "gid://shopify/Product/5"
               }
             }
           },
           {
             "id": "gid://shopify/CartLine/1",
-            "quantity": 2,
-            "offer": null,
-            "bundle": null,
+            "quantity": 3,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|2|g2"
+            },
             "gift": null,
             "cost": {
               "amountPerQuantity": {
-                "amount": "10"
+                "amount": "20"
               }
             },
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/3"
+                "id": "gid://shopify/Product/5"
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/2",
+            "quantity": 2,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|2|g2"
+            },
+            "gift": {
+              "value": "1"
+            },
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "8"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/7"
               }
             }
           }
@@ -54,20 +84,23 @@
           "jsonValue": {
             "offers": [
               {
-                "k": "upsell",
-                "id": "u1",
-                "v": 20
-              },
-              {
-                "k": "tiers",
-                "id": "t1",
-                "p": [],
-                "tiers": [
-                  [
-                    2,
-                    10
-                  ]
-                ]
+                "k": "bq",
+                "id": "b1",
+                "o": [
+                  null,
+                  {
+                    "q": 2,
+                    "t": "percentage",
+                    "v": 10
+                  },
+                  {
+                    "q": 3,
+                    "t": "fixed_price",
+                    "v": 45,
+                    "g": 1
+                  }
+                ],
+                "m": "Bundle & save"
               }
             ]
           }
@@ -80,7 +113,7 @@
           "productDiscountsAdd": {
             "candidates": [
               {
-                "message": "Special offer",
+                "message": "Bundle & save",
                 "targets": [
                   {
                     "cartLine": {
@@ -90,12 +123,12 @@
                 ],
                 "value": {
                   "percentage": {
-                    "value": 20
+                    "value": 10
                   }
                 }
               },
               {
-                "message": "Buy 2, save 10%",
+                "message": "Bundle & save",
                 "targets": [
                   {
                     "cartLine": {
@@ -105,7 +138,23 @@
                 ],
                 "value": {
                   "percentage": {
-                    "value": 10
+                    "value": 25
+                  }
+                }
+              },
+              {
+                "message": "Free gift",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/2",
+                      "quantity": 1
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 100
                   }
                 }
               }

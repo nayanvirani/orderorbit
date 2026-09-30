@@ -10,8 +10,9 @@
             "id": "gid://shopify/CartLine/0",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|1|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "20"
@@ -28,8 +29,9 @@
             "id": "gid://shopify/CartLine/1",
             "quantity": 1,
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|1|g1"
             },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "30"
@@ -45,16 +47,19 @@
           {
             "id": "gid://shopify/CartLine/2",
             "quantity": 1,
-            "bundle": null,
+            "bundle": {
+              "value": "b1|1|g1"
+            },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
-                "amount": "50"
+                "amount": "30"
               }
             },
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/9"
+                "id": "gid://shopify/Product/8"
               }
             }
           }
@@ -67,17 +72,45 @@
               {
                 "id": "b1",
                 "parent": "gid://shopify/ProductVariant/900",
-                "title": "Skincare bundle",
+                "title": "Skincare set",
                 "image": "https://cdn.shopify.com/a.jpg",
-                "mode": "mix",
-                "min": 2,
-                "p": [
-                  "1",
-                  "2",
-                  "3"
+                "o": [
+                  null,
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "percentage",
+                    "v": 15,
+                    "n": "Complete bundle"
+                  },
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "fixed_price",
+                    "v": 40
+                  }
                 ],
-                "t": "percentage",
-                "v": 15
+                "mix": {
+                  "p": [
+                    "1",
+                    "2",
+                    "3"
+                  ],
+                  "tiers": [
+                    [
+                      2,
+                      10
+                    ],
+                    [
+                      3,
+                      15
+                    ]
+                  ]
+                }
               }
             ]
           }
@@ -85,32 +118,7 @@
       }
     },
     "output": {
-      "operations": [
-        {
-          "linesMerge": {
-            "cartLines": [
-              {
-                "cartLineId": "gid://shopify/CartLine/0",
-                "quantity": 1
-              },
-              {
-                "cartLineId": "gid://shopify/CartLine/1",
-                "quantity": 1
-              }
-            ],
-            "parentVariantId": "gid://shopify/ProductVariant/900",
-            "title": "Skincare bundle",
-            "image": {
-              "url": "https://cdn.shopify.com/a.jpg"
-            },
-            "price": {
-              "percentageDecrease": {
-                "value": 15
-              }
-            }
-          }
-        }
-      ]
+      "operations": []
     }
   }
 }

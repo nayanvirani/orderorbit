@@ -70,9 +70,12 @@ class ExperienceController extends Controller
         ]);
     }
 
-    public function create(Request $request, Store $store): View
+    public function create(Request $request, Store $store): View|RedirectResponse
     {
         $type = Registry::has($request->query('type')) ? $request->query('type') : null;
+        if ($type === 'bundles') {
+            return redirect()->to(app_route('app.bundles.types'));
+        }
 
         return view('app.cro.create', [
             'store' => $store,
@@ -106,9 +109,13 @@ class ExperienceController extends Controller
         ]);
     }
 
-    public function edit(Request $request, Store $store, int $experience): View
+    public function edit(Request $request, Store $store, int $experience): View|RedirectResponse
     {
         $experience = $this->find($store, $experience);
+        if ($experience->type === 'bundles') {
+            // Bundles have their own editor (Settings / Offers / Design).
+            return redirect()->to(app_route('app.bundles.edit', array_filter(['bundle' => $experience->id, 'notice' => $request->query('notice')])));
+        }
 
         return $this->builder($store, $experience, $experience->draft_config, []);
     }

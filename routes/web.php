@@ -5,6 +5,7 @@ use App\Http\Controllers\App\ActivityController;
 use App\Http\Controllers\App\BillingController;
 use App\Http\Controllers\App\BrandingController;
 use App\Http\Controllers\App\DashboardController;
+use App\Http\Controllers\App\BundleController;
 use App\Http\Controllers\App\ExperienceController;
 use App\Http\Controllers\App\FeatureController;
 use App\Http\Controllers\App\OnboardingController;
@@ -47,6 +48,19 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         Route::get('/', DashboardController::class)->middleware('store.can:view_dashboard')->name('dashboard');
         Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
         Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
+
+        // Bundles module (MoonBundle-style): list, type, model, editor
+        Route::prefix('bundles')->name('bundles.')->group(function () {
+            Route::get('/', [BundleController::class, 'index'])->name('index');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::get('/new', [BundleController::class, 'types'])->name('types');
+                Route::get('/new/{type}', [BundleController::class, 'models'])->name('models');
+                Route::post('/', [BundleController::class, 'store'])->name('store');
+                Route::get('/{bundle}', [BundleController::class, 'edit'])->whereNumber('bundle')->name('edit');
+                Route::post('/{bundle}', [BundleController::class, 'update'])->whereNumber('bundle')->name('update');
+                Route::post('/{bundle}/toggle', [BundleController::class, 'toggle'])->whereNumber('bundle')->name('toggle');
+            });
+        });
 
         // Feature pages (app navigation): Bundles, Volume discounts, BOGO, ...
         Route::get('/features/{feature}', [FeatureController::class, 'show'])->whereIn('feature', array_keys(Registry::features()))->name('features.show');

@@ -2,6 +2,7 @@
 
 namespace App\Services\Experiences;
 
+use App\Experiences\BundleSchema;
 use App\Experiences\Registry;
 use App\Models\Experience;
 use App\Models\Store;
@@ -37,6 +38,9 @@ class StorefrontPublisher
             ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
             ->map(function (Experience $e) {
                 $config = $e->publishedVersion->config;
+                if ($e->type === 'bundles') {
+                    $config = BundleSchema::payload(BundleSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
+                }
 
                 return [
                     'id' => $e->handle,

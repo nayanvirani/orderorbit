@@ -1,7 +1,7 @@
 {
   "payload": {
-    "export": "cart-transform-run",
-    "target": "cart.transform.run",
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
     "input": {
       "presentmentCurrencyRate": "1.0",
       "cart": {
@@ -9,9 +9,13 @@
           {
             "id": "gid://shopify/CartLine/0",
             "quantity": 1,
-            "bundle": {
-              "value": "b1|g1"
+            "offer": {
+              "value": "b1"
             },
+            "bundle": {
+              "value": "b1|1|g1"
+            },
+            "gift": null,
             "cost": {
               "amountPerQuantity": {
                 "amount": "20"
@@ -20,48 +24,55 @@
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/1"
+                "id": "gid://shopify/Product/5"
               }
             }
           },
           {
             "id": "gid://shopify/CartLine/1",
             "quantity": 1,
+            "offer": {
+              "value": "b1"
+            },
             "bundle": {
-              "value": "b1|g1"
+              "value": "b1|1|g1"
+            },
+            "gift": {
+              "value": "1"
             },
             "cost": {
               "amountPerQuantity": {
-                "amount": "30"
+                "amount": "8"
               }
             },
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/8"
+                "id": "gid://shopify/Product/7"
               }
             }
           }
         ]
       },
-      "cartTransform": {
+      "discount": {
+        "discountClasses": [
+          "PRODUCT"
+        ],
         "metafield": {
           "jsonValue": {
-            "bundles": [
+            "offers": [
               {
+                "k": "bq",
                 "id": "b1",
-                "parent": "gid://shopify/ProductVariant/900",
-                "title": "Skincare bundle",
-                "image": "https://cdn.shopify.com/a.jpg",
-                "mode": "mix",
-                "min": 2,
-                "p": [
-                  "1",
-                  "2",
-                  "3"
-                ],
-                "t": "percentage",
-                "v": 15
+                "o": [
+                  null,
+                  {
+                    "q": 2,
+                    "t": "percentage",
+                    "v": 10,
+                    "g": 1
+                  }
+                ]
               }
             ]
           }

@@ -26,6 +26,7 @@
 
 return [
 
+    // The Bundles module: types, models and settings live in App\Experiences\BundleSchema.
     'bundles' => [
         'label' => 'Bundles',
         'discount' => true,
@@ -33,33 +34,10 @@ return [
         'icon' => 'package',
         'meter' => 'bundles',
         'surface' => 'product',
-        'description' => 'Mix & match, tiered, routine and gift-box bundles.',
-        'empty' => 'Build your first bundle. Let shoppers mix, match and save in a few clicks.',
-        'templates' => [
-            'premium-bundle' => ['name' => 'Premium Bundle', 'style' => 'premium'],
-            'frequently-bought-together' => ['name' => 'Frequently Bought Together', 'style' => 'row', 'content' => ['bundle_mode' => 'fixed', 'headline' => 'Frequently bought together', 'subheadline' => 'Get all of them and save', 'badge' => 'Bundle deal']],
-            'fixed-bundle' => ['name' => 'Fixed Bundle / Multipack', 'style' => 'card', 'content' => ['bundle_mode' => 'fixed', 'headline' => 'Get the complete set', 'subheadline' => 'Everything you need, one click']],
-            'mix-and-match' => ['name' => 'Mix & Match', 'style' => 'grid'],
-            'tiered' => ['name' => 'Tiered / Buy More Save More', 'style' => 'card'],
-            'routine-builder' => ['name' => 'Routine Builder', 'style' => 'card'],
-            'gift-box' => ['name' => 'Gift Box', 'style' => 'premium'],
-            'visual-bundle' => ['name' => 'Visual Product Bundle', 'style' => 'grid'],
-        ],
-        'content' => [
-            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Build your bundle and save', 'max' => 120],
-            'subheadline' => ['type' => 'text', 'label' => 'Subheadline', 'default' => 'Pick your favourites', 'max' => 160],
-            'products' => ['type' => 'products', 'label' => 'Products in the bundle', 'required' => true, 'max_items' => 12, 'quantities' => true],
-            'bundle_mode' => ['type' => 'select', 'label' => 'Bundle type', 'default' => 'mix', 'options' => ['mix' => 'Mix & match: shopper picks any of these', 'fixed' => 'Fixed: all products together'], 'help' => 'Fixed bundles add every product; the saving applies when all of them are in the cart.'],
-            'min_items' => ['type' => 'number', 'label' => 'Minimum selections', 'default' => 2, 'min' => 1, 'max' => 12, 'help' => 'Mix & match only: items needed to unlock the saving.'],
-            'max_items' => ['type' => 'number', 'label' => 'Maximum selections', 'default' => 3, 'min' => 1, 'max' => 12],
-            'discount_type' => ['type' => 'select', 'label' => 'Saving', 'default' => 'percentage', 'options' => ['percentage' => 'Percentage off', 'amount' => 'Amount off', 'none' => 'No discount']],
-            'discount_value' => ['type' => 'number', 'label' => 'Saving value', 'default' => 15, 'min' => 0, 'max' => 1000],
-            'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => '{remaining} more to unlock your saving', 'help' => 'Use {remaining} for the number of items still needed.'],
-            'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add bundle to cart', 'max' => 40],
-            'badge' => ['type' => 'text', 'label' => 'Badge', 'default' => 'Save 15%', 'max' => 24],
-            'show_compare_at' => ['type' => 'toggle', 'label' => 'Show compare-at prices', 'default' => true],
-            'checkout_label' => ['type' => 'text', 'label' => 'Bundle name in cart and checkout', 'default' => 'Bundle', 'max' => 60, 'help' => 'The bundle items show as one line with this name. Each product\'s inventory is still deducted.'],
-        ],
+        'description' => 'Quantity breaks, mix & match, fixed bundles, variant offers and gift bundles.',
+        'empty' => 'Build your first bundle. Let shoppers buy more and save in one click.',
+        'templates' => \App\Experiences\BundleSchema::templates(),
+        'content' => [],
     ],
 
     'free-gifts' => [
