@@ -40,6 +40,10 @@ class TemplateLibrary
         $stats = ['created' => 0, 'versioned' => 0];
 
         DB::transaction(function () use (&$stats) {
+            // Two deploys can start together (e.g. a push and a variable change); take turns.
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('SELECT pg_advisory_xact_lock(4711001)');
+            }
             foreach (Registry::types() as $type => $definition) {
                 foreach ($definition['templates'] as $key => $template) {
                     $record = CroTemplate::firstOrNew(['type' => $type, 'key' => $key]);
