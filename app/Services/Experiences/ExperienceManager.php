@@ -221,7 +221,10 @@ class ExperienceManager
                 throw new PublishException('You\'ve reached your current OrderOrbit plan limit.', 'plan');
             }
             if (($meter = $type['meter'] ?? null) && ! $this->usage->allows($store, $meter)) {
-                throw new PublishException('You\'ve reached your current OrderOrbit plan limit.', 'plan');
+                $limit = (int) $store->planLimit($meter);
+                $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
+
+                throw new PublishException("The {$plan} plan includes {$limit} live ".lower_label(\Illuminate\Support\Str::plural($type['singular'], $limit)).'. Pause the one that\'s live or upgrade for unlimited.', 'plan');
             }
         }
 

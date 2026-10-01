@@ -19,13 +19,26 @@ class UsageTest extends TestCase
 
         $this->assertFalse($usage->allows($store, 'bundles'), 'No plan means nothing can be added.');
 
-        // Every plan, including Free, has unlimited offers; plans differ by store sales.
-        $usage->register('bundles', fn () => 50);
-        foreach (['free', 'starter', 'growth', 'scale'] as $plan) {
+        // Free caps the revenue features at one live offer each; paid plans are unlimited.
+        $usage->register('bundles', fn () => 1);
+        $store->plan = 'free';
+        $this->assertFalse($usage->allows($store, 'bundles'), 'Free includes one live bundle.');
+        $this->assertTrue($usage->allows($store, 'active_experiences'), 'Countdowns, trust and the rest are not capped.');
+        $this->assertSame([1, 1, 1, 1], array_map(fn ($m) => $store->planLimit($m), ['bundles', 'free_gifts', 'cart_upsells', 'preorders']));
+        foreach (['starter', 'growth', 'scale'] as $plan) {
             $store->plan = $plan;
             $this->assertTrue($usage->allows($store, 'bundles'), "{$plan} has unlimited bundles.");
         }
         $this->assertSame([1000.0, 8000.0, 20000.0, null], array_map(fn ($plan) => tap($store, fn ($s) => $s->plan = $plan)->salesLimit(), ['free', 'starter', 'growth', 'scale']));
+
+        // Higher plans unlock more.
+        $includes = fn (string $plan, string $feature) => tap($store, fn ($s) => $s->plan = $plan)->planIncludes($feature);
+        $this->assertFalse($includes('free', 'offer_analytics'));
+        $this->assertTrue($includes('starter', 'offer_analytics'));
+        $this->assertFalse($includes('starter', 'checkout'));
+        $this->assertTrue($includes('growth', 'checkout') && $includes('growth', 'customer_accounts') && $includes('growth', 'ab_testing'));
+        $this->assertFalse($includes('growth', 'automation'));
+        $this->assertTrue($includes('scale', 'automation') && $includes('scale', 'personalization'));
 
         $store->plan = 'growth';
 

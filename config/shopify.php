@@ -1,10 +1,12 @@
 <?php
 
-// Offer counts are unlimited on every plan; only automation runs (a future feature) are metered.
-$unlimited = fn (int $automationRuns) => [
+// Live-offer limits per plan (null = unlimited). Only Free caps the revenue features at one each.
+$limits = fn (array $caps, int $automationRuns) => $caps + [
     'active_experiences' => null,
     'bundles' => null,
     'free_gifts' => null,
+    'cart_upsells' => null,
+    'preorders' => null,
     'shipping_bars' => null,
     'workflows' => null,
     'automation_executions' => $automationRuns,
@@ -78,38 +80,45 @@ return [
         'count_test_orders_for' => array_values(array_filter(array_map('trim', explode(',', (string) env('ORDERORBIT_COUNT_TEST_ORDERS_FOR', ''))))),
         'warn_at' => 0.8,
 
+        // "includes" lists what a plan unlocks beyond the storefront features every plan has:
+        // offer_analytics (revenue per offer) and, as they ship, checkout, customer_accounts,
+        // ab_testing, automation and personalization.
         'plans' => [
             'free' => [
                 'name' => 'Free',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_FREE', 'Free'),
                 'price' => 0,
                 'sales_limit' => 1000,
-                'features' => ['Up to $1,000 in monthly store sales', 'Every feature and template', 'Unlimited offers', 'Analytics'],
-                'limits' => $unlimited(1000),
+                'includes' => [],
+                'features' => ['Up to $1,000 in monthly store sales', 'Countdown, sticky add to cart, trust badges and sales pop', '1 bundle, 1 gift campaign, 1 cart upsell and 1 pre-order', 'Every template', 'Store analytics'],
+                'limits' => $limits(['bundles' => 1, 'free_gifts' => 1, 'cart_upsells' => 1, 'preorders' => 1], 1000),
             ],
             'starter' => [
                 'name' => 'Starter',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
                 'price' => 14.99,
                 'sales_limit' => 8000,
-                'features' => ['Up to $8,000 in monthly store sales', 'Every feature and template', 'Unlimited offers', 'Analytics'],
-                'limits' => $unlimited(10000),
+                'includes' => ['offer_analytics'],
+                'features' => ['Up to $8,000 in monthly store sales', 'Everything in Free', 'Unlimited bundles, gifts, upsells and pre-orders', 'Analytics with revenue per offer'],
+                'limits' => $limits([], 10000),
             ],
             'growth' => [
                 'name' => 'Growth',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
                 'price' => 29.99,
                 'sales_limit' => 20000,
-                'features' => ['Up to $20,000 in monthly store sales', 'Every feature and template', 'Unlimited offers', 'Analytics'],
-                'limits' => $unlimited(10000),
+                'includes' => ['offer_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
+                'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout and Thank You blocks when released', 'Customer account blocks when released', 'A/B testing when released'],
+                'limits' => $limits([], 10000),
             ],
             'scale' => [
                 'name' => 'Scale',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'),
                 'price' => 59.99,
                 'sales_limit' => null,
-                'features' => ['Unlimited store sales', 'Every feature and template', 'Unlimited offers', 'Priority support', 'Early access to new features'],
-                'limits' => $unlimited(50000),
+                'includes' => ['offer_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
+                'features' => ['Unlimited store sales', 'Everything in Growth', 'Automation and personalization when released', 'Priority support', 'Early access to new features'],
+                'limits' => $limits([], 50000),
             ],
         ],
 

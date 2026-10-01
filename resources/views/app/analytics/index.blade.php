@@ -63,7 +63,12 @@
     </s-section>
 
     <s-section heading="By offer">
-        @if ($rows->isEmpty())
+        @if (! $store->planIncludes('offer_analytics'))
+            <s-banner tone="info" heading="Revenue per offer is on Starter and above">
+                <s-paragraph>Your plan shows store totals. Upgrade to see views, adds to cart, orders and revenue for each bundle, gift and upsell.</s-paragraph>
+                <s-button slot="secondary-actions" href="{{ app_route('app.settings.billing') }}">See plans</s-button>
+            </s-banner>
+        @elseif ($rows->isEmpty())
             <s-paragraph><span class="oo-muted">Views, adds to cart and revenue for each bundle, gift and upsell appear here.</span></s-paragraph>
         @else
             <div class="oo-scroll">

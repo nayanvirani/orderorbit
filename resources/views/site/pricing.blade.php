@@ -1,15 +1,15 @@
 @extends('layouts.site')
 
 @section('title', 'Pricing | OrderOrbit Space')
-@section('description', 'Every feature on every plan. Free up to $1,000 in monthly store sales, then $14.99, $29.99 or $59.99 as your store grows. Billed through Shopify.')
+@section('description', 'Start free. Starter $14.99, Growth $29.99 and Scale $59.99 per month, stepping up with your store\'s sales and the features you need. Billed through Shopify.')
 
 @section('content')
 <div class="mn">
     <section class="mn-hero center">
         <div class="wrap">
             <span class="mn-kicker">Pricing</span>
-            <h1>Every feature on every plan. <em>Pay as your store grows.</em></h1>
-            <p class="mn-lead">No locked features and no limits on offers. Plans differ only by your store's total monthly sales, so you start free and move up when the store does.</p>
+            <h1>Start free. <em>Upgrade as your store grows.</em></h1>
+            <p class="mn-lead">Every plan includes the core widgets and every template. Paid plans lift the limits, and higher plans add checkout, testing and automation as they're released.</p>
         </div>
     </section>
 

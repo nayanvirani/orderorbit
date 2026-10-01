@@ -273,6 +273,6 @@ class SalesLimitTest extends TestCase
         $this->get('/app/settings/billing', $this->as($owner))->assertOk()
             ->assertSee('Store sales · this cycle')->assertSee('$1,300')->assertSee('of $1,000 on your plan')
             ->assertSee('Upgrade required by')->assertSee('Past cycle')->assertSee('$640')
-            ->assertSee('Up to $8,000 in monthly store sales');
+            ->assertSee('Up to $8,000 in monthly store sales')->assertSee('Live offers on your plan')->assertSee('Checkout and Thank You blocks when released');
     }
 }

@@ -37,7 +37,7 @@
     <section class="mn-section mn-cta">
         <div class="mn-narrow">
             <h2>Start with one feature</h2>
-            <p>Most stores begin with a bundle or a gift bar and add the rest later. Every plan, including Free, has every live feature.</p>
+            <p>Most stores begin with a bundle or a gift bar and add the rest later. You can start on the Free plan and upgrade when you need more.</p>
             <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a><a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a></div>
         </div>
     </section>

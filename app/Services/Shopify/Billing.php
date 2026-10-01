@@ -5,6 +5,7 @@ namespace App\Services\Shopify;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\Subscription;
+use App\Services\Billing\PlanLimits;
 use App\Services\Billing\SalesMeter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -183,8 +184,10 @@ class Billing
             'plan_expires_at' => $known && $grace ? $grace->current_period_ends_at : null,
         ])->save();
 
-        // A new plan has a new sales limit: clear or start the over-limit state straight away.
+        // A new plan has new limits: pause offers it doesn't cover, and clear or start the
+        // over-sales-limit state straight away.
         if ($store->plan !== $before) {
+            app(PlanLimits::class)->apply($store);
             app(SalesMeter::class)->evaluate($store);
         }
     }

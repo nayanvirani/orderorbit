@@ -239,8 +239,8 @@
 
     <section class="mn-section">
         <div class="mn-wide">
-            <h2>Every feature on every plan</h2>
-            <p class="mn-intro">Start free. Plans differ only by your store's total monthly sales, so you pay more only when the store grows. Billed through Shopify.</p>
+            <h2>Start free, upgrade as you grow</h2>
+            <p class="mn-intro">The Free plan covers a new store. Paid plans lift the limits and add more as your sales grow. Billed through Shopify.</p>
             @include('site.partials.plan-cards', ['plans' => $plans])
             <p style="margin:28px 0 0;text-align:center"><a class="btn" href="{{ route('site.pricing') }}">Compare all plan details</a></p>
         </div>
@@ -256,7 +256,7 @@
                 ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
                 ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],
                 ['How do you measure revenue?', 'A Shopify web pixel records completed orders and credits each order line to the offer that added it. Only shoppers who allow analytics are counted.'],
-                ['What does it cost?', 'It\'s free while your store sells up to $1,000 a month. After that it\'s $14.99, $29.99 or $59.99 a month depending on your store\'s total sales. Every plan has every feature, billed through your Shopify invoice.'],
+                ['What does it cost?', 'It\'s free while your store sells up to $1,000 a month, with the core widgets and one of each revenue feature. Paid plans are $14.99, $29.99 and $59.99 a month, billed through your Shopify invoice.'],
             ]])
         </div>
     </section>

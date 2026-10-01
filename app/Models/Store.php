@@ -152,6 +152,15 @@ class Store extends Model
     }
 
     /**
+     * Whether the plan unlocks a feature beyond the storefront basics every plan has
+     * (config: shopify.billing.plans.*.includes), e.g. offer_analytics, checkout, ab_testing.
+     */
+    public function planIncludes(string $feature): bool
+    {
+        return in_array($feature, (array) config('shopify.billing.plans.'.$this->effectivePlan().'.includes', []), true);
+    }
+
+    /**
      * Plan limit for a usage meter; null means unlimited, 0 when there is no plan.
      */
     public function planLimit(string $meter): ?int

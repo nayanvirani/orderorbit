@@ -13,7 +13,7 @@
         @include('app.settings._tabs')
     @else
         <x-app.hero eyebrow="Plans" title="Choose your <em>orbit.</em>"
-            lead="Choose a plan below to start using OrderOrbit Space. Every plan has every feature; start free and upgrade as your store grows. Billing runs through your Shopify invoice." />
+            lead="Choose a plan below to start using OrderOrbit Space. Start free and upgrade as your store grows. Billing runs through your Shopify invoice." />
     @endif
 
     @if ($syncError)
@@ -98,7 +98,7 @@
             @if ($sales['sales'] !== null)
                 <span class="oo-muted">{{ number_format($sales['orders']) }} {{ \Illuminate\Support\Str::plural('order', $sales['orders']) }} counted this cycle.@if ($sales['test_orders']) {{ $sales['test_orders']['count'] }} test {{ \Illuminate\Support\Str::plural('order', $sales['test_orders']['count']) }} ({{ $money($sales['test_orders']['usd']) }}) {{ $sales['test_orders']['count'] === 1 ? 'is' : 'are' }} not counted: orders paid with a test payment, like every order on a development store, never count toward your limit.@endif</span>
             @endif
-            <span class="oo-muted">Cycle {{ $sales['cycle_start']->toFormattedDateString() }} – {{ $sales['cycle_end']->toFormattedDateString() }}. The count starts again on {{ $sales['cycle_end']->toFormattedDateString() }}. Every plan includes every feature; plans differ only by your store's total sales per 30-day cycle (all orders, in USD; test and cancelled orders don't count).</span>
+            <span class="oo-muted">Cycle {{ $sales['cycle_start']->toFormattedDateString() }} – {{ $sales['cycle_end']->toFormattedDateString() }}. The count starts again on {{ $sales['cycle_end']->toFormattedDateString() }}. Each plan covers a level of total store sales per 30-day cycle (all orders, in USD; test and cancelled orders don't count).</span>
         </div>
         @if ($cycles->isNotEmpty())
             <table class="oo-table" style="margin-top:14px">
@@ -118,6 +118,22 @@
         @endif
     </s-section>
 
+    @endif
+
+    @if ($effective && $usage)
+    <s-section heading="Live offers on your plan">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap="base">
+            @foreach ($usage as $meter)
+                @php($full = $meter['used'] >= $meter['limit'])
+                <s-box padding="base" border="base" borderRadius="base">
+                    <s-text color="subdued">{{ $meter['label'] }}</s-text>
+                    <div><strong>{{ number_format($meter['used']) }}</strong> <span class="oo-muted">/ {{ number_format($meter['limit']) }} live</span></div>
+                    <div class="oo-meter"><i class="{{ $full ? 'full' : '' }}" style="width:{{ $meter['limit'] ? min(100, round($meter['used'] / $meter['limit'] * 100)) : 0 }}%"></i></div>
+                </s-box>
+            @endforeach
+        </s-grid>
+        <s-paragraph><span class="oo-muted">Countdown, sticky add to cart, trust badges and sales pop are unlimited on every plan. Starter and above make these unlimited too.</span></s-paragraph>
+    </s-section>
     @endif
 
     <s-section heading="{{ $effective ? 'Plans' : 'Pick a plan' }}">
@@ -147,6 +163,6 @@
         @endunless
     </s-section>
 
-    <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Nothing is ever deleted when you change plans. If your store's sales pass your plan's limit you have {{ config('shopify.billing.grace_days') }} days to upgrade before features stop.</span></s-paragraph>
+    <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Nothing is ever deleted when you change plans; offers a lower plan doesn't cover are paused. If your store's sales pass your plan's limit you have {{ config('shopify.billing.grace_days') }} days to upgrade before features stop.</span></s-paragraph>
 </s-page>
 @endsection

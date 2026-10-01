@@ -108,13 +108,60 @@ class ExperienceEngineTest extends TestCase
         $this->assertSame('paused', tap($experience->fresh(), fn ($e) => $manager->unarchive($e))->fresh()->status);
     }
 
-    public function test_offers_are_unlimited_until_the_sales_limit_pauses_them(): void
+    public function test_free_plan_caps_revenue_features_at_one_live_offer(): void
     {
         $this->fakeShopify();
         $store = $this->installedStore(['plan' => 'free']);
         $manager = app(ExperienceManager::class);
+        $ready = function (string $type, string $template) use ($manager, $store) {
+            $experience = $manager->create($store, $type, $template, null);
+            $config = $experience->draft_config;
+            $config['content']['products'] = [['id' => 'gid://shopify/Product/1', 'title' => 'Serum']];
+            if ($type === 'preorder') {
+                $config['content']['ship_date'] = now()->addDays(30)->toIso8601String();
+            }
+            $manager->saveDraft($experience, $config, [], null);
 
-        // No per-plan offer counts any more.
+            return $experience->fresh();
+        };
+
+        // Widgets every plan has are not capped.
+        $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
+        $manager->publish($manager->create($store, 'trust', 'review-card', null), null);
+        $manager->publish($manager->create($store, 'sales-pop', 'classic-card', null), null);
+
+        // One live cart upsell and one live pre-order on Free…
+        $manager->publish($ready('cart-upsells', 'grid'), null);
+        $manager->publish($ready('preorder', 'classic-card'), null);
+        try {
+            $manager->publish($ready('cart-upsells', 'carousel'), null);
+            $this->fail('A second live cart upsell needs a paid plan.');
+        } catch (PublishException $e) {
+            $this->assertSame('plan', $e->reason);
+            $this->assertStringContainsString('The Free plan includes 1 live cart upsell', $e->getMessage());
+        }
+
+        // …and unlimited from Starter up.
+        $store->forceFill(['plan' => 'starter'])->save();
+        $second = $store->experiences()->where('type', 'cart-upsells')->where('status', 'draft')->first();
+        $manager->publish($second->fresh(), null);
+        $this->assertSame(2, $store->experiences()->where('type', 'cart-upsells')->where('status', 'published')->count());
+
+        // Downgrading pauses what the lower plan doesn't cover: the newest stays live, nothing is deleted.
+        $store->forceFill(['plan' => 'free'])->save();
+        $this->assertSame(1, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
+        $upsells = $store->experiences()->where('type', 'cart-upsells')->orderBy('id')->pluck('status', 'id');
+        $this->assertSame(['paused', 'published'], $upsells->values()->all());
+        $this->assertSame(3, $store->experiences()->whereIn('type', ['trust', 'sales-pop'])->where('status', 'published')->count(), 'Uncapped widgets stay live.');
+        $this->assertSame(0, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()), 'Already within the plan.');
+    }
+
+    public function test_the_sales_limit_stops_every_offer(): void
+    {
+        $this->fakeShopify();
+        $store = $this->installedStore(['plan' => 'starter']);
+        $manager = app(ExperienceManager::class);
+
         $manager->publish($manager->create($store, 'shipping-bar', 'minimal', null), null);
         $manager->publish($manager->create($store, 'shipping-bar', 'progress', null), null);
         $this->assertCount(2, app(StorefrontPublisher::class)->payload($store)['experiences']);

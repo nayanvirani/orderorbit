@@ -59,6 +59,12 @@ class AnalyticsTest extends TestCase
 
         $owner = $this->member($store, 'owner');
         $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Revenue from offers')->assertSee('$92.20');
+
+        // Free shows store totals; revenue per offer is on Starter and above.
+        $store->forceFill(['plan' => 'free'])->save();
+        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Revenue per offer is on Starter and above')->assertDontSee('Upsell take rate');
+        $store->forceFill(['plan' => 'growth'])->save();
+        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Upsell take rate');
         $this->get('/app', $this->as($owner))->assertOk()->assertSee('$92.20');
     }
 

@@ -1,35 +1,40 @@
 <?php
 
 /*
-| Pricing page copy. Every plan has every feature; plans differ by the store's total sales
-| in each 30-day cycle (config/shopify.php → billing.plans.*.sales_limit).
+| Pricing page copy. Plans step up by features and by the store's total sales in each 30-day
+| cycle (config/shopify.php → billing.plans). "Coming soon" rows are planned features.
 */
 
 return [
     'taglines' => [
-        'free' => 'For new stores',
-        'starter' => 'For stores finding their feet',
-        'growth' => 'For growing stores',
+        'free' => 'Try it on a new store',
+        'starter' => 'The full storefront toolkit',
+        'growth' => 'Checkout and testing',
         'scale' => 'For established stores',
     ],
     'rows' => [
         ['Monthly store sales', 'Up to $1,000', 'Up to $8,000', 'Up to $20,000', 'Unlimited'],
-        ['Bundles and progressive gifts', true, true, true, true],
-        ['Cart upsells, countdowns, sticky add to cart, trust', true, true, true, true],
-        ['Pre-orders and sales pop', true, true, true, true],
-        ['Unlimited offers', true, true, true, true],
+        ['Countdown, sticky add to cart, trust badges, sales pop', true, true, true, true],
+        ['Bundles', '1 live', 'Unlimited', 'Unlimited', 'Unlimited'],
+        ['Progressive gifts', '1 live', 'Unlimited', 'Unlimited', 'Unlimited'],
+        ['Cart upsells', '1 live', 'Unlimited', 'Unlimited', 'Unlimited'],
+        ['Pre-orders', '1 live', 'Unlimited', 'Unlimited', 'Unlimited'],
         ['Every template and design option', true, true, true, true],
-        ['Analytics (revenue per offer)', true, true, true, true],
-        ['New features as they are released', true, true, true, true],
+        ['Analytics', 'Store totals', 'Revenue per offer', 'Revenue per offer', 'Revenue per offer'],
+        ['Checkout & Thank You blocks (coming soon)', false, false, true, true],
+        ['Customer account blocks (coming soon)', false, false, true, true],
+        ['A/B testing (coming soon)', false, false, true, true],
+        ['Automation and personalization (coming soon)', false, false, false, true],
         ['Support', 'Standard', 'Standard', 'Standard', 'Priority'],
     ],
     'faqs' => [
+        ['What can I do on the Free plan?', 'Countdowns, sticky add to cart, trust badges and sales pop are unlimited. You can also run one live bundle, one progressive gifts campaign, one cart upsell and one pre-order, with every template. It stays free while your store sells up to $1,000 per cycle.'],
         ['What counts as "monthly store sales"?', 'Your store\'s total sales from all orders in the current 30-day cycle, converted to US dollars. Cycles start on the day you install the app. Test orders and cancelled orders don\'t count, and refunds are taken off.'],
-        ['Are any features locked on cheaper plans?', 'No. Every plan, including Free, has every feature, every template and unlimited offers. You only move up when your store grows.'],
-        ['What happens when my store passes its plan\'s limit?', 'The app tells you as soon as it happens, even early in the cycle, and you have 3 days to upgrade. After that every feature stops until you upgrade. Nothing is deleted, and everything goes live again the moment you do.'],
-        ['How am I billed?', 'Through your Shopify invoice, monthly. You can change or cancel your plan from Shopify at any time.'],
+        ['What happens when my store passes its plan\'s sales limit?', 'The app tells you as soon as it happens, even early in the cycle, and you have 3 days to upgrade. After that every feature stops until you upgrade. Nothing is deleted, and everything goes live again the moment you do.'],
         ['Does the count start again each cycle?', 'Yes, every 30 days. If your store was stopped for passing its limit, it stays stopped until you upgrade.'],
-        ['Can I downgrade?', 'Yes, whenever your store\'s sales fit the lower plan.'],
-        ['Do I need Shopify Plus?', 'No. Everything that\'s live today works on any Shopify plan.'],
+        ['Which plan gets the features that are coming soon?', 'Checkout and Thank You blocks, customer account blocks and A/B testing will be on Growth and Scale. Automation and personalization will be on Scale. They appear in the app as they are released, at no extra charge on those plans.'],
+        ['How am I billed?', 'Through your Shopify invoice, monthly. You can change or cancel your plan from Shopify at any time.'],
+        ['Can I downgrade?', 'Yes, whenever your store\'s sales fit the lower plan. Offers the lower plan doesn\'t cover are paused, not deleted.'],
+        ['Do I need Shopify Plus?', 'No. Everything that\'s live today works on any Shopify plan. Blocks inside checkout will need Shopify Plus; Thank You and Order Status blocks won\'t.'],
     ],
 ];
