@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AnalyticsEvent;
+use App\Models\RecentPurchase;
 use App\Models\Store;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
@@ -79,6 +80,46 @@ class PixelController extends Controller
         }
         foreach ($credited as $who => $c) {
             AnalyticsEvent::create($base + ['event' => 'attributed', 'experience_handle' => $who, 'order_ref' => $ref, 'value' => round($c['value'], 2), 'quantity' => max(1, $c['quantity']), 'currency' => $currency]);
+        }
+
+        $this->purchases($store, $ref, $data);
+    }
+
+    /**
+     * Products from the order for Sales pop: title, link, image and the order's country.
+     */
+    private function purchases(Store $store, string $ref, array $data): void
+    {
+        $country = strtoupper((string) ($data['cc'] ?? ''));
+        $country = preg_match('/^[A-Z]{2}$/', $country) ? $country : null;
+        $seen = [];
+        foreach (array_slice((array) ($data['l'] ?? []), 0, 50) as $line) {
+            $id = preg_replace('/\D/', '', (string) ($line['p'] ?? ''));
+            $title = trim(mb_substr(strip_tags((string) ($line['t'] ?? '')), 0, 255));
+            if ($id === '' || $title === '' || isset($seen[$id]) || count($seen) >= 5) {
+                continue;
+            }
+            $seen[$id] = true;
+            $path = parse_url((string) ($line['u'] ?? ''), PHP_URL_PATH);
+            $image = (string) ($line['i'] ?? '');
+            RecentPurchase::firstOrCreate(
+                ['store_id' => $store->id, 'order_ref' => $ref, 'product_id' => $id],
+                [
+                    'title' => $title,
+                    'url' => is_string($path) && str_starts_with($path, '/') ? mb_substr($path, 0, 500) : null,
+                    'image' => preg_match('#^https://[^\s"\'<>]+$#', $image) ? mb_substr($image, 0, 1000) : null,
+                    'country' => $country,
+                    'purchased_at' => now(),
+                ],
+            );
+        }
+
+        // Keep only the newest purchases per store.
+        if ($seen) {
+            $cutoff = RecentPurchase::where('store_id', $store->id)->orderByDesc('id')->skip(RecentPurchase::KEEP)->value('id');
+            if ($cutoff) {
+                RecentPurchase::where('store_id', $store->id)->where('id', '<=', $cutoff)->delete();
+            }
         }
     }
 }

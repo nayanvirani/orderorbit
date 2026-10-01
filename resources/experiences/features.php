@@ -85,6 +85,20 @@ return [
         ],
     ],
 
+    'sales-pop' => [
+        'icon' => 'users',
+        'tone' => 'salespop',
+        'label' => 'Sales pop',
+        'types' => ['sales-pop'],
+        'tagline' => 'Show what others <em>just bought.</em>',
+        'lead' => 'Small recent-purchase notifications on every page, built from your real orders. No theme block needed: the app embed shows them wherever you choose.',
+        'steps' => [
+            'Pick a layout and the position for desktop and mobile.',
+            'Set timing: first pop, auto close, gap and order.',
+            'Publish. It shows on every page while the app embed is on, using your real recent orders.',
+        ],
+    ],
+
     'trust' => [
         'icon' => 'shield',
         'tone' => 'trust',

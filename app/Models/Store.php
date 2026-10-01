@@ -137,4 +137,17 @@ class Store extends Model
     {
         return $this->users()->where('role', 'owner')->whereNull('disabled_at')->whereNotNull('shopify_user_id');
     }
+
+    /**
+     * The Theme Editor link for placing an experience type: the app embed for global types,
+     * otherwise "add block" on the matching template.
+     */
+    public function themeEditorUrl(string $surface): string
+    {
+        $key = config('shopify.api_key');
+
+        return $surface === 'global'
+            ? $this->adminUrl("themes/current/editor?context=apps&activateAppId={$key}/app-embed")
+            : $this->adminUrl('themes/current/editor?template='.($surface === 'product' ? 'product' : ($surface === 'cart' ? 'cart' : 'index'))."&addAppBlockId={$key}/experience&target=newAppsSection");
+    }
 }
