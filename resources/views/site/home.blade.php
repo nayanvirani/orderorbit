@@ -230,12 +230,8 @@
         <div class="mn-wide">
             <h2>Simple pricing, billed by Shopify</h2>
             <p class="mn-intro">Start on any plan. Upgrade, downgrade or cancel whenever you like from your Shopify admin.</p>
-            <div class="mn-facts">
-                @foreach ($plans as $key => $plan)
-                    <div><b>${{ number_format($plan['price'], 2) }}</b><span><strong style="color:var(--text)">{{ $plan['name'] }}</strong> · per month<br>{{ implode(' · ', array_slice($plan['features'], 0, 3)) }}</span></div>
-                @endforeach
-            </div>
-            <p style="margin:22px 0 0"><a class="btn" href="{{ route('site.pricing') }}">Compare plans</a></p>
+            @include('site.partials.plan-cards', ['plans' => $plans])
+            <p style="margin:28px 0 0;text-align:center"><a class="btn" href="{{ route('site.pricing') }}">Compare all plan details</a></p>
         </div>
     </section>
 
