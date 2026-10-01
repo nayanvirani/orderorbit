@@ -13,9 +13,7 @@
 @endpush
 
 @php
-    $features = \App\Support\Content::features();
-    $live = array_filter($features, fn ($f) => ($f['status'] ?? 'live') === 'live');
-    $soon = array_filter($features, fn ($f) => ($f['status'] ?? 'live') === 'soon');
+    $features = collect(\App\Support\Content::features())->sortBy(fn ($f) => ($f['status'] ?? 'live') === 'soon' ? 1 : 0)->all();
 @endphp
 
 @section('content')
@@ -32,7 +30,74 @@
         </div>
     </section>
 
-    <div class="mn-shot">@include('site.visuals.bundles')</div>
+    <section class="mn-section plain">
+        <div class="mn-wide">
+            <p class="mn-group">Everything in one app</p>
+            <ul class="mn-feat">
+                @foreach ($features as $slug => $f)
+                    @php($isSoon = ($f['status'] ?? 'live') === 'soon')
+                    <li class="{{ $isSoon ? 'is-soon' : '' }}">
+                        <a href="{{ route('site.feature', $slug) }}">
+                            <span class="ico"><x-icon :name="$f['icon']"/></span>
+                            <b>{{ $f['name'] }}@if ($isSoon)<span class="soon">Soon</span>@endif</b>
+                            <span>{{ $f['summary'] ?? $f['menu'] }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>Replace 5–10 apps with one</h2>
+            <p class="mn-intro">A typical Shopify store adds a separate app for every job: bundles, gifts, a shipping bar, upsells, a timer, a sticky button, trust badges, reporting. Each one has its own bill, its own script and its own look. OrderOrbit Space does all of these jobs in one app.</p>
+            <div class="mn-compare">
+                <div class="col">
+                    <p class="mn-group">Separate apps</p>
+                    <ul>
+                        @foreach ([
+                            ['Bundles & quantity breaks', '$10–40'],
+                            ['Free gift with purchase', '$10–30'],
+                            ['Free shipping bar', '$5–15'],
+                            ['Cart upsells', '$10–40'],
+                            ['Countdown timer', '$5–15'],
+                            ['Sticky add to cart', '$5–15'],
+                            ['Trust badges & reviews widget', '$5–20'],
+                            ['Revenue analytics', '$20–50'],
+                        ] as [$job, $cost])
+                            <li><span>{{ $job }}</span><b>{{ $cost }}</b></li>
+                        @endforeach
+                    </ul>
+                    <p class="total"><span>8 apps, every month</span><b>$70–225</b></p>
+                </div>
+                <div class="col ours">
+                    <p class="mn-group">OrderOrbit Space</p>
+                    <p class="big">1 app</p>
+                    <p class="price">from <b>${{ number_format(min(array_column($plans, 'price')), 2) }}</b> a month</p>
+                    <p>Every live feature is included on every plan. Higher plans raise the limits, not the feature list.</p>
+                    <a class="btn" href="{{ route('site.pricing') }}">See pricing</a>
+                </div>
+            </div>
+            <p class="mn-fine">Separate-app prices are typical monthly ranges for single-purpose apps on the Shopify App Store; your own bills may differ.</p>
+        </div>
+    </section>
+
+    <section class="mn-section">
+        <div class="mn-wide">
+            <h2>What changes after you install</h2>
+            <ul class="mn-list">
+                <li><b>You pay for one app, not eight</b><span>One subscription on your Shopify invoice replaces a stack of monthly bills — and one place to manage every offer.</span></li>
+                <li><b>Your store loads faster</b><span>Every extra app adds its own scripts and styles to your pages. OrderOrbit Space uses one small shared runtime, and each feature loads only on pages where it appears.</span></li>
+                <li><b>No more app conflicts</b><span>Separate apps fight over your add-to-cart button and cart. Here every feature is built to work together, and none of them edit theme code.</span></li>
+                <li><b>One look across the store</b><span>Bundles, gift bars, timers and trust blocks share your fonts and colours, so the store feels like one brand instead of eight widgets.</span></li>
+                <li><b>One set of numbers</b><span>Instead of each app claiming the same sale, one analytics view credits each order line to the offer that added it.</span></li>
+                <li><b>Less to maintain</b><span>One app to update, one support team to contact, and one switch to turn things off.</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="mn-shot" style="margin-top:clamp(48px,7vw,88px)">@include('site.visuals.bundles')</div>
 
     <section class="mn-section" style="margin-top:clamp(48px,7vw,88px)">
         <div class="mn-narrow">
@@ -41,22 +106,6 @@
                 <p>Most growth apps bolt a widget onto your product page and hope for the best. The widget fights your theme's add-to-cart, the discount needs a code nobody remembers, and you never find out whether it made money.</p>
                 <p>OrderOrbit Space takes a different approach. Every offer is placed through Shopify's Theme Editor or right above your add-to-cart button, uses your store's fonts and colours, and applies its price at checkout automatically. A built-in Shopify pixel then shows how much revenue each offer brought in.</p>
             </div>
-        </div>
-    </section>
-
-    <section class="mn-section">
-        <div class="mn-wide">
-            <h2>What you get</h2>
-            <p class="mn-intro">Everything below is in the app today. Each feature has ready-made templates you can restyle to match your store.</p>
-            <ul class="mn-rows">
-                @foreach ($live as $slug => $f)
-                    <li><a href="{{ route('site.feature', $slug) }}"><b>{{ $f['name'] }}</b><span>{{ $f['summary'] ?? $f['menu'] }}</span><i>Learn more →</i></a></li>
-                @endforeach
-            </ul>
-            @if ($soon)
-                <p class="mn-group" style="margin-top:36px">Coming soon</p>
-                <p class="mn-intro" style="margin-bottom:0">{{ collect($soon)->pluck('name')->implode(' · ') }}</p>
-            @endif
         </div>
     </section>
 
@@ -104,6 +153,7 @@
             <h2>Questions</h2>
             @include('site.partials.faq', ['faqs' => [
                 ['What is OrderOrbit Space?', 'A Shopify app that helps you raise order value and conversion with bundles, progressive gifts (free gifts, free shipping and discounts), cart upsells, countdowns, sticky add-to-cart and trust blocks — with built-in analytics that show what each offer earns.'],
+                ['Can it replace the apps I already use?', 'For most stores, yes. If you run separate apps for bundles, free gifts, a shipping bar, upsells, timers, a sticky add-to-cart or trust badges, you can recreate those offers in OrderOrbit Space, check them on your store, then uninstall the old apps.'],
                 ['Will it slow down or break my theme?', 'No. Offers load only on the pages where they appear, and each one is a small script. There are no theme code edits, and you can remove any block in one click.'],
                 ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
                 ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],
