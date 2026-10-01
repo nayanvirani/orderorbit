@@ -286,6 +286,51 @@ return [
         ],
     ],
 
+    // Product-page block for the products the merchant picks. It can relabel the theme's add-to-cart
+    // and adds a "Pre-order" line property so the order shows it; the product itself must allow
+    // selling when out of stock in Shopify.
+    'preorder' => [
+        'label' => 'Pre-order',
+        'singular' => 'Pre-order',
+        'icon' => 'calendar',
+        'meter' => null,
+        'surface' => 'product',
+        'description' => 'Take orders before stock arrives, with a ship date, progress bar and countdown.',
+        'empty' => 'Take orders for products that aren\'t in stock yet.',
+        'templates' => [
+            'classic-card' => ['name' => 'Classic card', 'style' => 'card'],
+            'minimal-line' => ['name' => 'Minimal line', 'style' => 'minimal', 'content' => ['progress' => 'none']],
+            'timeline' => ['name' => 'Timeline steps', 'style' => 'timeline'],
+            'countdown-tiles' => ['name' => 'Countdown tiles', 'style' => 'tiles', 'content' => ['breakdown' => 'months']],
+            'goal-tracker' => ['name' => 'Goal tracker', 'style' => 'goal', 'content' => ['progress' => 'goal']],
+            'premium-dark' => ['name' => 'Premium dark', 'style' => 'premium'],
+            'banner' => ['name' => 'Banner', 'style' => 'banner'],
+            'badge-pill' => ['name' => 'Badge pill', 'style' => 'pill', 'content' => ['progress' => 'none']],
+        ],
+        'content' => [
+            'products' => ['type' => 'products', 'label' => 'Pre-order products', 'required' => true, 'max_items' => 50, 'help' => 'It only shows on these products. In Shopify, turn on "Continue selling when out of stock" for them.'],
+            'show_when' => ['type' => 'select', 'label' => 'Show it', 'default' => 'always', 'options' => ['always' => 'Always on these products', 'sold_out' => 'Only when the selected variant is out of stock']],
+            'badge_text' => ['type' => 'text', 'label' => 'Badge', 'default' => 'Pre-order', 'max' => 30],
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Available for pre-order', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Ships by {date}. Order now to reserve yours.', 'max' => 160, 'help' => 'Use {date} for the ship date and {time} for the time left, e.g. "3 weeks 2 days".'],
+            'ship_mode' => ['type' => 'select', 'label' => 'Ship date', 'default' => 'date', 'options' => ['date' => 'A fixed date', 'relative' => 'A number of days after the order']],
+            'ship_date' => ['type' => 'datetime', 'when' => ['ship_mode' => 'date'], 'label' => 'Expected ship date'],
+            'start_date' => ['type' => 'datetime', 'when' => ['ship_mode' => 'date'], 'label' => 'Pre-order opened', 'help' => 'Where the time progress bar starts. Leave empty to start 30 days before the ship date.'],
+            'ship_days' => ['type' => 'number', 'when' => ['ship_mode' => 'relative'], 'label' => 'Ships after (days)', 'default' => 21, 'min' => 1, 'max' => 365],
+            'breakdown' => ['type' => 'select', 'label' => 'Time left shown as', 'default' => 'auto', 'options' => ['auto' => 'Automatic', 'months' => 'Months, weeks and days', 'weeks' => 'Weeks and days', 'days' => 'Days']],
+            'progress' => ['type' => 'select', 'label' => 'Progress bar', 'default' => 'time', 'options' => ['time' => 'Time until shipping', 'goal' => 'Units reserved toward a goal', 'none' => 'No progress bar']],
+            'progress_label' => ['type' => 'text', 'when' => ['progress' => 'time'], 'label' => 'Time progress label', 'default' => 'Production progress', 'max' => 60],
+            'goal_target' => ['type' => 'number', 'when' => ['progress' => 'goal'], 'label' => 'Goal (units)', 'default' => 100, 'min' => 1, 'max' => 1000000],
+            'goal_current' => ['type' => 'number', 'when' => ['progress' => 'goal'], 'label' => 'Units reserved so far', 'default' => 0, 'min' => 0, 'max' => 1000000, 'help' => 'Use your real number and update it as orders come in.'],
+            'goal_label' => ['type' => 'text', 'when' => ['progress' => 'goal'], 'label' => 'Goal label', 'default' => '{current} of {target} reserved', 'max' => 80],
+            'change_button' => ['type' => 'toggle', 'label' => 'Change the add-to-cart button text', 'default' => true],
+            'button_text' => ['type' => 'text', 'when' => ['change_button' => '1'], 'label' => 'Button text', 'default' => 'Pre-order now', 'max' => 30],
+            'add_property' => ['type' => 'toggle', 'label' => 'Mark pre-order items in the cart and order', 'default' => true, 'help' => 'Adds a "Pre-order: Ships by …" line to the item, so you and the customer can see it.'],
+            'property_name' => ['type' => 'text', 'when' => ['add_property' => '1'], 'label' => 'Line name', 'default' => 'Pre-order', 'max' => 30],
+            'note' => ['type' => 'text', 'label' => 'Small print', 'default' => 'Payment is taken today. We\'ll email you when it ships.', 'max' => 200],
+        ],
+    ],
+
     // Shown on every page by the app embed: no theme block to place. Purchases are real orders
     // recorded by the OrderOrbit pixel (SalesPopController feed); nothing is invented.
     'sales-pop' => [

@@ -139,7 +139,7 @@
   // Shared helpers loaded first: oo-commerce.js (cart, products) for types that add to the cart,
   // oo-timer.js for countdowns.
   function needs(type) {
-    return (/^(shipping-bar|countdown|trust|sales-pop)$/.test(type) ? [] : ['commerce']).concat(/^(bundles|countdown)$/.test(type) ? ['timer'] : /^(shipping-bar|free-gifts)$/.test(type) ? ['thresholds'] : []);
+    return (/^(shipping-bar|countdown|trust|sales-pop|preorder)$/.test(type) ? [] : ['commerce']).concat(/^(bundles|countdown)$/.test(type) ? ['timer'] : /^(shipping-bar|free-gifts)$/.test(type) ? ['thresholds'] : []);
   }
 
   function script(name) {

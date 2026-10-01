@@ -325,6 +325,13 @@ class Schema
         if ($type === 'quantity-breaks' && ($c['default_tier'] ?? 1) > count($c['tiers'] ?? [])) {
             $errors['content.default_tier'] = 'Selected tier must be one of your tiers.';
         }
+        if ($type === 'preorder' && ($c['ship_mode'] ?? 'date') === 'date') {
+            if (empty($c['ship_date'])) {
+                $errors['content.ship_date'] = 'Set the expected ship date.';
+            } elseif (! empty($c['start_date']) && CarbonImmutable::parse($c['start_date'])->gte(CarbonImmutable::parse($c['ship_date']))) {
+                $errors['content.start_date'] = 'The pre-order must open before the ship date.';
+            }
+        }
         if ($type === 'countdown' && ($c['mode'] ?? 'date') === 'date' && empty($c['ends_at'])) {
             $errors['content.ends_at'] = 'Set when the campaign ends.';
         }
