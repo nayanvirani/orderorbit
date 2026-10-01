@@ -493,3 +493,57 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-preview-mobile .oo-sp-stage[data-m^="bottom"] { align-items: flex-end; }
 .oo-preview-mobile .oo-sp-stage[data-m="bottom-left"] .oo-sp-box, .oo-preview-mobile .oo-sp-stage[data-m="bottom-right"] .oo-sp-box { width: 82%; }
 .oo-preview-mobile .oo-sp-stage[data-m="bottom-right"] { justify-content: flex-end; }
+
+/* Pre-order */
+.oo-po p { margin: 0; }
+.oo-po .oo-icon { width: 16px; height: 16px; flex: none; }
+.oo-po-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.oo-po-head .oo-po-date { margin-left: auto; }
+.oo-po > .oo-po-badge { align-self: flex-start; }
+.oo-po-bar { align-self: stretch; }
+.oo-po-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: var(--oo-accent); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.oo-po-date { display: inline-flex; align-items: center; gap: 6px; font-size: .9em; font-weight: 600; }
+.oo-po-msg { font-size: .95em; }
+.oo-po-msg strong { font-weight: 700; }
+.oo-po-note { font-size: .8em; opacity: .7; }
+.oo-po-bar { display: flex; flex-direction: column; gap: 6px; }
+.oo-po-bar-top { display: flex; justify-content: space-between; gap: 10px; font-size: .85em; }
+.oo-po-bar-top b { font-weight: 700; }
+.oo-po-bar .oo-progress { height: 8px; }
+.oo-po-tiles { display: flex; gap: 8px; }
+.oo-po-tile { flex: 1; padding: 10px 6px; border-radius: calc(var(--oo-radius, 12px) * .7); background: color-mix(in srgb, var(--oo-accent) 10%, transparent); text-align: center; }
+.oo-po-tile b { display: block; font-size: 1.7em; line-height: 1.05; font-weight: 800; font-variant-numeric: tabular-nums; }
+.oo-po-tile span { font-size: .75em; text-transform: uppercase; letter-spacing: .06em; opacity: .75; }
+/* Minimal line and badge pill */
+.oo-style-minimal .oo-po { gap: 10px; }
+.oo-po-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .95em; }
+.oo-po-pillrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 6px 14px 6px 6px; border: 1px solid color-mix(in srgb, var(--oo-text) 14%, transparent); border-radius: 999px; font-size: .9em; }
+.oo-po-pillrow span { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.oo-po-pillrow em { margin-left: auto; font-style: normal; opacity: .7; }
+.oo-exp.oo-style-pill { padding: 0; border: 0; background: none; }
+/* Banner */
+.oo-po-bn { display: flex; gap: 12px; align-items: flex-start; }
+.oo-po-bn > .oo-icon { width: 34px; height: 34px; padding: 7px; border-radius: 50%; background: var(--oo-accent); color: #fff; }
+.oo-po-bn div { display: flex; flex-direction: column; gap: 4px; }
+.oo-style-banner .oo-po { color: #fff; }
+.oo-style-banner .oo-po .oo-progress { background: rgba(255, 255, 255, .25); }
+.oo-style-banner .oo-po-note { opacity: .8; }
+/* Timeline */
+.oo-po-steps { --po: .5; position: relative; display: grid; grid-template-columns: repeat(3, 1fr); margin: 4px 0; padding: 0; list-style: none; }
+.oo-po-steps::before, .oo-po-steps::after { content: ""; position: absolute; top: 11px; left: 16.66%; height: 3px; border-radius: 3px; }
+.oo-po-steps::before { right: 16.66%; background: color-mix(in srgb, var(--oo-text) 12%, transparent); }
+.oo-po-steps::after { width: calc(66.66% * var(--po)); background: var(--oo-accent); }
+.oo-po-steps li { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: .8em; }
+.oo-po-steps i { display: grid; place-items: center; width: 25px; height: 25px; margin-bottom: 4px; border-radius: 50%; border: 3px solid color-mix(in srgb, var(--oo-text) 15%, var(--oo-bg, #fff)); background: var(--oo-bg, #fff); }
+.oo-po-steps .oo-done i { border-color: var(--oo-accent); background: var(--oo-accent); color: #fff; }
+.oo-po-steps .oo-done .oo-icon { width: 13px; height: 13px; }
+.oo-po-steps .oo-now i { border-color: var(--oo-accent); }
+.oo-po-steps b { font-weight: 700; font-size: 1.05em; }
+.oo-po-steps span { opacity: .7; }
+/* Premium */
+.oo-style-premium .oo-po-tile { background: rgba(255, 255, 255, .08); }
+.oo-style-premium .oo-po-badge { color: #1d1b33; }
+.oo-style-premium .oo-po-date { color: var(--oo-accent); }
+/* Goal */
+.oo-po-l-goal .oo-po-bar .oo-progress { height: 12px; }
+.oo-po-l-goal .oo-po-bar-top { font-size: .95em; }

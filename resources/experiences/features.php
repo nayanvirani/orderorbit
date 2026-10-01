@@ -85,6 +85,20 @@ return [
         ],
     ],
 
+    'preorder' => [
+        'icon' => 'calendar',
+        'tone' => 'preorder',
+        'label' => 'Pre-order',
+        'types' => ['preorder'],
+        'tagline' => 'Sell it before it\'s <em>in stock.</em>',
+        'lead' => 'A pre-order widget for the products you choose, with the ship date, a progress bar and the time left in months, weeks or days. It can relabel your add-to-cart and marks pre-order items on the order.',
+        'steps' => [
+            'Pick the products, the ship date and a layout.',
+            'Add the OrderOrbit Space block to your product template and choose "Pre-order".',
+            'Shoppers see the ship date and order; each item is marked "Pre-order" in the cart and on the order.',
+        ],
+    ],
+
     'sales-pop' => [
         'icon' => 'users',
         'tone' => 'salespop',

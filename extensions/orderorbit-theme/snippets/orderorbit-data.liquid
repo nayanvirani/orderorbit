@@ -16,6 +16,7 @@
     "productCompareAt": {{ product.selected_or_first_available_variant.compare_at_price | json }},
     "productImage": {% if product.featured_image %}{{ product.featured_image | image_url: width: 160 | json }}{% else %}null{% endif %},
     "variant": {{ product.selected_or_first_available_variant.id | json }},
+    "soldOut": {% if product %}{ {%- for v in product.variants -%}"{{ v.id }}": {% if v.inventory_management and v.inventory_quantity <= 0 %}true{% else %}false{% endif %}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{% else %}null{% endif %},
     "collections": {{ product.collections | map: 'id' | json }},
     "loggedIn": {% if customer %}true{% else %}false{% endif %},
     "ordersCount": {{ customer.orders_count | default: 0 | json }},
