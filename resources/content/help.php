@@ -59,12 +59,14 @@ return [
         ],
     ],
     [
-        'name' => 'Upsells, countdowns and more',
+        'name' => 'Upsells, countdowns, pre-orders and more',
         'icon' => 'clock',
-        'text' => 'Cart upsells, countdown timers, sticky add-to-cart and trust blocks.',
+        'text' => 'Cart upsells, countdown timers, pre-orders, sales pop, sticky add-to-cart and trust blocks.',
         'articles' => [
             ['How do cart upsell incentives work?', 'If you add a discount to an upsell, it applies only to items added from that recommendation, automatically at checkout.'],
             ['Can a countdown reset for each visitor?', 'No. Countdowns only count to a real end date or a daily cutoff in your store\'s time zone. When the campaign ends the timer hides or shows your message.'],
+            ['How do pre-orders work?', 'Pick the products and the ship date, then add the OrderOrbit Space block to your product template and choose "Pre-order". Turn on "Continue selling when out of stock" for those products in Shopify. Each pre-order item gets a "Pre-order: Ships by …" line on the order.'],
+            ['Where does Sales pop get its purchases?', 'From your store\'s real recent orders: the product, the order\'s country and the time. No names are shown and nothing is invented. It shows on every page while the app embed is on.'],
             ['When does the sticky add-to-cart show?', 'After your theme\'s own buy button scrolls out of view, on the devices you choose. It disappears again when the button is back on screen.'],
         ],
     ],

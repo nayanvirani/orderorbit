@@ -22,7 +22,7 @@
         <div class="wrap">
             <span class="mn-kicker">A Shopify app for higher order value</span>
             <h1>Sell more to every shopper, <em>without fighting your theme.</em></h1>
-            <p class="mn-lead">Bundles, progressive gifts, cart upsells, countdowns and trust blocks that look like part of your store, apply their savings at checkout, and show you exactly what they earn.</p>
+            <p class="mn-lead">Bundles, progressive gifts, upsells, countdowns, pre-orders, sales pops and trust blocks that look like part of your store, apply their savings at checkout, and show you exactly what they earn.</p>
             <div class="ctas">
                 <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
                 <a class="btn lg" href="{{ route('site.how') }}">How it works</a>
@@ -39,6 +39,8 @@
             ['trust-social-proof', 'trust', 'Product page', 'p5'],
             ['sticky-add-to-cart', 'sticky', 'Product page', 'p6'],
             ['analytics', 'analytics', 'In the app', 'p7'],
+            ['preorder', 'preorder', 'Product page', 'p8'],
+            ['sales-pop', 'salespop', 'Every page', 'p9'],
         ];
         $soonFeatures = array_filter($features, fn ($f) => ($f['status'] ?? 'live') === 'soon');
     @endphp
@@ -62,6 +64,13 @@
                         <div><span>Revenue from offers</span><b>$4,280</b><em>▲ 18%</em></div>
                         <div class="bars">@foreach ([38, 52, 44, 63, 58, 76, 88] as $h)<i style="height:{{ $h }}%"></i>@endforeach</div>
                     </div>
+                @elseif ($type === 'preorder')
+                    <div class="mk-po" style="margin:0">
+                        <div class="mk-po-head"><span class="mk-po-badge">Pre-order</span><span><x-icon name="calendar"/> Ships 22 Nov</span></div>
+                        <div class="mk-po-tiles"><div><b>1</b><small>MONTH</small></div><div><b>3</b><small>WEEKS</small></div><div><b>2</b><small>DAYS</small></div></div>
+                    </div>
+                @elseif ($type === 'salespop')
+                    <div class="mk-sp-toast" style="position:static;width:auto;box-shadow:none"><div class="ph art b"></div><div><b>Someone in Canada</b><span>purchased <strong>Glow Serum</strong></span><small>12 minutes ago</small></div></div>
                 @else
                     @include('site.partials.thumb', ['type' => $type, 'v' => $type === 'trust' ? 0 : 1])
                 @endif
@@ -79,6 +88,8 @@
             ['cursor', 'Sticky add to cart', '$5–15'],
             ['shield', 'Trust badges & reviews', '$5–20'],
             ['chart', 'Revenue analytics', '$20–50'],
+            ['calendar', 'Pre-orders', '$10–30'],
+            ['bell', 'Sales pop notifications', '$5–20'],
         ];
         $fromPrice = number_format(min(array_column($plans, 'price')), 2);
     @endphp
@@ -91,10 +102,10 @@
             </div>
             <div class="hx-merge">
                 <div class="hx-before">
-                    <p class="hx-tag">Today · 8 separate apps</p>
+                    <p class="hx-tag">Today · {{ count($stack) }} separate apps</p>
                     <ul>
                         @foreach ($stack as [$icon, $job, $cost])
-                            <li style="--r:{{ [-2, 1.5, -1, 2, 1, -1.5, 2, -2][$loop->index] }}deg"><x-icon :name="$icon"/><span>{{ $job }}</span><b>{{ $cost }}<small>/mo</small></b></li>
+                            <li style="--r:{{ [-2, 1.5, -1, 2, 1, -1.5, 2, -2, 1.5, -1][$loop->index % 10] }}deg"><x-icon :name="$icon"/><span>{{ $job }}</span><b>{{ $cost }}<small>/mo</small></b></li>
                         @endforeach
                     </ul>
                 </div>
@@ -113,9 +124,9 @@
                 </div>
             </div>
             <div class="hx-stats">
-                <div><span>Apps to manage</span><b>8 <i>→</i> 1</b></div>
-                <div><span>Typical monthly cost</span><b>$70–225 <i>→</i> ${{ $fromPrice }}</b></div>
-                <div><span>Scripts on your pages</span><b>8 <i>→</i> 1</b></div>
+                <div><span>Apps to manage</span><b>{{ count($stack) }} <i>→</i> 1</b></div>
+                <div><span>Typical monthly cost</span><b>$85–275 <i>→</i> ${{ $fromPrice }}</b></div>
+                <div><span>Scripts on your pages</span><b>{{ count($stack) }} <i>→</i> 1</b></div>
             </div>
             <p class="hx-fine">Separate-app prices are typical monthly ranges for single-purpose apps on the Shopify App Store; your own bills may differ.</p>
         </div>
@@ -133,17 +144,17 @@
                         <div class="inv">
                             <p class="inv-h"><span>Shopify invoice</span><span>Apps</span></p>
                             <p class="inv-row"><span><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit Space · Growth</span><b>$29.99</b></p>
-                            <p class="inv-gone"><span>Bundle app</span><span>Gift app</span><span>Timer app</span><span>Upsell app</span><span>+4 more</span></p>
+                            <p class="inv-gone"><span>Bundle app</span><span>Gift app</span><span>Timer app</span><span>Upsell app</span><span>+6 more</span></p>
                         </div>
                     </div>
-                    <h3>One bill instead of eight</h3>
+                    <h3>One bill instead of ten</h3>
                     <p>One subscription on your Shopify invoice, and one place to manage every offer.</p>
                 </article>
                 <article class="t-speed">
                     <div class="viz">
                         <div class="bars">
                             <p>Separate apps</p>
-                            <div class="b-stack">@foreach ([78, 64, 52, 70, 46, 58, 40, 66] as $w)<i style="width:{{ $w }}%"></i>@endforeach</div><p class="cap">8 scripts, 8 stylesheets</p>
+                            <div class="b-stack">@foreach ([78, 64, 52, 70, 46, 58, 40, 66, 56, 72] as $w)<i style="width:{{ $w }}%"></i>@endforeach</div><p class="cap">10 scripts, 10 stylesheets</p>
                             <p style="margin-top:30px">OrderOrbit Space</p>
                             <div class="b-one"><i></i></div><p class="cap">1 shared runtime</p>
                         </div>
@@ -239,8 +250,8 @@
         <div class="mn-narrow">
             <h2>Questions</h2>
             @include('site.partials.faq', ['faqs' => [
-                ['What is OrderOrbit Space?', 'A Shopify app that helps you raise order value and conversion with bundles, progressive gifts (free gifts, free shipping and discounts), cart upsells, countdowns, sticky add-to-cart and trust blocks — with built-in analytics that show what each offer earns.'],
-                ['Can it replace the apps I already use?', 'For most stores, yes. If you run separate apps for bundles, free gifts, a shipping bar, upsells, timers, a sticky add-to-cart or trust badges, you can recreate those offers in OrderOrbit Space, check them on your store, then uninstall the old apps.'],
+                ['What is OrderOrbit Space?', 'A Shopify app that helps you raise order value and conversion with bundles, progressive gifts (free gifts, free shipping and discounts), cart upsells, countdowns, pre-orders, sales pop, sticky add-to-cart and trust blocks — with built-in analytics that show what each offer earns.'],
+                ['Can it replace the apps I already use?', 'For most stores, yes. If you run separate apps for bundles, free gifts, a shipping bar, upsells, timers, pre-orders, sales pops, a sticky add-to-cart or trust badges, you can recreate those offers in OrderOrbit Space, check them on your store, then uninstall the old apps.'],
                 ['Will it slow down or break my theme?', 'No. Offers load only on the pages where they appear, and each one is a small script. There are no theme code edits, and you can remove any block in one click.'],
                 ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
                 ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],

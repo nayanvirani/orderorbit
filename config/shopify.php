@@ -61,7 +61,7 @@ return [
                 'name' => 'Starter',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
                 'price' => 9.99,
-                'features' => ['5 live offers', '1 bundle', '1 progressive gifts campaign', 'Cart upsells, countdowns, sticky add to cart, trust', 'Analytics', 'Every template'],
+                'features' => ['5 live offers', '1 bundle', '1 progressive gifts campaign', 'Upsells, countdowns, pre-orders, sales pop, sticky add to cart, trust', 'Analytics', 'Every template'],
                 'limits' => [
                     'active_experiences' => 5,
                     'bundles' => 1,

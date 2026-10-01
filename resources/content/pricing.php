@@ -12,6 +12,7 @@ return [
         ['Live offers', '5', 'Unlimited', 'Unlimited'],
         ['Bundles / progressive gift campaigns', '1 / 1', 'Unlimited', 'Unlimited'],
         ['Cart upsells, countdowns, sticky add to cart, trust', true, true, true],
+        ['Pre-orders and sales pop', true, true, true],
         ['Every template and design option', true, true, true],
         ['Analytics (revenue per offer)', true, true, true],
         ['Checkout & Thank You blocks (coming soon)', false, true, true],

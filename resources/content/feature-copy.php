@@ -89,6 +89,36 @@ return [
         ],
     ],
 
+    'preorder' => [
+        'status' => 'live',
+        'summary' => 'Take orders before stock arrives, with a ship date, progress bar and countdown.',
+        'overview' => [
+            'A pre-order turns "out of stock" into a sale. OrderOrbit Space adds a pre-order widget to the products you choose, showing when the item ships, how close it is and how long is left — in months, weeks or days.',
+            'Your theme\'s add-to-cart reads "Pre-order now", and each item gets a "Pre-order: Ships by …" line so you and your customer always know what\'s coming. Show it on every variant, or only when the selected variant is sold out.',
+        ],
+        'benefits' => [
+            ['Only on the products you pick', 'Choose the products, and optionally show it only when a variant is out of stock.'],
+            ['Ship date and countdown', 'A fixed date or a number of days after the order, with time left in months, weeks or days.'],
+            ['Progress bars', 'Show time until shipping or units reserved toward a goal.'],
+            ['Eight layouts', 'Classic card, minimal line, timeline steps, countdown tiles, goal tracker, premium dark, banner and badge pill.'],
+        ],
+    ],
+
+    'sales-pop' => [
+        'status' => 'live',
+        'summary' => 'Recent-purchase notifications on every page, from your real orders.',
+        'overview' => [
+            'Seeing that others are buying reassures new shoppers. Sales pop shows small notifications such as "Someone in Canada purchased Glow Serum · 12 minutes ago" — built only from your store\'s real recent orders, never invented.',
+            'It runs on every page through the app embed, so there\'s no block to place. Choose the corner on desktop and mobile, how long each pop stays, the gap between them and whether they come in random or newest-first order.',
+        ],
+        'benefits' => [
+            ['Real orders only', 'Product, country and time from actual orders; no names and nothing made up.'],
+            ['Every page, no block', 'Turn on the app embed once and it pops wherever you choose.'],
+            ['Full control over timing', 'First pop, auto close, random gaps, pops per page, loop and pause on hover.'],
+            ['Five layouts', 'Classic card, rounded pill, dark toast, minimal text and slim bar.'],
+        ],
+    ],
+
     'trust-social-proof' => [
         'status' => 'live',
         'summary' => 'Reviews, ratings, trust rows and guarantees that match your brand.',
