@@ -67,10 +67,11 @@ return [
     'billing' => [
         'currency' => 'USD',
 
-        // Every plan has every feature. Plans differ by the store's total sales over the last
-        // 30 days (USD, all orders except test and cancelled ones). "sales_limit" null = unlimited.
-        // Past the limit the merchant has "grace_days" to upgrade before offers pause.
-        'grace_days' => 7,
+        // Every plan has every feature. Plans differ by the store's total sales in its current
+        // 30-day cycle (USD, all orders except test and cancelled ones; cycles run from the first
+        // install). "sales_limit" null = unlimited. Past the limit the merchant has "grace_days"
+        // to upgrade before every feature stops; a stopped store stays stopped until it upgrades.
+        'grace_days' => 3,
         'warn_at' => 0.8,
 
         'plans' => [

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\WebhookReceipt;
+use App\Services\Billing\SalesMeter;
 use App\Services\SalesPop\RecentOrders;
 use App\Services\Shopify\Billing;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -33,7 +34,8 @@ class WebhookController extends Controller
             'app/scopes_update' => $this->scopesUpdated($store, $payload, $orders),
             'app_subscriptions/update' => $store && $billing->applyWebhook($store, $payload),
             // Sales pop: products from real orders (no customer details are kept).
-            'orders/create' => $store && $store->isInstalled() && $this->orderCreated($store, $payload, $orders),
+            'orders/create' => $store && $store->isInstalled() && $this->orderChanged($store, $payload, $orders, true),
+            'orders/updated', 'orders/cancelled' => $store && $store->isInstalled() && $this->orderChanged($store, $payload, $orders, false),
             'shop/redact' => $this->redactShop($store),
             'customers/redact', 'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
                 'customer_id' => $payload['customer']['id'] ?? null,
@@ -47,12 +49,20 @@ class WebhookController extends Controller
         return response()->noContent();
     }
 
-    private function orderCreated(Store $store, array $payload, RecentOrders $orders): void
+    /**
+     * A new or changed order: its total counts toward the plan's sales limit (refunds and
+     * cancellations arrive as updates), and a new order's products feed Sales pop.
+     */
+    private function orderChanged(Store $store, array $payload, RecentOrders $orders, bool $created): void
     {
-        $orders->fromWebhook($store, $payload);
+        $meter = app(SalesMeter::class);
+        $meter->record($store, $payload);
+        if ($created) {
+            $orders->fromWebhook($store, $payload);
+        }
 
-        // New orders move the store toward its plan's sales limit: recount at most hourly.
-        defer(fn () => app(\App\Services\Billing\SalesMeter::class)->refreshIfStale($store, 60));
+        // Recount and apply the limit after responding; stopping or resuming a store calls Shopify.
+        defer(fn () => $meter->recount($store));
     }
 
     private function scopesUpdated(?Store $store, array $payload, RecentOrders $orders): void

@@ -38,6 +38,7 @@ class BillingController extends Controller
             'latest' => $store->subscriptions()->latest('id')->first(),
             'plans' => config('shopify.billing.plans'),
             'sales' => $sales->status($store),
+            'cycles' => $store->salesCycles()->latest('starts_at')->limit(6)->get(),
             'syncError' => $syncError,
             'canManage' => $request->attributes->get('storeUser')?->can('manage_billing'),
         ]);

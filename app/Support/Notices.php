@@ -44,6 +44,7 @@ class Notices
         'already_member' => ['That person already has access to OrderOrbit Space.', true],
         'last_owner' => ['A store needs at least one owner.', true],
         'self' => ['You can\'t change your own role or access.', true],
+        'upgrade_required' => ['Your store has passed its plan\'s sales limit. Upgrade to turn everything back on.', true],
         'plan_limit' => ['You\'ve reached your plan\'s limit. Upgrade to add more.', true],
         'unexpected' => ['Something went wrong. Please try again. If it continues, contact support with the request ID.', true],
     ];

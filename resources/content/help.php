@@ -86,8 +86,8 @@ return [
         'text' => 'Plans, limits, upgrades and cancelling.',
         'articles' => [
             ['How am I billed?', 'Through your Shopify invoice. There is no separate card to add.'],
-            ['How do the plans work?', 'Every plan has every feature and unlimited offers. Plans differ by your store\'s total sales over the last 30 days: Free up to $1,000, Starter up to $8,000, Growth up to $20,000 and Scale unlimited.'],
-            ['What if my store passes its plan\'s limit?', 'The app tells you and you have 7 days to upgrade. After that your offers pause until you do; nothing is deleted.'],
+            ['How do the plans work?', 'Every plan has every feature and unlimited offers. Plans differ by your store\'s total sales in each 30-day cycle, counted from the day you installed the app: Free up to $1,000, Starter up to $8,000, Growth up to $20,000 and Scale unlimited.'],
+            ['What if my store passes its plan\'s limit?', 'The app tells you straight away, whenever in the cycle it happens, and you have 3 days to upgrade. After that every feature stops until you upgrade; nothing is deleted, and it all comes back the moment you do.'],
             ['Can I change plans?', 'Yes, at any time from Plans in the app. Upgrades take effect straight away.'],
             ['What happens if I uninstall?', 'Billing stops, offers are removed from your store and checkout pricing stops. Your store data is deleted as Shopify requires.'],
         ],

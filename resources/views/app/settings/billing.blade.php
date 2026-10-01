@@ -67,20 +67,19 @@
     @if ($effective)
     @php
         $money = fn ($v) => '$'.number_format((float) $v);
-        $cap = (float) collect($plans)->pluck('sales_limit')->filter()->max() * 1.5;
     @endphp
-    <s-section heading="Store sales · last 30 days">
+    <s-section heading="Store sales · this cycle">
         @if ($sales['state'] === 'paused')
-            <s-banner tone="critical" heading="Your offers are paused">
-                <s-paragraph>Your store's sales are over this plan's limit and the {{ config('shopify.billing.grace_days') }}-day grace period has ended. Upgrade and your offers go live again straight away. Nothing was deleted.</s-paragraph>
+            <s-banner tone="critical" heading="All features are stopped">
+                <s-paragraph>Your store passed this plan's sales limit and the {{ config('shopify.billing.grace_days') }}-day period to upgrade has ended. Choose a higher plan and everything goes live again straight away. Nothing was deleted.@if ($sales['next']) {{ $sales['next']['name'] }} (${{ number_format($sales['next']['price'], 2) }}/mo) fits your store.@endif</s-paragraph>
             </s-banner>
         @elseif ($sales['state'] === 'over')
-            <s-banner tone="warning" heading="You've passed this plan's sales limit">
-                <s-paragraph>Everything keeps working until {{ $sales['deadline']->toFormattedDateString() }}. Upgrade before then to keep your offers live.@if ($sales['next']) {{ $sales['next']['name'] }} (${{ number_format($sales['next']['price'], 2) }}/mo) fits your store.@endif</s-paragraph>
+            <s-banner tone="warning" heading="Upgrade required by {{ $sales['deadline']->toFormattedDateString() }}">
+                <s-paragraph>Your store has passed this plan's sales limit. Everything keeps working until {{ $sales['deadline']->toFormattedDateString() }}; after that every feature stops until you upgrade.@if ($sales['next']) {{ $sales['next']['name'] }} (${{ number_format($sales['next']['price'], 2) }}/mo) fits your store.@endif</s-paragraph>
             </s-banner>
         @elseif ($sales['state'] === 'near')
             <s-banner tone="info" heading="You're close to this plan's sales limit">
-                <s-paragraph>When your store passes the limit you'll have {{ config('shopify.billing.grace_days') }} days to upgrade before offers pause.</s-paragraph>
+                <s-paragraph>When your store passes the limit you'll have {{ config('shopify.billing.grace_days') }} days to upgrade before every feature stops.</s-paragraph>
             </s-banner>
         @endif
         <div class="ob-sales">
@@ -89,15 +88,31 @@
                     <b>Not counted yet</b>
                     <span>Your sales are counted from your Shopify orders shortly after you open the app.</span>
                 @else
-                    <b>{{ $money($sales['sales']) }}{{ $sales['sales'] >= $cap ? '+' : '' }}</b>
+                    <b>{{ $money($sales['sales']) }}</b>
                     <span>{{ $sales['limit'] === null ? 'Unlimited on your plan' : 'of '.$money($sales['limit']).' on your plan ('.$sales['percent'].'%)' }}</span>
                 @endif
             </div>
             @if ($sales['limit'] !== null && $sales['sales'] !== null)
                 <div class="ob-sales-bar"><i class="{{ in_array($sales['state'], ['over', 'paused'], true) ? 'over' : ($sales['state'] === 'near' ? 'near' : '') }}" style="width:{{ min(100, (int) $sales['percent']) }}%"></i></div>
             @endif
-            <span class="oo-muted">Every plan includes every feature. Plans differ only by your store's total sales (all orders, in USD; test and cancelled orders don't count).</span>
+            <span class="oo-muted">Cycle {{ $sales['cycle_start']->toFormattedDateString() }} – {{ $sales['cycle_end']->toFormattedDateString() }}. The count starts again on {{ $sales['cycle_end']->toFormattedDateString() }}. Every plan includes every feature; plans differ only by your store's total sales per 30-day cycle (all orders, in USD; test and cancelled orders don't count).</span>
         </div>
+        @if ($cycles->isNotEmpty())
+            <table class="oo-table" style="margin-top:14px">
+                <thead><tr><th>Past cycle</th><th>Orders</th><th>Store sales</th><th>Plan</th><th></th></tr></thead>
+                <tbody>
+                    @foreach ($cycles as $cycle)
+                        <tr>
+                            <td>{{ $cycle->starts_at->toFormattedDateString() }} – {{ $cycle->ends_at->toFormattedDateString() }}</td>
+                            <td>{{ number_format($cycle->orders_count) }}</td>
+                            <td>{{ $money($cycle->sales_usd) }}</td>
+                            <td>{{ $planName($cycle->plan) }}@if ($cycle->sales_limit !== null) · up to {{ $money($cycle->sales_limit) }}@endif</td>
+                            <td>@if ($cycle->over_limit)<s-badge tone="warning">Over limit</s-badge>@endif</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
     </s-section>
 
     @endif
@@ -129,6 +144,6 @@
         @endunless
     </s-section>
 
-    <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Nothing is ever deleted when you change plans. If your store's sales pass your plan's limit you have {{ config('shopify.billing.grace_days') }} days to upgrade before offers pause.</span></s-paragraph>
+    <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Nothing is ever deleted when you change plans. If your store's sales pass your plan's limit you have {{ config('shopify.billing.grace_days') }} days to upgrade before features stop.</span></s-paragraph>
 </s-page>
 @endsection

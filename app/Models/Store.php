@@ -30,6 +30,8 @@ class Store extends Model
             'installed_at' => 'datetime',
             'uninstalled_at' => 'datetime',
             'sales_checked_at' => 'datetime',
+            'cycle_anchor_at' => 'datetime',
+            'cycle_started_at' => 'datetime',
             'over_limit_since' => 'datetime',
             'offers_suspended_at' => 'datetime',
         ];
@@ -102,8 +104,28 @@ class Store extends Model
         return $this->adminUrl('charges/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/pricing_plans');
     }
 
+    public const CYCLE_DAYS = 30;
+
+    public function salesCycles(): HasMany
+    {
+        return $this->hasMany(SalesCycle::class);
+    }
+
     /**
-     * The plan's limit on total store sales over the last 30 days (USD); null means unlimited.
+     * The start of the 30-day sales cycle that contains $at. Cycles run back to back from the
+     * first install.
+     */
+    public function cycleStart(?\Carbon\CarbonInterface $at = null): \Illuminate\Support\Carbon
+    {
+        $at ??= now();
+        $anchor = $this->cycle_anchor_at ?? $this->installed_at ?? $this->created_at ?? $at;
+        $cycles = max(0, intdiv(max(0, (int) $anchor->diffInSeconds($at, false)), self::CYCLE_DAYS * 86400));
+
+        return \Illuminate\Support\Carbon::parse($anchor)->addDays($cycles * self::CYCLE_DAYS);
+    }
+
+    /**
+     * The plan's limit on total store sales per 30-day cycle (USD); null means unlimited.
      * Our own test shops are never limited.
      */
     public function salesLimit(): ?float

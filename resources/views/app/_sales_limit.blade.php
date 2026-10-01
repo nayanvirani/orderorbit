@@ -11,14 +11,14 @@
     <div class="ob-limit ob-limit-{{ $limitStatus['state'] }}" role="status">
         <div>
             @if ($limitStatus['state'] === 'paused')
-                <strong>Your offers are paused.</strong>
-                Your store sold {{ $money($limitStatus['sales']) }} in the last 30 days, over the {{ $planName }} plan's {{ $money($limitStatus['limit']) }}. Upgrade and they go live again straight away. Nothing was deleted.
+                <strong>All features are stopped.</strong>
+                Your store passed the {{ $planName }} plan's {{ $money($limitStatus['limit']) }} sales limit. Upgrade and everything goes live again straight away. Nothing was deleted.
             @elseif ($limitStatus['state'] === 'over')
-                <strong>You've passed your plan's sales limit.</strong>
-                Your store sold {{ $money($limitStatus['sales']) }} in the last 30 days; {{ $planName }} covers up to {{ $money($limitStatus['limit']) }}. Upgrade by {{ $limitStatus['deadline']->toFormattedDateString() }} to keep your offers live.
+                <strong>Upgrade required: you've passed your plan's sales limit.</strong>
+                {{ $planName }} covers up to {{ $money($limitStatus['limit']) }} per cycle. Upgrade by {{ $limitStatus['deadline']->toFormattedDateString() }} or every feature stops on your store.
             @else
                 <strong>You're close to your plan's sales limit.</strong>
-                Your store sold {{ $money($limitStatus['sales']) }} of {{ $money($limitStatus['limit']) }} in the last 30 days ({{ $limitStatus['percent'] }}%).
+                Your store sold {{ $money($limitStatus['sales']) }} of {{ $money($limitStatus['limit']) }} this cycle ({{ $limitStatus['percent'] }}%). Past the limit you'll have {{ config('shopify.billing.grace_days') }} days to upgrade.
             @endif
         </div>
         <a href="{{ app_route('app.settings.billing') }}">{{ $limitStatus['state'] === 'near' ? 'See plans' : 'Upgrade plan' }}</a>

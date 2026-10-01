@@ -41,6 +41,13 @@ class RequirePlan
             // Keep the store's sales count (the plan limit) fresh without slowing the page.
             defer(fn () => app(SalesMeter::class)->refreshIfStale($store));
 
+            // Over the plan's sales limit past the grace period: only Billing is available until they upgrade.
+            if ($store->offersSuspended()) {
+                return $request->expectsJson()
+                    ? response()->json(['message' => 'Upgrade your plan to keep using OrderOrbit Space.'], 402)
+                    : redirect()->to(app_route('app.settings.billing', ['notice' => 'upgrade_required']));
+            }
+
             return $next($request);
         }
 

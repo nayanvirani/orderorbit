@@ -58,9 +58,9 @@
 </head>
 <body>
     @php($navUser = request()->attributes->get('storeUser'))
-    @if (! request()->attributes->get('store')?->hasPlanAccess())
+    @if (! request()->attributes->get('store')?->hasPlanAccess() || request()->attributes->get('store')?->offersSuspended())
     <s-app-nav>
-        <s-link href="{{ app_route('app.settings.billing') }}" rel="home">Choose a plan</s-link>
+        <s-link href="{{ app_route('app.settings.billing') }}" rel="home">{{ request()->attributes->get('store')?->offersSuspended() ? 'Upgrade plan' : 'Choose a plan' }}</s-link>
     </s-app-nav>
     @else
     <s-app-nav>
