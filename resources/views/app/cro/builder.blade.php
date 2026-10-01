@@ -101,9 +101,6 @@
                     @elseif ($type['discount'] ?? false)
                         <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
                     @endif
-                    @if ($experience->type === 'cart-upsells')
-                        <p class="b-muted">With <strong>Also show in the cart drawer</strong> on, it appears in your theme's slide-out cart while the OrderOrbit Space app embed is on (Theme Editor → App embeds). For the cart page, or a theme without a drawer, add the block below.</p>
-                    @endif
                     @if ($type['surface'] === 'global')
                         <p class="b-muted">No theme block needed: it shows on every page while the <strong>OrderOrbit Space app embed</strong> is on (Theme Editor → App embeds). Pops use your store's real recent orders — product, country and time only, never names — so it starts showing once orders come in.</p>
                     @else

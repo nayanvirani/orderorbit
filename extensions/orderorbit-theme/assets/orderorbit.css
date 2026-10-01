@@ -547,13 +547,3 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 /* Goal */
 .oo-po-l-goal .oo-po-bar .oo-progress { height: 12px; }
 .oo-po-l-goal .oo-po-bar-top { font-size: .95em; }
-
-/* Cart upsell inside the theme's cart drawer: one compact list, whatever the layout. */
-.oo-root.oo-in-drawer { flex: none; margin: 0; }
-.oo-in-drawer .oo-exp { margin: 10px 0; padding: 12px; }
-.oo-in-drawer .oo-title { font-size: .95em; }
-.oo-in-drawer .oo-cards { display: grid; grid-template-columns: 1fr; gap: 8px; overflow: visible; }
-.oo-in-drawer .oo-card { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; flex: none; }
-.oo-in-drawer .oo-card .oo-img { width: 48px; }
-.oo-in-drawer .oo-name { font-size: .9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.oo-in-drawer .oo-variant { max-width: 100%; }

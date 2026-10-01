@@ -49,14 +49,13 @@ return [
         'summary' => 'A last add-on in the cart, with an optional incentive.',
         'overview' => [
             'The cart is where shoppers decide. A short, relevant recommendation there — a case for the phone, a refill for the serum — adds order value without interrupting the path to checkout.',
-            'Cart upsells show in your theme\'s slide-out cart drawer with no block to place, and on the cart page. They hide products already in the cart, let shoppers pick a variant and add with one tap. If you offer an incentive, it applies only to items added from the recommendation, automatically at checkout.',
+            'Cart upsells hide products already in the cart, let shoppers pick a variant and add with one tap. If you offer an incentive, it applies only to items added from the recommendation, automatically at checkout.',
         ],
         'benefits' => [
-            ['Cart drawer and cart page', 'Appears in the slide-out cart automatically, and on the cart page with a block.'],
             ['One-tap add', 'Shoppers add the recommendation without leaving the cart.'],
             ['Incentives that stay fair', 'The discount applies only to items added from the offer.'],
             ['Four layouts', 'Carousel, grid, horizontal or minimal card.'],
-
+            ['Never pushy', 'No pop-ups and no forced cart drawers.'],
         ],
     ],
 

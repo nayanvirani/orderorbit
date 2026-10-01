@@ -206,7 +206,7 @@ return [
         'icon' => 'bag',
         'meter' => 'cart_upsells',
         'surface' => 'cart',
-        'description' => 'Recommendations in the cart drawer and on the cart page.',
+        'description' => 'Cart and cart-drawer recommendations.',
         'empty' => 'Suggest a last add-on in the cart.',
         'templates' => [
             'carousel' => ['name' => 'Carousel', 'style' => 'carousel'],
@@ -218,8 +218,6 @@ return [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'You might also like', 'max' => 80],
             'products' => ['type' => 'products', 'label' => 'Recommended products', 'required' => true, 'max_items' => 8],
             'max_shown' => ['type' => 'number', 'label' => 'Products shown', 'default' => 3, 'min' => 1, 'max' => 8],
-            'drawer' => ['type' => 'toggle', 'label' => 'Also show in the cart drawer', 'default' => true, 'help' => 'Shows inside your theme\'s slide-out cart, with no block to place, while the OrderOrbit Space app embed is on. Themes without a cart drawer use the block on the cart page.'],
-            'drawer_max' => ['type' => 'number', 'when' => ['drawer' => '1'], 'label' => 'Products shown in the drawer', 'default' => 2, 'min' => 1, 'max' => 4, 'help' => 'Drawers are narrow, so fewer is better.'],
             'incentive' => ['type' => 'text', 'label' => 'Incentive text', 'default' => '', 'max' => 60],
             'discount_percent' => ['type' => 'number', 'label' => 'Incentive (% off)', 'default' => 0, 'min' => 0, 'max' => 100, 'help' => 'Applies only to items added from this offer.'],
             'cta_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add', 'max' => 24],

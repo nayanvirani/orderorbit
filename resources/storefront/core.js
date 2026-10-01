@@ -262,21 +262,14 @@
     state.data = state.data || readJson('script[data-oo-data]') || { experiences: [] };
     state.ctx = state.ctx || readJson('script[data-oo-context]') || {};
     setAssets(state.ctx.assets);
-    // Roots the app embed adds itself, with no theme block: one for Sales pop, and one for each
-    // experience shown in the theme's cart drawer (its renderer moves it into the drawer).
-    state.data.experiences.forEach(function (e) {
-      var d = e.content && e.content.drawer;
-      var key = d ? e.id : e.type;
-      if ((d || e.type === 'sales-pop') && !document.querySelector('[data-oo-g="' + key + '"]')) {
-        var g = document.createElement('div');
-        g.className = 'oo-root';
-        g.setAttribute('data-oo-block', '');
-        g.setAttribute('data-oo-type', e.type);
-        g.setAttribute('data-oo-g', key);
-        if (d) g.setAttribute('data-oo-id', e.id);
-        document.body.appendChild(g);
-      }
-    });
+    // Global types (Sales pop) get one root on the page; they never need a theme block.
+    if (!document.querySelector('[data-oo-type="sales-pop"]') && state.data.experiences.some(function (e) { return e.type === 'sales-pop'; })) {
+      var g = document.createElement('div');
+      g.className = 'oo-root';
+      g.setAttribute('data-oo-block', '');
+      g.setAttribute('data-oo-type', 'sales-pop');
+      document.body.appendChild(g);
+    }
     if (reason !== 'cart') inject();
     document.querySelectorAll('[data-oo-block]').forEach(function (el) {
       var exp = choose(state.data.experiences, el.getAttribute('data-oo-type'), (el.getAttribute('data-oo-id') || '').trim(), state.ctx);
@@ -322,7 +315,7 @@
     } catch (e) { /* unsupported */ }
   }
 
-  window.OrderOrbit = { version: '1.5.0', need: script, render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
+  window.OrderOrbit = { version: '1.4.0', need: script, render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
 
   var self = document.currentScript;
   if (self) setAssets(self.src);
