@@ -30,22 +30,43 @@
         </div>
     </section>
 
-    <section class="mn-section plain">
-        <div class="mn-wide">
-            <p class="mn-group">Everything in one app</p>
-            <ul class="mn-feat">
-                @foreach ($features as $slug => $f)
-                    @php($isSoon = ($f['status'] ?? 'live') === 'soon')
-                    <li class="{{ $isSoon ? 'is-soon' : '' }}">
-                        <a href="{{ route('site.feature', $slug) }}">
-                            <span class="ico"><x-icon :name="$f['icon']"/></span>
-                            <b>{{ $f['name'] }}@if ($isSoon)<span class="soon">Soon</span>@endif</b>
-                            <span>{{ $f['summary'] ?? $f['menu'] }}</span>
-                        </a>
-                    </li>
+    @php
+        $sats = [
+            ['bundles', 'bundle', 'Product page', 'p1'],
+            ['progressive-gifts', 'gift', 'Product & cart', 'p2'],
+            ['countdown-timer', 'countdown', 'Any page', 'p3'],
+            ['cart-upsells', 'upsell', 'Cart', 'p4'],
+            ['trust-social-proof', 'trust', 'Product page', 'p5'],
+            ['sticky-add-to-cart', 'sticky', 'Product page', 'p6'],
+            ['analytics', 'analytics', 'In the app', 'p7'],
+        ];
+        $soonFeatures = array_filter($features, fn ($f) => ($f['status'] ?? 'live') === 'soon');
+    @endphp
+    <section class="mn-orbit" aria-label="Every OrderOrbit Space feature">
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="planet">
+            <span class="planet-name">OrderOrbit Space</span>
+            <span class="planet-sub">{{ count($features) - count($soonFeatures) }} features live · {{ count($soonFeatures) }} on the way</span>
+            <div class="soon-pills">
+                @foreach ($soonFeatures as $slug => $f)
+                    <a href="{{ route('site.feature', $slug) }}" style="animation-delay:-{{ $loop->index * 1.3 }}s"><x-icon :name="$f['icon']"/>{{ $f['name'] }}<em>Soon</em></a>
                 @endforeach
-            </ul>
+            </div>
         </div>
+        @foreach ($sats as [$slug, $type, $where, $pos])
+            <a class="osat {{ $pos }}" href="{{ route('site.feature', $slug) }}" style="animation-delay:-{{ $loop->index * 1.1 }}s">
+                <span class="osat-label"><b>{{ $features[$slug]['name'] }}</b><span>{{ $where }}</span></span>
+                @if ($type === 'analytics')
+                    <div class="mini-kpi">
+                        <div><span>Revenue from offers</span><b>$4,280</b><em>▲ 18%</em></div>
+                        <div class="bars">@foreach ([38, 52, 44, 63, 58, 76, 88] as $h)<i style="height:{{ $h }}%"></i>@endforeach</div>
+                    </div>
+                @else
+                    @include('site.partials.thumb', ['type' => $type, 'v' => $type === 'trust' ? 0 : 1])
+                @endif
+            </a>
+        @endforeach
     </section>
 
     <section class="mn-section">
