@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\WebhookReceipt;
+use App\Services\SalesPop\RecentOrders;
 use App\Services\Shopify\Billing;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ use Illuminate\Http\Response;
 
 class WebhookController extends Controller
 {
-    public function __invoke(Request $request, Billing $billing): Response
+    public function __invoke(Request $request, Billing $billing, RecentOrders $orders): Response
     {
         $topic = (string) $request->header('X-Shopify-Topic');
         $shop = (string) $request->header('X-Shopify-Shop-Domain');
@@ -29,8 +30,10 @@ class WebhookController extends Controller
 
         match ($topic) {
             'app/uninstalled' => $this->uninstalled($store),
-            'app/scopes_update' => $store?->forceFill(['scopes' => implode(',', $payload['current'] ?? [])])->save(),
+            'app/scopes_update' => $this->scopesUpdated($store, $payload, $orders),
             'app_subscriptions/update' => $store && $billing->applyWebhook($store, $payload),
+            // Sales pop: products from real orders (no customer details are kept).
+            'orders/create' => $store && $store->isInstalled() && $orders->fromWebhook($store, $payload),
             'shop/redact' => $this->redactShop($store),
             'customers/redact', 'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
                 'customer_id' => $payload['customer']['id'] ?? null,
@@ -42,6 +45,24 @@ class WebhookController extends Controller
         $receipt->forceFill(['processed_at' => now()])->save();
 
         return response()->noContent();
+    }
+
+    private function scopesUpdated(?Store $store, array $payload, RecentOrders $orders): void
+    {
+        if ($store === null) {
+            return;
+        }
+        $store->forceFill(['scopes' => implode(',', $payload['current'] ?? [])])->save();
+
+        // Orders just became readable: give a live Sales pop its recent orders.
+        if ($store->hasScope('read_orders') && $store->experiences()->where('type', 'sales-pop')->where('status', 'published')->exists()
+            && ! \App\Models\RecentPurchase::where('store_id', $store->id)->exists()) {
+            try {
+                $orders->import($store);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
     }
 
     private function uninstalled(?Store $store): void

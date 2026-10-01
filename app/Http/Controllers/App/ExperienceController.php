@@ -10,6 +10,7 @@ use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Experiences\ExperienceManager;
 use App\Services\Experiences\PlacementDetector;
+use App\Services\SalesPop\RecentOrders;
 use App\Services\Experiences\PublishException;
 use App\Services\Experiences\TemplateLibrary;
 use App\Services\Usage;
@@ -225,6 +226,27 @@ class ExperienceController extends Controller
         }
 
         return $this->back($experience, 'placement_checked');
+    }
+
+    /**
+     * Sales pop: imports the store's recent orders so pops can start straight away.
+     */
+    public function importOrders(Request $request, Store $store, int $experience, RecentOrders $orders): RedirectResponse
+    {
+        $experience = $this->find($store, $experience);
+        if (! $store->hasScope('read_orders')) {
+            return $this->back($experience, 'orders_scope');
+        }
+
+        try {
+            $orders->import($store);
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->back($experience, 'shopify');
+        }
+
+        return $this->back($experience, 'orders_imported');
     }
 
     public function bulk(Request $request, Store $store): RedirectResponse

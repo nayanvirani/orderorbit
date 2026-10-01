@@ -29,6 +29,18 @@ class SalesPopTest extends TestCase
             str_contains($request['query'] ?? '', 'currentAppInstallation { id }') => Http::response(['data' => ['currentAppInstallation' => ['id' => 'gid://shopify/AppInstallation/1']]]),
             str_contains($request['query'] ?? '', 'metafieldsSet') => Http::response(['data' => ['metafieldsSet' => ['userErrors' => []]]]),
             str_contains($request['query'] ?? '', 'themes(first: 1') => Http::response(['data' => ['themes' => ['nodes' => []]]]),
+            str_contains($request['query'] ?? '', 'nodes(ids: $ids)') => Http::response(['data' => ['nodes' => [
+                ['id' => 'gid://shopify/Product/21', 'title' => 'Trail Tee', 'handle' => 'trail-tee', 'featuredMedia' => ['preview' => ['image' => ['url' => 'https://cdn.shopify.com/tee.jpg']]]],
+            ]]]),
+            str_contains($request['query'] ?? '', 'orders(first: 50') => Http::response(['data' => ['orders' => ['nodes' => [
+                ['id' => 'gid://shopify/Order/902', 'createdAt' => now()->subHours(2)->toIso8601String(), 'lineItems' => ['nodes' => [
+                    ['product' => ['id' => 'gid://shopify/Product/31', 'title' => 'Night Cream', 'handle' => 'night-cream', 'featuredMedia' => null]],
+                    ['product' => null],
+                ]]],
+                ['id' => 'gid://shopify/Order/901', 'createdAt' => now()->subDays(3)->toIso8601String(), 'lineItems' => ['nodes' => [
+                    ['product' => ['id' => 'gid://shopify/Product/32', 'title' => 'Lip Balm', 'handle' => 'lip-balm', 'featuredMedia' => ['preview' => ['image' => ['url' => 'https://cdn.shopify.com/balm.jpg']]]]],
+                ]]],
+            ]]]]),
             default => Http::response(['data' => []]),
         });
     }
@@ -113,5 +125,55 @@ class SalesPopTest extends TestCase
         $this->post('/app/cro/experiences', ['type' => 'sales-pop', 'template' => 'slim-bar'], $this->as($owner))->assertRedirectContains('/edit');
         $edit = $this->get('/app/cro/experiences/1/edit', $this->as($owner))->assertOk();
         $edit->assertSee('Position on mobile')->assertSee('Close automatically after (seconds)')->assertSee('No theme block needed');
+    }
+
+    private function webhook(string $topic, array $payload, string $id)
+    {
+        $body = json_encode($payload);
+
+        return $this->call('POST', '/webhooks/shopify', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_SHOPIFY_TOPIC' => $topic,
+            'HTTP_X_SHOPIFY_SHOP_DOMAIN' => $this->shop,
+            'HTTP_X_SHOPIFY_WEBHOOK_ID' => $id,
+            'HTTP_X_SHOPIFY_HMAC_SHA256' => base64_encode(hash_hmac('sha256', $body, 'test-secret', true)),
+        ], $body);
+    }
+
+    public function test_orders_from_shopify_feed_the_sales_pop(): void
+    {
+        $this->fakeShopify();
+        config(['shopify.scopes' => 'read_products,write_discounts,read_orders']);
+        $store = $this->installedStore(['scopes' => 'read_products,write_discounts,read_orders', 'pixel_token' => str_repeat('c', 40)]);
+        $owner = $this->member($store, 'owner');
+        $manager = app(ExperienceManager::class);
+
+        // Publishing a Sales pop imports recent orders when there are none yet.
+        $pop = $manager->create($store, 'sales-pop', 'classic-card', $owner);
+        $manager->publish($pop, $owner);
+        $this->assertSame(['Lip Balm', 'Night Cream'], RecentPurchase::orderBy('purchased_at')->pluck('title')->all());
+        $this->assertSame('/products/night-cream', RecentPurchase::where('product_id', '31')->value('url'));
+        $this->assertTrue(RecentPurchase::where('product_id', '32')->first()->purchased_at->lt(now()->subDays(2)), 'The real order time is kept.');
+
+        // A new order arrives by webhook; the product link and image come from the Admin API.
+        $this->webhook('orders/create', ['id' => 950, 'created_at' => now()->toIso8601String(), 'line_items' => [
+            ['product_id' => 21, 'title' => 'Trail Tee - M'], ['product_id' => null, 'title' => 'Custom item'],
+        ], 'shipping_address' => ['country_code' => 'gb', 'name' => 'Jane Doe', 'address1' => '1 High St']], 'wh-order-1')->assertNoContent();
+        $tee = RecentPurchase::where('product_id', '21')->first();
+        $this->assertSame(['Trail Tee', '/products/trail-tee', 'https://cdn.shopify.com/tee.jpg', 'GB'], [$tee->title, $tee->url, $tee->image, $tee->country]);
+        $this->assertSame('950', $tee->order_ref);
+
+        // The pixel's report of the same order fills the country on rows that lack it, without duplicates.
+        $this->call('POST', '/api/pixel', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode([
+            't' => str_repeat('c', 40), 's' => $store->shop_domain, 'k' => 'o', 'id' => 'gid://shopify/Order/902', 'v' => 34, 'c' => 'USD', 'cc' => 'CA',
+            'l' => [['p' => 'gid://shopify/Product/31', 't' => 'Night Cream']],
+        ]));
+        $this->assertSame(1, RecentPurchase::where('product_id', '31')->count());
+        $this->assertSame('CA', RecentPurchase::where('product_id', '31')->value('country'));
+
+        // The experience page shows what's ready and offers an import.
+        $this->get('/app/cro/experiences/'.$pop->id, $this->as($owner))->assertOk()
+            ->assertSee('3 recent purchases ready to show')->assertSee('Import recent orders');
+        $this->post('/app/cro/experiences/'.$pop->id.'/import-orders', [], $this->as($owner))->assertRedirectContains('orders_imported');
     }
 }

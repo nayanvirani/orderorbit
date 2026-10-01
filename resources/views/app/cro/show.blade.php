@@ -47,6 +47,28 @@
         <s-button slot="primary-action" variant="primary" href="{{ app_route('app.cro.experiences.edit', ['experience' => $experience->id]) }}">Edit</s-button>
     @endif
 
+    @if ($experience->type === 'sales-pop')
+        @php
+            $recent = \App\Models\RecentPurchase::where('store_id', $store->id)->where('purchased_at', '>=', now()->subDays((int) ($experience->draft_config['content']['max_age_days'] ?? 7)));
+            $recentCount = $recent->count();
+            $canReadOrders = $store->hasScope('read_orders');
+        @endphp
+        <s-banner tone="{{ $recentCount ? 'success' : 'info' }}" heading="{{ $recentCount ? $recentCount.' recent '.\Illuminate\Support\Str::plural('purchase', $recentCount).' ready to show' : 'No recent purchases to show yet' }}">
+            <s-paragraph>
+                @if ($recentCount)
+                    Pops cycle through products from your real orders in the last {{ (int) ($experience->draft_config['content']['max_age_days'] ?? 7) }} days. New orders are added automatically.
+                @elseif ($canReadOrders)
+                    Pops appear once your store has an order in the last {{ (int) ($experience->draft_config['content']['max_age_days'] ?? 7) }} days. New orders are added automatically, or import your recent orders now.
+                @else
+                    Pops use your real orders. Reload OrderOrbit Space and approve the updated permissions (read orders) so new orders are added automatically.
+                @endif
+            </s-paragraph>
+            @if ($canReadOrders)
+                <form slot="secondary-actions" method="POST" action="{{ app_route('app.cro.experiences.import-orders', ['experience' => $experience->id]) }}"><s-button type="submit">Import recent orders</s-button></form>
+            @endif
+        </s-banner>
+    @endif
+
     @if ($experience->status === 'published' && $experience->placement_status === 'not_placed')
         <s-banner tone="warning" heading="Published but not placed">
             <s-paragraph>{{ $global ? 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.' : 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.' }}</s-paragraph>

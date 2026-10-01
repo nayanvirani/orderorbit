@@ -123,6 +123,13 @@ class Store extends Model
             && ! in_array(str_replace('read_', 'write_', $scope), $granted, true)));
     }
 
+    public function hasScope(string $scope): bool
+    {
+        $granted = array_filter(explode(',', (string) $this->scopes));
+
+        return in_array($scope, $granted, true) || in_array(str_replace('read_', 'write_', $scope), $granted, true);
+    }
+
     public function capability(string $key): mixed
     {
         return $this->capabilities[$key] ?? null;

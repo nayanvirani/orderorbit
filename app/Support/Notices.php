@@ -28,6 +28,8 @@ class Notices
         'discarded' => ['Unsaved changes discarded.', false],
         'version_restored' => ['Version loaded into your draft. Publish to make it live.', false],
         'placement_checked' => ['Theme placement checked.', false],
+        'orders_imported' => ['Recent orders imported. Pops show them on your store within a minute.', false],
+        'orders_scope' => ['OrderOrbit Space needs permission to read orders. Reload the app and approve the updated permissions, then try again.', true],
         'bulk_done' => ['Changes applied.', false],
         'publish_unavailable' => ['This experience has no published version yet. Publish it from the builder first.', true],
         'invalid' => ['Fix the highlighted fields before publishing.', true],

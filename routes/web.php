@@ -103,6 +103,7 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
                     Route::post('/{experience}/publish', [ExperienceController::class, 'publish'])->whereNumber('experience')->name('publish');
                     Route::post('/{experience}/duplicate', [ExperienceController::class, 'duplicate'])->whereNumber('experience')->name('duplicate');
                     Route::post('/{experience}/placement', [ExperienceController::class, 'checkPlacement'])->whereNumber('experience')->name('placement');
+                    Route::post('/{experience}/import-orders', [ExperienceController::class, 'importOrders'])->whereNumber('experience')->name('import-orders');
                     Route::post('/{experience}/versions/{version}/restore', [ExperienceController::class, 'restoreVersion'])->whereNumber(['experience', 'version'])->name('versions.restore');
                     Route::post('/{experience}/{action}', [ExperienceController::class, 'lifecycle'])->whereNumber('experience')->whereIn('action', ['pause', 'resume', 'archive', 'unarchive', 'discard'])->name('lifecycle');
                 });

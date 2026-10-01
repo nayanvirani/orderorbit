@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\RecentPurchase;
 use App\Models\Store;
+use App\Services\SalesPop\RecentOrders;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -11,7 +12,8 @@ use Illuminate\Support\Facades\Cache;
 /**
  * The public feed Sales pop reads on the storefront: products from the store's real
  * recent orders, with the order's country and time. Served only while the store has a
- * published Sales pop, cached briefly, and safe to cache publicly.
+ * published Sales pop, cached briefly, and safe to cache publicly. Orders come from Shopify
+ * (refreshed here at most every 10 minutes) and from the web pixel.
  */
 class SalesPopController extends Controller
 {
@@ -34,6 +36,17 @@ class SalesPopController extends Controller
         $store = Store::where('shop_domain', $shop)->whereNull('uninstalled_at')->first();
         if (! $store || ! $store->experiences()->where('type', 'sales-pop')->where('status', 'published')->exists()) {
             return [];
+        }
+
+        // New orders are picked up from Shopify at most every 10 minutes, after the response is sent.
+        if ($store->hasScope('read_orders') && Cache::add("sales-pop-import:{$store->id}", true, 600)) {
+            dispatch(function () use ($store) {
+                try {
+                    app(RecentOrders::class)->import($store, RecentPurchase::MAX_DAYS);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            })->afterResponse();
         }
 
         return RecentPurchase::where('store_id', $store->id)
