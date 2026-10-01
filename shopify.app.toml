@@ -15,6 +15,11 @@ api_version = "2026-07"
   topics = [ "app/uninstalled", "app/scopes_update", "app_subscriptions/update" ]
   uri = "https://orderorbit.space/webhooks/shopify"
 
+  # Sales pop: products from real orders (no customer details are stored).
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "https://orderorbit.space/webhooks/shopify"
+
   [[webhooks.subscriptions]]
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
   uri = "https://orderorbit.space/webhooks/shopify"
