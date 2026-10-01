@@ -95,6 +95,9 @@
             @if ($sales['limit'] !== null && $sales['sales'] !== null)
                 <div class="ob-sales-bar"><i class="{{ in_array($sales['state'], ['over', 'paused'], true) ? 'over' : ($sales['state'] === 'near' ? 'near' : '') }}" style="width:{{ min(100, (int) $sales['percent']) }}%"></i></div>
             @endif
+            @if ($sales['sales'] !== null)
+                <span class="oo-muted">{{ number_format($sales['orders']) }} {{ \Illuminate\Support\Str::plural('order', $sales['orders']) }} counted this cycle.@if ($sales['test_orders']) {{ $sales['test_orders']['count'] }} test {{ \Illuminate\Support\Str::plural('order', $sales['test_orders']['count']) }} ({{ $money($sales['test_orders']['usd']) }}) {{ $sales['test_orders']['count'] === 1 ? 'is' : 'are' }} not counted: orders paid with a test payment, like every order on a development store, never count toward your limit.@endif</span>
+            @endif
             <span class="oo-muted">Cycle {{ $sales['cycle_start']->toFormattedDateString() }} – {{ $sales['cycle_end']->toFormattedDateString() }}. The count starts again on {{ $sales['cycle_end']->toFormattedDateString() }}. Every plan includes every feature; plans differ only by your store's total sales per 30-day cycle (all orders, in USD; test and cancelled orders don't count).</span>
         </div>
         @if ($cycles->isNotEmpty())

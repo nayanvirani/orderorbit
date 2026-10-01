@@ -72,6 +72,10 @@ return [
         // install). "sales_limit" null = unlimited. Past the limit the merchant has "grace_days"
         // to upgrade before every feature stops; a stopped store stays stopped until it upgrades.
         'grace_days' => 3,
+
+        // Test orders (every order on a development store) never count toward the limit, except
+        // for the shops listed here: our own stores, so the limit flow can be tried end to end.
+        'count_test_orders_for' => array_values(array_filter(array_map('trim', explode(',', (string) env('ORDERORBIT_COUNT_TEST_ORDERS_FOR', ''))))),
         'warn_at' => 0.8,
 
         'plans' => [

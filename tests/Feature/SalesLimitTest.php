@@ -92,7 +92,21 @@ class SalesLimitTest extends TestCase
         $this->assertSame(4, StoreOrder::count());
         $this->assertEquals(200.0, StoreOrder::where('shopify_order_id', '2')->value('amount_usd'));
         $this->assertEquals(500.0, $store->fresh()->cycle_sales_usd);
-        $this->assertSame('ok', $meter->status($store->fresh())['state']);
+        $status = $meter->status($store->fresh());
+        $this->assertSame(['ok', 2, ['count' => 1, 'usd' => 5000.0]], [$status['state'], $status['orders'], $status['test_orders']]);
+
+        // The billing page says why test orders aren't in the total.
+        $this->get('/app/settings/billing', $this->as($this->member($store, 'owner')))->assertOk()
+            ->assertSee('2 orders counted this cycle')->assertSee('1 test order ($5,000) is not counted');
+
+        // Our own stores can opt in to counting test orders, to try the limit end to end.
+        config(['shopify.billing.count_test_orders_for' => [$store->shop_domain]]);
+        $meter->recount($store->fresh());
+        $this->assertEquals(5500.0, $store->fresh()->cycle_sales_usd);
+        $this->assertNotNull($store->fresh()->over_limit_since);
+        config(['shopify.billing.count_test_orders_for' => []]);
+        $meter->recount($store->fresh());
+        $this->assertNull($store->fresh()->over_limit_since);
 
         // Syncing again updates rows instead of duplicating them; a refund lowers the total.
         $this->order(1, 250);

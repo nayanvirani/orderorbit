@@ -60,10 +60,7 @@ class SalesMeter
         $this->rollover($store);
         $start = $store->cycle_started_at;
 
-        $total = StoreOrder::where('store_id', $store->id)
-            ->where('ordered_at', '>=', $start)
-            ->where('test', false)->where('cancelled', false)
-            ->sum('amount_usd');
+        $total = $this->counted($store)->where('ordered_at', '>=', $start)->sum('amount_usd');
 
         $store->forceFill(['cycle_sales_usd' => round((float) $total, 2)])->save();
         $this->evaluate($store);
@@ -186,7 +183,7 @@ class SalesMeter
     /**
      * What the app shows: this cycle's sales against the limit and where the store stands.
      *
-     * @return array{state: string, sales: ?float, limit: ?float, percent: ?int, deadline: ?Carbon, next: ?array, cycle_start: Carbon, cycle_end: Carbon}
+     * @return array{state: string, sales: ?float, limit: ?float, percent: ?int, deadline: ?Carbon, next: ?array, cycle_start: Carbon, cycle_end: Carbon, orders: int, test_orders: ?array}
      */
     public function status(Store $store): array
     {
@@ -220,7 +217,29 @@ class SalesMeter
             'next' => $next,
             'cycle_start' => $start->copy(),
             'cycle_end' => $start->copy()->addDays(Store::CYCLE_DAYS),
+            'orders' => $this->counted($store)->where('ordered_at', '>=', $start)->count(),
+            'test_orders' => $store->countsTestOrders() ? null : $this->testOrders($store, $start),
         ];
+    }
+
+    /**
+     * Test orders this cycle that were left out of the count, so the app can say why.
+     *
+     * @return array{count: int, usd: float}|null
+     */
+    private function testOrders(Store $store, Carbon $start): ?array
+    {
+        $orders = StoreOrder::where('store_id', $store->id)->where('ordered_at', '>=', $start)->where('test', true)->where('cancelled', false);
+        $count = $orders->count();
+
+        return $count ? ['count' => $count, 'usd' => round((float) $orders->sum('amount_usd'), 2)] : null;
+    }
+
+    /** The orders that count toward the limit: not cancelled, and not test orders. */
+    private function counted(Store $store)
+    {
+        return StoreOrder::where('store_id', $store->id)->where('cancelled', false)
+            ->when(! $store->countsTestOrders(), fn ($q) => $q->where('test', false));
     }
 
     public function toUsd(float $amount, string $currency): float
@@ -246,8 +265,7 @@ class SalesMeter
         if ($store->cycle_started_at !== null && $store->cycle_started_at->lt($current)) {
             $from = $store->cycle_started_at;
             $to = $from->copy()->addDays(Store::CYCLE_DAYS);
-            $orders = StoreOrder::where('store_id', $store->id)->where('ordered_at', '>=', $from)->where('ordered_at', '<', $to)
-                ->where('test', false)->where('cancelled', false);
+            $orders = $this->counted($store)->where('ordered_at', '>=', $from)->where('ordered_at', '<', $to);
             $limit = $store->salesLimit();
             $sales = round((float) (clone $orders)->sum('amount_usd'), 2);
 

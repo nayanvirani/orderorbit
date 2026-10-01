@@ -136,6 +136,14 @@ class Store extends Model
     }
 
     /**
+     * Whether this shop's test orders count toward the sales limit (only our own test stores).
+     */
+    public function countsTestOrders(): bool
+    {
+        return in_array($this->shop_domain, config('shopify.billing.count_test_orders_for', []), true);
+    }
+
+    /**
      * Offers are paused because the store stayed over its plan's sales limit past the grace period.
      */
     public function offersSuspended(): bool
