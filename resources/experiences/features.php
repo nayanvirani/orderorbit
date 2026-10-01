@@ -49,10 +49,10 @@ return [
         'label' => 'Cart upsells',
         'types' => ['cart-upsells'],
         'tagline' => 'One last add-on <em>in the cart.</em>',
-        'lead' => 'Cart recommendations with one-click add. An optional incentive applies only to items added from the offer.',
+        'lead' => 'Recommendations in the cart drawer and on the cart page, with one-click add. An optional incentive applies only to items added from the offer.',
         'steps' => [
             'Choose the products to recommend and an optional % off.',
-            'Place the block in your cart.',
+            'It shows in your cart drawer automatically; add the block for the cart page.',
             'Shoppers add with one click; the incentive applies at checkout.',
         ],
     ],

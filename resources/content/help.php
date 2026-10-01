@@ -63,6 +63,7 @@ return [
         'icon' => 'clock',
         'text' => 'Cart upsells, countdown timers, pre-orders, sales pop, sticky add-to-cart and trust blocks.',
         'articles' => [
+            ['Where do cart upsells show?', 'In your theme\'s slide-out cart drawer, automatically, while the app embed is on, and on the cart page if you add the block. Adding from the drawer updates it in place; if your theme\'s drawer can\'t be refreshed, the shopper is taken to the cart page.'],
             ['How do cart upsell incentives work?', 'If you add a discount to an upsell, it applies only to items added from that recommendation, automatically at checkout.'],
             ['Can a countdown reset for each visitor?', 'No. Countdowns only count to a real end date or a daily cutoff in your store\'s time zone. When the campaign ends the timer hides or shows your message.'],
             ['How do pre-orders work?', 'Pick the products and the ship date, then add the OrderOrbit Space block to your product template and choose "Pre-order". Turn on "Continue selling when out of stock" for those products in Shopify. Each pre-order item gets a "Pre-order: Ships by …" line on the order.'],

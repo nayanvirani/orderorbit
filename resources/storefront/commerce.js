@@ -58,8 +58,12 @@
     if (node) { node.textContent = text || ''; node.classList.toggle('oo-status-error', !!bad); }
   }
 
-  /** Adds items ({ id: variant, quantity }) tagged with the experience, then follows the "after add" setting. */
-  function add(exp, ctx, items, btn, rootEl) {
+  /**
+   * Adds items ({ id: variant, quantity }) tagged with the experience, then follows the "after add"
+   * setting. With opts ({ sections, done }) it stays on the page instead: the theme's section HTML is
+   * requested with the add and handed to done(body), e.g. to refresh a cart drawer.
+   */
+  function add(exp, ctx, items, btn, rootEl, opts) {
     items = items.filter(function (i) { return i && i.id && i.quantity > 0; });
     if (!items.length) { status(rootEl, 'This item is unavailable right now.', true); return Promise.resolve(false); }
     if (ctx.preview) { status(rootEl, 'Preview: adds ' + items.reduce(function (n, i) { return n + i.quantity; }, 0) + ' item(s) to the cart.'); return Promise.resolve(false); }
@@ -69,17 +73,19 @@
     return fetch(root() + 'cart/add.js', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }; }) })
+      body: JSON.stringify(Object.assign({ items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }; }) },
+        opts && opts.sections ? { sections: opts.sections, sections_url: location.pathname } : {}))
     }).then(function (r) {
       return r.json().then(function (body) { if (!r.ok) throw new Error(body.description || body.message || 'Could not add to cart'); return body; });
-    }).then(function () {
+    }).then(function (body) {
       OrderOrbit.track('added_to_cart', exp, { quantity: items.reduce(function (n, i) { return n + i.quantity; }, 0) });
-      var after = (exp.behavior && exp.behavior.after_add) || 'cart';
+      var after = opts ? 'stay' : (exp.behavior && exp.behavior.after_add) || 'cart';
       if (after === 'checkout') { location.href = root() + 'checkout'; return true; }
       if (after === 'cart') { location.href = root() + 'cart'; return true; }
       status(rootEl, 'Added to your cart.');
       document.dispatchEvent(new CustomEvent('orderorbit:cart-updated', { detail: { experience_id: exp.id } }));
       if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; }
+      if (opts && opts.done) opts.done(body);
       return OrderOrbit.refreshCart().then(function () { return true; });
     }).catch(function (err) {
       status(rootEl, err.message, true);

@@ -1,6 +1,13 @@
-/* OrderOrbit · product and cart upsells. Items added here carry the offer, so its incentive applies at checkout. */
+/* OrderOrbit · product and cart upsells. Items added here carry the offer, so its incentive applies
+   at checkout. A cart upsell can also live inside the theme's cart drawer: the app embed adds a
+   root for it (no theme block), and this file moves it into the drawer, keeps it there when the
+   theme redraws the drawer, and refreshes the drawer after an add. Themes whose drawer can't be
+   refreshed fall back to the cart page. */
 (function () {
   var S = OrderOrbit.shop;
+  var DRAWER = 'cart-drawer,#CartDrawer,#cart-drawer,.cart-drawer,[data-cart-drawer],#Cart-Drawer,#mini-cart,.mini-cart,#sidebar-cart,.drawer--cart,#slideout-ajax-cart,.ajaxcart__inner';
+  var FOOT = '.drawer__footer,.cart-drawer__footer,[class*="drawer__footer"],[class*="drawer-footer"],.cart__footer,.mini-cart__footer,.ajaxcart__footer';
+  var INNER = '.drawer__inner,.cart-drawer__inner,[class*="drawer__inner"],[class*="drawer__content"],.mini-cart__inner';
 
   function visible(exp, ctx, limit) {
     return (exp.content.products || []).filter(function (p) {
@@ -32,18 +39,67 @@
     };
   }
 
+  // Puts the block inside the theme's cart drawer, above its footer. Returns the drawer, or null.
+  function place(block) {
+    var d = document.querySelector(DRAWER);
+    if (!d) return null;
+    if (!d.contains(block)) {
+      var foot = d.querySelector(FOOT);
+      if (foot && foot.parentNode) foot.parentNode.insertBefore(block, foot); else (d.querySelector(INNER) || d).appendChild(block);
+    }
+    block.classList.add('oo-in-drawer');
+    return d;
+  }
+
+  // After an add from the drawer: let the theme redraw it, or go to the cart page if it can't.
+  function refreshDrawer(d, block, body) {
+    try { if (d.renderContents && body.sections) { d.renderContents(body); return; } } catch (e) { /* not a Dawn-style drawer */ }
+    var changed = false;
+    var watch = new MutationObserver(function (list) {
+      changed = changed || list.some(function (m) { return !block.contains(m.target); });
+    });
+    watch.observe(d, { childList: true, subtree: true });
+    ['cart:refresh', 'cart:updated', 'cart:update', 'cart:change'].forEach(function (name) {
+      document.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: { cart: body } }));
+    });
+    setTimeout(function () {
+      watch.disconnect();
+      if (!changed) location.href = ((window.Shopify && Shopify.routes && Shopify.routes.root) || '/') + 'cart';
+    }, 1500);
+  }
+
   function hook(limitKey) {
     return {
-      prepare: function (exp) { return S.hydrate(exp, ['products']); },
+      // Live product data isn't needed where nothing will show: the drawer upsell with an empty cart.
+      prepare: function (exp, ctx) { return limitKey && ctx.page !== 'cart' && !(ctx.cartLines || []).length ? null : S.hydrate(exp, ['products']); },
       setup: function (root, exp, ctx) {
         if (!root) return;
-        var list = visible(exp, ctx, limitKey ? Number(exp.content[limitKey] || 3) : 4);
+        var c = exp.content;
+        var list = visible(exp, ctx, limitKey ? Number(c[limitKey] || 3) : 4);
+        var block = root.closest('.oo-root');
+        var drawer = null;
+
+        if (block && block.hasAttribute('data-oo-g') && !ctx.preview) {
+          drawer = place(block);
+          // No drawer in this theme, or nothing in the cart yet: stay out of the way.
+          if (!drawer || !(ctx.cartLines || []).length) { block.hidden = true; return; }
+          [].slice.call(root.querySelectorAll('.oo-card'), Math.max(1, Number(c.drawer_max) || 2)).forEach(function (card) { card.remove(); });
+          if (!block.__ooDrawer && 'MutationObserver' in window) {
+            // Themes replace the drawer's contents when the cart changes: put the block back.
+            block.__ooDrawer = new MutationObserver(function () { if (drawer.isConnected && !drawer.contains(block)) place(block); });
+            block.__ooDrawer.observe(drawer, { childList: true, subtree: true });
+          }
+        }
+
         root.addEventListener('click', function (e) {
           var btn = e.target.closest('[data-oo-add]');
           if (!btn) return;
           var i = Number(btn.getAttribute('data-oo-add'));
           OrderOrbit.track('upsell_accepted', exp);
-          S.add(exp, ctx, [{ id: S.chosenVariant(root, list[i], i), quantity: 1 }], btn, root);
+          S.add(exp, ctx, [{ id: S.chosenVariant(root, list[i], i), quantity: 1 }], btn, root, drawer && {
+            sections: drawer.getSectionsToRender ? drawer.getSectionsToRender().map(function (s) { return s.id; }) : null,
+            done: function (body) { refreshDrawer(drawer, block, body); }
+          });
         });
       }
     };

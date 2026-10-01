@@ -72,9 +72,10 @@ class PlacementDetector
         Experience::where('store_id', $store->id)->where('status', '!=', 'archived')->get()
             ->each(function (Experience $e) use ($found) {
                 // Global types (Sales pop) need no block: the app embed shows them on every page.
-                $placed = Registry::has($e->type) && Registry::type($e->type)['surface'] === 'global'
-                    ? $found['embed']
-                    : in_array($e->handle, $found['handles'], true) || in_array($e->type, $found['types'], true);
+                // A cart upsell set to show in the cart drawer is placed by the app embed as well.
+                $viaEmbed = Registry::has($e->type) && (Registry::type($e->type)['surface'] === 'global' || ! empty($e->draft_config['content']['drawer']));
+                $placed = ($viaEmbed && $found['embed'])
+                    || in_array($e->handle, $found['handles'], true) || in_array($e->type, $found['types'], true);
                 $e->forceFill(['placement_status' => $placed ? 'placed' : 'not_placed', 'placement_checked_at' => now()])->save();
             });
 
