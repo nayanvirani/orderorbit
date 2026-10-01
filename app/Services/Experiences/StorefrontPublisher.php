@@ -6,7 +6,9 @@ use App\Experiences\BundleSchema;
 use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
 use App\Models\Experience;
+use App\Models\RecentPurchase;
 use App\Models\Store;
+use App\Services\SalesPop\RecentOrders;
 use App\Services\Shopify\AdminApi;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -90,6 +92,7 @@ class StorefrontPublisher
         $this->offers->sync($store);
 
         $payload = $this->payload($store);
+        $this->primeSalesPop($store, $payload);
         $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         if (strlen($json) > 1_500_000) {
@@ -115,5 +118,23 @@ class StorefrontPublisher
         }
 
         return $payload;
+    }
+
+    /**
+     * A newly published Sales pop starts with the store's recent orders instead of waiting
+     * for the next one.
+     */
+    private function primeSalesPop(Store $store, array $payload): void
+    {
+        if (! collect($payload['experiences'])->contains('type', 'sales-pop') || ! $store->hasScope('read_orders')
+            || RecentPurchase::where('store_id', $store->id)->exists()) {
+            return;
+        }
+
+        try {
+            app(RecentOrders::class)->import($store);
+        } catch (\Throwable $e) {
+            Log::info('Sales pop: importing recent orders failed', ['store' => $store->shop_domain, 'error' => $e->getMessage()]);
+        }
     }
 }
