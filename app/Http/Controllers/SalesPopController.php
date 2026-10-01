@@ -43,6 +43,8 @@ class SalesPopController extends Controller
             dispatch(function () use ($store) {
                 try {
                     app(RecentOrders::class)->import($store, RecentPurchase::MAX_DAYS);
+                } catch (\App\Services\SalesPop\OrdersBlocked) {
+                    // Waiting for Shopify's protected customer data approval; the app explains it.
                 } catch (\Throwable $e) {
                     report($e);
                 }

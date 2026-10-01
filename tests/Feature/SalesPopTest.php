@@ -176,4 +176,24 @@ class SalesPopTest extends TestCase
             ->assertSee('3 recent purchases ready to show')->assertSee('Import recent orders');
         $this->post('/app/cro/experiences/'.$pop->id.'/import-orders', [], $this->as($owner))->assertRedirectContains('orders_imported');
     }
+
+    public function test_the_app_explains_when_shopify_blocks_order_access(): void
+    {
+        Http::fake(fn (Request $request) => match (true) {
+            str_contains($request['query'] ?? '', 'orders(first: 50') => Http::response(['errors' => [['message' => 'This app is not approved to access the Order object. See https://shopify.dev/docs/apps/launch/protected-customer-data for more details.', 'extensions' => ['code' => 'ACCESS_DENIED']]]]),
+            str_contains($request['query'] ?? '', 'currentAppInstallation { id }') => Http::response(['data' => ['currentAppInstallation' => ['id' => 'gid://shopify/AppInstallation/1']]]),
+            str_contains($request['query'] ?? '', 'metafieldsSet') => Http::response(['data' => ['metafieldsSet' => ['userErrors' => []]]]),
+            default => Http::response(['data' => []]),
+        });
+        config(['shopify.scopes' => 'read_products,write_discounts,read_orders']);
+        $store = $this->installedStore(['scopes' => 'read_products,write_discounts,read_orders']);
+        $owner = $this->member($store, 'owner');
+        $manager = app(ExperienceManager::class);
+        $pop = $manager->create($store, 'sales-pop', 'classic-card', $owner);
+        $manager->publish($pop, $owner); // publishing still works
+
+        $this->post('/app/cro/experiences/'.$pop->id.'/import-orders', [], $this->as($owner))->assertRedirectContains('orders_blocked');
+        $this->get('/app/cro/experiences/'.$pop->id, $this->as($owner))->assertOk()
+            ->assertSee('Shopify needs to approve order access')->assertSee('Protected customer data');
+    }
 }

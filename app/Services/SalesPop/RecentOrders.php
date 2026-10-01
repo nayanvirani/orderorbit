@@ -7,6 +7,7 @@ use App\Models\Store;
 use App\Services\Shopify\AdminApi;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -98,13 +99,42 @@ class RecentOrders
         return self::record($store, (string) $order['id'], array_values($lines), $country, isset($order['created_at']) ? Carbon::parse($order['created_at']) : null);
     }
 
+    /** Shopify hasn't approved the app for protected customer data (order access). */
+    public static function blocked(Store $store): bool
+    {
+        return Cache::has("sales-pop-blocked:{$store->id}");
+    }
+
     /**
-     * Imports the store's recent orders (needs read_orders). Returns the products recorded.
+     * Imports the store's recent orders (needs read_orders and Shopify's protected customer data
+     * approval for orders). Returns the products recorded.
      */
     public function import(Store $store, int $days = RecentPurchase::MAX_DAYS): int
     {
         $since = now()->subDays($days)->toDateString();
-        $data = $this->api->graphql($store, <<<'GQL'
+        try {
+            $data = $this->orders($store, $since);
+        } catch (Throwable $e) {
+            if (str_contains($e->getMessage(), 'not approved to access the Order')) {
+                Cache::put("sales-pop-blocked:{$store->id}", true, 3600);
+                throw new OrdersBlocked('Shopify has not approved this app to read orders yet.', 0, $e);
+            }
+            throw $e;
+        }
+        Cache::forget("sales-pop-blocked:{$store->id}");
+
+        $count = 0;
+        foreach (array_reverse($data['orders']['nodes'] ?? []) as $order) {
+            $products = array_values(array_filter(array_map(fn ($line) => $line['product'] ? self::product($line['product']) : null, $order['lineItems']['nodes'] ?? [])));
+            $count += self::record($store, $order['id'], $products, null, Carbon::parse($order['createdAt']));
+        }
+
+        return $count;
+    }
+
+    private function orders(Store $store, string $since): array
+    {
+        return $this->api->graphql($store, <<<'GQL'
             query ($query: String!) {
               orders(first: 50, sortKey: CREATED_AT, reverse: true, query: $query) {
                 nodes {
@@ -114,14 +144,6 @@ class RecentOrders
               }
             }
             GQL, ['query' => "created_at:>={$since} AND -status:cancelled"]);
-
-        $count = 0;
-        foreach (array_reverse($data['orders']['nodes'] ?? []) as $order) {
-            $products = array_values(array_filter(array_map(fn ($line) => $line['product'] ? self::product($line['product']) : null, $order['lineItems']['nodes'] ?? [])));
-            $count += self::record($store, $order['id'], $products, null, Carbon::parse($order['createdAt']));
-        }
-
-        return $count;
     }
 
     private static function product(array $node): array
