@@ -1,5 +1,15 @@
 <?php
 
+// Offer counts are unlimited on every plan; only automation runs (a future feature) are metered.
+$unlimited = fn (int $automationRuns) => [
+    'active_experiences' => null,
+    'bundles' => null,
+    'free_gifts' => null,
+    'shipping_bars' => null,
+    'workflows' => null,
+    'automation_executions' => $automationRuns,
+];
+
 return [
 
     /*
@@ -56,49 +66,56 @@ return [
 
     'billing' => [
         'currency' => 'USD',
+
+        // Every plan has every feature. Plans differ by the store's total sales over the last
+        // 30 days (USD, all orders except test and cancelled ones). "sales_limit" null = unlimited.
+        // Past the limit the merchant has "grace_days" to upgrade before offers pause.
+        'grace_days' => 7,
+        'warn_at' => 0.8,
+
         'plans' => [
+            'free' => [
+                'name' => 'Free',
+                'shopify_name' => env('SHOPIFY_PLAN_NAME_FREE', 'Free'),
+                'price' => 0,
+                'sales_limit' => 1000,
+                'features' => ['Up to $1,000 in monthly store sales', 'Every feature and template', 'Unlimited offers', 'Analytics'],
+                'limits' => $unlimited(1000),
+            ],
             'starter' => [
                 'name' => 'Starter',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
-                'price' => 9.99,
-                'features' => ['5 live offers', '1 bundle', '1 progressive gifts campaign', 'Upsells, countdowns, pre-orders, sales pop, sticky add to cart, trust', 'Analytics', 'Every template'],
-                'limits' => [
-                    'active_experiences' => 5,
-                    'bundles' => 1,
-                    'free_gifts' => 1,
-                    'shipping_bars' => 1,
-                    'workflows' => 5,
-                    'automation_executions' => 1000,
-                ],
+                'price' => 14.99,
+                'sales_limit' => 8000,
+                'features' => ['Up to $8,000 in monthly store sales', 'Every feature and template', 'Unlimited offers', 'Analytics'],
+                'limits' => $unlimited(10000),
             ],
             'growth' => [
                 'name' => 'Growth',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
                 'price' => 29.99,
-                'features' => ['Unlimited live offers', 'Unlimited bundles & progressive gifts', 'Everything in Starter', 'Analytics with revenue per offer', 'Checkout blocks and A/B testing when released'],
-                'limits' => [
-                    'active_experiences' => null,
-                    'bundles' => null,
-                    'free_gifts' => null,
-                    'shipping_bars' => null,
-                    'workflows' => null,
-                    'automation_executions' => 10000,
-                ],
+                'sales_limit' => 20000,
+                'features' => ['Up to $20,000 in monthly store sales', 'Every feature and template', 'Unlimited offers', 'Analytics'],
+                'limits' => $unlimited(10000),
             ],
             'scale' => [
                 'name' => 'Scale',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'),
                 'price' => 59.99,
-                'features' => ['Everything in Growth', 'Priority support', 'Automation and personalization when released', 'Early access to new features'],
-                'limits' => [
-                    'active_experiences' => null,
-                    'bundles' => null,
-                    'free_gifts' => null,
-                    'shipping_bars' => null,
-                    'workflows' => null,
-                    'automation_executions' => 50000,
-                ],
+                'sales_limit' => null,
+                'features' => ['Unlimited store sales', 'Every feature and template', 'Unlimited offers', 'Priority support', 'Early access to new features'],
+                'limits' => $unlimited(50000),
             ],
+        ],
+
+        // Approximate USD value of one unit of each currency, used when live rates can't be
+        // fetched. Currencies not listed count 1:1.
+        'usd_rates' => [
+            'USD' => 1, 'EUR' => 1.08, 'GBP' => 1.27, 'CAD' => 0.73, 'AUD' => 0.66, 'NZD' => 0.60, 'INR' => 0.012,
+            'JPY' => 0.0067, 'CHF' => 1.13, 'SEK' => 0.095, 'NOK' => 0.093, 'DKK' => 0.145, 'SGD' => 0.75,
+            'HKD' => 0.128, 'AED' => 0.272, 'SAR' => 0.267, 'ZAR' => 0.055, 'BRL' => 0.18, 'MXN' => 0.055,
+            'PLN' => 0.25, 'CZK' => 0.043, 'ILS' => 0.27, 'MYR' => 0.22, 'THB' => 0.028, 'PHP' => 0.017,
+            'IDR' => 0.000062, 'KRW' => 0.00073, 'CNY' => 0.14, 'TRY' => 0.029, 'HUF' => 0.0028, 'RON' => 0.22,
         ],
     ],
 

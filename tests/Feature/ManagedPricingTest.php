@@ -50,7 +50,8 @@ class ManagedPricingTest extends TestCase
         $this->assertSame('growth', Billing::planKeyFromName('Growth'));
         $this->assertSame('growth', Billing::planKeyFromName('GROWTH'));
         $this->assertSame('scale', Billing::planKeyFromName('OrderOrbit Scale'));
-        $this->assertNull(Billing::planKeyFromName('Free'));
+        $this->assertSame('free', Billing::planKeyFromName('Free'));
+        $this->assertNull(Billing::planKeyFromName('Enterprise'));
 
         config(['shopify.billing.plans.starter.shopify_name' => 'Basic']);
         $this->assertSame('starter', Billing::planKeyFromName('basic'));
@@ -112,7 +113,7 @@ class ManagedPricingTest extends TestCase
         $this->webhook('FROZEN', 'gid://shopify/AppSubscription/9', 'Growth', 'w3')->assertNoContent();
         $this->assertFalse($store->fresh()->hasPlanAccess());
 
-        $this->shopifyReports([$this->active('gid://shopify/AppSubscription/10', 'Free')]);
+        $this->shopifyReports([$this->active('gid://shopify/AppSubscription/10', 'Enterprise')]);
         app(Billing::class)->sync($store->fresh());
         $this->assertNull($store->fresh()->plan);
     }

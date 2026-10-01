@@ -29,6 +29,9 @@ class Store extends Model
             'onboarding_completed_at' => 'datetime',
             'installed_at' => 'datetime',
             'uninstalled_at' => 'datetime',
+            'sales_checked_at' => 'datetime',
+            'over_limit_since' => 'datetime',
+            'offers_suspended_at' => 'datetime',
         ];
     }
 
@@ -97,6 +100,25 @@ class Store extends Model
     public function pricingUrl(): string
     {
         return $this->adminUrl('charges/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/pricing_plans');
+    }
+
+    /**
+     * The plan's limit on total store sales over the last 30 days (USD); null means unlimited.
+     * Our own test shops are never limited.
+     */
+    public function salesLimit(): ?float
+    {
+        $limit = $this->isTestShop() ? null : config('shopify.billing.plans.'.$this->effectivePlan().'.sales_limit');
+
+        return $limit === null ? null : (float) $limit;
+    }
+
+    /**
+     * Offers are paused because the store stayed over its plan's sales limit past the grace period.
+     */
+    public function offersSuspended(): bool
+    {
+        return $this->offers_suspended_at !== null;
     }
 
     /**

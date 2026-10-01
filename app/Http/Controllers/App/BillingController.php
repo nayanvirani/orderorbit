@@ -4,8 +4,8 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Store;
+use App\Services\Billing\SalesMeter;
 use App\Services\Shopify\Billing;
-use App\Services\Usage;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Throwable;
@@ -17,7 +17,7 @@ use Throwable;
  */
 class BillingController extends Controller
 {
-    public function index(Request $request, Store $store, Billing $billing, Usage $usage): View
+    public function index(Request $request, Store $store, Billing $billing, SalesMeter $sales): View
     {
         $syncError = false;
 
@@ -28,6 +28,8 @@ class BillingController extends Controller
             $syncError = true;
         }
 
+        // Show an up-to-date sales count against the plan's limit.
+        $sales->refreshIfStale($store, 10);
         $store->refresh();
 
         return view('app.settings.billing', [
@@ -35,7 +37,7 @@ class BillingController extends Controller
             'subscription' => $store->activeSubscription()->first(),
             'latest' => $store->subscriptions()->latest('id')->first(),
             'plans' => config('shopify.billing.plans'),
-            'usage' => $usage->summary($store),
+            'sales' => $sales->status($store),
             'syncError' => $syncError,
             'canManage' => $request->attributes->get('storeUser')?->can('manage_billing'),
         ]);

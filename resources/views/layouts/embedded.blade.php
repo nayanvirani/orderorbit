@@ -78,9 +78,10 @@
     @if (request()->routeIs('app.cro.*', 'app.bundles.*', 'app.gifts.*', 'app.features.*'))
         <div class="ob-shell">
             @include('app.cro._subnav')
-            <div class="ob-shell-main">@yield('content')</div>
+            <div class="ob-shell-main">@include('app._sales_limit')@yield('content')</div>
         </div>
     @else
+        @include('app._sales_limit')
         @yield('content')
     @endif
 

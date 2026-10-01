@@ -91,7 +91,7 @@
             ['calendar', 'Pre-orders', '$10–30'],
             ['bell', 'Sales pop notifications', '$5–20'],
         ];
-        $fromPrice = number_format(min(array_column($plans, 'price')), 2);
+        $fromPrice = number_format(min(array_filter(array_column($plans, 'price'))), 2);
     @endphp
     <section class="hx-stack">
         <div class="mn-wide">
@@ -119,13 +119,13 @@
                                 <li><x-icon name="check"/>{{ $job }}</li>
                             @endforeach
                         </ul>
-                        <div class="hx-price"><span>from</span><b>${{ $fromPrice }}</b><span>/ month</span></div>
+                        <div class="hx-price"><span>free, then from</span><b>${{ $fromPrice }}</b><span>/ month</span></div>
                     </div>
                 </div>
             </div>
             <div class="hx-stats">
                 <div><span>Apps to manage</span><b>{{ count($stack) }} <i>→</i> 1</b></div>
-                <div><span>Typical monthly cost</span><b>$85–275 <i>→</i> ${{ $fromPrice }}</b></div>
+                <div><span>Typical monthly cost</span><b>$85–275 <i>→</i> $0–{{ number_format(max(array_column($plans, "price")), 2) }}</b></div>
                 <div><span>Scripts on your pages</span><b>{{ count($stack) }} <i>→</i> 1</b></div>
             </div>
             <p class="hx-fine">Separate-app prices are typical monthly ranges for single-purpose apps on the Shopify App Store; your own bills may differ.</p>
@@ -143,7 +143,7 @@
                     <div class="viz">
                         <div class="inv">
                             <p class="inv-h"><span>Shopify invoice</span><span>Apps</span></p>
-                            <p class="inv-row"><span><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit Space · Growth</span><b>$29.99</b></p>
+                            <p class="inv-row"><span><svg aria-hidden="true"><use href="#i-orbit"></use></svg>OrderOrbit Space · {{ $plans['growth']['name'] }}</span><b>${{ number_format($plans['growth']['price'], 2) }}</b></p>
                             <p class="inv-gone"><span>Bundle app</span><span>Gift app</span><span>Timer app</span><span>Upsell app</span><span>+6 more</span></p>
                         </div>
                     </div>
@@ -239,8 +239,8 @@
 
     <section class="mn-section">
         <div class="mn-wide">
-            <h2>Simple pricing, billed by Shopify</h2>
-            <p class="mn-intro">Start on any plan. Upgrade, downgrade or cancel whenever you like from your Shopify admin.</p>
+            <h2>Every feature on every plan</h2>
+            <p class="mn-intro">Start free. Plans differ only by your store's total monthly sales, so you pay more only when the store grows. Billed through Shopify.</p>
             @include('site.partials.plan-cards', ['plans' => $plans])
             <p style="margin:28px 0 0;text-align:center"><a class="btn" href="{{ route('site.pricing') }}">Compare all plan details</a></p>
         </div>
@@ -256,7 +256,7 @@
                 ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
                 ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],
                 ['How do you measure revenue?', 'A Shopify web pixel records completed orders and credits each order line to the offer that added it. Only shoppers who allow analytics are counted.'],
-                ['What does it cost?', 'Starter is $9.99, Growth $29.99 and Scale $59.99 per month, billed through your Shopify invoice.'],
+                ['What does it cost?', 'It\'s free while your store sells up to $1,000 a month. After that it\'s $14.99, $29.99 or $59.99 a month depending on your store\'s total sales. Every plan has every feature, billed through your Shopify invoice.'],
             ]])
         </div>
     </section>

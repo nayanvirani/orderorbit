@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Billing\SalesMeter;
 use App\Services\Shopify\Billing;
 use Closure;
 use Illuminate\Http\Request;
@@ -37,6 +38,9 @@ class RequirePlan
         }
 
         if ($store->hasPlanAccess()) {
+            // Keep the store's sales count (the plan limit) fresh without slowing the page.
+            defer(fn () => app(SalesMeter::class)->refreshIfStale($store));
+
             return $next($request);
         }
 

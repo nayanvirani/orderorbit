@@ -40,7 +40,7 @@ class SalesPopController extends Controller
 
         // New orders are picked up from Shopify at most every 10 minutes, after the response is sent.
         if ($store->hasScope('read_orders') && Cache::add("sales-pop-import:{$store->id}", true, 600)) {
-            dispatch(function () use ($store) {
+            defer(function () use ($store) {
                 try {
                     app(RecentOrders::class)->import($store, RecentPurchase::MAX_DAYS);
                 } catch (\App\Services\SalesPop\OrdersBlocked) {
@@ -48,7 +48,7 @@ class SalesPopController extends Controller
                 } catch (\Throwable $e) {
                     report($e);
                 }
-            })->afterResponse();
+            });
         }
 
         return RecentPurchase::where('store_id', $store->id)

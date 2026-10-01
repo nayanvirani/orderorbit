@@ -13,7 +13,7 @@
         @include('app.settings._tabs')
     @else
         <x-app.hero eyebrow="Plans" title="Choose your <em>orbit.</em>"
-            lead="Choose a plan below to start using OrderOrbit Space. Experiences, templates and settings are unavailable until you subscribe. Billing runs through your Shopify invoice." />
+            lead="Choose a plan below to start using OrderOrbit Space. Every plan has every feature; start free and upgrade as your store grows. Billing runs through your Shopify invoice." />
     @endif
 
     @if ($syncError)
@@ -23,7 +23,7 @@
     @if ($subscription && $store->plan)
         <s-section heading="Current plan">
             <s-stack direction="inline" gap="small-200" alignItems="center">
-                <s-heading>{{ $planName($subscription->plan) }} · ${{ number_format($subscription->price, 2) }}/mo</s-heading>
+                <s-heading>{{ $planName($subscription->plan) }} · {{ $subscription->price > 0 ? '$'.number_format($subscription->price, 2).'/mo' : 'Free' }}</s-heading>
                 @if ($subscription->trial_ends_at?->isFuture())
                     <s-badge tone="info">Trial</s-badge>
                 @else
@@ -52,29 +52,52 @@
             <s-paragraph>This development store has {{ $planName($effective) }} access without a subscription, for testing only.</s-paragraph>
         </s-banner>
     @elseif ($latest && in_array($latest->status, ['PENDING', 'FROZEN', 'DECLINED', 'EXPIRED', 'CANCELLED'], true))
-        @php($state = [
+        @php
+        $state = [
             'PENDING' => ['warning', 'Waiting for approval', 'Approve the plan on Shopify to activate it.'],
             'FROZEN' => ['critical', 'Frozen', 'Your Shopify account has a billing issue. Resolve it in Shopify to reactivate OrderOrbit Space. Your data is kept.'],
             'DECLINED' => ['warning', 'Not approved', 'The plan wasn\'t approved. Choose a plan below to continue.'],
             'EXPIRED' => ['warning', 'Approval expired', 'The approval request expired. Choose a plan below to continue.'],
             'CANCELLED' => ['warning', 'Cancelled', 'Your plan was cancelled. Choose a plan below to continue. Your data is kept.'],
-        ][$latest->status])
+        ][$latest->status];
+        @endphp
         <s-banner tone="{{ $state[0] }}" heading="Plan status: {{ $state[1] }}"><s-paragraph>{{ $state[2] }}</s-paragraph></s-banner>
     @endif
 
     @if ($effective)
-    <s-section heading="Usage">
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap="base">
-            @foreach ($usage as $meter)
-                @php($full = $effective && $meter['limit'] !== null && $meter['used'] >= $meter['limit'])
-                <s-box padding="base" border="base" borderRadius="base">
-                    <s-text color="subdued">{{ $meter['label'] }}</s-text>
-                    <div><strong>{{ number_format($meter['used']) }}</strong> <span class="oo-muted">/ {{ $meter['limit'] === null ? 'Unlimited' : number_format($meter['limit']) }}</span></div>
-                    <div class="oo-meter"><i class="{{ $full ? 'full' : '' }}" style="width:{{ $meter['limit'] ? min(100, round($meter['used'] / $meter['limit'] * 100)) : 0 }}%"></i></div>
-                    @if ($full)<s-text tone="critical">You've reached your current OrderOrbit Space plan limit.</s-text>@endif
-                </s-box>
-            @endforeach
-        </s-grid>
+    @php
+        $money = fn ($v) => '$'.number_format((float) $v);
+        $cap = (float) collect($plans)->pluck('sales_limit')->filter()->max() * 1.5;
+    @endphp
+    <s-section heading="Store sales · last 30 days">
+        @if ($sales['state'] === 'paused')
+            <s-banner tone="critical" heading="Your offers are paused">
+                <s-paragraph>Your store's sales are over this plan's limit and the {{ config('shopify.billing.grace_days') }}-day grace period has ended. Upgrade and your offers go live again straight away. Nothing was deleted.</s-paragraph>
+            </s-banner>
+        @elseif ($sales['state'] === 'over')
+            <s-banner tone="warning" heading="You've passed this plan's sales limit">
+                <s-paragraph>Everything keeps working until {{ $sales['deadline']->toFormattedDateString() }}. Upgrade before then to keep your offers live.@if ($sales['next']) {{ $sales['next']['name'] }} (${{ number_format($sales['next']['price'], 2) }}/mo) fits your store.@endif</s-paragraph>
+            </s-banner>
+        @elseif ($sales['state'] === 'near')
+            <s-banner tone="info" heading="You're close to this plan's sales limit">
+                <s-paragraph>When your store passes the limit you'll have {{ config('shopify.billing.grace_days') }} days to upgrade before offers pause.</s-paragraph>
+            </s-banner>
+        @endif
+        <div class="ob-sales">
+            <div class="ob-sales-top">
+                @if ($sales['sales'] === null)
+                    <b>Not counted yet</b>
+                    <span>Your sales are counted from your Shopify orders shortly after you open the app.</span>
+                @else
+                    <b>{{ $money($sales['sales']) }}{{ $sales['sales'] >= $cap ? '+' : '' }}</b>
+                    <span>{{ $sales['limit'] === null ? 'Unlimited on your plan' : 'of '.$money($sales['limit']).' on your plan ('.$sales['percent'].'%)' }}</span>
+                @endif
+            </div>
+            @if ($sales['limit'] !== null && $sales['sales'] !== null)
+                <div class="ob-sales-bar"><i class="{{ in_array($sales['state'], ['over', 'paused'], true) ? 'over' : ($sales['state'] === 'near' ? 'near' : '') }}" style="width:{{ min(100, (int) $sales['percent']) }}%"></i></div>
+            @endif
+            <span class="oo-muted">Every plan includes every feature. Plans differ only by your store's total sales (all orders, in USD; test and cancelled orders don't count).</span>
+        </div>
     </s-section>
 
     @endif
@@ -90,7 +113,7 @@
                         <span class="ob-badge">Most popular</span>
                     @endif
                     <h3>{{ $plan['name'] }}</h3>
-                    <div class="ob-price">${{ number_format($plan['price'], 2) }} <small>/MO</small></div>
+                    <div class="ob-price">{{ $plan['price'] > 0 ? '$'.number_format($plan['price'], 2) : 'Free' }} @if ($plan['price'] > 0)<small>/MO</small>@endif</div>
                     <ul>
                         @foreach ($plan['features'] as $feature)<li>{{ $feature }}</li>@endforeach
                     </ul>
@@ -106,6 +129,6 @@
         @endunless
     </s-section>
 
-    <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Existing data is never deleted or changed on downgrade; items over the new limit are paused, not removed.</span></s-paragraph>
+    <s-paragraph><span class="oo-muted">Billed through Shopify. Plan changes happen on Shopify's plan page. Nothing is ever deleted when you change plans. If your store's sales pass your plan's limit you have {{ config('shopify.billing.grace_days') }} days to upgrade before offers pause.</span></s-paragraph>
 </s-page>
 @endsection

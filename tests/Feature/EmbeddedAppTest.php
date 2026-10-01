@@ -152,7 +152,7 @@ class EmbeddedAppTest extends TestCase
 
         $this->get('/app/settings/store', $this->as($owner))->assertOk()->assertSee('Dawn')->assertSee('Requires Shopify Plus');
         $this->get('/app/settings/users', $this->as($owner))->assertOk()->assertSee('What each role can do');
-        $this->get('/app/settings/billing', $this->as($owner))->assertOk()->assertSee('Automation executions this month');
+        $this->get('/app/settings/billing', $this->as($owner))->assertOk()->assertSee('Store sales · last 30 days');
         $this->get('/app/settings/activity', $this->as($owner))->assertOk();
         $this->get('/app/onboarding', $this->as($owner))->assertOk()->assertSee('Store connection');
     }

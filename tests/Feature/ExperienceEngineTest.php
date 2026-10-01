@@ -108,16 +108,23 @@ class ExperienceEngineTest extends TestCase
         $this->assertSame('paused', tap($experience->fresh(), fn ($e) => $manager->unarchive($e))->fresh()->status);
     }
 
-    public function test_plan_limits_block_publishing(): void
+    public function test_offers_are_unlimited_until_the_sales_limit_pauses_them(): void
     {
         $this->fakeShopify();
-        $store = $this->installedStore(['plan' => 'starter']);
+        $store = $this->installedStore(['plan' => 'free']);
         $manager = app(ExperienceManager::class);
 
+        // No per-plan offer counts any more.
         $manager->publish($manager->create($store, 'shipping-bar', 'minimal', null), null);
+        $manager->publish($manager->create($store, 'shipping-bar', 'progress', null), null);
+        $this->assertCount(2, app(StorefrontPublisher::class)->payload($store)['experiences']);
+
+        // Over the plan's sales limit past the grace period: nothing shows and nothing publishes.
+        $store->forceFill(['offers_suspended_at' => now()])->save();
+        $this->assertSame([], app(StorefrontPublisher::class)->payload($store->fresh())['experiences']);
 
         $this->expectException(PublishException::class);
-        $manager->publish($manager->create($store, 'shipping-bar', 'progress', null), null);
+        $manager->publish($manager->create($store->fresh(), 'shipping-bar', 'progress', null), null);
     }
 
     public function test_bundles_publish_through_the_cart_transform(): void

@@ -35,6 +35,8 @@ class StorefrontPublisher
     {
         $experiences = Experience::with('publishedVersion')
             ->where('store_id', $store->id)
+            // Over the plan's sales limit past the grace period: nothing shows until the plan fits again.
+            ->when($store->offersSuspended(), fn ($q) => $q->whereRaw('1 = 0'))
             ->where('status', 'published')
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->get()

@@ -5,6 +5,7 @@ namespace App\Services\Shopify;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\Subscription;
+use App\Services\Billing\SalesMeter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -176,9 +177,15 @@ class Billing
         $current = $active ?? $grace;
         $known = $current && array_key_exists($current->plan, config('shopify.billing.plans'));
 
+        $before = $store->plan;
         $store->forceFill([
             'plan' => $known ? $current->plan : null,
             'plan_expires_at' => $known && $grace ? $grace->current_period_ends_at : null,
         ])->save();
+
+        // A new plan has a new sales limit: clear or start the over-limit state straight away.
+        if ($store->plan !== $before) {
+            app(SalesMeter::class)->evaluate($store);
+        }
     }
 }

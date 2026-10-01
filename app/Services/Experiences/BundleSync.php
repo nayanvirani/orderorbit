@@ -29,6 +29,7 @@ class BundleSync
             ->where('store_id', $store->id)
             ->where('type', 'bundles')
             ->where('status', 'published')
+            ->when($store->offersSuspended(), fn ($q) => $q->whereRaw('1 = 0'))
             ->get()
             ->filter(fn (Experience $b) => $b->publishedVersion !== null && ($b->ends_at === null || $b->ends_at->isFuture()))
             ->map(fn (Experience $b) => [$b, BundleSchema::normalize($b->publishedVersion->config)[0]])

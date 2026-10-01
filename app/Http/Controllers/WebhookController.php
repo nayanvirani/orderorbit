@@ -33,7 +33,7 @@ class WebhookController extends Controller
             'app/scopes_update' => $this->scopesUpdated($store, $payload, $orders),
             'app_subscriptions/update' => $store && $billing->applyWebhook($store, $payload),
             // Sales pop: products from real orders (no customer details are kept).
-            'orders/create' => $store && $store->isInstalled() && $orders->fromWebhook($store, $payload),
+            'orders/create' => $store && $store->isInstalled() && $this->orderCreated($store, $payload, $orders),
             'shop/redact' => $this->redactShop($store),
             'customers/redact', 'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
                 'customer_id' => $payload['customer']['id'] ?? null,
@@ -45,6 +45,14 @@ class WebhookController extends Controller
         $receipt->forceFill(['processed_at' => now()])->save();
 
         return response()->noContent();
+    }
+
+    private function orderCreated(Store $store, array $payload, RecentOrders $orders): void
+    {
+        $orders->fromWebhook($store, $payload);
+
+        // New orders move the store toward its plan's sales limit: recount at most hourly.
+        defer(fn () => app(\App\Services\Billing\SalesMeter::class)->refreshIfStale($store, 60));
     }
 
     private function scopesUpdated(?Store $store, array $payload, RecentOrders $orders): void

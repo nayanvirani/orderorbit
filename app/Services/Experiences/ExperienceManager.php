@@ -211,6 +211,10 @@ class ExperienceManager
             throw new PublishException('Choose a plan to start publishing.', 'plan');
         }
 
+        if ($store->offersSuspended()) {
+            throw new PublishException('Your store has passed its plan\'s sales limit. Upgrade your plan to publish.', 'plan');
+        }
+
         // Only a newly live experience adds to the plan's counts.
         if ($experience->status !== 'published') {
             if (! $this->usage->allows($store, 'active_experiences')) {

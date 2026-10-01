@@ -846,3 +846,16 @@ label.fld .err { display: block; color: #b42318; font: 500 13px/1.4 var(--sans);
 .t-numbers .mini-kpi { grid-template-columns: auto minmax(0, 340px); justify-content: space-between; border: 0; padding: 0; }
 .t-numbers .mini-kpi .bars { height: 74px; }
 .mini-kpi .bars i { background: var(--text); }
+
+/* Four plans: every feature on each, so the sales limit is the line that matters. */
+.plan li.limit { font-weight: 600; color: var(--text); }
+.plan.featured li.limit { color: inherit; }
+@media (min-width: 1000px) {
+    .plans.plans-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .plans.plans-4 .plan { padding: 30px 22px; }
+    .plans.plans-4 .plan h3 { font-size: 30px; }
+    .plans.plans-4 .plan .price { font-size: 52px; margin-top: 22px; }
+    .plans.plans-4 .plan .badge { top: 14px; right: 12px; font-size: 9.5px; padding: 6px 8px; }
+    .plans.plans-4 .plan li { font-size: 14px; }
+}
+@media (min-width: 620px) and (max-width: 999px) { .plans.plans-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
