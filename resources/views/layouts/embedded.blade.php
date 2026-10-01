@@ -76,10 +76,13 @@
     @endif
 
     @if (request()->routeIs('app.cro.*', 'app.bundles.*', 'app.gifts.*', 'app.features.*'))
-        @include('app.cro._subnav')
+        <div class="ob-shell">
+            @include('app.cro._subnav')
+            <div class="ob-shell-main">@yield('content')</div>
+        </div>
+    @else
+        @yield('content')
     @endif
-
-    @yield('content')
 
     <script>
         // Session tokens live for one minute, so attach a fresh one to every form post.

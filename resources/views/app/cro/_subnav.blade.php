@@ -1,22 +1,54 @@
-{{-- CRO sub-menu: every conversion feature in one place. --}}
+{{-- CRO sidebar: every conversion feature in one place, grouped. --}}
 @php
     $feature = request()->route('feature');
-    $items = [
-        ['CRO overview', app_route('app.cro.overview'), request()->routeIs('app.cro.overview')],
-        ['Bundles', app_route('app.bundles.index'), request()->routeIs('app.bundles.*'), 'bundles'],
-        ['Progressive gifts', app_route('app.gifts.index'), request()->routeIs('app.gifts.*'), 'gifts'],
+    // On an experience's own pages, highlight the feature it belongs to rather than "All offers".
+    $experienceId = request()->route('experience');
+    $experienceFeature = is_numeric($experienceId)
+        ? \App\Experiences\Registry::featureFor((string) \App\Models\Experience::whereKey((int) $experienceId)->where('store_id', request()->attributes->get('store')?->id)->value('type'))
+        : null;
+    $feature ??= $experienceFeature;
+    $features = \App\Experiences\Registry::features();
+    $link = fn (string $key) => [
+        'label' => $features[$key]['label'],
+        'icon' => $features[$key]['icon'] ?? 'sparkle',
+        'tone' => $features[$key]['tone'] ?? null,
+        'href' => isset($features[$key]['module'])
+            ? app_route($features[$key]['module'])
+            : app_route('app.features.show', ['feature' => $key]),
+        'active' => match ($key) {
+            'bundles' => request()->routeIs('app.bundles.*'),
+            'progressive-gifts' => request()->routeIs('app.gifts.*'),
+            default => $feature === $key,
+        },
     ];
-    foreach (\App\Experiences\Registry::features() as $key => $f) {
-        if (! isset($f['module'])) {
-            $items[] = [$f['label'], app_route('app.features.show', ['feature' => $key]), $feature === $key, $f['tone'] ?? null];
-        }
-    }
-    $items[] = ['All offers', app_route('app.cro.experiences.index'), request()->routeIs('app.cro.experiences.*')];
-    $items[] = ['Templates', app_route('app.cro.templates'), request()->routeIs('app.cro.templates')];
+    $order = ['bundles', 'progressive-gifts', 'cart-upsells'];
+    $groups = [
+        'Order value' => array_map($link, array_values(array_filter($order, fn ($k) => isset($features[$k])))),
+        'Conversion' => array_map($link, array_values(array_filter(array_keys($features), fn ($k) => ! in_array($k, $order, true)))),
+        'Manage' => [
+            ['label' => 'All offers', 'icon' => 'list', 'tone' => 'default', 'href' => app_route('app.cro.experiences.index'), 'active' => request()->routeIs('app.cro.experiences.*') && ! $experienceFeature],
+            ['label' => 'Templates', 'icon' => 'palette', 'tone' => 'default', 'href' => app_route('app.cro.templates'), 'active' => request()->routeIs('app.cro.templates')],
+        ],
+    ];
 @endphp
-<nav class="ob-subnav" aria-label="CRO">
-    <span class="ob-subnav-label">CRO</span>
-    @foreach ($items as $item)
-        <a href="{{ $item[1] }}" @if ($item[2]) aria-current="page" @endif @isset($item[3]) class="t-{{ $item[3] }}" @endisset>@isset($item[3])<i></i>@endisset{{ $item[0] }}</a>
-    @endforeach
-</nav>
+<aside class="ob-sidebar">
+    <nav class="ob-subnav" aria-label="CRO">
+        <a class="ob-side-top" href="{{ app_route('app.cro.overview') }}" @if (request()->routeIs('app.cro.overview')) aria-current="page" @endif>
+            <x-app.icon name="grid" size="sm" tone="default"/><span>CRO overview</span>
+        </a>
+        @foreach ($groups as $heading => $items)
+            <p class="ob-side-head">{{ $heading }}</p>
+            @foreach ($items as $item)
+                <a href="{{ $item['href'] }}" @if ($item['active']) aria-current="page" @endif>
+                    <x-app.icon :name="$item['icon']" size="sm" :tone="$item['tone']"/><span>{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+        @endforeach
+    </nav>
+</aside>
+<script>
+    // Narrow screens show the menu as a strip: bring the current page into view.
+    if (window.matchMedia('(max-width: 900px)').matches) {
+        document.querySelector('.ob-subnav [aria-current="page"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    }
+</script>
