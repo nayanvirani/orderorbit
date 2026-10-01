@@ -206,7 +206,7 @@ return [
         'icon' => 'bag',
         'meter' => 'cart_upsells',
         'surface' => 'cart',
-        'description' => 'Cart and cart-drawer recommendations.',
+        'description' => 'Cart recommendations with one-click add.',
         'empty' => 'Suggest a last add-on in the cart.',
         'templates' => [
             'carousel' => ['name' => 'Carousel', 'style' => 'carousel'],

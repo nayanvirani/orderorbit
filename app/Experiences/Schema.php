@@ -45,7 +45,8 @@ class Schema
                 'animation' => ['type' => 'select', 'label' => 'Entrance animation', 'default' => 'fade', 'options' => ['none' => 'None', 'fade' => 'Fade in', 'slide' => 'Slide up']],
                 'dismissible' => ['type' => 'toggle', 'label' => 'Shoppers can dismiss it', 'default' => false],
                 'after_add' => ['type' => 'select', 'label' => 'After adding to cart', 'default' => 'cart', 'types' => self::CART_TYPES,
-                    'options' => ['cart' => 'Go to the cart', 'stay' => 'Stay on the page', 'checkout' => 'Go to checkout']],
+                    'options' => ['cart' => 'Go to the cart', 'stay' => 'Stay on the page', 'checkout' => 'Go to checkout'],
+                    'help' => 'Want to open your cart drawer instead? Your theme can take over with a callback: see Help Center → Developers: callbacks.'],
                 'priority' => ['type' => 'number', 'label' => 'Priority', 'default' => 50, 'min' => 1, 'max' => 100, 'help' => 'When several experiences match the same block, the highest priority shows.'],
             ],
             'targeting' => [

@@ -58,32 +58,83 @@
     if (node) { node.textContent = text || ''; node.classList.toggle('oo-status-error', !!bad); }
   }
 
-  /** Adds items ({ id: variant, quantity }) tagged with the experience, then follows the "after add" setting. */
+  /**
+   * Theme callbacks. A theme can define functions on window.OrderOrbitHooks and/or listen for the
+   * matching document event. Returning false from the function, or calling preventDefault() on
+   * the event, changes what OrderOrbit does next. Errors in theme code never break the widget.
+   *   beforeAddToCart  / orderorbit:before-add      → false cancels the add
+   *   afterAddToCart   / orderorbit:added-to-cart   → false keeps the shopper on the page
+   *   addToCartFailed  / orderorbit:add-failed
+   * Resolves to false when the theme asked for the default to be skipped.
+   */
+  function hook(name, event, detail) {
+    var go = true;
+    try {
+      if (!document.dispatchEvent(new CustomEvent('orderorbit:' + event, { detail: detail, cancelable: true }))) go = false;
+    } catch (e) { /* old browsers */ }
+    var fn = window.OrderOrbitHooks && window.OrderOrbitHooks[name];
+    if (typeof fn !== 'function') return Promise.resolve(go);
+    return Promise.resolve().then(function () { return fn(detail); }).then(function (result) {
+      return go && result !== false;
+    }).catch(function (err) {
+      if (window.console) console.error('[OrderOrbit] ' + name + ' callback failed', err);
+      return go;
+    });
+  }
+
+  /** The live cart (Shopify's /cart.js), for theme callbacks. */
+  function cart() {
+    return fetch(root() + 'cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); });
+  }
+
+  /**
+   * Adds items ({ id: variant, quantity }) tagged with the experience, then follows the "after add"
+   * setting, unless the theme's afterAddToCart callback takes over.
+   */
   function add(exp, ctx, items, btn, rootEl) {
     items = items.filter(function (i) { return i && i.id && i.quantity > 0; });
     if (!items.length) { status(rootEl, 'This item is unavailable right now.', true); return Promise.resolve(false); }
     if (ctx.preview) { status(rootEl, 'Preview: adds ' + items.reduce(function (n, i) { return n + i.quantity; }, 0) + ' item(s) to the cart.'); return Promise.resolve(false); }
 
     var label = btn ? btn.innerHTML : '';
+    var reset = function () { if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; } };
+    var detail = {
+      experience: { id: exp.id, type: exp.type, template: exp.template },
+      // Theme code may change these before they are sent (e.g. add a line property).
+      items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }; }),
+      after: (exp.behavior && exp.behavior.after_add) || 'cart',
+      element: rootEl || null,
+      getCart: cart
+    };
     if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = '…'; }
-    return fetch(root() + 'cart/add.js', {
-      method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }; }) })
-    }).then(function (r) {
-      return r.json().then(function (body) { if (!r.ok) throw new Error(body.description || body.message || 'Could not add to cart'); return body; });
-    }).then(function () {
-      OrderOrbit.track('added_to_cart', exp, { quantity: items.reduce(function (n, i) { return n + i.quantity; }, 0) });
-      var after = (exp.behavior && exp.behavior.after_add) || 'cart';
-      if (after === 'checkout') { location.href = root() + 'checkout'; return true; }
-      if (after === 'cart') { location.href = root() + 'cart'; return true; }
-      status(rootEl, 'Added to your cart.');
-      document.dispatchEvent(new CustomEvent('orderorbit:cart-updated', { detail: { experience_id: exp.id } }));
-      if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; }
-      return OrderOrbit.refreshCart().then(function () { return true; });
+
+    return hook('beforeAddToCart', 'before-add', detail).then(function (go) {
+      if (!go) { reset(); return false; }
+      return fetch(root() + 'cart/add.js', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ items: detail.items })
+      }).then(function (r) {
+        return r.json().then(function (body) { if (!r.ok) throw new Error(body.description || body.message || 'Could not add to cart'); return body; });
+      }).then(function (body) {
+        OrderOrbit.track('added_to_cart', exp, { quantity: detail.items.reduce(function (n, i) { return n + i.quantity; }, 0) });
+        detail.response = body;
+        return hook('afterAddToCart', 'added-to-cart', detail);
+      }).then(function (go) {
+        // The theme handled it (e.g. opened its cart drawer): stay on the page.
+        var after = go ? detail.after : 'stay';
+        if (after === 'checkout') { location.href = root() + 'checkout'; return true; }
+        if (after === 'cart') { location.href = root() + 'cart'; return true; }
+        status(rootEl, 'Added to your cart.');
+        document.dispatchEvent(new CustomEvent('orderorbit:cart-updated', { detail: { experience_id: exp.id } }));
+        reset();
+        return OrderOrbit.refreshCart().then(function () { return true; });
+      });
     }).catch(function (err) {
       status(rootEl, err.message, true);
-      if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; }
+      reset();
+      detail.message = err.message;
+      hook('addToCartFailed', 'add-failed', detail);
       return false;
     });
   }
@@ -113,5 +164,5 @@
     return total;
   }
 
-  OrderOrbit.shop = { load: load, hydrate: hydrate, variantSelect: variantSelect, chosenVariant: chosenVariant, pageVariant: pageVariant, add: add, change: change, status: status, linesFor: linesFor, inCart: inCart, saving: saving };
+  OrderOrbit.shop = { cart: cart, load: load, hydrate: hydrate, variantSelect: variantSelect, chosenVariant: chosenVariant, pageVariant: pageVariant, add: add, change: change, status: status, linesFor: linesFor, inCart: inCart, saving: saving };
 })();

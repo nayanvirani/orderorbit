@@ -318,6 +318,26 @@ class ExperienceEngineTest extends TestCase
         $this->get("/app/cro/experiences/{$foreign->id}", $this->as($owner))->assertNotFound();
     }
 
+    public function test_theme_callbacks_are_shipped_and_documented(): void
+    {
+        // The shared cart helper calls the theme's callbacks around every OrderOrbit add to cart.
+        $js = file_get_contents(base_path('extensions/orderorbit-theme/assets/oo-commerce.js'));
+        foreach (['OrderOrbitHooks', 'beforeAddToCart', 'afterAddToCart', 'addToCartFailed', 'orderorbit:', 'before-add', 'added-to-cart', 'add-failed'] as $needle) {
+            $this->assertStringContainsString($needle, $js);
+        }
+        foreach (glob(base_path('extensions/orderorbit-theme/assets/*.js')) as $file) {
+            $this->assertLessThan(10000, filesize($file), basename($file).' must stay under Shopify\'s 10 KB limit.');
+        }
+
+        // Cart upsells no longer place themselves in the cart drawer.
+        $this->assertArrayNotHasKey('drawer', \App\Experiences\Registry::type('cart-upsells')['content']);
+
+        config(['site.preview_password' => '']);
+        $this->get('/help')->assertOk()
+            ->assertSee('Developers: callbacks')->assertSee('How do I open my cart drawer after an add?')
+            ->assertSee('window.OrderOrbitHooks = {', false)->assertSee('orderorbit:added-to-cart');
+    }
+
     public function test_storefront_asset_is_served(): void
     {
         $this->get('/storefront/orderorbit.js')->assertOk()->assertHeader('Content-Type', 'application/javascript');

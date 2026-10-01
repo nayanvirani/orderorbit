@@ -93,6 +93,79 @@ return [
         ],
     ],
     [
+        'name' => 'Developers: callbacks',
+        'icon' => 'tool',
+        'text' => 'Run your own theme code when shoppers use an OrderOrbit Space offer.',
+        'articles' => [
+            ['What are callbacks?', 'Callbacks let your theme run its own JavaScript at key moments, such as right after an OrderOrbit Space button adds to the cart. You write the code in your theme (for example in theme.liquid or a theme script file); nothing is stored in the app. Define functions on window.OrderOrbitHooks, or listen for the matching events on document. Both work, and you can use either.', <<<'JS'
+            <script>
+              window.OrderOrbitHooks = {
+                beforeAddToCart: function (detail) { /* runs before items are sent */ },
+                afterAddToCart:  function (detail) { /* runs after a successful add */ },
+                addToCartFailed: function (detail) { /* runs when Shopify refuses the add */ }
+              };
+            </script>
+            JS],
+            ['How do I open my cart drawer after an add?', 'Use afterAddToCart and return false. Returning false tells OrderOrbit Space you have handled it, so the shopper stays on the page instead of being sent to the cart. Then open your drawer the way your theme does. The example is for Dawn and themes based on it; other themes have their own way to open the drawer.', <<<'JS'
+            window.OrderOrbitHooks = {
+              afterAddToCart: async function (detail) {
+                // Ask Shopify for the drawer's new HTML and let the theme redraw it.
+                const drawer = document.querySelector('cart-drawer');
+                if (!drawer) return;               // no drawer: keep the default (go to cart)
+
+                const ids = drawer.getSectionsToRender().map((s) => s.id);
+                const res = await fetch('/?sections=' + ids.join(','));
+                drawer.renderContents({ sections: await res.json() });
+                return false;                      // stay on the page
+              }
+            };
+            JS],
+            ['What is in "detail"?', 'Every callback receives one object. detail.experience tells you which offer was used: its id, its type (bundles, cart-upsells, progressive-gifts and so on) and its template. detail.items is the list being added, each with a variant id, a quantity and line properties. detail.after is what OrderOrbit Space will do next: "cart", "checkout" or "stay". detail.element is the widget on the page. After a successful add, detail.response is Shopify\'s reply. detail.getCart() returns the live cart.', <<<'JS'
+            window.OrderOrbitHooks = {
+              afterAddToCart: async function (detail) {
+                console.log(detail.experience.type);   // e.g. "bundles"
+                console.log(detail.items);             // [{ id, quantity, properties }]
+                console.log(detail.response);          // Shopify's /cart/add.js reply
+                const cart = await detail.getCart();   // Shopify's /cart.js
+                console.log(cart.item_count, cart.total_price);
+              }
+            };
+            JS],
+            ['Can I change or cancel an add?', 'Yes, in beforeAddToCart. Change detail.items to alter what is added, for example to attach a line property. Return false to cancel the add completely. Keep the _oo_offer property that is already on each item: it is how the offer\'s price is applied at checkout.', <<<'JS'
+            window.OrderOrbitHooks = {
+              beforeAddToCart: function (detail) {
+                if (!document.querySelector('#terms').checked) {
+                  alert('Please accept the terms first.');
+                  return false;                         // cancel the add
+                }
+                detail.items.forEach(function (item) {
+                  item.properties['Gift wrap'] = 'Yes'; // add a line property
+                });
+              }
+            };
+            JS],
+            ['Can I send shoppers somewhere else after an add?', 'Yes. Set detail.after in afterAddToCart to "cart", "checkout" or "stay" to override the offer\'s own setting, or return false and redirect yourself.', <<<'JS'
+            window.OrderOrbitHooks = {
+              afterAddToCart: function (detail) {
+                if (detail.experience.type === 'bundles') detail.after = 'checkout';
+              }
+            };
+            JS],
+            ['Can I use events instead of functions?', 'Yes. The same three moments are sent as events on document: orderorbit:before-add, orderorbit:added-to-cart and orderorbit:add-failed. The event\'s detail is the same object, and calling preventDefault() does what returning false does. Events can\'t wait for asynchronous work, so use the functions when you need await. There is also orderorbit:event, which reports views, clicks and unlocked rewards for your own tracking.', <<<'JS'
+            document.addEventListener('orderorbit:added-to-cart', function (event) {
+              event.preventDefault();                  // stay on the page
+              myTheme.openCart();
+            });
+
+            document.addEventListener('orderorbit:event', function (event) {
+              // event.detail.event is e.g. "orderorbit:experience_viewed"
+              console.log(event.detail.event, event.detail.experience_id);
+            });
+            JS],
+            ['Which buttons call the callbacks?', 'Every add-to-cart button that OrderOrbit Space draws: bundles, quantity breaks, cart upsells, gifts and add-ons. Sticky add to cart and Pre-order use your theme\'s own button, so your theme\'s normal behaviour applies there. If your callback has an error, the add still goes through and the error is written to the browser console.'],
+        ],
+    ],
+    [
         'name' => 'Troubleshooting',
         'icon' => 'tool',
         'text' => 'Offers not showing, prices not applying and other fixes.',

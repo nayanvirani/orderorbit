@@ -1,8 +1,10 @@
 <div class="faq">
-    @foreach ($faqs as [$q, $a])
+    {{-- An article is [question, answer] with an optional third item: a code sample. --}}
+    @foreach ($faqs as $faq)
         <details @if ($loop->first && ($openFirst ?? true)) open @endif>
-            <summary>{{ $q }}<span class="plus"><x-icon name="plus" style="width:16px;height:16px"/></span></summary>
-            <p>{{ $a }}</p>
+            <summary>{{ $faq[0] }}<span class="plus"><x-icon name="plus" style="width:16px;height:16px"/></span></summary>
+            <p>{{ $faq[1] }}</p>
+            @isset($faq[2])<pre class="code"><code>{{ $faq[2] }}</code></pre>@endisset
         </details>
     @endforeach
 </div>
