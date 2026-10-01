@@ -65,6 +65,9 @@ class WebhookController extends Controller
         $store->experiences()->where('status', 'published')->update(['status' => 'paused']);
         $store->experiences()->whereNotNull('shopify_discount_id')->update(['shopify_discount_id' => null]);
 
+        // Sales pop data is only kept while the app is installed.
+        \App\Models\RecentPurchase::where('store_id', $store->id)->delete();
+
         $store->subscriptions()->where('status', 'ACTIVE')->update(['status' => 'CANCELLED', 'cancelled_at' => now()]);
 
         AuditLog::record('store.uninstalled', $store);

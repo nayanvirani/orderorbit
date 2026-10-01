@@ -45,6 +45,11 @@ class StorefrontPublisher
                     $config = GiftSchema::payload(GiftSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
                 }
 
+                if ($e->type === 'sales-pop') {
+                    // Real recent purchases come from OrderOrbit's public feed for this store.
+                    $config['content']['feed'] = route('sales-pop.feed', ['shop' => $store->shop_domain, 'days' => $config['content']['max_age_days'] ?? 7]);
+                }
+
                 if ($e->type === 'countdown') {
                     // Daily cutoffs count in the store's time zone.
                     $config['content']['tz'] = $store->timezone ?: 'UTC';

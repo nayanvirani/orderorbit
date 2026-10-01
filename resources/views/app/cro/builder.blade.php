@@ -101,12 +101,16 @@
                     @elseif ($type['discount'] ?? false)
                         <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
                     @endif
-                    <p class="b-muted">After publishing, add the <strong>OrderOrbit Space block</strong> in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>
+                    @if ($type['surface'] === 'global')
+                        <p class="b-muted">No theme block needed: it shows on every page while the <strong>OrderOrbit Space app embed</strong> is on (Theme Editor → App embeds). Pops use your store's real recent orders — product, country and time only, never names — so it starts showing once orders come in.</p>
+                    @else
+                        <p class="b-muted">After publishing, add the <strong>OrderOrbit Space block</strong> in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>
+                    @endif
                     <div class="b-actions">
                         <button type="submit" name="action" value="publish" class="b-btn b-primary">
                             {{ ! empty($config['schedule']['starts_at']) ? 'Schedule' : 'Publish' }}
                         </button>
-                        <a class="b-btn" target="_top" href="{{ $store->adminUrl('themes/current/editor?template='.($type['surface'] === 'product' ? 'product' : ($type['surface'] === 'cart' ? 'cart' : 'index')).'&addAppBlockId='.config('shopify.api_key').'/experience&target=newAppsSection') }}">Open Theme Editor</a>
+                        <a class="b-btn" target="_top" href="{{ $store->themeEditorUrl($type['surface']) }}">{{ $type['surface'] === 'global' ? 'Turn on app embed' : 'Open Theme Editor' }}</a>
                     </div>
                 </section>
 

@@ -286,6 +286,48 @@ return [
         ],
     ],
 
+    // Shown on every page by the app embed: no theme block to place. Purchases are real orders
+    // recorded by the OrderOrbit pixel (SalesPopController feed); nothing is invented.
+    'sales-pop' => [
+        'label' => 'Sales pop',
+        'singular' => 'Sales pop',
+        'icon' => 'users',
+        'meter' => null,
+        'surface' => 'global',
+        'description' => 'Recent-purchase notifications on every page, from your real orders.',
+        'empty' => 'Show shoppers what others just bought.',
+        'templates' => [
+            'classic-card' => ['name' => 'Classic card', 'style' => 'card'],
+            'rounded-pill' => ['name' => 'Rounded pill', 'style' => 'pill'],
+            'dark-toast' => ['name' => 'Dark toast', 'style' => 'premium'],
+            'minimal-text' => ['name' => 'Minimal text', 'style' => 'minimal', 'content' => ['show_image' => false]],
+            'slim-bar' => ['name' => 'Slim bar', 'style' => 'banner', 'content' => ['position_desktop' => 'bottom-left', 'position_mobile' => 'top']],
+        ],
+        'content' => [
+            'buyer_label' => ['type' => 'text', 'label' => 'Who bought it', 'default' => 'Someone', 'max' => 40, 'help' => 'Shown as {buyer}. Shopper names are never shown, so use a word like "Someone" or "A customer".'],
+            'headline' => ['type' => 'text', 'label' => 'First line', 'default' => '{buyer} in {country}', 'max' => 80, 'help' => 'Use {buyer} and {country}. Without a country it shows just {buyer}.'],
+            'action_text' => ['type' => 'text', 'label' => 'Before the product name', 'default' => 'purchased', 'max' => 40],
+            'show_image' => ['type' => 'toggle', 'label' => 'Show product image', 'default' => true],
+            'show_time' => ['type' => 'toggle', 'label' => 'Show when it was bought', 'default' => true, 'help' => 'The real time of the order, e.g. "12 minutes ago".'],
+            'verified_text' => ['type' => 'text', 'label' => 'Verified label', 'default' => 'Verified purchase', 'max' => 40, 'help' => 'Leave empty to hide.'],
+            'link_to_product' => ['type' => 'toggle', 'label' => 'Open the product when tapped', 'default' => true],
+            'max_age_days' => ['type' => 'number', 'label' => 'Only purchases from the last … days', 'default' => 7, 'min' => 1, 'max' => 30],
+            'match_product' => ['type' => 'toggle', 'label' => 'On product pages, show that product\'s purchases first', 'default' => false],
+            'position_desktop' => ['type' => 'select', 'label' => 'Position on desktop', 'default' => 'bottom-left', 'options' => ['bottom-left' => 'Bottom left', 'bottom-right' => 'Bottom right', 'top-left' => 'Top left', 'top-right' => 'Top right', 'hide' => 'Don\'t show on desktop']],
+            'position_mobile' => ['type' => 'select', 'label' => 'Position on mobile', 'default' => 'bottom', 'options' => ['bottom' => 'Bottom', 'top' => 'Top', 'bottom-left' => 'Bottom left (compact)', 'bottom-right' => 'Bottom right (compact)', 'hide' => 'Don\'t show on mobile']],
+            'offset' => ['type' => 'number', 'label' => 'Distance from the edge (px)', 'default' => 16, 'min' => 0, 'max' => 160, 'help' => 'Raise it if a chat button or sticky bar overlaps.'],
+            'first_delay' => ['type' => 'number', 'label' => 'First pop after (seconds)', 'default' => 5, 'min' => 0, 'max' => 120],
+            'display_time' => ['type' => 'number', 'label' => 'Close automatically after (seconds)', 'default' => 6, 'min' => 2, 'max' => 60],
+            'interval' => ['type' => 'number', 'label' => 'Gap between pops (seconds)', 'default' => 12, 'min' => 3, 'max' => 600],
+            'random_gap' => ['type' => 'toggle', 'label' => 'Vary the gap randomly', 'default' => true, 'help' => 'Each gap is between half and one and a half times the setting, so it feels natural.'],
+            'order' => ['type' => 'select', 'label' => 'Order', 'default' => 'random', 'options' => ['random' => 'Random', 'latest' => 'Newest first']],
+            'max_per_page' => ['type' => 'number', 'label' => 'Most pops per page view', 'default' => 5, 'min' => 1, 'max' => 50],
+            'loop' => ['type' => 'toggle', 'label' => 'Start again after the last purchase', 'default' => false],
+            'pause_on_hover' => ['type' => 'toggle', 'label' => 'Pause while the shopper hovers', 'default' => true],
+            'close_button' => ['type' => 'toggle', 'label' => 'Show a close button', 'default' => true, 'help' => 'Closing stops pops for the rest of the visit.'],
+        ],
+    ],
+
     'trust' => [
         'label' => 'Trust & Social Proof',
         'singular' => 'Trust block',

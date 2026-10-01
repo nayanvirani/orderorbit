@@ -6,7 +6,7 @@
     $first = array_key_first($types);
     $discounts = collect($types)->contains(fn ($t) => $t['discount'] ?? false);
     $surface = $types[$first]['surface'];
-    $editor = $store->adminUrl('themes/current/editor?template='.($surface === 'cart' ? 'cart' : ($surface === 'product' ? 'product' : 'index')).'&addAppBlockId='.config('shopify.api_key').'/experience&target=newAppsSection');
+    $editor = $store->themeEditorUrl($surface);
     $canManage = request()->attributes->get('storeUser')?->can('manage_experiences');
 @endphp
 
@@ -23,7 +23,7 @@
                 <s-button variant="{{ $loop->first ? 'primary' : 'secondary' }}" href="{{ app_route('app.cro.experiences.create', ['type' => $typeKey]) }}">Create {{ lower_label($type['singular']) }}</s-button>
             @endforeach
         @endif
-        <s-button href="{{ $editor }}" target="_top">Open Theme Editor</s-button>
+        <s-button href="{{ $editor }}" target="_top">{{ $surface === 'global' ? 'Turn on app embed' : 'Open Theme Editor' }}</s-button>
     </x-app.hero>
 
     <s-section>

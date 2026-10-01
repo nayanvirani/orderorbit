@@ -2,6 +2,7 @@
 
 namespace App\Services\Experiences;
 
+use App\Experiences\Registry;
 use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Shopify\AdminApi;
@@ -70,7 +71,10 @@ class PlacementDetector
 
         Experience::where('store_id', $store->id)->where('status', '!=', 'archived')->get()
             ->each(function (Experience $e) use ($found) {
-                $placed = in_array($e->handle, $found['handles'], true) || in_array($e->type, $found['types'], true);
+                // Global types (Sales pop) need no block: the app embed shows them on every page.
+                $placed = Registry::has($e->type) && Registry::type($e->type)['surface'] === 'global'
+                    ? $found['embed']
+                    : in_array($e->handle, $found['handles'], true) || in_array($e->type, $found['types'], true);
                 $e->forceFill(['placement_status' => $placed ? 'placed' : 'not_placed', 'placement_checked_at' => now()])->save();
             });
 

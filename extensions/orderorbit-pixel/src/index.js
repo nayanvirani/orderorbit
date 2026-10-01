@@ -4,7 +4,8 @@ import {register} from '@shopify/web-pixels-extension';
  * OrderOrbit Space analytics. Sends, with the shopper's analytics consent:
  *  - experience views, clicks and adds to cart (published by the storefront widgets)
  *  - one "session" per browser session (for conversion rate)
- *  - completed checkouts, with each line's OrderOrbit offer tag for revenue attribution
+ *  - completed checkouts, with each line's OrderOrbit offer tag for revenue attribution, and the
+ *    product (title, link, image) and market country for Sales pop
  * No names, emails or addresses are sent.
  */
 const ENDPOINT = 'https://orderorbit.space/api/pixel';
@@ -40,19 +41,29 @@ register(({analytics, browser, init, settings}) => {
     const lines = (checkout.lineItems || []).map((line) => {
       const props = {};
       (line.properties || []).forEach((p) => { props[p.key] = p.value; });
+      const variant = line.variant || {};
+      const product = variant.product || {};
       return {
         q: line.quantity,
         v: line.finalLinePrice ? Number(line.finalLinePrice.amount) : 0,
         o: props._oo_offer || null,
         b: props._oo_bundle ? String(props._oo_bundle).split('|')[0] : null,
+        // Product details for Sales pop (public catalogue data only).
+        p: product.id || null,
+        t: product.title || line.title || null,
+        u: product.url || null,
+        i: variant.image ? variant.image.src : null,
       };
     });
+    const localization = checkout.localization || {};
     send({
       k: 'o',
       id: checkout.order ? checkout.order.id : checkout.token,
       v: checkout.totalPrice ? Number(checkout.totalPrice.amount) : 0,
       sub: checkout.subtotalPrice ? Number(checkout.subtotalPrice.amount) : 0,
       c: checkout.currencyCode,
+      // The market country only (for "Someone in Canada"); never the address.
+      cc: localization.country ? localization.country.isoCode : null,
       l: lines,
     });
   });

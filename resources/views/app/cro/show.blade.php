@@ -16,7 +16,8 @@
         ? ['overview' => 'Overview', 'configuration' => 'Configuration', 'analytics' => 'Analytics', 'history' => 'History']
         : ['overview' => 'Overview', 'configuration' => 'Configuration', 'targeting' => 'Targeting', 'analytics' => 'Analytics', 'experiment' => 'Experiment', 'history' => 'History'];
     $canEdit = request()->attributes->get('storeUser')?->can('manage_experiences');
-    $editorUrl = $store->adminUrl('themes/current/editor?template='.($type['surface'] === 'product' ? 'product' : ($type['surface'] === 'cart' ? 'cart' : 'index')).'&addAppBlockId='.config('shopify.api_key').'/experience&target=newAppsSection');
+    $global = $type['surface'] === 'global';
+    $editorUrl = $store->themeEditorUrl($type['surface']);
     $describe = function ($field, $value) {
         return match ($field['type']) {
             'toggle' => $value ? 'On' : 'Off',
@@ -48,8 +49,8 @@
 
     @if ($experience->status === 'published' && $experience->placement_status === 'not_placed')
         <s-banner tone="warning" heading="Published but not placed">
-            <s-paragraph>Shoppers can't see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “{{ $type['singular'] }}”.</s-paragraph>
-            <s-button slot="secondary-actions" href="{{ $editorUrl }}" target="_top">Open Theme Editor</s-button>
+            <s-paragraph>{{ $global ? 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.' : 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.' }}</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ $editorUrl }}" target="_top">{{ $global ? 'Turn on app embed' : 'Open Theme Editor' }}</s-button>
         </s-banner>
     @endif
     @if ($published && $experience->has_unpublished_changes && $experience->status !== 'archived')
@@ -109,7 +110,7 @@
                     @if ($experience->status === 'paused' && $published)
                         <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'resume']) }}"><s-button type="submit">Resume</s-button></form>
                     @endif
-                    <s-button href="{{ $editorUrl }}" target="_top">Open Theme Editor</s-button>
+                    <s-button href="{{ $editorUrl }}" target="_top">{{ $global ? 'Turn on app embed' : 'Open Theme Editor' }}</s-button>
                     <form method="POST" action="{{ app_route('app.cro.experiences.placement', ['experience' => $experience->id]) }}"><s-button type="submit">Re-check placement</s-button></form>
                     <form method="POST" action="{{ app_route('app.cro.experiences.duplicate', ['experience' => $experience->id]) }}"><s-button type="submit">Duplicate</s-button></form>
                     @if ($experience->status === 'archived')

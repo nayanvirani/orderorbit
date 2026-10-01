@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 // Storefront analytics from the OrderOrbit Space web pixel.
 Route::post('/api/pixel', [\App\Http\Controllers\PixelController::class, 'collect'])->middleware('throttle:240,1')->name('pixel.collect');
 Route::options('/api/pixel', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'));
+Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, 'feed'])->middleware('throttle:600,1')->name('sales-pop.feed');
 
 // Owner access to the public website while it's "coming soon".
 Route::post('/site-access', [SiteController::class, 'unlock'])->middleware('throttle:5,1')->name('site.unlock');
