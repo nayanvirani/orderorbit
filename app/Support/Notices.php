@@ -29,6 +29,7 @@ class Notices
         'version_restored' => ['Version loaded into your draft. Publish to make it live.', false],
         'placement_checked' => ['Theme placement checked.', false],
         'orders_imported' => ['Recent orders imported. Pops show them on your store within a minute.', false],
+        'orders_blocked' => ['Shopify hasn\'t approved OrderOrbit Space to read orders yet. See the steps in the Sales pop panel.', true],
         'orders_scope' => ['OrderOrbit Space needs permission to read orders. Reload the app and approve the updated permissions, then try again.', true],
         'bulk_done' => ['Changes applied.', false],
         'publish_unavailable' => ['This experience has no published version yet. Publish it from the builder first.', true],

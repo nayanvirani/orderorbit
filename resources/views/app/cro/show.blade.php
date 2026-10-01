@@ -52,10 +52,13 @@
             $recent = \App\Models\RecentPurchase::where('store_id', $store->id)->where('purchased_at', '>=', now()->subDays((int) ($experience->draft_config['content']['max_age_days'] ?? 7)));
             $recentCount = $recent->count();
             $canReadOrders = $store->hasScope('read_orders');
+            $ordersBlocked = $canReadOrders && \App\Services\SalesPop\RecentOrders::blocked($store);
         @endphp
-        <s-banner tone="{{ $recentCount ? 'success' : 'info' }}" heading="{{ $recentCount ? $recentCount.' recent '.\Illuminate\Support\Str::plural('purchase', $recentCount).' ready to show' : 'No recent purchases to show yet' }}">
+        <s-banner tone="{{ $recentCount ? 'success' : ($ordersBlocked ? 'warning' : 'info') }}" heading="{{ $recentCount ? $recentCount.' recent '.\Illuminate\Support\Str::plural('purchase', $recentCount).' ready to show' : ($ordersBlocked ? 'Shopify needs to approve order access' : 'No recent purchases to show yet') }}">
             <s-paragraph>
-                @if ($recentCount)
+                @if ($ordersBlocked)
+                    Shopify only lets apps read orders after the developer declares how order data is used. In the Shopify Partner Dashboard, open OrderOrbit Space → API access → Protected customer data, request access to order data (no names, emails or addresses are needed) and save. Then click Import recent orders again.
+                @elseif ($recentCount)
                     Pops cycle through products from your real orders in the last {{ (int) ($experience->draft_config['content']['max_age_days'] ?? 7) }} days. New orders are added automatically.
                 @elseif ($canReadOrders)
                     Pops appear once your store has an order in the last {{ (int) ($experience->draft_config['content']['max_age_days'] ?? 7) }} days. New orders are added automatically, or import your recent orders now.

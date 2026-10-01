@@ -10,6 +10,7 @@ use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Experiences\ExperienceManager;
 use App\Services\Experiences\PlacementDetector;
+use App\Services\SalesPop\OrdersBlocked;
 use App\Services\SalesPop\RecentOrders;
 use App\Services\Experiences\PublishException;
 use App\Services\Experiences\TemplateLibrary;
@@ -240,6 +241,8 @@ class ExperienceController extends Controller
 
         try {
             $orders->import($store);
+        } catch (OrdersBlocked) {
+            return $this->back($experience, 'orders_blocked');
         } catch (Throwable $e) {
             report($e);
 
