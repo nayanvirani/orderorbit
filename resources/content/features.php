@@ -132,6 +132,48 @@ return [
         ],
     ],
 
+    'preorder' => [
+        'group' => 'convert',
+        'name' => 'Pre-order',
+        'menu' => 'Sell products before they\'re in stock',
+        'icon' => 'calendar',
+        'eyebrow' => 'SHOPIFY PRE-ORDERS',
+        'h1' => 'Sell it before it\'s in stock.',
+        'hero' => 'A pre-order widget for the products you choose, with the ship date, a progress bar and the time left in months, weeks or days. Your add-to-cart becomes "Pre-order now" and every pre-order item is marked on the order.',
+        'seo_title' => 'Shopify Pre-order App with Ship Date & Progress Bar | OrderOrbit Space',
+        'seo_description' => 'Take pre-orders on Shopify: ship date, production or goal progress bar, months/weeks/days countdown, pre-order button text and order line marking, in eight layouts.',
+        'keyword' => 'Shopify pre-order app',
+        'steps' => ['Pick the products and when they ship: a fixed date or a number of days after the order.', 'Choose a layout and what the progress bar shows: time until shipping or units reserved toward a goal.', 'Add the OrderOrbit Space block to your product template and choose "Pre-order".', 'Publish. Shoppers see the ship date and order; each item is marked "Pre-order" in the cart and on the order.'],
+        'example' => ['title' => 'A jacket that ships next month.', 'text' => '"Available for pre-order · Ships by November 22 · 1 month 3 weeks left". The button reads "Pre-order now", and the order line shows "Pre-order: Ships by November 22".'],
+        'faqs' => [
+            ['Does it change my inventory settings?', 'No. Turn on "Continue selling when out of stock" for your pre-order products in Shopify so they can be bought with no stock. The widget shows the ship date and marks the order.'],
+            ['Can it show only when a variant is sold out?', 'Yes. Choose "Only when the selected variant is out of stock", and it switches on and off as shoppers change variant.'],
+            ['How do I see which orders are pre-orders?', 'Each pre-order item carries a line like "Pre-order: Ships by November 22", visible on the order in Shopify and to the customer.'],
+            ['Where does the goal number come from?', 'The goal tracker uses the target and the "units reserved so far" you enter, so keep it to your real number.'],
+        ],
+    ],
+
+    'sales-pop' => [
+        'group' => 'convert',
+        'name' => 'Sales Pop',
+        'menu' => 'Recent-purchase notifications from real orders',
+        'icon' => 'bell',
+        'eyebrow' => 'SALES POP',
+        'h1' => 'Show what others just bought.',
+        'hero' => 'Small "Someone in Canada purchased…" notifications on every page, built from your store\'s real recent orders. No theme block to place: turn on the app embed and choose where it pops.',
+        'seo_title' => 'Shopify Sales Pop & Recent Purchase Notifications | OrderOrbit Space',
+        'seo_description' => 'Recent-purchase popups for Shopify built from real orders: product, country and time, five layouts, desktop and mobile positions, auto close and random timing.',
+        'keyword' => 'Shopify sales pop',
+        'steps' => ['Pick a layout and where it pops on desktop and on mobile.', 'Set the timing: first pop, auto close, the gap between pops and random or newest-first order.', 'Turn on the OrderOrbit Space app embed once.', 'Publish. Pops appear on every page as real orders come in.'],
+        'example' => ['title' => 'A real order, shown honestly.', 'text' => '"Someone in Canada purchased Glow Serum · 12 minutes ago · Verified purchase". Tapping it opens the product.'],
+        'faqs' => [
+            ['Are the purchases real?', 'Yes. Pops only show products from your store\'s real recent orders, with the order\'s country and time. Nothing is made up.'],
+            ['Does it show customer names?', 'No. Shoppers appear as "Someone" or a word you choose, so no personal data is shown.'],
+            ['Do I need to add a theme block?', 'No. It shows on every page while the OrderOrbit Space app embed is on. You can still limit it to certain page types.'],
+            ['Why don\'t I see any pops yet?', 'Pops start once orders are recorded. Only shoppers who allow analytics in your consent banner are counted.'],
+        ],
+    ],
+
     'trust-social-proof' => [
         'group' => 'convert',
         'name' => 'Trust & Social Proof',
