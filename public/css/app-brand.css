@@ -35,6 +35,8 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .t-countdown { --tone: #ea580c; --tone-soft: #fff1e7; }
 .t-sticky { --tone: #0d9488; --tone-soft: #e5f7f5; }
 .t-trust { --tone: #db2777; --tone-soft: #fdeef6; }
+.t-checkout { --tone: #0f766e; --tone-soft: #e6f6f4; }
+.t-thankyou { --tone: #9333ea; --tone-soft: #f6edff; }
 .t-preorder { --tone: #0891b2; --tone-soft: #e6f7fb; }
 .t-salespop { --tone: #d97706; --tone-soft: #fef6e7; }
 .t-analytics, .t-default { --tone: #4f46e5; --tone-soft: #eef2ff; }

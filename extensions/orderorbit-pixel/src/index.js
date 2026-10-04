@@ -2,7 +2,8 @@ import {register} from '@shopify/web-pixels-extension';
 
 /**
  * OrderOrbit Space analytics. Sends, with the shopper's analytics consent:
- *  - experience views, clicks and adds to cart (published by the storefront widgets)
+ *  - experience views, clicks and adds to cart (published by the storefront widgets and the
+ *    checkout blocks), and post-purchase survey answers
  *  - one "session" per browser session (for conversion rate)
  *  - completed checkouts, with each line's OrderOrbit offer tag for revenue attribution, and the
  *    product (title, link, image) and market country for Sales pop
@@ -23,7 +24,7 @@ register(({analytics, browser, init, settings}) => {
 
   analytics.subscribe('orderorbit_event', (event) => {
     const d = event.customData || {};
-    send({k: 'e', e: String(d.event || '').replace('orderorbit:', ''), x: d.experience_id, ty: d.experience_type, q: d.quantity || 1});
+    send({k: 'e', e: String(d.event || '').replace('orderorbit:', ''), x: d.experience_id, ty: d.experience_type, q: d.quantity || 1, a: d.answer || undefined});
   });
 
   analytics.subscribe('page_viewed', async () => {

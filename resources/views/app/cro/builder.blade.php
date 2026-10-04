@@ -66,7 +66,7 @@
                     <section class="b-card" data-step="{{ $step }}" hidden>
                         @foreach ($sections as $section)
                             <h2>{{ ['content' => 'Content', 'design' => 'Design', 'behavior' => 'Behavior', 'targeting' => 'Targeting', 'schedule' => 'Schedule', 'analytics' => 'Analytics'][$section] }}</h2>
-                            @if ($section === 'design')<p class="b-muted">Defaults come from <a href="{{ app_route('app.settings.branding') }}">Settings → Branding</a>.</p>@endif
+                            @if ($section === 'design' && empty($fields['design']))<p class="b-muted">Checkout blocks use your checkout's own fonts and colours, set in Shopify under Settings → Checkout → Customize.</p>@elseif ($section === 'design')<p class="b-muted">Defaults come from <a href="{{ app_route('app.settings.branding') }}">Settings → Branding</a>.</p>@endif
                             @if ($section === 'schedule')<p class="b-muted">Optional. Leave empty to go live as soon as you publish.</p>@endif
                             @foreach ($fields[$section] as $key => $field)
                                 @include('app.cro._field', ['section' => $section, 'key' => $key, 'field' => $field, 'value' => $config[$section][$key] ?? null])
@@ -101,7 +101,9 @@
                     @elseif ($type['discount'] ?? false)
                         <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
                     @endif
-                    @if ($type['surface'] === 'global')
+                    @if (in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true))
+                        <p class="b-muted">After publishing, open Shopify's checkout editor{{ $type['surface'] === 'thank-you' ? ' on the Thank You or Order Status page' : '' }}, add the <strong>OrderOrbit Space</strong> block and set its type to <code class="b-code-inline">{{ $experience->type }}</code>. To show this exact one, put <code class="b-code-inline">{{ $experience->handle }}</code> in its Experience ID setting.</p>
+                    @elseif ($type['surface'] === 'global')
                         <p class="b-muted">No theme block needed: it shows on every page while the <strong>OrderOrbit Space app embed</strong> is on (Theme Editor → App embeds). Pops use your store's real recent orders — product, country and time only, never names — so it starts showing once orders come in.</p>
                     @else
                         <p class="b-muted">After publishing, add the <strong>OrderOrbit Space block</strong> in the Theme Editor and pick “{{ $type['singular'] }}”, or pin it with ID <code class="b-code-inline">{{ $experience->handle }}</code>.</p>
@@ -110,7 +112,7 @@
                         <button type="submit" name="action" value="publish" class="b-btn b-primary">
                             {{ ! empty($config['schedule']['starts_at']) ? 'Schedule' : 'Publish' }}
                         </button>
-                        <a class="b-btn" target="_top" href="{{ $store->themeEditorUrl($type['surface']) }}">{{ $type['surface'] === 'global' ? 'Turn on app embed' : 'Open Theme Editor' }}</a>
+                        <a class="b-btn" target="_top" href="{{ $store->themeEditorUrl($type['surface']) }}">{{ $store->editorLabel($type['surface']) }}</a>
                     </div>
                 </section>
 
@@ -152,5 +154,7 @@
 
 @push('scripts')
     <script src="{{ route('storefront.asset', 'orderorbit.js') }}"></script>
+    <script src="{{ asset('js/checkout-preview.js') }}?v={{ filemtime(public_path('js/checkout-preview.js')) }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/checkout-preview.css') }}?v={{ filemtime(public_path('css/checkout-preview.css')) }}">
     <script src="{{ asset('js/builder.js') }}?v={{ filemtime(public_path('js/builder.js')) }}"></script>
 @endpush

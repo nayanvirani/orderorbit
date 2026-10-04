@@ -5,6 +5,7 @@ namespace App\Services\Experiences;
 use App\Experiences\BundleSchema;
 use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
+use App\Experiences\Schema;
 use App\Models\Experience;
 use App\Models\RecentPurchase;
 use App\Models\Store;
@@ -31,9 +32,51 @@ class StorefrontPublisher
         private readonly BundleSync $bundles,
     ) {}
 
+    /** Shop metafield read by the checkout UI extension ($app namespace = app-owned). */
+    public const CHECKOUT_NAMESPACE = '$app';
+
+    public const CHECKOUT_KEY = 'checkout';
+
+    /**
+     * The theme's experiences (storefront blocks and the app embed).
+     */
     public function payload(Store $store): array
     {
-        $experiences = Experience::with('publishedVersion')
+        $experiences = collect($this->live($store))
+            ->reject(fn (array $e) => in_array(Registry::type($e['type'])['surface'], Schema::CHECKOUT_SURFACES, true))
+            ->values()->all();
+
+        return [
+            'v' => 1,
+            'currency' => $store->currency,
+            'updated_at' => now()->toIso8601String(),
+            'experiences' => $experiences,
+        ];
+    }
+
+    /**
+     * What the checkout UI extension reads: checkout, Thank You and Order Status blocks, plus the
+     * live Progressive gifts campaign that the shipping-progress and free-gift blocks follow.
+     */
+    public function checkoutPayload(Store $store): array
+    {
+        $live = collect($this->live($store));
+
+        return [
+            'v' => 1,
+            'currency' => $store->currency,
+            'updated_at' => now()->toIso8601String(),
+            'experiences' => $live->filter(fn (array $e) => in_array(Registry::type($e['type'])['surface'], Schema::CHECKOUT_SURFACES, true))->values()->all(),
+            'gifts' => ($gifts = $live->firstWhere('type', 'progressive-gifts')) ? array_intersect_key($gifts, array_flip(['id', 'content'])) : null,
+        ];
+    }
+
+    /**
+     * Every live experience in the storefront payload shape, highest priority first.
+     */
+    private function live(Store $store): array
+    {
+        return Experience::with('publishedVersion')
             ->where('store_id', $store->id)
             // Over the plan's sales limit past the grace period: nothing shows until the plan fits again.
             ->when($store->offersSuspended(), fn ($q) => $q->whereRaw('1 = 0'))
@@ -78,13 +121,6 @@ class StorefrontPublisher
             ->sortByDesc('priority')
             ->values()
             ->all();
-
-        return [
-            'v' => 1,
-            'currency' => $store->currency,
-            'updated_at' => now()->toIso8601String(),
-            'experiences' => $experiences,
-        ];
     }
 
     public function sync(Store $store): array
@@ -101,19 +137,30 @@ class StorefrontPublisher
             Log::warning('Storefront payload is close to the metafield size limit', ['store' => $store->shop_domain, 'bytes' => strlen($json)]);
         }
 
-        $installation = $this->api->graphql($store, '{ currentAppInstallation { id } }')['currentAppInstallation']['id'];
+        $owners = $this->api->graphql($store, '{ currentAppInstallation { id } shop { id } }');
+        $metafields = [[
+            'ownerId' => $owners['currentAppInstallation']['id'],
+            'namespace' => self::NAMESPACE,
+            'key' => self::KEY,
+            'type' => 'json',
+            'value' => $json,
+        ]];
+        // Checkout extensions can't read app-installation metafields, so their blocks go on the shop.
+        if (! empty($owners['shop']['id'])) {
+            $metafields[] = [
+                'ownerId' => $owners['shop']['id'],
+                'namespace' => self::CHECKOUT_NAMESPACE,
+                'key' => self::CHECKOUT_KEY,
+                'type' => 'json',
+                'value' => json_encode($this->checkoutPayload($store), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ];
+        }
 
         $result = $this->api->graphql($store, <<<'GQL'
             mutation Publish($metafields: [MetafieldsSetInput!]!) {
               metafieldsSet(metafields: $metafields) { userErrors { field message } }
             }
-            GQL, ['metafields' => [[
-            'ownerId' => $installation,
-            'namespace' => self::NAMESPACE,
-            'key' => self::KEY,
-            'type' => 'json',
-            'value' => $json,
-        ]]]);
+            GQL, ['metafields' => $metafields]);
 
         if (! empty($result['metafieldsSet']['userErrors'])) {
             throw new RuntimeException('Publishing failed: '.$result['metafieldsSet']['userErrors'][0]['message']);

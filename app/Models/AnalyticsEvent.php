@@ -8,7 +8,7 @@ class AnalyticsEvent extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['store_id', 'experience_handle', 'event', 'quantity', 'value', 'currency', 'order_ref', 'occurred_at'];
+    protected $fillable = ['store_id', 'experience_handle', 'event', 'quantity', 'value', 'currency', 'order_ref', 'occurred_at', 'label'];
 
     protected function casts(): array
     {

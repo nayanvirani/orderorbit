@@ -99,6 +99,34 @@ return [
         ],
     ],
 
+    'checkout' => [
+        'icon' => 'checkout',
+        'tone' => 'checkout',
+        'label' => 'Checkout blocks',
+        'types' => ['checkout-reviews', 'checkout-countdown', 'checkout-shipping', 'checkout-gift', 'checkout-promo', 'checkout-trust'],
+        'tagline' => 'Keep selling <em>inside checkout.</em>',
+        'lead' => 'Reviews, countdowns, shipping progress, free gifts, promotions and trust, shown inside Shopify checkout. Blocks inside checkout need Shopify Plus; Shopify doesn\'t allow them on other plans.',
+        'steps' => [
+            'Create a block and pick a layout. Checkout uses your checkout branding.',
+            'In Shopify, open Settings → Checkout → Customize and add the OrderOrbit Space block where you want it.',
+            'Choose the block type in its settings. Shipping progress and free gifts follow your Progressive gifts campaign.',
+        ],
+    ],
+
+    'thank-you' => [
+        'icon' => 'star',
+        'tone' => 'thankyou',
+        'label' => 'Thank You & Order Status',
+        'types' => ['ty-cross-sell', 'ty-reorder', 'ty-review', 'ty-referral', 'ty-survey', 'ty-discount', 'ty-message'],
+        'tagline' => 'The order is placed. <em>Start the next one.</em>',
+        'lead' => 'Cross-sells, reorder, review requests, referrals, surveys, next-order codes and helpful messages on the Thank You and Order Status pages. Works on every Shopify plan.',
+        'steps' => [
+            'Create a block and pick a layout.',
+            'In Shopify, open Settings → Checkout → Customize, switch to the Thank You or Order Status page and add the OrderOrbit Space block.',
+            'Choose the block type in its settings. Survey answers appear in Analytics.',
+        ],
+    ],
+
     'sales-pop' => [
         'icon' => 'users',
         'tone' => 'salespop',

@@ -214,8 +214,22 @@ class Store extends Model
     {
         $key = config('shopify.api_key');
 
-        return $surface === 'global'
-            ? $this->adminUrl("themes/current/editor?context=apps&activateAppId={$key}/app-embed")
-            : $this->adminUrl('themes/current/editor?template='.($surface === 'product' ? 'product' : ($surface === 'cart' ? 'cart' : 'index'))."&addAppBlockId={$key}/experience&target=newAppsSection");
+        return match ($surface) {
+            'global' => $this->adminUrl("themes/current/editor?context=apps&activateAppId={$key}/app-embed"),
+            // Checkout and post-purchase blocks are placed in Shopify's checkout editor, not the theme.
+            'checkout' => $this->adminUrl('settings/checkout/editor'),
+            'thank-you' => $this->adminUrl('settings/checkout/editor?page=thank-you'),
+            default => $this->adminUrl('themes/current/editor?template='.($surface === 'product' ? 'product' : ($surface === 'cart' ? 'cart' : 'index'))."&addAppBlockId={$key}/experience&target=newAppsSection"),
+        };
+    }
+
+    /** The label for themeEditorUrl()'s button. */
+    public function editorLabel(string $surface): string
+    {
+        return match ($surface) {
+            'global' => 'Turn on app embed',
+            'checkout', 'thank-you' => 'Open checkout editor',
+            default => 'Open Theme Editor',
+        };
     }
 }

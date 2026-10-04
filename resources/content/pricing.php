@@ -9,7 +9,7 @@ return [
     'taglines' => [
         'free' => 'Try it on a new store',
         'starter' => 'The full storefront toolkit',
-        'growth' => 'Checkout and testing',
+        'growth' => 'Checkout and post-purchase',
         'scale' => 'For established stores',
     ],
     'rows' => [
@@ -21,7 +21,7 @@ return [
         ['Pre-orders', '1 live', 'Unlimited', 'Unlimited', 'Unlimited'],
         ['Every template and design option', true, true, true, true],
         ['Analytics', 'Store totals', 'Revenue per offer', 'Revenue per offer', 'Revenue per offer'],
-        ['Checkout & Thank You blocks (coming soon)', false, false, true, true],
+        ['Checkout, Thank You & Order Status blocks', false, false, true, true],
         ['Customer account blocks (coming soon)', false, false, true, true],
         ['A/B testing (coming soon)', false, false, true, true],
         ['Automation and personalization (coming soon)', false, false, false, true],
@@ -32,9 +32,9 @@ return [
         ['What counts as "monthly store sales"?', 'Your store\'s total sales from all orders in the current 30-day cycle, converted to US dollars. Cycles start on the day you install the app. Test orders and cancelled orders don\'t count, and refunds are taken off.'],
         ['What happens when my store passes its plan\'s sales limit?', 'The app tells you as soon as it happens, even early in the cycle, and you have 3 days to upgrade. After that every feature stops until you upgrade. Nothing is deleted, and everything goes live again the moment you do.'],
         ['Does the count start again each cycle?', 'Yes, every 30 days. If your store was stopped for passing its limit, it stays stopped until you upgrade.'],
-        ['Which plan gets the features that are coming soon?', 'Checkout and Thank You blocks, customer account blocks and A/B testing will be on Growth and Scale. Automation and personalization will be on Scale. They appear in the app as they are released, at no extra charge on those plans.'],
+        ['Which plan gets the features that are coming soon?', 'Customer account blocks and A/B testing will be on Growth and Scale. Automation and personalization will be on Scale. They appear in the app as they are released, at no extra charge on those plans.'],
         ['How am I billed?', 'Through your Shopify invoice, monthly. You can change or cancel your plan from Shopify at any time.'],
         ['Can I downgrade?', 'Yes, whenever your store\'s sales fit the lower plan. Offers the lower plan doesn\'t cover are paused, not deleted.'],
-        ['Do I need Shopify Plus?', 'No. Everything that\'s live today works on any Shopify plan. Blocks inside checkout will need Shopify Plus; Thank You and Order Status blocks won\'t.'],
+        ['Do I need Shopify Plus?', 'No. Everything that\'s live today works on any Shopify plan. Blocks inside checkout need Shopify Plus; Thank You and Order Status blocks don\'t.'],
     ],
 ];

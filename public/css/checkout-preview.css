@@ -1,0 +1,43 @@
+/* In-app previews of checkout blocks: a neutral likeness of Shopify checkout. */
+.oo-exp.oo-type-checkout-reviews, .oo-exp[class*="oo-type-checkout-"], .oo-exp[class*="oo-type-ty-"] { padding: 0; border: 0; background: none; }
+.ck { display: grid; gap: 10px; padding: 16px; border: 1px solid #dedede; border-radius: 8px; background: #fff; color: #1a1a1a; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.ck p { margin: 0; }
+.ck-title { font-weight: 600; font-size: 15px; }
+.ck-text b { font-weight: 600; }
+.ck-muted, .ck-note { color: #707070; font-size: 13px; }
+.ck-note { font-size: 12px; font-style: italic; }
+.ck-btn { display: inline-flex; justify-self: start; align-items: center; justify-content: center; padding: 9px 14px; border: 1px solid #c9c9c9; border-radius: 6px; font-weight: 600; font-size: 13px; }
+.ck-primary { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
+.ck-row { display: flex; align-items: center; gap: 12px; }
+.ck-row .oo-img { width: 48px; flex: none; border-radius: 6px; }
+.ck-row > div { flex: 1; }
+.ck-between { justify-content: space-between; }
+.ck-timer { font: 600 18px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.ck-bar { height: 8px; border-radius: 999px; background: #ececec; overflow: hidden; }
+.ck-bar i { display: block; height: 100%; background: #1a1a1a; border-radius: inherit; }
+.ck-steps, .ck-badges, .ck-choices { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ck-steps li { color: #707070; font-size: 13px; }
+.ck-steps li.done { color: #1a1a1a; font-weight: 600; }
+.ck-badges { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+.ck-quote { display: grid; gap: 4px; padding: 10px 12px; border-radius: 6px; background: #f6f6f6; }
+.ck-stars { color: #1a1a1a; letter-spacing: 1px; }
+.ck-code { padding: 8px 12px; border: 1px dashed #9a9a9a; border-radius: 6px; font: 600 13px/1 ui-monospace, Menlo, monospace; letter-spacing: .06em; }
+.ck-products { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.ck-list .ck-products { grid-template-columns: 1fr; }
+.ck-list .ck-product { grid-template-columns: 56px 1fr auto; align-items: center; column-gap: 12px; }
+.ck-list .ck-product .oo-img { grid-row: span 2; width: 56px; }
+.ck-list .ck-product .ck-btn { grid-row: span 2; grid-column: 3; }
+.ck-featured .ck-products { grid-template-columns: minmax(0, 260px); }
+.ck-product { display: grid; gap: 6px; }
+.ck-product .oo-img { border-radius: 6px; }
+.ck-choices li { display: flex; align-items: center; gap: 8px; }
+.ck-radio { width: 16px; height: 16px; border: 1.5px solid #8a8a8a; border-radius: 50%; }
+.ck-radio.on { border: 5px solid #1a1a1a; }
+.ck-banner, .ck-announcement { background: #f4f4f4; border-color: #f4f4f4; }
+.ck-premium { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.ck-premium .ck-muted, .ck-premium .ck-note { color: #bdbdbd; }
+.ck-premium .ck-quote { background: rgba(255, 255, 255, .08); }
+.ck-premium .ck-stars { color: #fff; }
+.ck-premium .ck-bar { background: rgba(255, 255, 255, .2); }
+.ck-premium .ck-bar i { background: #fff; }
+.ck-compact { padding: 10px 14px; }

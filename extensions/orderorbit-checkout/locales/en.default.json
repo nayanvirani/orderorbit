@@ -1,0 +1,12 @@
+{
+  "remaining": "{amount} to go",
+  "copied": "Code applied",
+  "codeFailed": "This code can't be used right now.",
+  "giftAdded": "Gift added",
+  "giftFailed": "The gift couldn't be added.",
+  "share": "Share",
+  "reviews": "{count} reviews",
+  "slide": "{current} of {total}",
+  "previous": "Previous",
+  "next": "Next"
+}

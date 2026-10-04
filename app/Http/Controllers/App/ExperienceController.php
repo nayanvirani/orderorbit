@@ -294,13 +294,12 @@ class ExperienceController extends Controller
         try {
             $this->manager->publish($experience, $this->user($request), $request->input('change_note'));
         } catch (PublishException $e) {
-            $notice = match ($e->reason) {
-                'plan' => 'plan_limit',
-                'invalid' => 'invalid',
-                default => 'publish_unavailable',
-            };
+            if ($e->reason === 'invalid') {
+                return redirect()->to(app_route('app.cro.experiences.edit', ['experience' => $experience->id, 'notice' => 'invalid']));
+            }
 
-            return redirect()->to(app_route('app.cro.experiences.edit', ['experience' => $experience->id, 'notice' => $notice]));
+            // Plan limits and checkout requirements: say exactly what's needed, in the editor.
+            return $this->builder($store, $experience->fresh(), $experience->fresh()->draft_config, [], $e->getMessage());
         } catch (Throwable $e) {
             report($e);
 

@@ -108,7 +108,7 @@ return [
                 'price' => 29.99,
                 'sales_limit' => 20000,
                 'includes' => ['offer_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
-                'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout and Thank You blocks when released', 'Customer account blocks when released', 'A/B testing when released'],
+                'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout, Thank You and Order Status blocks', 'Customer account blocks when released', 'A/B testing when released'],
                 'limits' => $limits([], 10000),
             ],
             'scale' => [

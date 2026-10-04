@@ -211,6 +211,20 @@ class ExperienceManager
             throw new PublishException('Choose a plan to start publishing.', 'plan');
         }
 
+        // Checkout and post-purchase blocks: Growth and above, and only where Shopify allows them.
+        if (in_array($type['surface'], Schema::CHECKOUT_SURFACES, true)) {
+            if (! $store->planIncludes('checkout')) {
+                throw new PublishException('Checkout and Thank You blocks are on the Growth plan and above. Upgrade to publish.', 'plan');
+            }
+            if ($type['surface'] === 'checkout' && ! $store->capability('checkout_blocks')) {
+                throw new PublishException('Blocks inside checkout need Shopify Plus. Shopify doesn\'t allow them on your plan; Thank You and Order Status blocks work on every plan.', 'unavailable');
+            }
+            if (in_array($experience->type, ['checkout-shipping', 'checkout-gift'], true)
+                && ! Experience::where('store_id', $store->id)->where('type', 'progressive-gifts')->where('status', 'published')->exists()) {
+                throw new PublishException('Publish a Progressive gifts campaign first: this block shows its milestones and rewards.', 'unavailable');
+            }
+        }
+
         if ($store->offersSuspended()) {
             throw new PublishException('Your store has passed its plan\'s sales limit. Upgrade your plan to publish.', 'plan');
         }

@@ -31,3 +31,6 @@ Thumbs.db
 
 # Shopify CLI
 .shopify/
+
+# Built by the Shopify CLI on deploy
+extensions/orderorbit-checkout/dist/

@@ -74,8 +74,12 @@
 
     @if ($experience->status === 'published' && $experience->placement_status === 'not_placed')
         <s-banner tone="warning" heading="Published but not placed">
-            <s-paragraph>{{ $global ? 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.' : 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.' }}</s-paragraph>
-            <s-button slot="secondary-actions" href="{{ $editorUrl }}" target="_top">{{ $global ? 'Turn on app embed' : 'Open Theme Editor' }}</s-button>
+            <s-paragraph>{{ match (true) {
+                $global => 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.',
+                in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) => 'Shoppers can\'t see this yet. In Shopify\'s checkout editor, add the OrderOrbit Space block and set its type to “'.$experience->type.'”.',
+                default => 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.',
+            } }}</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ $editorUrl }}" target="_top">{{ $store->editorLabel($type['surface']) }}</s-button>
         </s-banner>
     @endif
     @if ($published && $experience->has_unpublished_changes && $experience->status !== 'archived')
@@ -112,6 +116,29 @@
             </dl>
         </s-section>
 
+        @if ($experience->type === 'ty-survey')
+            @php
+                $answers = \App\Models\AnalyticsEvent::where('store_id', $store->id)->where('experience_handle', $experience->handle)->where('event', 'survey')
+                    ->where('occurred_at', '>=', now()->subDays(30))->whereNotNull('label')
+                    ->selectRaw('label, count(*) as total')->groupBy('label')->orderByDesc('total')->get();
+                $answerTotal = max(1, $answers->sum('total'));
+            @endphp
+            <s-section heading="Answers · last 30 days">
+                @if ($answers->isEmpty())
+                    <s-paragraph><span class="oo-muted">Answers appear here as customers reply on the Thank You page. Only shoppers who allow analytics are counted.</span></s-paragraph>
+                @else
+                    <table class="oo-table">
+                        <thead><tr><th>Answer</th><th>Replies</th><th>Share</th></tr></thead>
+                        <tbody>
+                            @foreach ($answers as $row)
+                                <tr><td>{{ $row->label }}</td><td>{{ number_format($row->total) }}</td><td>{{ round($row->total / $answerTotal * 100) }}%</td></tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </s-section>
+        @endif
+
         @php($perf = app(\App\Services\Analytics\Analytics::class)->forExperiences($store, [$experience->handle])[$experience->handle] ?? ['views' => 0, 'clicks' => 0, 'adds' => 0, 'orders' => 0, 'revenue' => 0])
         <s-section heading="Performance · last 30 days">
             <div class="ob-kpis">
@@ -135,7 +162,7 @@
                     @if ($experience->status === 'paused' && $published)
                         <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'resume']) }}"><s-button type="submit">Resume</s-button></form>
                     @endif
-                    <s-button href="{{ $editorUrl }}" target="_top">{{ $global ? 'Turn on app embed' : 'Open Theme Editor' }}</s-button>
+                    <s-button href="{{ $editorUrl }}" target="_top">{{ $store->editorLabel($type['surface']) }}</s-button>
                     <form method="POST" action="{{ app_route('app.cro.experiences.placement', ['experience' => $experience->id]) }}"><s-button type="submit">Re-check placement</s-button></form>
                     <form method="POST" action="{{ app_route('app.cro.experiences.duplicate', ['experience' => $experience->id]) }}"><s-button type="submit">Duplicate</s-button></form>
                     @if ($experience->status === 'archived')

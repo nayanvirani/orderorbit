@@ -65,6 +65,8 @@
 
 @push('scripts')
     <script src="{{ route('storefront.asset', 'orderorbit.js') }}"></script>
+    <script src="{{ asset('js/checkout-preview.js') }}?v={{ filemtime(public_path('js/checkout-preview.js')) }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/checkout-preview.css') }}?v={{ filemtime(public_path('css/checkout-preview.css')) }}">
     <script>
         document.querySelectorAll('[data-render]').forEach((el) => {
             window.OrderOrbit.render(el, JSON.parse(el.dataset.render), { preview: true, currency: @json($store->currency ?? 'USD'), cartTotal: 6000, productPrice: 2900, productTitle: 'Glow Serum', page: 'product' });

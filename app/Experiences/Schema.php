@@ -19,6 +19,9 @@ class Schema
     /** Types whose buttons add items to the cart. */
     public const CART_TYPES = ['bundles', 'quantity-breaks', 'bogo', 'product-upsells', 'cart-upsells', 'free-gifts', 'sticky-atc'];
 
+    /** Surfaces rendered by the checkout UI extension instead of the theme. */
+    public const CHECKOUT_SURFACES = ['checkout', 'thank-you'];
+
     public const PAGE_TYPES = ['index' => 'Home', 'product' => 'Product pages', 'collection' => 'Collection pages', 'cart' => 'Cart page', 'search' => 'Search', 'page' => 'Other pages'];
 
     /**
@@ -104,6 +107,14 @@ class Schema
         // Shared fields marked with "types" only apply to those types.
         $shared = array_map(fn ($fields) => array_filter($fields, fn ($f) => ! isset($f['types']) || in_array($type, $f['types'], true)), self::shared());
 
+        // Checkout and post-purchase blocks use the store's checkout branding (no design settings)
+        // and can only be targeted by what checkout knows: the cart value and the country.
+        if (in_array(Registry::type($type)['surface'], self::CHECKOUT_SURFACES, true)) {
+            $shared['design'] = [];
+            $shared['behavior'] = array_intersect_key($shared['behavior'], array_flip(['priority']));
+            $shared['targeting'] = array_intersect_key($shared['targeting'], array_flip(['cart_min', 'cart_max', 'countries']));
+        }
+
         return ['content' => Registry::type($type)['content']] + $shared;
     }
 
@@ -119,7 +130,8 @@ class Schema
             return GiftSchema::defaults('pg-classic', $branding);
         }
 
-        $config = [];
+        // Every section is present, even one without fields (checkout blocks have no design).
+        $config = array_fill_keys(self::SECTIONS, []);
         foreach (self::fields($type) as $section => $fields) {
             foreach ($fields as $key => $field) {
                 $config[$section][$key] = $field['default'] ?? self::empty($field);
@@ -147,7 +159,8 @@ class Schema
             return GiftSchema::normalize($input, $timezone);
         }
 
-        $config = [];
+        // Every section is present, even one without fields (checkout blocks have no design).
+        $config = array_fill_keys(self::SECTIONS, []);
         $errors = [];
 
         foreach (self::fields($type) as $section => $fields) {
@@ -325,6 +338,9 @@ class Schema
         }
         if ($type === 'quantity-breaks' && ($c['default_tier'] ?? 1) > count($c['tiers'] ?? [])) {
             $errors['content.default_tier'] = 'Selected tier must be one of your tiers.';
+        }
+        if ($type === 'checkout-countdown' && empty($c['ends_at'])) {
+            $errors['content.ends_at'] = 'Set when the campaign ends.';
         }
         if ($type === 'preorder' && ($c['ship_mode'] ?? 'date') === 'date') {
             if (empty($c['ship_date'])) {

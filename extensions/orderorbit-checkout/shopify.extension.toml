@@ -1,0 +1,49 @@
+# OrderOrbit Space blocks for Shopify checkout, Thank You and Order Status.
+# The app publishes live blocks to a shop metafield ($app:checkout); this extension renders them with
+# Shopify's own components, so they follow the store's checkout branding.
+api_version = "2026-07"
+
+[[extensions]]
+name = "OrderOrbit Space"
+handle = "orderorbit-checkout"
+type = "ui_extension"
+uid = "cd61b023-7839-5a03-51c7-cf3fe513464d43985708"
+
+# Inside checkout (Shopify Plus and development stores): placed by the merchant in the checkout editor.
+[[extensions.targeting]]
+module = "./src/Block.jsx"
+target = "purchase.checkout.block.render"
+
+# Thank You page (every plan).
+[[extensions.targeting]]
+module = "./src/Block.jsx"
+target = "purchase.thank-you.block.render"
+
+# Order Status page (customer accounts, every plan).
+[[extensions.targeting]]
+module = "./src/Block.jsx"
+target = "customer-account.order-status.block.render"
+
+[extensions.capabilities]
+api_access = true
+
+# The blocks published by OrderOrbit Space.
+[[extensions.metafields]]
+namespace = "$app"
+key = "checkout"
+
+[extensions.settings]
+  [[extensions.settings.fields]]
+  key = "block"
+  type = "single_line_text_field"
+  name = "Block type"
+  description = "Which OrderOrbit Space block to show here. Checkout: checkout-*. Thank You and Order Status: ty-*."
+    [[extensions.settings.fields.validations]]
+    name = "choices"
+    value = "[\"checkout-reviews\", \"checkout-countdown\", \"checkout-shipping\", \"checkout-gift\", \"checkout-promo\", \"checkout-trust\", \"ty-cross-sell\", \"ty-reorder\", \"ty-review\", \"ty-referral\", \"ty-survey\", \"ty-discount\", \"ty-message\"]"
+
+  [[extensions.settings.fields]]
+  key = "experience_id"
+  type = "single_line_text_field"
+  name = "Experience ID (optional)"
+  description = "Show one specific block. Copy its ID from the block's page in OrderOrbit Space."

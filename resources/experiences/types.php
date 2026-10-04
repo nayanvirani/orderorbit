@@ -404,4 +404,292 @@ return [
         ],
     ],
 
+    /*
+    | Checkout & post-purchase (Phase 6). Rendered by the orderorbit-checkout UI extension, not the
+    | theme: "checkout" types inside Shopify checkout (Shopify Plus and development stores), and
+    | "thank-you" types on the Thank You and Order Status pages (every plan). Checkout uses the
+    | store's checkout branding, so these types have no design settings.
+    */
+
+    'checkout-reviews' => [
+        'label' => 'Checkout reviews',
+        'singular' => 'Checkout reviews block',
+        'icon' => 'star',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'Customer reviews inside checkout, where shoppers decide.',
+        'empty' => 'Reassure shoppers at the last step with real reviews.',
+        'templates' => [
+            'classic-review' => ['name' => 'Classic Review', 'style' => 'classic'],
+            'modern-card' => ['name' => 'Modern Card', 'style' => 'card'],
+            'minimal-slider' => ['name' => 'Minimal Slider', 'style' => 'slider'],
+            'premium-testimonial' => ['name' => 'Premium Testimonial', 'style' => 'premium'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'What our customers say', 'max' => 80],
+            'rating' => ['type' => 'number', 'label' => 'Average rating', 'default' => null, 'min' => 0, 'max' => 5, 'step' => 0.1, 'help' => 'Optional. Use your real rating from your reviews app.'],
+            'review_count' => ['type' => 'number', 'label' => 'Number of reviews', 'default' => null, 'min' => 0, 'max' => 10000000],
+            'reviews' => ['type' => 'list', 'label' => 'Reviews', 'required' => true, 'max_items' => 6, 'help' => 'Copy real reviews from your store.',
+                'fields' => ['author' => ['type' => 'text', 'label' => 'Name', 'max' => 40], 'rating' => ['type' => 'number', 'label' => 'Stars', 'min' => 1, 'max' => 5], 'quote' => ['type' => 'text', 'label' => 'Quote', 'max' => 240]],
+                'default' => []],
+        ],
+    ],
+
+    'checkout-countdown' => [
+        'label' => 'Checkout countdown',
+        'singular' => 'Checkout countdown',
+        'icon' => 'clock',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'A real campaign deadline, shown inside checkout.',
+        'empty' => 'Remind shoppers when a real offer ends.',
+        'templates' => [
+            'compact' => ['name' => 'Compact', 'style' => 'compact'],
+            'banner' => ['name' => 'Banner', 'style' => 'banner'],
+            'card' => ['name' => 'Card', 'style' => 'card'],
+            'premium' => ['name' => 'Premium', 'style' => 'premium'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Sale prices end in', 'max' => 80],
+            'ends_at' => ['type' => 'datetime', 'label' => 'Campaign ends', 'help' => 'A real deadline. Timers never reset per shopper.'],
+            'ended' => ['type' => 'select', 'label' => 'When it ends', 'default' => 'hide', 'options' => ['hide' => 'Hide the block', 'message' => 'Show a message']],
+            'ended_message' => ['type' => 'text', 'when' => ['ended' => 'message'], 'label' => 'Ended message', 'default' => 'This offer has ended', 'max' => 80],
+        ],
+    ],
+
+    'checkout-shipping' => [
+        'label' => 'Checkout shipping progress',
+        'singular' => 'Checkout shipping progress',
+        'icon' => 'truck',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'Progress toward free shipping, from your Progressive gifts campaign.',
+        'empty' => 'Show shoppers how close they are to free shipping, right in checkout.',
+        'templates' => [
+            'single-threshold' => ['name' => 'Single Threshold', 'style' => 'single', 'content' => ['milestones' => 'shipping']],
+            'multi-threshold' => ['name' => 'Multi Threshold', 'style' => 'multi', 'content' => ['milestones' => 'all']],
+            'reward-ladder' => ['name' => 'Reward Ladder', 'style' => 'ladder', 'content' => ['milestones' => 'all']],
+        ],
+        'content' => [
+            'milestones' => ['type' => 'select', 'label' => 'Show', 'default' => 'shipping', 'options' => ['shipping' => 'Free shipping only', 'all' => 'Every reward in the campaign'], 'help' => 'Thresholds and rewards come from your live Progressive gifts campaign, so checkout and storefront always agree.'],
+            'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => 'Add {remaining} more for {reward}', 'max' => 120, 'help' => 'Use {remaining} and {reward}.'],
+            'unlocked_message' => ['type' => 'text', 'label' => 'Unlocked message', 'default' => 'You\'ve unlocked {reward}!', 'max' => 120],
+        ],
+    ],
+
+    'checkout-gift' => [
+        'label' => 'Checkout free gift',
+        'singular' => 'Checkout free gift',
+        'icon' => 'gift',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'Free-gift progress in checkout, with a one-tap claim, from your Progressive gifts campaign.',
+        'empty' => 'Let shoppers claim their free gift without leaving checkout.',
+        'templates' => [
+            'progress' => ['name' => 'Progress', 'style' => 'progress'],
+            'gift-unlocked' => ['name' => 'Gift Unlocked', 'style' => 'unlocked'],
+            'reward-card' => ['name' => 'Reward Card', 'style' => 'card'],
+        ],
+        'content' => [
+            'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => 'Add {remaining} more to get {reward}', 'max' => 120, 'help' => 'Gifts and thresholds come from your live Progressive gifts campaign. Use {remaining} and {reward}.'],
+            'unlocked_message' => ['type' => 'text', 'label' => 'Unlocked message', 'default' => 'Your free gift is unlocked', 'max' => 120],
+            'button_text' => ['type' => 'text', 'label' => 'Claim button', 'default' => 'Add free gift', 'max' => 30],
+        ],
+    ],
+
+    'checkout-promo' => [
+        'label' => 'Checkout promotion',
+        'singular' => 'Checkout promotion',
+        'icon' => 'sparkle',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'An announcement or offer inside checkout, with an optional one-tap code.',
+        'empty' => 'Announce an offer at the moment of purchase.',
+        'templates' => [
+            'announcement' => ['name' => 'Announcement', 'style' => 'announcement'],
+            'promotional-card' => ['name' => 'Promotional Card', 'style' => 'card'],
+            'offer-banner' => ['name' => 'Offer Banner', 'style' => 'banner'],
+            'premium' => ['name' => 'Premium', 'style' => 'premium'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'required' => true, 'default' => '', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => '', 'max' => 200],
+            'code' => ['type' => 'text', 'label' => 'Discount code (optional)', 'default' => '', 'max' => 40, 'help' => 'Shoppers apply it with one tap. Create the code in Shopify Discounts first.'],
+            'apply_text' => ['type' => 'text', 'label' => 'Apply button', 'default' => 'Apply code', 'max' => 30],
+        ],
+    ],
+
+    'checkout-trust' => [
+        'label' => 'Checkout trust',
+        'singular' => 'Checkout trust block',
+        'icon' => 'shield',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'Shipping, returns and guarantees shown inside checkout.',
+        'empty' => 'Answer last-minute doubts right next to the pay button.',
+        'templates' => [
+            'trust-row' => ['name' => 'Trust Row', 'style' => 'row'],
+            'icon-grid' => ['name' => 'Icon Grid', 'style' => 'grid'],
+            'trust-card' => ['name' => 'Trust Card', 'style' => 'card'],
+            'guarantee-banner' => ['name' => 'Guarantee Banner', 'style' => 'banner'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => '', 'max' => 80],
+            'badges' => ['type' => 'list', 'label' => 'Trust points', 'max_items' => 4,
+                'fields' => ['icon' => ['type' => 'select', 'label' => 'Icon', 'options' => ['shipping' => 'Shipping', 'returns' => 'Returns', 'secure' => 'Secure', 'guarantee' => 'Guarantee', 'support' => 'Support']], 'label' => ['type' => 'text', 'label' => 'Text', 'max' => 40]],
+                'default' => [['icon' => 'secure', 'label' => 'Secure checkout'], ['icon' => 'returns', 'label' => 'Easy returns'], ['icon' => 'support', 'label' => 'Friendly support']]],
+            'guarantee' => ['type' => 'textarea', 'label' => 'Guarantee text', 'default' => '', 'max' => 300],
+        ],
+    ],
+
+    'ty-cross-sell' => [
+        'label' => 'Thank You cross-sell',
+        'singular' => 'Thank You cross-sell',
+        'icon' => 'bag',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'Recommend the next product after the order is placed.',
+        'empty' => 'Turn the Thank You page into the start of the next order.',
+        'templates' => [
+            'product-cards' => ['name' => 'Product Cards', 'style' => 'cards'],
+            'compact-list' => ['name' => 'Compact List', 'style' => 'list'],
+            'featured-product' => ['name' => 'Featured Product', 'style' => 'featured'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'You might also like', 'max' => 80],
+            'products' => ['type' => 'products', 'label' => 'Products to recommend', 'required' => true, 'max_items' => 4],
+            'message' => ['type' => 'text', 'label' => 'Message (optional)', 'default' => '', 'max' => 160, 'help' => 'For example a code for the next order.'],
+            'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'View product', 'max' => 30],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'both', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-reorder' => [
+        'label' => 'Reorder',
+        'singular' => 'Reorder block',
+        'icon' => 'repeat',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'One click to order the same items again.',
+        'empty' => 'Make the next order of the same items one click away.',
+        'templates' => [
+            'reorder-button' => ['name' => 'Reorder Button', 'style' => 'button'],
+            'reorder-card' => ['name' => 'Reorder Card', 'style' => 'card'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Running low soon?', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Order the same items again in one click.', 'max' => 160],
+            'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Order again', 'max' => 30],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'order_status', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-review' => [
+        'label' => 'Review request',
+        'singular' => 'Review request',
+        'icon' => 'star',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'Ask for a review of the products just bought.',
+        'empty' => 'Ask happy customers for a review at the right moment.',
+        'templates' => [
+            'simple-request' => ['name' => 'Simple Request', 'style' => 'simple'],
+            'product-list' => ['name' => 'Product List', 'style' => 'products'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'How did we do?', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Your review helps other shoppers and helps us improve.', 'max' => 160],
+            'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Write a review', 'max' => 30],
+            'review_url' => ['type' => 'text', 'label' => 'Review page link (optional)', 'default' => '', 'max' => 300, 'help' => 'Your reviews app\'s page. Leave empty to link each product page.'],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'order_status', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-referral' => [
+        'label' => 'Referral',
+        'singular' => 'Referral block',
+        'icon' => 'users',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'A code to share with friends.',
+        'empty' => 'Turn customers into referrers with a code to share.',
+        'templates' => [
+            'share-card' => ['name' => 'Share Card', 'style' => 'card'],
+            'referral-banner' => ['name' => 'Referral Banner', 'style' => 'banner'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Share with a friend', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Give your friends this code for their first order.', 'max' => 160],
+            'code' => ['type' => 'text', 'label' => 'Code to share', 'required' => true, 'default' => '', 'max' => 40, 'help' => 'Create the code in Shopify Discounts first.'],
+            'share_url' => ['type' => 'text', 'label' => 'Link to share (optional)', 'default' => '', 'max' => 300, 'help' => 'Leave empty to share your store\'s home page.'],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'both', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-survey' => [
+        'label' => 'Post-purchase survey',
+        'singular' => 'Survey',
+        'icon' => 'list',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'One question after checkout, with answers in Analytics.',
+        'empty' => 'Learn how customers found you with one quick question.',
+        'templates' => [
+            'choice-list' => ['name' => 'Choice List', 'style' => 'choice'],
+            'survey-card' => ['name' => 'Survey Card', 'style' => 'card'],
+        ],
+        'content' => [
+            'question' => ['type' => 'text', 'label' => 'Question', 'default' => 'How did you hear about us?', 'max' => 120],
+            'options' => ['type' => 'list', 'label' => 'Answers', 'required' => true, 'max_items' => 8,
+                'fields' => ['label' => ['type' => 'text', 'label' => 'Answer', 'max' => 60]],
+                'default' => [['label' => 'Instagram'], ['label' => 'Google'], ['label' => 'A friend'], ['label' => 'Other']]],
+            'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Send', 'max' => 30],
+            'thanks_message' => ['type' => 'text', 'label' => 'Thank-you message', 'default' => 'Thanks for telling us!', 'max' => 120],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'thank_you', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-discount' => [
+        'label' => 'Next-purchase discount',
+        'singular' => 'Next-purchase discount',
+        'icon' => 'tag',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'A code for the customer\'s next order.',
+        'empty' => 'Give a reason to come back with a code for next time.',
+        'templates' => [
+            'code-card' => ['name' => 'Code Card', 'style' => 'card'],
+            'code-banner' => ['name' => 'Code Banner', 'style' => 'banner'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'A thank-you for next time', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Use this code on your next order.', 'max' => 160],
+            'code' => ['type' => 'text', 'label' => 'Discount code', 'required' => true, 'default' => '', 'max' => 40, 'help' => 'Create the code in Shopify Discounts first.'],
+            'expiry_text' => ['type' => 'text', 'label' => 'Expiry note (optional)', 'default' => '', 'max' => 60, 'help' => 'For example "Valid for 30 days". Match the code\'s real end date.'],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'both', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-message' => [
+        'label' => 'Message & links',
+        'singular' => 'Message block',
+        'icon' => 'message',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'Loyalty news, product care tips or tracking and support links.',
+        'empty' => 'Share what customers need to know after they buy.',
+        'templates' => [
+            'loyalty-message' => ['name' => 'Loyalty Message', 'style' => 'loyalty', 'content' => ['headline' => 'You earned points with this order', 'message' => 'See your rewards balance in your account.', 'button_text' => 'View rewards']],
+            'product-education' => ['name' => 'Product Education', 'style' => 'education', 'content' => ['headline' => 'Get the most from your order', 'message' => 'Read our care and how-to guide.', 'button_text' => 'Read the guide']],
+            'tracking-support' => ['name' => 'Tracking & Support', 'style' => 'support', 'content' => ['headline' => 'Questions about your order?', 'message' => 'We\'re here to help with delivery, returns and anything else.', 'button_text' => 'Contact support']],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => '', 'max' => 80],
+            'message' => ['type' => 'textarea', 'label' => 'Message', 'default' => '', 'max' => 400],
+            'button_text' => ['type' => 'text', 'label' => 'Button text (optional)', 'default' => '', 'max' => 30],
+            'button_url' => ['type' => 'text', 'label' => 'Button link', 'default' => '', 'max' => 300],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'both', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
 ];

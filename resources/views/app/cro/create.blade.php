@@ -10,7 +10,7 @@
 @section('content')
 <s-page heading="Create experience">
     <x-app.hero eyebrow="New experience" :title="$type ? 'Choose a <em>'.e(lower_label(\App\Experiences\Registry::type($type)['singular'])).'</em> template.' : 'What do you want to <em>build?</em>'"
-        :lead="$type ? 'Every template is fully customisable — content, design, targeting and schedule.' : 'Pick a feature. Every one goes live on your storefront, and savings apply automatically at checkout.'" />
+        :lead="$type ? (in_array(\App\Experiences\Registry::type($type)['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) ? 'Pick a layout, then set the content, cart-value and country conditions. Checkout uses your checkout branding.' : 'Every template is fully customisable — content, design, targeting and schedule.') : 'Pick a feature. Every one goes live on your storefront, and savings apply automatically at checkout.'" />
     <div class="b-steps" aria-label="Steps">
         <span class="b-step" aria-current="{{ $type ? 'false' : 'step' }}"><span>1</span>Type</span>
         <span class="b-step" aria-current="{{ $type ? 'step' : 'false' }}"><span>2</span>Template</span>
@@ -56,6 +56,8 @@
 
 @push('scripts')
     <script src="{{ route('storefront.asset', 'orderorbit.js') }}"></script>
+    <script src="{{ asset('js/checkout-preview.js') }}?v={{ filemtime(public_path('js/checkout-preview.js')) }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/checkout-preview.css') }}?v={{ filemtime(public_path('css/checkout-preview.css')) }}">
     <script>
         document.querySelectorAll('[data-render]').forEach((el) => {
             window.OrderOrbit.render(el, JSON.parse(el.dataset.render), { preview: true, currency: @json($store->currency ?? 'USD'), cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });

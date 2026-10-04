@@ -296,7 +296,7 @@ class ExperienceEngineTest extends TestCase
         $this->get("/app/cro/experiences/{$experience->id}/edit", $this->as($owner))->assertOk()->assertSee('Campaign ends');
         $this->get("/app/cro/experiences/{$experience->id}", $this->as($owner))->assertOk()->assertSee($experience->handle);
         $this->get('/app/cro/features/countdown', $this->as($owner))->assertOk()->assertSee($experience->name);
-        $this->get('/app/cro/templates', $this->as($owner))->assertOk()->assertSee('Radial counter')->assertDontSee('Reward Ladder');
+        $this->get('/app/cro/templates', $this->as($owner))->assertOk()->assertSee('Radial counter')->assertDontSee('Tier Cards');
 
         // Invalid publish re-renders the builder with the error; the draft is still saved.
         $config = $experience->draft_config;

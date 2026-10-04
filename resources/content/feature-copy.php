@@ -135,15 +135,17 @@ return [
     ],
 
     'checkout' => [
-        'status' => 'soon',
-        'summary' => 'Blocks for checkout, Thank You and Order Status pages where Shopify supports them.',
+        'status' => 'live',
+        'summary' => 'Blocks for checkout, Thank You and Order Status: reviews, trust, progress, cross-sells, reorders and more.',
         'overview' => [
-            'Checkout blocks bring reviews, trust, shipping progress and offers into Shopify\'s checkout, and turn the Thank You and Order Status pages into reorders, reviews and referrals.',
-            'OrderOrbit Space checks what your plan supports and only offers the surfaces you can use. This module is being built now.',
+            'Shoppers hesitate at checkout, and after they buy the confirmation page is usually a dead end. OrderOrbit Space adds blocks to both: reviews, a real countdown, shipping progress, free gifts, promotions and trust inside checkout, and cross-sells, reorder, review requests, referrals, surveys, next-order codes and helpful messages on the Thank You and Order Status pages.',
+            'You place the blocks in Shopify\'s own checkout editor and they use your checkout branding. Shipping progress and free gifts follow your Progressive gifts campaign, so checkout and storefront always agree. Blocks inside checkout need Shopify Plus; Thank You and Order Status blocks work on every plan, and the app only offers what your store can use.',
         ],
         'benefits' => [
-            ['Only what your plan supports', 'Capability detection shows the checkout surfaces your store can use.'],
-            ['After-purchase value', 'Thank You and Order Status blocks for reorders, reviews and referrals.'],
+            ['13 block types', 'Six for checkout and seven for Thank You and Order Status, each with ready-made layouts.'],
+            ['Only what your store supports', 'In-checkout blocks appear only on Shopify Plus and development stores; everything else works on every plan.'],
+            ['One source of truth', 'Shipping progress and free gifts read your live Progressive gifts campaign, and gifts can be claimed right in checkout.'],
+            ['Survey answers in the app', 'Ask one question after checkout and see the answers on the survey\'s page.'],
         ],
     ],
 

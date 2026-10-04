@@ -7,6 +7,10 @@
         ? \App\Experiences\Registry::featureFor((string) \App\Models\Experience::whereKey((int) $experienceId)->where('store_id', request()->attributes->get('store')?->id)->value('type'))
         : null;
     $feature ??= $experienceFeature;
+    // Creating a new experience of a type: highlight that type's feature too.
+    if (! $feature && request()->routeIs('app.cro.experiences.create') && \App\Experiences\Registry::has(request('type'))) {
+        $feature = $experienceFeature = \App\Experiences\Registry::featureFor(request('type'));
+    }
     $features = \App\Experiences\Registry::features();
     $link = fn (string $key) => [
         'label' => $features[$key]['label'],
@@ -22,9 +26,11 @@
         },
     ];
     $order = ['bundles', 'progressive-gifts', 'cart-upsells'];
+    $checkout = ['checkout', 'thank-you'];
     $groups = [
         'Order value' => array_map($link, array_values(array_filter($order, fn ($k) => isset($features[$k])))),
-        'Conversion' => array_map($link, array_values(array_filter(array_keys($features), fn ($k) => ! in_array($k, $order, true)))),
+        'Conversion' => array_map($link, array_values(array_filter(array_keys($features), fn ($k) => ! in_array($k, array_merge($order, $checkout), true)))),
+        'Checkout' => array_map($link, array_values(array_filter($checkout, fn ($k) => isset($features[$k])))),
         'Manage' => [
             ['label' => 'All offers', 'icon' => 'list', 'tone' => 'default', 'href' => app_route('app.cro.experiences.index'), 'active' => request()->routeIs('app.cro.experiences.*') && ! $experienceFeature],
             ['label' => 'Templates', 'icon' => 'palette', 'tone' => 'default', 'href' => app_route('app.cro.templates'), 'active' => request()->routeIs('app.cro.templates')],

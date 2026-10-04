@@ -20,6 +20,7 @@ class PixelController extends Controller
     private const EVENTS = [
         'experience_viewed' => 'view', 'experience_clicked' => 'click', 'added_to_cart' => 'add',
         'reward_unlocked' => 'unlock', 'upsell_accepted' => 'accept', 'upsell_declined' => 'decline',
+        'survey_answered' => 'survey',
     ];
 
     public function collect(Request $request): Response
@@ -42,7 +43,9 @@ class PixelController extends Controller
         match ($data['k'] ?? null) {
             's' => AnalyticsEvent::create($base + ['event' => 'session']),
             'e' => isset(self::EVENTS[$data['e'] ?? '']) && $handle($data['x'] ?? null)
-                ? AnalyticsEvent::create($base + ['event' => self::EVENTS[$data['e']], 'experience_handle' => $handle($data['x']), 'quantity' => max(1, min(100, (int) ($data['q'] ?? 1)))])
+                ? AnalyticsEvent::create($base + ['event' => self::EVENTS[$data['e']], 'experience_handle' => $handle($data['x']), 'quantity' => max(1, min(100, (int) ($data['q'] ?? 1))),
+                    // Survey answers (the only events with a label); plain text, trimmed.
+                    'label' => isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) ?: null : null])
                 : null,
             'o' => $this->order($store, $data, $base, $handle),
             default => null,
