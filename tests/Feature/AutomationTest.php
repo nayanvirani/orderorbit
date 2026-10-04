@@ -182,7 +182,7 @@ class AutomationTest extends TestCase
         $this->tagsFail = false;
         $store->forceFill(['access_token_expires_at' => now()->addHour()])->save();
         $owner = $this->member($store, 'owner');
-        $this->get('/app/automation/runs/'.$run->id, $this->as($owner))->assertSee('Retry from the failed step')->assertSee('order_created:5001');
+        $this->page('/app/automation/runs/'.$run->id, $owner)->assertJsonPath('props.run.can_retry', true)->assertSee('order_created:5001');
         $this->post('/app/automation/runs/'.$run->id.'/retry', [], $this->as($owner))->assertRedirectContains('notice=retried');
         $this->assertSame('completed', $run->fresh()->status);
         $this->assertSame(1, InboxItem::count());
@@ -235,8 +235,8 @@ class AutomationTest extends TestCase
         $this->assertStringStartsWith('Would ', $run->logs()->where('kind', 'add_customer_tag')->value('message') ?? 'Would (condition not met)');
 
         // Growth can build and test, but workflows only run on Scale.
-        $this->post('/app/automation/workflows/'.$workflow->id, ['name' => 'VIP', 'action' => 'publish', 'definition' => json_encode($workflow->draft)], $this->as($owner))
-            ->assertOk()->assertSee('Workflows run on the Scale plan');
+        $this->send('/app/automation/workflows/'.$workflow->id, ['name' => 'VIP', 'action' => 'publish', 'definition' => $workflow->draft], $owner)
+            ->assertOk()->assertJsonPath('component', 'automation/editor')->assertJsonPath('props.banner', 'Draft saved. Workflows run on the Scale plan: upgrade to publish.');
         $this->assertNull($workflow->fresh()->published_version_id);
         $this->assertSame(0, app(Engine::class)->trigger($store, 'order_paid', Context::fromOrder($this->order()), 'x'));
     }
@@ -245,17 +245,19 @@ class AutomationTest extends TestCase
     {
         $store = $this->store();
         $owner = $this->member($store, 'owner');
-        $this->get('/app/automation', $this->as($owner))->assertOk()->assertSee('Follow up')->assertSee('Start from a template');
-        $this->get('/app/automation/templates', $this->as($owner))->assertOk()->assertSee('Review request')->assertSee('Win-back')->assertSee('Cancellation follow-up');
-        $this->post('/app/automation/workflows', ['template' => 'review-request'], $this->as($owner))->assertRedirectContains('/app/automation/workflows/');
+        $this->page('/app/automation', $owner)->assertOk()->assertJsonPath('component', 'automation/index')->assertJsonPath('props.workflows', []);
+        $names = array_column($this->page('/app/automation/templates', $owner)->assertOk()->json('props.templates'), 'name');
+        $this->assertContains('Review request', $names);
+        $this->assertContains('Cancellation follow-up', $names);
+        $this->send('/app/automation/workflows', ['template' => 'review-request'], $owner)->assertOk()->assertJsonPath('notice.message', 'Draft created.');
         $workflow = Workflow::sole();
-        $this->get('/app/automation/workflows/'.$workflow->id, $this->as($owner))->assertOk()->assertSee('data-canvas', false)->assertSee('Test with a sample order');
+        $this->page('/app/automation/workflows/'.$workflow->id, $owner)->assertOk()->assertJsonPath('props.workflow.draft.trigger', $workflow->draft['trigger'])->assertJsonPath('props.catalog.triggers.order_paid.label', 'Order paid');
 
         // Invalid steps come back with errors; the draft is kept.
         $bad = $workflow->draft;
         $bad['steps'][] = ['type' => 'action', 'action' => 'webhook', 'params' => ['url' => 'ftp://nope']];
-        $this->post('/app/automation/workflows/'.$workflow->id, ['name' => 'Reviews', 'action' => 'publish', 'definition' => json_encode($bad)], $this->as($owner))
-            ->assertOk()->assertSee('Fix the highlighted steps')->assertSee('Use a full https:// address.');
+        $this->send('/app/automation/workflows/'.$workflow->id, ['name' => 'Reviews', 'action' => 'publish', 'definition' => $bad], $owner)
+            ->assertStatus(422)->assertJsonPath('props.banner', 'Draft saved. Fix the highlighted steps before you publish.')->assertSee('Use a full https:\/\/ address.', false);
         $this->assertSame('Reviews', $workflow->fresh()->name);
 
         $good = $workflow->draft;
@@ -264,10 +266,10 @@ class AutomationTest extends TestCase
 
         $this->post('/app/automation/workflows/'.$workflow->id, ['name' => 'Reviews', 'action' => 'test', 'definition' => json_encode($good)], $this->as($owner))->assertRedirectContains('/app/automation/runs/');
         $run = WorkflowRun::where('test', true)->sole();
-        $this->get('/app/automation/runs/'.$run->id, $this->as($owner))->assertOk()->assertSee('Test run')->assertSee('Would wait 5 days');
-        $this->get('/app/automation/runs', $this->as($owner))->assertOk()->assertSee('#'.$run->id);
-        $this->get('/app/automation/inbox', $this->as($owner))->assertOk()->assertSee('Nothing to do');
-        $this->get('/app/automation/emails', $this->as($owner))->assertOk()->assertSee('Email sending isn\'t connected yet', false);
+        $this->page('/app/automation/runs/'.$run->id, $owner)->assertOk()->assertJsonPath('props.run.test', true)->assertSee('Would wait 5 days');
+        $this->page('/app/automation/runs', $owner)->assertOk()->assertJsonPath('props.runs.data.0.id', $run->id);
+        $this->page('/app/automation/inbox', $owner)->assertOk()->assertJsonPath('props.open', []);
+        $this->page('/app/automation/emails', $owner)->assertOk()->assertJsonPath('props.emails.data', []);
         $this->post('/app/automation/workflows/'.$workflow->id.'/toggle', [], $this->as($owner))->assertRedirect();
         $this->assertSame('disabled', $workflow->fresh()->status);
     }

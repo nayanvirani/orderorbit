@@ -76,6 +76,14 @@ trait InteractsWithShopify
         return $this->getJson($url, $this->as($user) + [\App\Support\Spa\Page::HEADER => '1']);
     }
 
+    /**
+     * A form submit as the React admin sends it (JSON, X-OO-Page): redirects come back as {redirect, notice}.
+     */
+    protected function send(string $url, array $data, StoreUser|int $user): \Illuminate\Testing\TestResponse
+    {
+        return $this->postJson($url, $data, $this->as($user) + [\App\Support\Spa\Page::HEADER => '1']);
+    }
+
     protected function fakeAssociatedUser(array $user): void
     {
         Http::fake(["{$this->shop}/admin/oauth/access_token" => Http::response([

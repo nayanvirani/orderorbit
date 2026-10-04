@@ -176,6 +176,6 @@ class AudiencesTest extends TestCase
         $this->assertSame(1, InboxItem::count(), 'Only the VIP order notified the team.');
 
         $owner = $this->member($this->store, 'owner');
-        $this->get('/app/automation/workflows/'.$workflow->id, $this->as($owner))->assertOk()->assertSee('Customer segment')->assertSee('VIP');
+        $this->page('/app/automation/workflows/'.$workflow->id, $owner)->assertOk()->assertJsonPath('props.catalog.conditions.segment.label', 'Customer segment')->assertSee('VIP');
     }
 }

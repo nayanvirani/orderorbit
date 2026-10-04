@@ -21,7 +21,7 @@ select:not(.oo-exp *, .ck *, .oo-preview *):not([multiple]) {
     background-repeat: no-repeat !important; background-position: right 10px center !important; text-overflow: ellipsis;
     min-width: 112px;
 }
-textarea:not(.oo-exp *, .ck *, .oo-preview *) { height: auto !important; min-height: 80px !important; padding: 8px 12px !important; line-height: 1.5 !important; resize: vertical; }
+textarea:not(.oo-exp *, .ck *, .oo-preview *):not([hidden]) { height: auto !important; min-height: 80px !important; padding: 8px 12px !important; line-height: 1.5 !important; resize: vertical; }
 :is(input, select, textarea):not(.oo-exp *, .ck *, .oo-preview *)::placeholder { color: #8a8a8a; opacity: 1; }
 :is(input, select, textarea):not([type="checkbox"], [type="radio"], .oo-exp *, .ck *, .oo-preview *):focus { outline: 2px solid #005bd3 !important; outline-offset: 1px; border-color: #005bd3 !important; }
 :is(input, select, textarea):disabled:not(.oo-exp *, .ck *, .oo-preview *) { background-color: #f7f7f7 !important; color: #a1a1a1 !important; border-color: #d4d4d4 !important; cursor: not-allowed; }

@@ -121,8 +121,9 @@ export function RouterProvider({ initial, children }) {
   /** Handles any server answer to a visit or form submit. Returns {ok, errors}. */
   const handle = useCallback(async (res, data, url, opts) => {
     if (data.component) {
-      await show(data, opts);
-      return { ok: true, data };
+      // A form that answers with a page (e.g. validation shown in place) replaces the entry.
+      await show(data, opts.method ? { replace: true, preserveScroll: true } : opts);
+      return { ok: res.ok, data };
     }
     if (data.redirect) {
       toast(data.notice?.message, data.notice?.error);

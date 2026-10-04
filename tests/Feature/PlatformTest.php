@@ -75,7 +75,7 @@ class PlatformTest extends TestCase
         $b = Workflow::create(['store_id' => $this->store->id, 'handle' => 'wfb', 'name' => 'Beta flow', 'status' => 'enabled', 'trigger' => 'order_paid', 'draft' => []]);
         $this->makeRun($a, 'a', 'completed', 'Alpha subject');
         $this->makeRun($b, 'b', 'completed', 'Beta subject');
-        $this->get('/app/automation/runs?workflow='.$a->id, $this->as($owner))->assertOk()->assertSee('Alpha subject')->assertDontSee('Beta subject')->assertSee('All workflows');
+        $this->page('/app/automation/runs?workflow='.$a->id, $owner)->assertOk()->assertSee('Alpha subject')->assertDontSee('Beta subject')->assertJsonPath('props.workflow', $a->id);
     }
 
     public function test_privacy_controls_collection_retention_export_and_deletion(): void
