@@ -122,4 +122,14 @@ class SupportAndAdminTest extends TestCase
         config(['site.preview_password' => '']);
         $this->get('/sitemap.xml')->assertSee('/docs/customer-accounts');
     }
+
+    public function test_admins_change_their_password(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin)->get('/admin/account')->assertOk()->assertSee('Change password');
+        $this->actingAs($admin)->post('/admin/account/password', ['current_password' => 'nope', 'password' => 'NewPassword2026', 'password_confirmation' => 'NewPassword2026'])->assertSessionHasErrors('current_password');
+        $this->actingAs($admin)->post('/admin/account/password', ['current_password' => 'secret-password-123', 'password' => 'short', 'password_confirmation' => 'short'])->assertSessionHasErrors('password');
+        $this->actingAs($admin)->post('/admin/account/password', ['current_password' => 'secret-password-123', 'password' => 'NewPassword2026', 'password_confirmation' => 'NewPassword2026'])->assertRedirect('/admin/account');
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewPassword2026', $admin->fresh()->password));
+    }
 }

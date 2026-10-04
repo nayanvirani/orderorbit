@@ -17,7 +17,7 @@
                 <a href="{{ route($route) }}" @if (request()->routeIs($route.'*')) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
         </nav>
-        <form method="POST" action="{{ route('admin.logout') }}" class="ad-user">@csrf<span>{{ auth()->user()->email }}</span><button type="submit">Sign out</button></form>
+        <form method="POST" action="{{ route('admin.logout') }}" class="ad-user">@csrf<a href="{{ route('admin.account') }}" style="color:#d4d4d4">{{ auth()->user()->email }}</a><button type="submit">Sign out</button></form>
     </header>
 @endauth
 <main class="ad-main">

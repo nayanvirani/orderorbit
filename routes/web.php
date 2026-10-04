@@ -284,6 +284,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
         Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
         Route::get('/audit', 'audit')->name('audit');
+        Route::get('/account', [\App\Http\Controllers\Admin\AuthController::class, 'account'])->name('account');
+        Route::post('/account/password', [\App\Http\Controllers\Admin\AuthController::class, 'updatePassword'])->middleware('throttle:5,1')->name('account.password');
     });
 });
 

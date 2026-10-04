@@ -27,6 +27,25 @@ class AuthController extends Controller
         return redirect()->intended(route('admin.home'));
     }
 
+    public function account(): View
+    {
+        return view('admin.account');
+    }
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(12)->letters()->numbers()],
+        ], ['current_password.current_password' => 'Your current password isn\'t right.']);
+        $request->user()->forceFill(['password' => $request->input('password')])->save();
+        // Sign out other sessions that used the old password.
+        Auth::logoutOtherDevices($request->input('password'));
+        \App\Models\AuditLog::record('admin.password_changed', null, ['by' => $request->user()->email]);
+
+        return redirect()->route('admin.account')->with('status', 'Password changed.');
+    }
+
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
