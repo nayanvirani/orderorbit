@@ -10,6 +10,8 @@ class Notices
 {
     public const MESSAGES = [
         'saved' => ['Changes saved successfully.', false],
+        'retried' => ['Run retried. Check the log for the result.', false],
+        'retry_failed' => ['The step failed again. The log shows why; it will retry on its own.', true],
         'analytics_connected' => ['Analytics is connected. New visits and orders will appear here.', false],
         'deleted' => ['The item was deleted successfully.', false],
         'invited' => ['Invite saved. They get this role when they first open OrderOrbit Space.', false],

@@ -177,6 +177,15 @@ class AutomationTest extends TestCase
         $this->assertStringContainsString('Throttled', $run->error);
         $this->assertSame(1, InboxItem::count(), 'The notification before the failing step was created once, not on every retry.');
         $this->assertSame('New order #1052', InboxItem::sole()->title);
+
+        // A person can retry it once the problem is fixed; finished steps don't run again.
+        $this->tagsFail = false;
+        $store->forceFill(['access_token_expires_at' => now()->addHour()])->save();
+        $owner = $this->member($store, 'owner');
+        $this->get('/app/automation/runs/'.$run->id, $this->as($owner))->assertSee('Retry from the failed step')->assertSee('order_created:5001');
+        $this->post('/app/automation/runs/'.$run->id.'/retry', [], $this->as($owner))->assertRedirectContains('notice=retried');
+        $this->assertSame('completed', $run->fresh()->status);
+        $this->assertSame(1, InboxItem::count());
     }
 
     public function test_triggers_match_their_settings(): void

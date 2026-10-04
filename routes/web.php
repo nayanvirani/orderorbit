@@ -139,11 +139,26 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
                 Route::post('/workflows/{workflow}/delete', 'destroy')->whereNumber('workflow')->name('destroy');
                 Route::post('/workflows/{workflow}/versions/{version}/restore', 'restore')->whereNumber(['workflow', 'version'])->name('restore');
                 Route::post('/inbox/{item}/done', 'done')->whereNumber('item')->name('inbox.done');
+                Route::post('/runs/{run}/retry', 'retry')->whereNumber('run')->name('runs.retry');
             });
         });
 
         Route::get('/analytics', [\App\Http\Controllers\App\AnalyticsController::class, 'index'])->middleware('store.can:view_dashboard')->name('analytics');
         Route::post('/analytics/connect', [\App\Http\Controllers\App\AnalyticsController::class, 'connect'])->middleware('store.can:manage_settings')->name('analytics.connect');
+        // Phase 8: Event Explorer, Funnels, Revenue & Attribution, Customer Journey.
+        Route::prefix('analytics')->name('analytics.')->middleware('store.can:view_dashboard')->controller(\App\Http\Controllers\App\AnalyticsReportsController::class)->group(function () {
+            Route::get('/events', 'events')->name('events');
+            Route::get('/funnels', 'funnels')->name('funnels');
+            Route::get('/funnels/{funnel}', 'funnel')->whereNumber('funnel')->name('funnel');
+            Route::get('/revenue', 'revenue')->name('revenue');
+            Route::get('/journeys', 'journeys')->name('journeys');
+            Route::get('/journeys/{visitor}', 'journey')->where('visitor', '[A-Za-z0-9_\-]{1,64}')->name('journey');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::post('/funnels', 'storeFunnel')->name('funnels.store');
+                Route::post('/funnels/{funnel}', 'updateFunnel')->whereNumber('funnel')->name('funnels.update');
+                Route::post('/funnels/{funnel}/delete', 'destroyFunnel')->whereNumber('funnel')->name('funnels.destroy');
+            });
+        });
 
         // Older links
         Route::get('/templates', fn () => redirect()->to(app_route('app.cro.templates')))->name('templates');
@@ -169,9 +184,6 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
 
             Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
         });
-
-        Route::get('/analytics', [\App\Http\Controllers\App\AnalyticsController::class, 'index'])->middleware('store.can:view_dashboard')->name('analytics');
-        Route::post('/analytics/connect', [\App\Http\Controllers\App\AnalyticsController::class, 'connect'])->middleware('store.can:manage_settings')->name('analytics.connect');
 
         // Older links before the move to Settings.
         Route::get('/billing', fn () => redirect()->to(app_route('app.settings.billing')))->name('billing');

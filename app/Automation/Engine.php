@@ -2,6 +2,7 @@
 
 namespace App\Automation;
 
+use App\Models\AnalyticsEvent;
 use App\Models\Automation\Workflow;
 use App\Models\Automation\WorkflowLog;
 use App\Models\Automation\WorkflowRun;
@@ -66,6 +67,7 @@ class Engine
         if (! $test) {
             $this->usage->increment($store, 'automation_executions');
             $workflow->forceFill(['last_run_at' => now()])->save();
+            $this->record($run, 'orderorbit:automation_triggered');
         }
 
         return $this->execute($run);
@@ -83,6 +85,18 @@ class Engine
         }
 
         return $due->count();
+    }
+
+    /** Runs a failed run again from the step that failed; finished steps are not repeated. */
+    public function retry(WorkflowRun $run): WorkflowRun
+    {
+        if (! $run->canRetry()) {
+            return $run;
+        }
+        $run->forceFill(['status' => 'running', 'attempts' => 0, 'error' => null, 'resume_at' => null, 'finished_at' => null])->save();
+        $this->log($run, $run->step, 'retry', 'ok', 'Retried by your team.');
+
+        return $this->execute($run);
     }
 
     public function execute(WorkflowRun $run): WorkflowRun
@@ -154,6 +168,9 @@ class Engine
 
         $run->forceFill(['status' => 'completed', 'results' => $results, 'resume_at' => null, 'finished_at' => now()])->save();
         $this->log($run, $run->step, 'end', 'ok', $run->test ? 'Test finished. Nothing was changed.' : 'Workflow finished.');
+        if (! $run->test) {
+            $this->record($run, 'orderorbit:automation_completed');
+        }
 
         return $run;
     }
@@ -194,6 +211,17 @@ class Engine
         }
 
         return $run;
+    }
+
+    /** Automation events for analytics and the customer's journey. */
+    private function record(WorkflowRun $run, string $name): void
+    {
+        AnalyticsEvent::create([
+            'store_id' => $run->store_id, 'event' => 'auto', 'name' => $name, 'occurred_at' => now(),
+            'customer_id' => isset($run->context['customer']['id']) ? (string) $run->context['customer']['id'] : null,
+            'label' => mb_substr((string) ($run->workflow?->name ?? 'Workflow'), 0, 120),
+            'properties' => ['run_id' => $run->id, 'workflow_id' => $run->workflow_id, 'subject' => $run->subject],
+        ]);
     }
 
     private function log(WorkflowRun $run, int $step, string $kind, string $status, string $message, ?array $data = null): void

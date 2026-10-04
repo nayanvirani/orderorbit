@@ -180,15 +180,17 @@ return [
 
     'analytics' => [
         'status' => 'live',
-        'summary' => 'Revenue, orders and conversion, and how much came from your offers.',
+        'summary' => 'Events, funnels, attribution and customer journeys, and how much came from your offers.',
         'overview' => [
             'OrderOrbit Space measures what matters with a Shopify web pixel that respects your customers\' consent choices. You see store revenue, orders, average order value and conversion rate, and exactly how much revenue came from lines your bundles, gifts and upsells added.',
             'Every offer has its own numbers — views, adds to cart, orders and revenue — so you can keep what works and change what doesn\'t.',
+            'Go deeper with the Event Explorer, funnels with drop-off at every step, revenue by traffic source under first-touch, last-touch and experience-assisted models, and a journey for each customer from first visit to repeat purchase.',
         ],
         'benefits' => [
             ['Revenue from offers', 'Order lines are credited to the offer that added them.'],
             ['Store health', 'Revenue, orders, AOV and conversion rate, compared with the previous period.'],
             ['Per-offer results', 'Views, adds to cart, orders and revenue for each bundle, gift and upsell.'],
+            ['Funnels and journeys', 'See where shoppers drop off, how long each step takes, and each customer\'s path to a repeat purchase.'],
             ['Consent-aware', 'Only shoppers who allow analytics are counted; no personal data is sent.'],
         ],
     ],

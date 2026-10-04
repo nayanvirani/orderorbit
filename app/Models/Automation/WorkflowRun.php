@@ -33,6 +33,19 @@ class WorkflowRun extends Model
         return $this->belongsTo(WorkflowVersion::class, 'version_id');
     }
 
+    /** How long the run took (or has taken so far), e.g. "3 days 2 minutes". */
+    public function duration(): string
+    {
+        $seconds = (int) $this->created_at->diffInSeconds($this->finished_at ?? now(), true);
+
+        return $seconds < 1 ? 'under a second' : \Carbon\CarbonInterval::seconds($seconds)->cascade()->forHumans(['parts' => 2]);
+    }
+
+    public function canRetry(): bool
+    {
+        return $this->status === 'failed' && ! $this->test;
+    }
+
     public function logs(): HasMany
     {
         return $this->hasMany(WorkflowLog::class, 'run_id');

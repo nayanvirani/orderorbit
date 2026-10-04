@@ -73,11 +73,15 @@ return [
     [
         'name' => 'Analytics',
         'icon' => 'chart',
-        'text' => 'What is measured and how revenue is credited.',
+        'text' => 'What is measured, funnels, attribution and customer journeys.',
         'articles' => [
             ['How is revenue from offers measured?', 'A Shopify web pixel records completed orders. Each order line that was added by a bundle, gift or upsell is credited to that offer.'],
             ['Why do my numbers differ from Shopify reports?', 'Analytics only count shoppers who allow analytics in your consent banner, and they start from the day the app was installed.'],
             ['How long is data kept?', 'Analytics events are kept for 13 months and then deleted automatically.'],
+            ['How do funnels count shoppers?', 'A shopper counts for a step when they did it after the previous step, within the funnel\'s window: the same session, or 1, 7 or 30 days from the first step. Start from a ready-made funnel or pick up to 8 events, optionally for one bundle, gift or upsell.'],
+            ['What are first touch, last touch and assisted?', 'Last touch credits the traffic source of the visit the order was placed in; first touch credits the shopper\'s first visit within the attribution window. Assisted counts orders from shoppers who saw or used an offer in that window; each offer gets the whole order, so assisted totals overlap. Attribution is a model, not proof that something caused a sale.'],
+            ['Where does the traffic source come from?', 'From UTM tags on the landing page (utm_source, utm_medium, utm_campaign), then Google and Facebook click ids, then the referring site. Visits with none of these are "direct".'],
+            ['What does a customer journey show?', 'One shopper\'s visits in order: pages and products viewed, offers seen and used, cart and checkout steps, purchases (with repeat purchases marked) and the automations that ran for them. Shoppers are an anonymous visitor id, or a customer number once they sign in or buy; no names or emails are stored.'],
         ],
     ],
     [

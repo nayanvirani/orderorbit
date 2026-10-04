@@ -282,14 +282,16 @@ return [
         'seo_description' => 'Events, funnels, revenue by experience and customer journeys from a consent-aware Shopify Web Pixel.',
         'keyword' => 'Shopify conversion analytics',
         'problem' => ['Every app claims credit.', 'Different dashboards, different numbers, no way to compare.'],
-        'steps' => ['Install OrderOrbit Space.', 'OrderOrbit Space measures views, clicks, add-to-carts and purchases.', 'See them in one place.'],
-        'grid' => ['Event Explorer', 'Custom funnels with drop-off', 'Revenue by experience, template, variant and UTM', 'First-touch, last-touch and experience-assisted models', 'Customer journey timeline', 'Consent and retention controls'],
+        'steps' => ['Install OrderOrbit Space; the web pixel connects itself.', 'It records Shopify\'s storefront events and every offer view, click and add to cart, with traffic source and device.', 'Explore events, build funnels, compare attribution models and follow customer journeys.'],
+        'grid' => ['Event Explorer with breakdowns by experience, template, product, device, market and UTM', 'Custom funnels with drop-off, time between steps and device, source or period comparison', 'Revenue by experience, template and UTM, revenue per session and visitor', 'First-touch, last-touch and experience-assisted models with a 1, 7 or 30-day window', 'Customer journey timeline with repeat purchases and automations', 'Consent-aware, no personal data, 13-month retention'],
         'note' => 'Attribution is an analytical model, not proof of causality. Use A/B tests to prove impact.',
         'example' => ['title' => 'A bundle funnel.', 'text' => 'Product View → Bundle View → Bundle Interaction → Add to Cart → Checkout → Purchase, with drop-off at every step.', 'flow' => ['Product View', 'Bundle View', 'Interaction', 'Add to Cart', 'Checkout', 'Purchase']],
         'templates' => [],
         'metrics' => [['Events collected', '1.2M'], ['Sessions', '184,300'], ['Conversion rate', '3.1%'], ['Revenue influenced', '$212,900']],
         'faqs' => [
             ['Does it respect cookie consent?', 'Yes. It respects your customers\' consent choices and your store\'s privacy settings in Shopify.'],
+            ['Which plan includes it?', 'Store totals are on every plan and revenue per offer from Starter. Event Explorer, funnels, attribution and customer journeys are on Growth and Scale.'],
+            ['Does it store customer details?', 'No names, emails or addresses. Shoppers are an anonymous visitor id, and a customer number once they sign in or buy. When Shopify asks to delete a customer\'s data, their events are deleted.'],
         ],
     ],
 

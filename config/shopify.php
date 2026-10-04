@@ -81,7 +81,8 @@ return [
         'warn_at' => 0.8,
 
         // "includes" lists what a plan unlocks beyond the storefront features every plan has:
-        // offer_analytics (revenue per offer) and, as they ship, checkout, customer_accounts,
+        // offer_analytics (revenue per offer), advanced_analytics (events, funnels, attribution,
+        // journeys) and, as they ship, checkout, customer_accounts,
         // ab_testing, automation and personalization.
         'plans' => [
             'free' => [
@@ -107,8 +108,8 @@ return [
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
                 'price' => 29.99,
                 'sales_limit' => 20000,
-                'includes' => ['offer_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
-                'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout, Thank You and Order Status blocks', 'Customer account blocks when released', 'A/B testing when released'],
+                'includes' => ['offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
+                'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout, Thank You and Order Status blocks', 'Funnels, attribution, event explorer and customer journeys', 'A/B testing and customer account blocks when released'],
                 'limits' => $limits([], 10000),
             ],
             'scale' => [
@@ -116,7 +117,7 @@ return [
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'),
                 'price' => 59.99,
                 'sales_limit' => null,
-                'includes' => ['offer_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
+                'includes' => ['offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
                 'features' => ['Unlimited store sales', 'Everything in Growth', 'Lifecycle automation workflows', 'Personalization when released', 'Priority support'],
                 'limits' => $limits([], 50000),
             ],

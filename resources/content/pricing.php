@@ -21,6 +21,7 @@ return [
         ['Pre-orders', '1 live', 'Unlimited', 'Unlimited', 'Unlimited'],
         ['Every template and design option', true, true, true, true],
         ['Analytics', 'Store totals', 'Revenue per offer', 'Revenue per offer', 'Revenue per offer'],
+        ['Event Explorer, funnels, attribution and customer journeys', false, false, true, true],
         ['Checkout, Thank You & Order Status blocks', false, false, true, true],
         ['Customer account blocks (coming soon)', false, false, true, true],
         ['A/B testing (coming soon)', false, false, true, true],

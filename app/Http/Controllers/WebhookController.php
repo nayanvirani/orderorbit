@@ -42,7 +42,7 @@ class WebhookController extends Controller
             'customers/redact' => $this->redactCustomer($store, $payload),
             'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
                 'customer_id' => $payload['customer']['id'] ?? null,
-                'note' => 'Automation may hold the customer id, tags and prepared emails for this customer.',
+                'note' => 'Automation may hold the customer id, tags and prepared emails for this customer; analytics may hold their customer id with their storefront events (no names, emails or addresses).',
             ]),
             default => null,
         };
@@ -80,6 +80,7 @@ class WebhookController extends Controller
         $id = (string) ($payload['customer']['id'] ?? '');
         if ($store && $id !== '') {
             app(\App\Automation\Triggers::class)->forget($store, $id);
+            \App\Services\Analytics\Journeys::forget($store, $id);
         }
         AuditLog::record('compliance.customers/redact', $store, ['customer_id' => $id ?: null]);
     }

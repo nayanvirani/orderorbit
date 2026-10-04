@@ -30,11 +30,7 @@
         </s-banner>
     @endif
 
-    <nav class="bx-tabs" aria-label="Date range" style="margin-bottom:12px">
-        @foreach ([7 => 'Last 7 days', 30 => 'Last 30 days', 90 => 'Last 90 days'] as $d => $label)
-            <a href="{{ app_route('app.analytics', ['days' => $d]) }}" class="{{ $s['days'] === $d ? 'on' : '' }}">{{ $label }}</a>
-        @endforeach
-    </nav>
+    @include('app.analytics._nav', ['days' => $s['days'], 'locked' => false])
 
     @php($p = $s['previous'])
     @php($t = fn ($a, $b) => \App\Services\Analytics\Analytics::trend($a, $b))

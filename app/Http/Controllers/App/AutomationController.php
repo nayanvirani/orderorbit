@@ -134,6 +134,14 @@ class AutomationController extends Controller
         return view('app.automation.run', $this->shared($store) + ['run' => $run]);
     }
 
+    public function retry(Request $request, Store $store, int $run): RedirectResponse
+    {
+        $run = WorkflowRun::where('store_id', $store->id)->findOrFail($run);
+        $run = app(\App\Automation\Engine::class)->retry($run);
+
+        return redirect()->to(app_route('app.automation.runs.show', ['run' => $run->id, 'notice' => $run->error ? 'retry_failed' : 'retried']));
+    }
+
     public function inbox(Request $request, Store $store): View
     {
         return view('app.automation.inbox', $this->shared($store) + [
