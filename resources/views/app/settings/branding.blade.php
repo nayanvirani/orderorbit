@@ -8,7 +8,7 @@
 
 @section('content')
 @php($canManage = request()->attributes->get('storeUser')?->can('manage_settings'))
-<s-page heading="Settings">
+<s-page inlineSize="large" heading="Settings">
     @include('app.settings._tabs')
 
     <s-section heading="Branding">

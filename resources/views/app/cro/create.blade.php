@@ -8,7 +8,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Create experience">
+<s-page inlineSize="large" heading="Create experience">
     <x-app.hero eyebrow="New experience" :title="$type ? 'Choose a <em>'.e(lower_label(\App\Experiences\Registry::type($type)['singular'])).'</em> template.' : 'What do you want to <em>build?</em>'"
         :lead="$type ? (\App\Experiences\Registry::type($type)['surface'] === 'account' ? 'Pick a layout, then set the content and style. Customer accounts use your checkout branding.' : (in_array(\App\Experiences\Registry::type($type)['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) ? 'Pick a layout, then set the content, cart-value and country conditions. Checkout uses your checkout branding.' : 'Every template is fully customisable — content, design, targeting and schedule.')) : 'Pick a feature. Every one goes live on your storefront, and savings apply automatically at checkout.'" />
     <div class="b-steps" aria-label="Steps">

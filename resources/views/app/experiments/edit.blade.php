@@ -19,7 +19,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $experiment->name }}">
+<s-page inlineSize="large" heading="{{ $experiment->name }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.experiments.index', ['tab' => 'drafts']) }}">A/B tests</s-link>
     @if ($banner)<s-banner tone="{{ $fieldErrors ? 'warning' : 'critical' }}">{{ $banner }}</s-banner>@endif
     @if ($experiment->status === 'paused')
@@ -121,7 +121,7 @@
                     @include('app.cro._field', ['section' => 'audience', 'key' => $key, 'field' => $field, 'value' => $experiment->audience[$key] ?? ($field['default'] ?? null), 'namePrefix' => 'audience', 'timezone' => 'UTC'])
                 @endif
             @endforeach
-            <p class="oo-muted oo-small">{{ $checkoutBlock ? 'Checkout and Thank You pages only know the cart value and the buyer\'s country.' : 'Customer segments arrive with Audiences & Personalization.' }}</p>
+            <p class="oo-muted oo-small">{{ $checkoutBlock ? 'Checkout and Thank You pages only know the cart value and the buyer\'s country.' : 'Segments come from Audiences (Scale plan).' }}</p>
         </s-section>
 
         <s-section heading="5. Primary metric" id="step-primary">

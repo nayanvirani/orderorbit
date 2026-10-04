@@ -14,7 +14,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $segment->name }}">
+<s-page inlineSize="large" heading="{{ $segment->name }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>
     @include('app.audiences._nav')
     @if ($fieldErrors)<s-banner tone="warning">Saved, but some rules need attention before the segment can be used.</s-banner>@endif

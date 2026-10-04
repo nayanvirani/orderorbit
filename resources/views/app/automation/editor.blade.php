@@ -8,7 +8,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $workflow->name }}">
+<s-page inlineSize="large" heading="{{ $workflow->name }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.automation.index') }}">Automation</s-link>
     @include('app.automation._nav')
 

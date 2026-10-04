@@ -14,7 +14,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Event Explorer">
+<s-page inlineSize="large" heading="Event Explorer">
     @include('app.analytics._nav', ['lockedTitle' => 'Event Explorer is on Growth and Scale'])
 
     @unless ($locked)

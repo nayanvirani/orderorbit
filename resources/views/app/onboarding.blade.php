@@ -3,7 +3,7 @@
 @section('title', 'Get started')
 
 @section('content')
-<s-page heading="Welcome to OrderOrbit Space">
+<s-page inlineSize="large" heading="Welcome to OrderOrbit Space">
     <x-app.hero eyebrow="Get started" title="Welcome to <em>OrderOrbit Space.</em>"
         lead="Eight short steps from connecting your store to seeing your first results. You can leave at any time and pick up where you left off." />
     <div class="oo-steps" aria-label="Onboarding progress">

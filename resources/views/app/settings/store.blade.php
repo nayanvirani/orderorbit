@@ -9,7 +9,7 @@
 @endphp
 
 @section('content')
-<s-page heading="Settings">
+<s-page inlineSize="large" heading="Settings">
     @include('app.settings._tabs')
 
     @if ($missingScopes)
@@ -66,11 +66,11 @@
                     <tr><td>Storefront blocks</td><td><s-badge tone="{{ $t }}">{{ $x }}</s-badge></td><td class="oo-muted">Bundles, upsells, shipping bar and more, placed in the Theme Editor.</td></tr>
                     @php([$t, $x] = $yesNo($cap('checkout_blocks'), 'Supported', 'Requires Shopify Plus'))
                     <tr><td>Blocks inside checkout</td><td><s-badge tone="{{ $t }}">{{ $x }}</s-badge></td><td class="oo-muted">{{ $cap('development_store') ? 'Development stores can preview checkout blocks.' : 'Trust, reviews, shipping progress and offers in the checkout steps.' }}</td></tr>
-                    @php([$t, $x] = $yesNo($cap('thank_you_blocks'), 'Supported', 'Not available'))
+                    @php([$t, $x] = $yesNo($cap('thank_you_blocks') ?? true, 'Supported', 'Not available'))
                     <tr><td>Thank You and Order Status</td><td><s-badge tone="{{ $t }}">{{ $x }}</s-badge></td><td class="oo-muted">Cross-sells, reorder, reviews and support after purchase.</td></tr>
                     @php([$t, $x] = $yesNo($cap('new_customer_accounts'), 'Supported', 'Requires new customer accounts'))
                     <tr><td>Customer accounts</td><td><s-badge tone="{{ $t }}">{{ $x }}</s-badge></td><td class="oo-muted">Reorder, rewards and reviews in customer accounts.</td></tr>
-                    <tr><td>Analytics</td><td><s-badge>Not connected yet</s-badge></td><td class="oo-muted">Connects with the analytics release.</td></tr>
+                    <tr><td>Analytics</td><td><s-badge tone="{{ $store->web_pixel_id ? 'success' : 'warning' }}">{{ $store->web_pixel_id ? 'Connected' : 'Not connected' }}</s-badge></td><td class="oo-muted">The consent-aware web pixel. <a href="{{ app_route('app.settings.integrations') }}">Details</a></td></tr>
                 </tbody>
             </table>
         </div>

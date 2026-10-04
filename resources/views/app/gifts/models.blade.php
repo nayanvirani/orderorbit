@@ -9,7 +9,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Choose a template">
+<s-page inlineSize="large" heading="Choose a template">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.gifts.index') }}">Progressive gifts</s-link>
     <p class="bx-lead">Start from a ready-made layout. Rewards, thresholds, colours and text are all yours to change.</p>
 

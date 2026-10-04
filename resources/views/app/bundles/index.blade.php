@@ -25,7 +25,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Bundles">
+<s-page inlineSize="large" heading="Bundles">
     @if ($canManage)
         <s-button slot="primary-action" variant="primary" href="{{ app_route('app.bundles.types') }}">Create bundle</s-button>
     @endif

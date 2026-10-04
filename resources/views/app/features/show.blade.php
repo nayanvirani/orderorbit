@@ -20,7 +20,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $feature['label'] }}">
+<s-page inlineSize="large" heading="{{ $feature['label'] }}">
     <x-app.hero :eyebrow="$feature['label']" :title="$feature['tagline']" :lead="$feature['lead']" :icon="$feature['icon'] ?? null" :tone="$feature['tone'] ?? null">
         @if ($canManage && ! $checkoutLocked)
             @foreach ($types as $typeKey => $type)

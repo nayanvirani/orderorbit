@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<s-page heading="{{ $ticket->subject }}">
+<s-page inlineSize="large" heading="{{ $ticket->subject }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.support.index') }}">Support</s-link>
     @if (request('error'))<s-banner tone="critical">{{ request('error') }}</s-banner>@endif
 

@@ -9,7 +9,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $experience->name }}">
+<s-page inlineSize="large" heading="{{ $experience->name }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.bundles.index') }}">Bundles</s-link>
 
     @if ($banner)

@@ -8,7 +8,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Funnels">
+<s-page inlineSize="large" heading="Funnels">
     @include('app.analytics._nav', ['hideRange' => true, 'lockedTitle' => 'Funnels are on Growth and Scale'])
 
     <s-section heading="Your funnels">

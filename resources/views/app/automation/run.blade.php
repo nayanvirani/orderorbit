@@ -3,7 +3,7 @@
 @section('title', 'Run #'.$run->id)
 
 @section('content')
-<s-page heading="Run #{{ $run->id }}{{ $run->test ? ' (test)' : '' }}">
+<s-page inlineSize="large" heading="Run #{{ $run->id }}{{ $run->test ? ' (test)' : '' }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.automation.runs') }}">Runs</s-link>
     @include('app.automation._nav')
 

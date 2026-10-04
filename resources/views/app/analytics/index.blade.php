@@ -15,7 +15,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Analytics">
+<s-page inlineSize="large" heading="Analytics">
     <x-app.hero eyebrow="Analytics" icon="chart" tone="analytics" title="What your offers <em>earn.</em>"
         lead="Revenue, orders and conversion from your store, and how much of it came from lines your bundles, gifts and upsells added." />
 

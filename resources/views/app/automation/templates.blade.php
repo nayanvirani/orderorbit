@@ -5,7 +5,7 @@
 @php($catalog = \App\Automation\Definition::catalog())
 
 @section('content')
-<s-page heading="Automation templates">
+<s-page inlineSize="large" heading="Automation templates">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.automation.index') }}">Automation</s-link>
     @include('app.automation._nav')
 

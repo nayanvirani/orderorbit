@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<s-page heading="{{ $effective ? 'Settings' : 'Choose a plan' }}">
+<s-page inlineSize="large" heading="{{ $effective ? 'Settings' : 'Choose a plan' }}">
     @if ($effective)
         @include('app.settings._tabs')
     @else

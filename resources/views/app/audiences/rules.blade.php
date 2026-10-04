@@ -24,7 +24,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Audiences">
+<s-page inlineSize="large" heading="Audiences">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>
     @include('app.audiences._nav')
 

@@ -25,7 +25,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $experiment->name }}">
+<s-page inlineSize="large" heading="{{ $experiment->name }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.experiments.index', ['tab' => in_array($experiment->status, ['running', 'paused'], true) ? 'active' : 'completed']) }}">A/B tests</s-link>
     @if (request('error'))<s-banner tone="critical">{{ request('error') }}</s-banner>@endif
 

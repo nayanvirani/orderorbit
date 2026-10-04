@@ -13,6 +13,7 @@ class Notices
         'ticket_created' => ['Ticket sent. We usually reply within one business day.', false],
         'reply_sent' => ['Reply sent.', false],
         'analytics_deleted' => ['All analytics data for your store was deleted.', false],
+        'segment_created' => ['Segment added. Adjust its rules, then save.', false],
         'segment_archived' => ['Segment archived.', false],
         'segment_restored' => ['Segment restored.', false],
         'experiment_launched' => ['Test launched. Visitors are now split between the variants.', false],

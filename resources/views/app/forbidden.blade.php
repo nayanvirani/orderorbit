@@ -3,7 +3,7 @@
 @section('title', 'Permission')
 
 @section('content')
-<s-page heading="{{ ($removed ?? false) ? 'Access removed' : 'Permission needed' }}">
+<s-page inlineSize="large" heading="{{ ($removed ?? false) ? 'Access removed' : 'Permission needed' }}">
     <s-section>
         @if ($removed ?? false)
             <s-paragraph>Your access to OrderOrbit Space for this store was removed. Ask a store owner to restore it in Settings → Users &amp; roles.</s-paragraph>

@@ -4,7 +4,7 @@
 
 @section('content')
 @php($triggers = \App\Automation\Definition::catalog()['triggers'])
-<s-page heading="Workflow runs">
+<s-page inlineSize="large" heading="Workflow runs">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.automation.index') }}">Automation</s-link>
     @include('app.automation._nav')
 

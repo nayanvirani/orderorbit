@@ -9,7 +9,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Step 1/2 · Select bundle type">
+<s-page inlineSize="large" heading="Step 1/2 · Select bundle type">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.bundles.index') }}">Bundles</s-link>
     <p class="bx-lead">Choose the bundle type that best suits your needs. Every type is fully customisable after you pick a model.</p>
 

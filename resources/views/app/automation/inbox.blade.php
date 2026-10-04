@@ -3,7 +3,7 @@
 @section('title', 'Automation inbox')
 
 @section('content')
-<s-page heading="Inbox">
+<s-page inlineSize="large" heading="Inbox">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.automation.index') }}">Automation</s-link>
     @include('app.automation._nav')
 

@@ -13,7 +13,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $journey['customer'] ? 'Customer '.$journey['customer'] : 'Visitor '.substr($visitor, 0, 8) }}">
+<s-page inlineSize="large" heading="{{ $journey['customer'] ? 'Customer '.$journey['customer'] : 'Visitor '.substr($visitor, 0, 8) }}">
     @include('app.analytics._nav', ['hideRange' => true])
 
     <s-section heading="Summary">

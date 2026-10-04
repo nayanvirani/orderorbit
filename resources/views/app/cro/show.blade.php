@@ -33,7 +33,7 @@
 @endphp
 
 @section('content')
-<s-page heading="{{ $experience->name }}">
+<s-page inlineSize="large" heading="{{ $experience->name }}">
     @if ($featureKey = \App\Experiences\Registry::featureFor($experience->type))
         <s-link slot="breadcrumb-actions" href="{{ app_route('app.features.show', ['feature' => $featureKey]) }}">{{ \App\Experiences\Registry::feature($featureKey)['label'] }}</s-link>
     @endif

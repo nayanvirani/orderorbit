@@ -14,7 +14,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $funnel->name }}">
+<s-page inlineSize="large" heading="{{ $funnel->name }}">
     @include('app.analytics._nav', ['lockedTitle' => 'Funnels are on Growth and Scale'])
 
     @if ($report)

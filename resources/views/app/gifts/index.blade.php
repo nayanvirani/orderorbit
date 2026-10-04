@@ -9,7 +9,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Progressive gifts">
+<s-page inlineSize="large" heading="Progressive gifts">
     @if ($canManage)
         <s-button slot="primary-action" variant="primary" href="{{ app_route('app.gifts.models') }}">Create progressive gifts</s-button>
     @endif

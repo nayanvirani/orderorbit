@@ -11,7 +11,7 @@
 @endphp
 
 @section('content')
-<s-page heading="A/B tests">
+<s-page inlineSize="large" heading="A/B tests">
     <x-app.hero eyebrow="A/B testing" icon="target" tone="analytics" title="Test before you <em>commit.</em>"
         lead="Split visitors between versions of a live experience and see which earns more. A winner is only named once the test has enough days, visitors and conversions to be sure.">
         <s-button href="{{ route('site.docs', 'ab-testing') }}" target="_blank">View documentation</s-button>

@@ -15,7 +15,7 @@
 @endpush
 
 @section('content')
-<s-page heading="{{ $rule->exists ? $rule->name : 'New personalization rule' }}">
+<s-page inlineSize="large" heading="{{ $rule->exists ? $rule->name : 'New personalization rule' }}">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.audiences.rules') }}">Rules</s-link>
     @include('app.audiences._nav')
     @if ($fieldErrors)<s-banner tone="warning">Fix the highlighted fields.</s-banner>@endif

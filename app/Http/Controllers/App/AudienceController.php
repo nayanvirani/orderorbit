@@ -51,7 +51,7 @@ class AudienceController extends Controller
             $this->audiences->count($store, $segment);
         }
 
-        return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $segment->id, 'notice' => 'created']));
+        return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $segment->id, 'notice' => 'segment_created']));
     }
 
     public function editSegment(Request $request, Store $store, int $segment): View
@@ -83,7 +83,7 @@ class AudienceController extends Controller
         $copy->name = mb_substr($copy->name.' (copy)', 0, 80);
         $copy->save();
 
-        return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $copy->id, 'notice' => 'created']));
+        return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $copy->id, 'notice' => 'segment_created']));
     }
 
     public function archiveSegment(Request $request, Store $store, int $segment): RedirectResponse

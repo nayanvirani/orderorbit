@@ -3,7 +3,7 @@
 @section('title', 'CRO')
 
 @section('content')
-<s-page heading="CRO overview">
+<s-page inlineSize="large" heading="CRO overview">
     <x-app.hero eyebrow="CRO" icon="sparkle" title="Every conversion tool, <em>one design.</em>"
         lead="Bundles, progressive gifts, cart upsells, countdowns, sticky add to cart and trust badges — sharing your brand, with savings applied at checkout and one set of numbers.">
         <s-button variant="primary" href="{{ app_route('app.bundles.types') }}">Create a bundle</s-button>

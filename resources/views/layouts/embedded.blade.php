@@ -12,6 +12,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app-brand.css') }}?v={{ filemtime(public_path('css/app-brand.css')) }}">
     <style>
+        /* Base: padding never widens a field, and [hidden] always hides (even over display rules). */
+        *, *::before, *::after { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        img, svg, video { max-width: 100%; }
+        input, select, textarea, button { font: inherit; max-width: 100%; }
+        /* Links look like Polaris links everywhere (tables, notes, help text). */
+        a { color: #005bd3; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        /* Selects never clip their text, whatever height a page gives them. */
+        select:not([multiple]) { height: 36px !important; min-height: 36px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 34px !important; }
+        input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="date"], input[type="datetime-local"], input[type="password"] { min-height: 34px; }
+        /* Cards inside forms keep the page's spacing. */
+        form > s-section, form > s-banner, form > s-box { display: block; margin-bottom: 16px; }
+        /* Shared tabs (date ranges, filters). */
+        .bx-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+        .bx-tabs a { padding: 6px 12px; border-radius: 8px; color: #303030; text-decoration: none; font-weight: 550; }
+        .bx-tabs a:hover { background: #f1f1f1; text-decoration: none; }
+        .bx-tabs a.on { background: #ebebeb; }
+        .oo-tabs a:hover { text-decoration: none; }
+        .ob-split { gap: 16px; align-items: start; }
+        /* Pages use the full width up to 1240px, centred (wider than Polaris' default page). */
+        s-page[inlinesize="large"] { display: block; max-width: 1240px; margin-inline: auto; }
         body { font: 14px/1.45 -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, sans-serif; color: #303030; }
         .oo-radio { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; margin-bottom: 8px; cursor: pointer; background: #fff; }
         .oo-radio:has(input:checked) { border-color: #303030; box-shadow: 0 0 0 1px #303030; }

@@ -18,7 +18,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Revenue & attribution">
+<s-page inlineSize="large" heading="Revenue & attribution">
     @include('app.analytics._nav', ['lockedTitle' => 'Revenue attribution is on Growth and Scale'])
 
     @if ($r)

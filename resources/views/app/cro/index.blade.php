@@ -4,7 +4,7 @@
 @section('title', $typeDef['label'] ?? 'All offers')
 
 @section('content')
-<s-page heading="{{ $typeDef['label'] ?? 'All offers' }}">
+<s-page inlineSize="large" heading="{{ $typeDef['label'] ?? 'All offers' }}">
     <s-button slot="primary-action" variant="primary" href="{{ app_route('app.cro.experiences.create', array_filter(['type' => $type])) }}">{{ $typeDef ? 'Create '.lower_label($typeDef['singular']) : 'Create experience' }}</s-button>
     <s-button slot="secondary-actions" data-download="{{ app_route('app.cro.experiences.export') }}">Export CSV</s-button>
 

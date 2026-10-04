@@ -17,7 +17,7 @@
 @endphp
 
 @section('content')
-<s-page heading="Home">
+<s-page inlineSize="large" heading="Home">
     <div class="ob-greet">
         <div>
             <h1>{{ $greeting }}{{ $name ? ', '.$name : '' }} 👋</h1>

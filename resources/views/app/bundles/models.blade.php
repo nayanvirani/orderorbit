@@ -9,7 +9,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Step 2/2 · Choose your model">
+<s-page inlineSize="large" heading="Step 2/2 · Choose your model">
     <s-link slot="breadcrumb-actions" href="{{ app_route('app.bundles.types') }}">Bundle types</s-link>
     <p class="bx-lead">{{ $type['label'] }}: {{ $type['lead'] }} Choose a ready-made model, then customise everything.</p>
 

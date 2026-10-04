@@ -8,7 +8,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Customer journeys">
+<s-page inlineSize="large" heading="Customer journeys">
     @include('app.analytics._nav', ['lockedTitle' => 'Customer journeys are on Growth and Scale'])
 
     @if ($people)

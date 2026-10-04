@@ -8,7 +8,7 @@
 @endpush
 
 @section('content')
-<s-page heading="Templates">
+<s-page inlineSize="large" heading="Templates">
     <x-app.hero icon="grid" eyebrow="Template library" title="Start from a <em>proven template.</em>"
         lead="Every template shares your brand colours and fonts. Pick one, customise it in the builder, and publish it from the Theme Editor." />
     <nav class="oo-tabs" aria-label="Template types">
