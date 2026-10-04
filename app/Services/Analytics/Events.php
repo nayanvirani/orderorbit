@@ -44,6 +44,7 @@ class Events
         'orderorbit:added_to_cart' => 'Added to cart from an offer',
         'orderorbit:reward_unlocked' => 'Reward unlocked',
         'orderorbit:survey_answered' => 'Survey answered',
+        'orderorbit:experiment_exposed' => 'A/B test exposure',
         'orderorbit:automation_triggered' => 'Automation triggered',
         'orderorbit:automation_completed' => 'Automation completed',
     ];
@@ -52,7 +53,7 @@ class Events
     public const CODES = [
         'experience_viewed' => 'view', 'experience_clicked' => 'click', 'added_to_cart' => 'add',
         'reward_unlocked' => 'unlock', 'upsell_accepted' => 'accept', 'upsell_declined' => 'decline',
-        'survey_answered' => 'survey', 'experience_closed' => 'close',
+        'survey_answered' => 'survey', 'experience_closed' => 'close', 'experiment_exposed' => 'expose',
     ];
 
     public static function all(): array
@@ -127,5 +128,6 @@ class Events
         'experience_handle' => 'Experience', 'template' => 'Template', 'experience_type' => 'Experience type',
         'product_id' => 'Product', 'page_type' => 'Page type', 'device' => 'Device', 'country' => 'Market',
         'source' => 'Traffic source', 'medium' => 'Medium', 'campaign' => 'UTM campaign',
+        'experiment_handle' => 'A/B test', 'variant' => 'Variant',
     ];
 }

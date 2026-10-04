@@ -1,6 +1,7 @@
 @php
-    $name = "config[{$section}][{$key}]";
-    $id = "f-{$section}-{$key}";
+    // $namePrefix lets other forms reuse these fields (e.g. A/B test audience: audience[device]).
+    $name = isset($namePrefix) ? "{$namePrefix}[{$key}]" : "config[{$section}][{$key}]";
+    $id = 'f-'.str_replace('.', '-', $section).'-'.$key;
     $error = $fieldErrors["{$section}.{$key}"] ?? null;
     $rowErrors = collect($fieldErrors)->filter(fn ($v, $k) => str_starts_with($k, "{$section}.{$key}."))->all();
 @endphp

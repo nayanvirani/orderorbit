@@ -119,6 +119,8 @@ class PixelController extends Controller
             'experience_type' => $type,
             'template' => is_string($data['tp'] ?? null) && preg_match('/^[a-z0-9\-]{1,64}$/', $data['tp']) ? $data['tp'] : null,
             'quantity' => max(1, min(100, (int) ($data['q'] ?? 1))),
+            'experiment_handle' => is_string($data['xp'] ?? null) && preg_match('/^x[a-z0-9]{1,31}$/', $data['xp']) ? $data['xp'] : null,
+            'variant' => in_array($data['xv'] ?? null, ['A', 'B', 'C'], true) ? $data['xv'] : null,
             // Survey answers (the only events with a label); plain text, trimmed.
             'label' => isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) ?: null : null,
         ]);

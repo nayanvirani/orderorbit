@@ -97,6 +97,18 @@ return [
         ],
     ],
     [
+        'name' => 'A/B testing',
+        'icon' => 'split',
+        'text' => 'Split tests on live experiences, metrics and how winners are decided.',
+        'articles' => [
+            ['How do I run a test?', 'Open A/B tests, choose a published experience and create a test. Change variant B (template, text or design, or hide it as a holdout), set the traffic split, audience, metrics and guardrails, preview, then launch.'],
+            ['How are visitors split?', 'Each visitor is put in a variant by a stable hash of the test and a visitor id kept in their browser, so they see the same version every visit. Visitors outside the audience see the experience as published and aren\'t counted.'],
+            ['When is a winner declared?', 'Only after the test has run at least 7 days and every variant has 1,000 visitors and 100 conversions, and the primary metric is significantly better at 95% confidence (Bonferroni-corrected for A/B/C) without breaking a guardrail. Until then the results say "Collecting data".'],
+            ['What counts as a conversion?', 'A visitor places an order after first seeing the test. Revenue per visitor and AOV use those orders. Only shoppers who allow analytics are counted.'],
+            ['What does "Apply winner" do?', 'It publishes the winning variant\'s template, text and design to the experience for everyone and completes the test.'],
+        ],
+    ],
+    [
         'name' => 'Automation',
         'icon' => 'flow',
         'text' => 'Workflows that follow up after orders, deliveries, refunds and new customers.',

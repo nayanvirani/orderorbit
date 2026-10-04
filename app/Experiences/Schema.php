@@ -222,7 +222,7 @@ class Schema
     /**
      * @return array{0: mixed, 1: ?string}
      */
-    private static function field(array $field, mixed $raw, string $timezone): array
+    public static function field(array $field, mixed $raw, string $timezone): array
     {
         $required = $field['required'] ?? false;
         $label = $field['label'] ?? 'This field';

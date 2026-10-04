@@ -105,6 +105,10 @@ class AnalyticsReportsController extends Controller
             'report' => $locked ? null : $attribution->report($store, $from, $to, $window, $model, $templates),
             'window' => $window,
             'model' => $model,
+            // Revenue per A/B test variant, for tests that ran in this period.
+            'tests' => $locked ? collect() : \App\Models\Experiments\Experiment::with(['experience', 'variants'])->where('store_id', $store->id)->whereNotNull('started_at')
+                ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('ended_at', '>=', $from))->latest('started_at')->limit(10)->get()
+                ->map(fn ($x) => ['experiment' => $x, 'results' => app(\App\Services\Experiments\Results::class)->for($x)]),
         ]);
     }
 

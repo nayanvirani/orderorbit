@@ -199,14 +199,17 @@ return [
     ],
 
     'ab-testing' => [
-        'status' => 'soon',
-        'summary' => 'Test two versions of an offer and keep the winner.',
+        'status' => 'live',
+        'summary' => 'A/B and A/B/C tests on live experiences, with honest statistics.',
         'overview' => [
-            'A/B testing splits shoppers between versions of a bundle, gift or countdown and reports which one earns more, with honest statistics. This module is being built now.',
+            'A/B testing splits shoppers between versions of a live experience, such as an upsell, countdown, sticky add to cart or trust block, and reports which one earns more. Variants can change the template, design and text, or hide the experience as a holdout; prices and discounts stay as published, so checkout always matches what shoppers saw.',
+            'Results show visitors, conversion, revenue, revenue per visitor and AOV per variant, with lift, confidence intervals and p-values. A winner is only named after at least 7 days and 1,000 visitors and 100 conversions per variant, when the primary metric is significant and no guardrail is breached. Then apply the winner in one click.',
         ],
         'benefits' => [
             ['Stable assignment', 'Each shopper sees the same version every visit.'],
-            ['Clear results', 'Revenue and conversion per version, with confidence.'],
+            ['Clear results', 'Lift with 95% intervals and p-values; no early winners.'],
+            ['Guardrails', 'Cart abandonment and negative interactions can block a "winner".'],
+            ['Apply in one click', 'Publish the winning version to everyone when the test is done.'],
         ],
     ],
 

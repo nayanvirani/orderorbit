@@ -93,7 +93,28 @@
         @endif
 
         <s-section heading="By experiment variant">
-            <s-paragraph><span class="oo-muted">Revenue per A/B test variant appears here once A/B testing is released.</span></s-paragraph>
+            @if ($tests->isEmpty())
+                <s-paragraph><span class="oo-muted">No A/B tests ran in this period. <s-link href="{{ app_route('app.experiments.index') }}">Create a test</s-link></span></s-paragraph>
+            @else
+                <table class="oo-table stack">
+                    <thead><tr><th>Test</th><th>Variant</th><th>Visitors</th><th>Orders</th><th>Revenue</th><th>Revenue per visitor</th></tr></thead>
+                    <tbody>
+                        @foreach ($tests as $t)
+                            @foreach ($t['experiment']->variants as $v)
+                                @php($m = $t['results']['variants'][$v->key])
+                                <tr>
+                                    <td data-label="Test">@if ($loop->first)<s-link href="{{ app_route('app.experiments.show', ['experiment' => $t['experiment']->id]) }}">{{ $t['experiment']->name }}</s-link>@endif</td>
+                                    <td data-label="Variant">{{ $v->key }} · {{ $v->name }}@if ($t['results']['decision']['winner'] === $v->key) <s-badge tone="success">Winner</s-badge>@endif</td>
+                                    <td data-label="Visitors">{{ number_format($m['visitors']) }}</td>
+                                    <td data-label="Orders">{{ number_format($m['orders']) }}</td>
+                                    <td data-label="Revenue">{{ $money($m['revenue']) }}</td>
+                                    <td data-label="Revenue per visitor">{{ $money($m['revenue_per_visitor']) }}</td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
         </s-section>
 
         <p class="oo-muted oo-small">Attribution is an analytical model, not proof that an offer or channel caused a sale. Orders count when the shopper allowed analytics.</p>

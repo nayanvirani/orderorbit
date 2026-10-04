@@ -10,6 +10,11 @@ class Notices
 {
     public const MESSAGES = [
         'saved' => ['Changes saved successfully.', false],
+        'experiment_launched' => ['Test launched. Visitors are now split between the variants.', false],
+        'experiment_pause' => ['Test paused. Everyone sees the control until you resume.', false],
+        'experiment_resume' => ['Test resumed.', false],
+        'experiment_stop' => ['Test stopped. The experience stays as published.', false],
+        'experiment_apply' => ['Variant applied. The experience now shows it to everyone.', false],
         'retried' => ['Run retried. Check the log for the result.', false],
         'retry_failed' => ['The step failed again. The log shows why; it will retry on its own.', true],
         'analytics_connected' => ['Analytics is connected. New visits and orders will appear here.', false],

@@ -167,6 +167,12 @@
                     @endif
                     <s-button href="{{ $editorUrl }}" target="_top">{{ $store->editorLabel($type['surface']) }}</s-button>
                     <form method="POST" action="{{ app_route('app.cro.experiences.placement', ['experience' => $experience->id]) }}"><s-button type="submit">Re-check placement</s-button></form>
+                    @php($activeTest = \App\Models\Experiments\Experiment::where('experience_id', $experience->id)->whereIn('status', ['running', 'paused', 'draft'])->latest('id')->first())
+                    @if ($activeTest)
+                        <s-button href="{{ app_route($activeTest->status === 'draft' ? 'app.experiments.edit' : 'app.experiments.show', ['experiment' => $activeTest->id]) }}">{{ $activeTest->status === 'draft' ? 'Continue A/B test setup' : 'View A/B test' }}</s-button>
+                    @elseif ($experience->status === 'published' && ! \App\Services\Experiments\ExperimentManager::unsupported($experience))
+                        <form method="POST" action="{{ app_route('app.experiments.store') }}"><input type="hidden" name="experience_id" value="{{ $experience->id }}"><s-button type="submit">Create A/B test</s-button></form>
+                    @endif
                     <form method="POST" action="{{ app_route('app.cro.experiences.duplicate', ['experience' => $experience->id]) }}"><s-button type="submit">Duplicate</s-button></form>
                     @if ($experience->status === 'archived')
                         <form method="POST" action="{{ app_route('app.cro.experiences.lifecycle', ['experience' => $experience->id, 'action' => 'unarchive']) }}"><s-button type="submit">Restore from archive</s-button></form>

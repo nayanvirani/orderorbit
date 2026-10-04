@@ -123,6 +123,21 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         // Images for blocks, saved to the store's Shopify Files.
         Route::post('/uploads/image', [\App\Http\Controllers\App\UploadController::class, 'image'])->middleware('store.can:manage_experiences')->name('uploads.image');
 
+        // A/B testing (Phase 9)
+        Route::prefix('experiments')->name('experiments.')->controller(\App\Http\Controllers\App\ExperimentController::class)->group(function () {
+            Route::get('/', 'index')->middleware('store.can:view_dashboard')->name('index');
+            Route::get('/{experiment}', 'show')->whereNumber('experiment')->middleware('store.can:view_dashboard')->name('show');
+            Route::get('/{experiment}/export', 'export')->whereNumber('experiment')->middleware('store.can:view_dashboard')->name('export');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::post('/', 'store')->name('store');
+                Route::get('/{experiment}/edit', 'edit')->whereNumber('experiment')->name('edit');
+                Route::post('/{experiment}', 'update')->whereNumber('experiment')->name('update');
+                Route::post('/{experiment}/duplicate', 'duplicate')->whereNumber('experiment')->name('duplicate');
+                Route::post('/{experiment}/delete', 'destroy')->whereNumber('experiment')->name('destroy');
+                Route::post('/{experiment}/{action}', 'action')->whereNumber('experiment')->whereIn('action', ['pause', 'resume', 'stop', 'apply'])->name('action');
+            });
+        });
+
         // Automation (Phase 7)
         Route::prefix('automation')->name('automation.')->controller(\App\Http\Controllers\App\AutomationController::class)->group(function () {
             Route::get('/', 'index')->middleware('store.can:view_dashboard')->name('index');

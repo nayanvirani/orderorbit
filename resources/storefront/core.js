@@ -66,7 +66,8 @@
   function track(name, exp, extra) {
     var a = exp.analytics || {};
     if (name === 'experience_viewed' ? a.track_views === false : a.track_clicks === false) return;
-    var detail = Object.assign({ event: 'orderorbit:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, extra || {});
+    // Events from an experience in an A/B test carry its experiment and variant.
+    var detail = Object.assign({ event: 'orderorbit:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, exp.xv && { experiment_id: exp.x.id, variant: exp.xv }, extra || {});
     events.push(detail);
     try { document.dispatchEvent(new CustomEvent('orderorbit:event', { detail: detail })); } catch (e) { /* old browsers */ }
     // Shopify's analytics bus: the OrderOrbit Space pixel records it (with the shopper's consent).
@@ -222,11 +223,16 @@
   /** Renders one experience into el. Returns a Promise<boolean> (false when nothing shows). */
   function render(el, exp, ctx) {
     ctx = ctx || {};
-    return load(exp.type).then(function (renderer) {
-      var hook = hooks[exp.type] || {};
-      return Promise.resolve(hook.prepare && (!ctx.preview || hook.always) ? hook.prepare(exp, ctx) : null)
-        .catch(function () { /* live data unavailable: render with saved data */ })
-        .then(function () { return paint(el, exp, ctx, renderer); });
+    // In an A/B test, oo-experiments.js picks this visitor's variant (null: show nothing).
+    return Promise.resolve(exp.x && !ctx.preview ? script('experiments').then(function () { return OrderOrbit.assign(exp, ctx); }) : exp).then(function (v) {
+      if (!v) return el.hidden = true, false;
+      exp = v;
+      return load(exp.type).then(function (renderer) {
+        var hook = hooks[exp.type] || {};
+        return Promise.resolve(hook.prepare && (!ctx.preview || hook.always) ? hook.prepare(exp, ctx) : null)
+          .catch(function () { /* live data unavailable: render with saved data */ })
+          .then(function () { return paint(el, exp, ctx, renderer); });
+      });
     });
   }
 

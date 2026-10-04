@@ -7,6 +7,7 @@ use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
 use App\Experiences\Schema;
 use App\Models\Experience;
+use App\Models\Experiments\Experiment;
 use App\Models\RecentPurchase;
 use App\Models\Store;
 use App\Services\SalesPop\RecentOrders;
@@ -97,6 +98,9 @@ class StorefrontPublisher
      */
     private function live(Store $store): array
     {
+        // Running A/B tests: the storefront picks each visitor's variant (oo-experiments.js).
+        $tests = Experiment::with('variants')->where('store_id', $store->id)->where('status', 'running')->get()->keyBy('experience_id');
+
         return Experience::with('publishedVersion')
             ->where('store_id', $store->id)
             // Over the plan's sales limit past the grace period: nothing shows until the plan fits again.
@@ -105,7 +109,7 @@ class StorefrontPublisher
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->get()
             ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
-            ->map(function (Experience $e) use ($store) {
+            ->map(function (Experience $e) use ($store, $tests) {
                 $config = $e->publishedVersion->config;
                 if ($e->type === 'bundles') {
                     $config = BundleSchema::payload(BundleSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
@@ -137,7 +141,7 @@ class StorefrontPublisher
                     'behavior' => $config['behavior'] ?? [],
                     'targeting' => $config['targeting'] ?? [],
                     'analytics' => $config['analytics'] ?? [],
-                ];
+                ] + (isset($tests[$e->id]) ? ['x' => $this->experiment($e, $tests[$e->id])] : []);
             })
             ->sortByDesc('priority')
             ->values()
@@ -198,6 +202,24 @@ class StorefrontPublisher
         }
 
         return $payload;
+    }
+
+    /** A running test in the storefront payload: its audience and each variant's changes. */
+    private function experiment(Experience $experience, Experiment $test): array
+    {
+        return [
+            'id' => $test->handle,
+            'audience' => (object) ($test->audience ?? []),
+            'variants' => $test->variants->map(fn ($v) => array_filter([
+                'key' => $v->key,
+                'alloc' => $v->allocation,
+                'hidden' => $v->hidden ?: null,
+                'template' => $v->key !== 'A' ? $v->template_key : null,
+                'style' => $v->key !== 'A' && $v->template_key ? (Registry::template($experience->type, $v->template_key)['style'] ?? null) : null,
+                'content' => $v->content ?: null,
+                'design' => $v->design ?: null,
+            ], fn ($x) => $x !== null))->values()->all(),
+        ];
     }
 
     private function ensureAccountDefinition(Store $store): void
