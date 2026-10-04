@@ -112,4 +112,13 @@ class PlatformTest extends TestCase
         AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'session', 'name' => 'session_started', 'occurred_at' => now()]);
         $this->get('/app/onboarding?step=8', $this->as($owner))->assertOk()->assertSee('Received')->assertSee('Go to your dashboard');
     }
+
+    public function test_security_headers(): void
+    {
+        $this->get('/admin/login')->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $owner = $this->member($this->store, 'owner');
+        $response = $this->get('/app', $this->as($owner));
+        $this->assertFalse($response->headers->has('X-Frame-Options'), 'The embedded app must load inside Shopify admin.');
+        $this->assertStringContainsString('frame-ancestors', (string) $response->headers->get('Content-Security-Policy'));
+    }
 }
