@@ -19,7 +19,7 @@
     </nav>
 @endif
 @php($freshest = \App\Models\AnalyticsEvent::where('store_id', $store->id)->max('occurred_at'))
-<p class="oo-muted oo-small an-fresh">Data as of {{ $freshest ? \Illuminate\Support\Carbon::parse($freshest)->diffForHumans() : 'no events yet' }} · only shoppers who allow analytics are counted.</p>
+<p class="oo-muted oo-small an-fresh">Data as of {{ $freshest ? \Illuminate\Support\Carbon::parse($freshest)->diffForHumans() : 'no events yet' }} · only shoppers who allow analytics are counted · <a href="{{ route('site.docs', 'analytics') }}" target="_blank">Documentation</a></p>
 @if (request('error'))
     <s-banner tone="critical">{{ request('error') }}</s-banner>
 @endif

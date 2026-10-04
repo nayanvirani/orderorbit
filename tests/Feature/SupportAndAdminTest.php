@@ -109,4 +109,17 @@ class SupportAndAdminTest extends TestCase
         $this->actingAs($admin)->post('/admin/flags/'.FeatureFlag::sole()->id.'/delete')->assertRedirect();
         $this->assertFalse(Features::enabled('email_sending', $this->store));
     }
+
+    public function test_documentation_hub_and_guides_are_public(): void
+    {
+        config(['site.preview_password' => 'secret']);
+        $this->get('/docs')->assertOk()->assertSee('Everything you need to')->assertSee('Lifecycle automation')->assertSee('Developers: theme callbacks');
+        foreach (\App\Http\Controllers\SiteController::DOCS as $slug) {
+            $this->get('/docs/'.$slug)->assertOk();
+        }
+        $this->get('/docs/bundles')->assertSee('How bundles reach checkout')->assertSee('Progressive gifts →');
+        $this->get('/docs/developers')->assertSee('orderorbit:added-to-cart');
+        config(['site.preview_password' => '']);
+        $this->get('/sitemap.xml')->assertSee('/docs/customer-accounts');
+    }
 }

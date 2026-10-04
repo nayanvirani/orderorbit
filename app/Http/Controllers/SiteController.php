@@ -126,11 +126,21 @@ class SiteController extends Controller
     }
 
     /** Documentation guides, linked from the app ("View documentation"). */
-    public const DOCS = ['ab-testing'];
+    public const DOCS = ['getting-started', 'bundles', 'progressive-gifts', 'storefront-widgets', 'checkout-blocks', 'customer-accounts', 'automation', 'analytics', 'personalization', 'ab-testing', 'developers'];
+
+    public function docsIndex(): View
+    {
+        return view('site.docs.index', ['guides' => Content::docs()]);
+    }
 
     public function docs(string $slug): View
     {
-        return view('site.docs.'.$slug);
+        // A guide with its own view (A/B testing), or one rendered from resources/content/docs.php.
+        if (view()->exists('site.docs.'.$slug)) {
+            return view('site.docs.'.$slug);
+        }
+
+        return view('site.docs.guide', ['slug' => $slug, 'guide' => Content::docs()[$slug], 'guides' => Content::docs()]);
     }
 
     public function help(): View
@@ -209,6 +219,7 @@ class SiteController extends Controller
         foreach (array_keys(Content::features()) as $slug) {
             $urls[] = route('site.feature', $slug);
         }
+        $urls[] = route('site.docs.index');
         foreach (self::DOCS as $slug) {
             $urls[] = route('site.docs', $slug);
         }

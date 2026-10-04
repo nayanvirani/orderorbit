@@ -9,6 +9,7 @@
     <x-app.hero eyebrow="Automation" title="Follow up <em>automatically.</em>" lead="Workflows react to orders, customers and OrderOrbit events: wait, check conditions, then tag, create codes, prepare emails, notify your team or call a webhook." icon="bolt" tone="default">
         <s-button variant="primary" href="{{ app_route('app.automation.templates') }}">Start from a template</s-button>
         <form method="POST" action="{{ app_route('app.automation.store') }}"><s-button type="submit">Blank workflow</s-button></form>
+        <s-button href="{{ route('site.docs', 'automation') }}" target="_blank" variant="tertiary">View documentation</s-button>
     </x-app.hero>
 
     @include('app.automation._nav')

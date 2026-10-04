@@ -16,7 +16,7 @@ class SitePreviewGate
     public const COOKIE = 'oo_site_preview';
 
     /** Shopify requires the legal pages to be public; docs are opened from inside the app. */
-    private const ALWAYS_PUBLIC = ['site.privacy', 'site.terms', 'site.dpa', 'site.docs'];
+    private const ALWAYS_PUBLIC = ['site.privacy', 'site.terms', 'site.dpa', 'site.docs', 'site.docs.index'];
 
     public static function token(): ?string
     {

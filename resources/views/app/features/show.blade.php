@@ -28,6 +28,8 @@
             @endforeach
         @endif
         <s-button href="{{ $editor }}" target="_top">{{ $store->editorLabel($surface) }}</s-button>
+        @php($doc = ['bundles' => 'bundles', 'progressive-gifts' => 'progressive-gifts', 'checkout' => 'checkout-blocks', 'thank-you' => 'checkout-blocks', 'post-purchase' => 'checkout-blocks', 'customer-accounts' => 'customer-accounts'][request()->route('feature')] ?? 'storefront-widgets')
+        <s-button href="{{ route('site.docs', $doc) }}" target="_blank" variant="tertiary">View documentation</s-button>
     </x-app.hero>
 
     @if ($checkoutLocked)

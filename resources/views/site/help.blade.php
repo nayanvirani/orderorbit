@@ -10,6 +10,7 @@
             <span class="mn-kicker">Help center</span>
             <h1>How can we <em>help?</em></h1>
             <p class="mn-lead">Short answers to the questions merchants ask most, from installing the app to reading your analytics.</p>
+            <p><a href="{{ route('site.docs.index') }}">Browse the step-by-step guides →</a></p>
             <label class="search"><x-icon name="search"/><input type="search" placeholder="Search help topics…" aria-label="Search help topics" data-help-search></label>
         </div>
     </section>

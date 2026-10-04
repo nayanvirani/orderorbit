@@ -66,6 +66,12 @@ class Content
         return array_map(fn ($post) => $post + ['slug' => Str::slug($post['title'])], self::load('blog'));
     }
 
+    /** Documentation guides (/docs). */
+    public static function docs(): array
+    {
+        return self::load('docs');
+    }
+
     public static function helpCategories(): array
     {
         return array_map(fn ($c) => $c + ['slug' => Str::slug($c['name'])], self::load('help'));

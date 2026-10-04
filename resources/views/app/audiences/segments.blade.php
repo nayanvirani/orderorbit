@@ -11,7 +11,9 @@
 @section('content')
 <s-page heading="Audiences">
     <x-app.hero eyebrow="Audiences & Personalization" icon="users" tone="analytics" title="The right offer for <em>each shopper.</em>"
-        lead="Segments group shoppers by what they've bought, spent and done. Use them to target experiences, run rules that show, swap or hide experiences, and in A/B tests and workflows." />
+        lead="Segments group shoppers by what they've bought, spent and done. Use them to target experiences, run rules that show, swap or hide experiences, and in A/B tests and workflows.">
+        <s-button href="{{ route('site.docs', 'personalization') }}" target="_blank" variant="tertiary">View documentation</s-button>
+    </x-app.hero>
     @include('app.audiences._nav')
 
     @if ($canManage && ! $archived)

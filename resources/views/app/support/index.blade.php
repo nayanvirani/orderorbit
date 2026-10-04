@@ -13,7 +13,7 @@
     <x-app.hero eyebrow="Support" icon="message" tone="analytics" title="We're here to <em>help.</em>"
         lead="Open a ticket and the OrderOrbit Space team replies here, usually within one business day. Your store's setup details are attached automatically, so you don't need to explain them.">
         <s-button href="{{ route('site.help') }}" target="_blank">Help center</s-button>
-        <s-button href="{{ route('site.docs', 'ab-testing') }}" target="_blank" variant="tertiary">A/B testing guide</s-button>
+        <s-button href="{{ route('site.docs.index') }}" target="_blank" variant="tertiary">Documentation</s-button>
     </x-app.hero>
 
     <s-section heading="Your tickets">
