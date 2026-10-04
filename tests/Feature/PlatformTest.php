@@ -97,4 +97,19 @@ class PlatformTest extends TestCase
         $this->get('/app/settings/integrations', $this->as($owner))->assertOk()
             ->assertSee('Web pixel (analytics)')->assertSee('orders/paid')->assertSee('1 not processed')->assertSee('Customer account extension')->assertSee('Klaviyo');
     }
+
+    public function test_onboarding_walks_all_eight_steps(): void
+    {
+        $owner = $this->member($this->store, 'owner');
+        $this->store->forceFill(['goal' => null])->save();
+        $this->post('/app/onboarding', ['goal' => 'conversion'], $this->as($owner))->assertRedirectContains('step=3');
+        $this->get('/app/onboarding', $this->as($owner))->assertOk()->assertSee('3. Choose your first experience')->assertSee('Sticky add to cart')->assertSee('type=sticky-atc', false);
+        $this->get('/app/onboarding?step=5', $this->as($owner))->assertOk()->assertSee('Start by choosing your first experience.');
+
+        $experience = app(\App\Services\Experiences\ExperienceManager::class)->create($this->store, 'trust', 'trust-row', null, 'Trust row');
+        $this->get('/app/onboarding?step=7', $this->as($owner))->assertOk()->assertSee('Trust row')->assertSee('Open the builder');
+        $this->get('/app/onboarding?step=8', $this->as($owner))->assertOk()->assertSee('Waiting');
+        AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'session', 'name' => 'session_started', 'occurred_at' => now()]);
+        $this->get('/app/onboarding?step=8', $this->as($owner))->assertOk()->assertSee('Received')->assertSee('Go to your dashboard');
+    }
 }
