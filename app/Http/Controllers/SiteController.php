@@ -125,6 +125,14 @@ class SiteController extends Controller
         return view('site.blog', ['posts' => Content::posts()]);
     }
 
+    /** Documentation guides, linked from the app ("View documentation"). */
+    public const DOCS = ['ab-testing'];
+
+    public function docs(string $slug): View
+    {
+        return view('site.docs.'.$slug);
+    }
+
     public function help(): View
     {
         return view('site.help', ['helpCategories' => Content::helpCategories()]);
@@ -200,6 +208,9 @@ class SiteController extends Controller
         ];
         foreach (array_keys(Content::features()) as $slug) {
             $urls[] = route('site.feature', $slug);
+        }
+        foreach (self::DOCS as $slug) {
+            $urls[] = route('site.docs', $slug);
         }
         foreach (array_keys(Content::solutions()) as $slug) {
             $urls[] = route('site.solution', $slug);

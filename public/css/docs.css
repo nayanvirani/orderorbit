@@ -1,0 +1,50 @@
+/* Documentation pages (public site). */
+.docs .mn-hero { padding-bottom: 32px; }
+.docs-meta { margin-top: 18px; color: var(--muted); font-size: 14px; }
+.docs-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 56px; align-items: start; padding-bottom: 80px; }
+.docs-toc { position: sticky; top: 96px; }
+.docs-toc ol { margin: 0; padding: 0; list-style: none; counter-reset: toc; display: grid; gap: 2px; }
+.docs-toc li { counter-increment: toc; }
+.docs-toc a { display: flex; gap: 10px; padding: 7px 10px; border-radius: 10px; color: var(--muted); text-decoration: none; font-size: 14px; line-height: 1.3; }
+.docs-toc a::before { content: counter(toc, decimal-leading-zero); font: 500 12px/1.5 var(--mono); color: var(--dim); }
+.docs-toc a:hover { background: var(--surface-2); color: var(--text); }
+.docs-body { min-width: 0; max-width: 780px; }
+.docs-body section { padding: 0 0 56px; margin-bottom: 56px; border-bottom: 1px solid var(--line); scroll-margin-top: 96px; }
+.docs-body section:last-child { border-bottom: 0; }
+.docs-body h2 { font: 400 clamp(30px, 3.4vw, 42px)/1.1 var(--serif); letter-spacing: -.015em; margin: 0 0 18px; }
+.docs-body h3 { font: 600 19px/1.3 var(--sans); margin: 28px 0 10px; }
+.docs-body p, .docs-body li { font-size: 16px; line-height: 1.7; color: #262626; }
+.docs-body a { color: var(--text); }
+.docs-list { padding-left: 20px; display: grid; gap: 8px; }
+.docs-list ol { margin-top: 8px; display: grid; gap: 4px; }
+.docs-check { counter-reset: check; list-style: none; padding: 0; display: grid; gap: 12px; }
+.docs-check li { counter-increment: check; position: relative; padding: 14px 16px 14px 56px; border: 1px solid var(--line); border-radius: 14px; }
+.docs-check li::before { content: counter(check); position: absolute; left: 16px; top: 14px; width: 26px; height: 26px; border-radius: 50%; background: var(--text); color: var(--bg); display: grid; place-items: center; font: 600 13px/1 var(--sans); }
+.docs-flow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.docs-flow span { position: relative; padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 14px; background: var(--surface); }
+.docs-flow span:not(:last-child)::after { content: "→"; margin-left: 10px; color: var(--dim); }
+.docs-step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-top: 1px dashed var(--line); scroll-margin-top: 96px; }
+.docs-step h3 { margin-top: 6px; }
+.docs-num { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); display: grid; place-items: center; font: 400 22px/1 var(--serif); }
+.docs-table { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 14px; }
+.docs-table table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
+.docs-table th, .docs-table td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); line-height: 1.5; }
+.docs-table th { background: var(--surface-2); font-weight: 600; font-size: 13px; }
+.docs-table tr:last-child td { border-bottom: 0; }
+.docs-table td.yes { color: #0c7a43; font-weight: 600; }
+.docs-table td.no { color: var(--dim); }
+.docs-states { display: grid; gap: 10px; margin: 16px 0 8px; }
+.docs-states div { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; border-left: 4px solid; background: var(--surface-2); }
+.docs-states span { color: #404040; font-size: 15px; line-height: 1.6; }
+.docs-states .s-collecting { border-color: #0b5cad; }
+.docs-states .s-winner { border-color: #0c7a43; }
+.docs-states .s-control, .docs-states .s-none { border-color: #8f8f8f; }
+.docs-states .s-guard { border-color: #b26b00; }
+.docs-body pre.code { overflow-x: auto; padding: 16px; border-radius: 14px; background: #0a0a0a; color: #f5f5f4; font: 13px/1.7 var(--mono); }
+.docs-note { padding: 14px 16px; border-radius: 14px; background: var(--surface-2); font-size: 15px !important; }
+.docs-cta { text-align: left; }
+.docs-cta .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+@media (max-width: 900px) {
+    .docs-layout { grid-template-columns: 1fr; gap: 24px; }
+    .docs-toc { position: static; padding: 16px; border: 1px solid var(--line); border-radius: 16px; }
+}

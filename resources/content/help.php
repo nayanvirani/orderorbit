@@ -99,7 +99,7 @@ return [
     [
         'name' => 'A/B testing',
         'icon' => 'split',
-        'text' => 'Split tests on live experiences, metrics and how winners are decided.',
+        'text' => 'Split tests on live experiences, metrics and how winners are decided. Full guide: orderorbit.space/docs/ab-testing.',
         'articles' => [
             ['How do I run a test?', 'Open A/B tests, choose a published experience and create a test. Change variant B (template, text or design, or hide it as a holdout), set the traffic split, audience, metrics and guardrails, preview, then launch.'],
             ['How are visitors split?', 'Each visitor is put in a variant by a stable hash of the test and a visitor id kept in their browser, so they see the same version every visit. Visitors outside the audience see the experience as published and aren\'t counted.'],

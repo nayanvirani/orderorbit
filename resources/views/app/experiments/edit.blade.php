@@ -30,6 +30,7 @@
 
     <nav class="xp-steps" aria-label="Setup steps">
         @foreach ($steps as $id => $label)<a href="#step-{{ $id }}">{{ $loop->iteration }}. {{ $label }}</a>@endforeach
+        <a href="{{ route('site.docs', 'ab-testing') }}#setup" target="_blank" class="xp-doc">View documentation ↗</a>
     </nav>
 
     <form method="POST" action="{{ app_route('app.experiments.update', ['experiment' => $experiment->id]) }}" class="xp-form" data-xp-form>

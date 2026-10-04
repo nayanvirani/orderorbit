@@ -62,6 +62,7 @@
                     </form>
                 @endif
                 <s-button href="{{ app_route('app.experiments.export', ['experiment' => $experiment->id]) }}" target="_blank">Export CSV</s-button>
+                <s-button href="{{ route('site.docs', 'ab-testing') }}#results" target="_blank" variant="tertiary">How to read results</s-button>
                 <form method="POST" action="{{ app_route('app.experiments.duplicate', ['experiment' => $experiment->id]) }}"><s-button type="submit" variant="tertiary">Duplicate as new test</s-button></form>
             </div>
         @endif

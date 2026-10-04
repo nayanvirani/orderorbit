@@ -23,6 +23,9 @@
                     <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
                 @endif
                 <a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a>
+                @if (in_array($feature['slug'], \App\Http\Controllers\SiteController::DOCS, true))
+                    <a class="btn lg" href="{{ route('site.docs', $feature['slug']) }}">Read the guide</a>
+                @endif
             </div>
         </div>
     </section>

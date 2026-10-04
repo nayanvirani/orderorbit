@@ -271,4 +271,15 @@ class ExperimentsTest extends TestCase
         $this->assertLessThan(0.001, $r['comparisons']['B']['click_rate']['p']);
         $this->assertStringContainsString('clicks per variant', $r['decision']['headline']);
     }
+
+    public function test_the_guide_is_public_and_linked_from_the_app(): void
+    {
+        config(['site.preview_password' => 'secret']);
+        $this->get('/docs/ab-testing')->assertOk()->assertSee('Run A/B tests')->assertSee('Set up a test, step by step')->assertSee('The statistical method')->assertSee('21,200');
+        $this->get('/pricing')->assertSee('Coming soon', false); // the rest of the site stays behind the preview gate
+        $this->get('/docs/unknown')->assertNotFound();
+
+        $owner = $this->member($this->store, 'owner');
+        $this->get('/app/experiments', $this->as($owner))->assertOk()->assertSee('View documentation')->assertSee('/docs/ab-testing', false);
+    }
 }

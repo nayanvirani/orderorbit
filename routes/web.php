@@ -46,6 +46,7 @@ Route::controller(SiteController::class)->name('site.')->middleware(\App\Http\Mi
     Route::get('/resources', 'resources')->name('resources');
     Route::get('/blog', 'blog')->name('blog');
     Route::get('/help', 'help')->name('help');
+    Route::get('/docs/{slug}', 'docs')->whereIn('slug', \App\Http\Controllers\SiteController::DOCS)->name('docs');
     Route::get('/contact', 'contact')->name('contact');
     Route::post('/contact', 'submitContact')->middleware('throttle:5,1')->name('contact.submit');
     Route::get('/about', 'about')->name('about');

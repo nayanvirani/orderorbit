@@ -2,6 +2,7 @@
 .xp-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .xp-steps a { padding: 4px 10px; border-radius: 999px; background: #f1f1f1; color: #303030; text-decoration: none; font-size: 12px; font-weight: 550; }
 .xp-steps a:hover { background: #e3e3e3; }
+.xp-steps a.xp-doc { background: #303030; color: #fff; }
 .xp-form { display: grid; gap: 0; }
 .xp-variants { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
 .xp-variant { margin: 0; padding: 12px 14px; border: 1px solid #e3e3e3; border-radius: 10px; min-width: 0; }
