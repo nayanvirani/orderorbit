@@ -40,6 +40,12 @@ class PixelController extends Controller
         $base = ['store_id' => $store->id, 'occurred_at' => now()];
         $data['e'] = str_replace('orderorbit:', '', (string) ($data['e'] ?? ''));
 
+        // OrderOrbit events can start workflows ("OrderOrbit event" trigger).
+        if (($data['k'] ?? null) === 'e' && in_array($data['e'], ['survey_answered', 'reward_unlocked', 'upsell_accepted', 'added_to_cart'], true)) {
+            $label = isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) : null;
+            defer(fn () => app(\App\Automation\Triggers::class)->event($store, $data['e'], $label, $handle($data['x'] ?? null)));
+        }
+
         match ($data['k'] ?? null) {
             's' => AnalyticsEvent::create($base + ['event' => 'session']),
             'e' => isset(self::EVENTS[$data['e'] ?? '']) && $handle($data['x'] ?? null)

@@ -36,10 +36,13 @@ class WebhookController extends Controller
             // Sales pop: products from real orders (no customer details are kept).
             'orders/create' => $store && $store->isInstalled() && $this->orderChanged($store, $payload, $orders, true),
             'orders/updated', 'orders/cancelled' => $store && $store->isInstalled() && $this->orderChanged($store, $payload, $orders, false),
+            // Workflow triggers only.
+            'orders/paid', 'orders/fulfilled', 'refunds/create', 'customers/create', 'customers/update' => $store && $store->isInstalled() && $this->automation($store, $topic, $payload),
             'shop/redact' => $this->redactShop($store),
-            'customers/redact', 'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
+            'customers/redact' => $this->redactCustomer($store, $payload),
+            'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
                 'customer_id' => $payload['customer']['id'] ?? null,
-                'note' => 'No customer PII stored yet.',
+                'note' => 'Automation may hold the customer id, tags and prepared emails for this customer.',
             ]),
             default => null,
         };
@@ -63,6 +66,22 @@ class WebhookController extends Controller
 
         // Recount and apply the limit after responding; stopping or resuming a store calls Shopify.
         defer(fn () => $meter->recount($store));
+        $this->automation($store, $created ? 'orders/create' : (string) request()->header('X-Shopify-Topic'), $payload);
+    }
+
+    /** Starts matching workflows after the response is sent. */
+    private function automation(Store $store, string $topic, array $payload): void
+    {
+        defer(fn () => app(\App\Automation\Triggers::class)->webhook($store, $topic, $payload));
+    }
+
+    private function redactCustomer(?Store $store, array $payload): void
+    {
+        $id = (string) ($payload['customer']['id'] ?? '');
+        if ($store && $id !== '') {
+            app(\App\Automation\Triggers::class)->forget($store, $id);
+        }
+        AuditLog::record('compliance.customers/redact', $store, ['customer_id' => $id ?: null]);
     }
 
     private function scopesUpdated(?Store $store, array $payload, RecentOrders $orders): void

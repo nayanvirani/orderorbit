@@ -35,7 +35,7 @@ return [
     // Header "Sign In": merchants authenticate through Shopify, not a separate password.
     'sign_in_url' => env('SHOPIFY_SIGN_IN_URL', 'https://admin.shopify.com'),
 
-    'scopes' => env('SHOPIFY_SCOPES', 'read_products,read_themes,write_discounts,write_cart_transforms,write_pixels,read_customer_events,read_orders'),
+    'scopes' => env('SHOPIFY_SCOPES', 'read_products,read_themes,write_discounts,write_cart_transforms,write_pixels,read_customer_events,write_orders,write_customers'),
 
     /*
     |--------------------------------------------------------------------------
@@ -117,7 +117,7 @@ return [
                 'price' => 59.99,
                 'sales_limit' => null,
                 'includes' => ['offer_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
-                'features' => ['Unlimited store sales', 'Everything in Growth', 'Automation and personalization when released', 'Priority support', 'Early access to new features'],
+                'features' => ['Unlimited store sales', 'Everything in Growth', 'Lifecycle automation workflows', 'Personalization when released', 'Priority support'],
                 'limits' => $limits([], 50000),
             ],
         ],

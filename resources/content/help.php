@@ -81,12 +81,25 @@ return [
         ],
     ],
     [
+        'name' => 'Automation',
+        'icon' => 'flow',
+        'text' => 'Workflows that follow up after orders, deliveries, refunds and new customers.',
+        'articles' => [
+            ['How do I create a workflow?', 'In the app go to Automation → Templates and pick one, or start blank. Choose the trigger, add conditions, waits and actions on the canvas, then click Test with a sample order. When the run looks right, click Publish.'],
+            ['Does a test change my store?', 'No. A test walks through a sample order, skips waits and shows what each step would do. No tags, codes, tasks, emails or webhooks are created.'],
+            ['Are emails sent?', 'Not yet. Email steps prepare each message with the order\'s details and keep it under Automation → Emails. Sending through an email provider is being connected now; tags, discount codes, tasks and webhooks work today.'],
+            ['What happens when a step fails?', 'It is retried after 5 minutes and again after 30. Steps that already finished are never repeated. If it still fails, the run is marked failed and the log shows why.'],
+            ['Can the same order start a workflow twice?', 'No. Each Shopify event starts each workflow once, even if Shopify sends the event again.'],
+            ['Which plan includes automation?', 'Scale. On other plans you can build and test workflows and publish them after upgrading.'],
+        ],
+    ],
+    [
         'name' => 'Billing and plans',
         'icon' => 'card',
         'text' => 'Plans, limits, upgrades and cancelling.',
         'articles' => [
             ['How am I billed?', 'Through your Shopify invoice. There is no separate card to add.'],
-            ['How do the plans work?', 'Free covers stores selling up to $1,000 per 30-day cycle, with the core widgets and one live bundle, gift campaign, cart upsell and pre-order. Starter ($14.99, up to $8,000) makes everything unlimited and adds revenue per offer. Growth ($29.99, up to $20,000) and Scale ($59.99, unlimited) add checkout, testing and automation as they are released.'],
+            ['How do the plans work?', 'Free covers stores selling up to $1,000 per 30-day cycle, with the core widgets and one live bundle, gift campaign, cart upsell and pre-order. Starter ($14.99, up to $8,000) makes everything unlimited and adds revenue per offer. Growth ($29.99, up to $20,000) and Scale ($59.99, unlimited) add checkout blocks; Scale also includes lifecycle automation, and testing and personalization arrive as they are released.'],
             ['What if my store passes its plan\'s limit?', 'The app tells you straight away, whenever in the cycle it happens, and you have 3 days to upgrade. After that every feature stops until you upgrade; nothing is deleted, and it all comes back the moment you do.'],
             ['Can I change plans?', 'Yes, at any time from Plans in the app. Upgrades take effect straight away.'],
             ['What happens if I uninstall?', 'Billing stops, offers are removed from your store and checkout pricing stops. Your store data is deleted as Shopify requires.'],

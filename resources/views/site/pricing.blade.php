@@ -9,7 +9,7 @@
         <div class="wrap">
             <span class="mn-kicker">Pricing</span>
             <h1>Start free. <em>Upgrade as your store grows.</em></h1>
-            <p class="mn-lead">Every plan includes the core widgets and every template. Paid plans lift the limits, and higher plans add checkout, testing and automation as they're released.</p>
+            <p class="mn-lead">Every plan includes the core widgets and every template. Paid plans lift the limits, and higher plans add checkout blocks and lifecycle automation.</p>
         </div>
     </section>
 

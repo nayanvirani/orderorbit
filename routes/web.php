@@ -120,6 +120,25 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
             Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
         });
 
+        // Automation (Phase 7)
+        Route::prefix('automation')->name('automation.')->controller(\App\Http\Controllers\App\AutomationController::class)->group(function () {
+            Route::get('/', 'index')->middleware('store.can:view_dashboard')->name('index');
+            Route::get('/templates', 'templates')->middleware('store.can:view_dashboard')->name('templates');
+            Route::get('/runs', 'runs')->middleware('store.can:view_dashboard')->name('runs');
+            Route::get('/runs/{run}', 'run')->whereNumber('run')->middleware('store.can:view_dashboard')->name('runs.show');
+            Route::get('/inbox', 'inbox')->middleware('store.can:view_dashboard')->name('inbox');
+            Route::get('/emails', 'emails')->middleware('store.can:view_dashboard')->name('emails');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::post('/workflows', 'store')->name('store');
+                Route::get('/workflows/{workflow}', 'edit')->whereNumber('workflow')->name('edit');
+                Route::post('/workflows/{workflow}', 'update')->whereNumber('workflow')->name('update');
+                Route::post('/workflows/{workflow}/toggle', 'toggle')->whereNumber('workflow')->name('toggle');
+                Route::post('/workflows/{workflow}/delete', 'destroy')->whereNumber('workflow')->name('destroy');
+                Route::post('/workflows/{workflow}/versions/{version}/restore', 'restore')->whereNumber(['workflow', 'version'])->name('restore');
+                Route::post('/inbox/{item}/done', 'done')->whereNumber('item')->name('inbox.done');
+            });
+        });
+
         Route::get('/analytics', [\App\Http\Controllers\App\AnalyticsController::class, 'index'])->middleware('store.can:view_dashboard')->name('analytics');
         Route::post('/analytics/connect', [\App\Http\Controllers\App\AnalyticsController::class, 'connect'])->middleware('store.can:manage_settings')->name('analytics.connect');
 

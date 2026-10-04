@@ -41,7 +41,7 @@
         <div class="mn-narrow">
             <h2>What's coming next</h2>
             <div class="mn-prose">
-                <p>We're building checkout and Thank You blocks, A/B testing, personalization, lifecycle automation and customer account blocks. They'll appear in the app as they're ready, and the features pages mark them as coming soon until then.</p>
+                <p>Checkout and Thank You blocks and lifecycle automation are live. We're building A/B testing, personalization and customer account blocks next. They'll appear in the app as they're ready, and the features pages mark them as coming soon until then.</p>
             </div>
         </div>
     </section>

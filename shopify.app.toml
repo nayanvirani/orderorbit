@@ -20,13 +20,18 @@ api_version = "2026-07"
   topics = [ "orders/create", "orders/updated", "orders/cancelled" ]
   uri = "https://orderorbit.space/webhooks/shopify"
 
+  # Automation triggers: paid, fulfilled, refunded orders and new or re-tagged customers.
+  [[webhooks.subscriptions]]
+  topics = [ "orders/paid", "orders/fulfilled", "refunds/create", "customers/create", "customers/update" ]
+  uri = "https://orderorbit.space/webhooks/shopify"
+
   [[webhooks.subscriptions]]
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
   uri = "https://orderorbit.space/webhooks/shopify"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_products,read_themes,write_discounts,write_cart_transforms,write_pixels,read_customer_events,read_orders"
+scopes = "read_products,read_themes,write_discounts,write_cart_transforms,write_pixels,read_customer_events,write_orders,write_customers"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
