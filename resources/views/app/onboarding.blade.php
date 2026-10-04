@@ -28,7 +28,7 @@
                     @endif
                 </dd>
             </dl>
-            <s-stack direction="inline" gap="small-200" style="margin-top:16px">
+            <s-stack direction="inline" gap="small-200" paddingBlockStart="base">
                 <s-button variant="primary" href="{{ app_route('app.onboarding', ['step' => 2]) }}">Next</s-button>
             </s-stack>
         </s-section>

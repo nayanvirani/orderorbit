@@ -72,7 +72,7 @@
                     </table>
                 </div>
             </form>
-            <s-stack direction="inline" gap="small-200" style="margin-top:12px">
+            <s-stack direction="inline" gap="small-200" paddingBlockStart="base">
                 @php($pageRoute = 'app.cro.experiences.index')
                 @php($pageParams = array_filter(['type' => $type ?? $filters['type'], 'q' => $filters['q'], 'status' => $filters['status']]))
                 @if ($experiences->currentPage() > 1)<s-button href="{{ app_route($pageRoute, $pageParams + ['page' => $experiences->currentPage() - 1]) }}">Previous</s-button>@endif

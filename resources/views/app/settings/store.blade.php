@@ -38,7 +38,7 @@
             <dd class="oo-inline">@forelse ($grantedScopes as $scope)<span class="oo-code">{{ $scope }}</span>@empty — @endforelse</dd>
         </dl>
         @if ($canManage)
-            <s-stack direction="inline" gap="small-200" style="margin-top:16px">
+            <s-stack direction="inline" gap="small-200" paddingBlockStart="base">
                 <form method="POST" action="{{ app_route('app.settings.store.reconnect') }}"><s-button type="submit">Reconnect</s-button></form>
             </s-stack>
         @endif
@@ -51,7 +51,7 @@
             <dd>@php([$tone, $text] = $yesNo($cap('online_store_2'), 'Supported (Online Store 2.0)', 'Not supported — switch to an Online Store 2.0 theme'))<s-badge tone="{{ $tone }}">{{ $text }}</s-badge></dd>
             <dt>OrderOrbit Space app embed</dt><dd><s-badge>Available with the first OrderOrbit Space block</s-badge></dd>
         </dl>
-        <s-stack direction="inline" gap="small-200" style="margin-top:16px">
+        <s-stack direction="inline" gap="small-200" paddingBlockStart="base">
             <s-button href="{{ $store->adminUrl('themes/current/editor') }}" target="_top">Open Theme Editor</s-button>
         </s-stack>
     </s-section>
@@ -74,7 +74,7 @@
                 </tbody>
             </table>
         </div>
-        <s-stack direction="inline" gap="small-200" alignItems="center" style="margin-top:16px">
+        <s-stack direction="inline" gap="small-200" alignItems="center" paddingBlockStart="base">
             @if ($canManage)
                 <form method="POST" action="{{ app_route('app.settings.store.recheck') }}"><s-button type="submit">Re-check capabilities</s-button></form>
             @endif

@@ -31,7 +31,7 @@
                 </label>
             </div>
             @if ($canManage)
-                <s-stack direction="inline" gap="small-200" style="margin-top:16px">
+                <s-stack direction="inline" gap="small-200" paddingBlockStart="base">
                     <s-button type="submit" variant="primary">Save</s-button>
                     <button type="submit" name="action" value="reset" hidden data-reset></button>
                     <s-button data-reset-click>Reset to defaults</s-button>

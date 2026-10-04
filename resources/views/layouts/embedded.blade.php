@@ -20,9 +20,39 @@
         /* Links look like Polaris links everywhere (tables, notes, help text). */
         a { color: #005bd3; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        /* Selects never clip their text, whatever height a page gives them. */
-        select:not([multiple]) { height: 36px !important; min-height: 36px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 34px !important; }
-        input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="date"], input[type="datetime-local"], input[type="password"] { min-height: 34px; }
+        /* Form controls: one look on every page, matching Polaris fields (32px) and buttons.
+           Storefront previews (.oo-exp, .ck) keep the store's own look. */
+        :is(input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"], [type="hidden"], [type="file"]), select, textarea):not(.oo-exp *, .ck *, .oo-preview *) {
+            box-sizing: border-box !important; height: 32px !important; min-height: 32px !important; margin: 0;
+            padding: 0 12px !important; border: 1px solid #8a8a8a !important; border-radius: 8px !important;
+            background-color: #fff !important; color: #303030 !important; box-shadow: none !important;
+            font-family: inherit !important; font-size: 13px !important; font-weight: 450 !important; line-height: 30px !important;
+        }
+        select:not(.oo-exp *, .ck *, .oo-preview *):not([multiple]) {
+            -webkit-appearance: none !important; appearance: none !important; padding-right: 32px !important; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='%234a4a4a' d='M10 13.5 4.5 8l1.06-1.06L10 11.38l4.44-4.44L15.5 8z'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important; background-position: right 10px center !important; text-overflow: ellipsis;
+            min-width: 112px;
+        }
+        textarea:not(.oo-exp *, .ck *, .oo-preview *) { height: auto !important; min-height: 80px !important; padding: 8px 12px !important; line-height: 1.5 !important; resize: vertical; }
+        :is(input, select, textarea):not(.oo-exp *, .ck *, .oo-preview *)::placeholder { color: #8a8a8a; opacity: 1; }
+        :is(input, select, textarea):not([type="checkbox"], [type="radio"], .oo-exp *, .ck *, .oo-preview *):focus { outline: 2px solid #005bd3 !important; outline-offset: 1px; border-color: #005bd3 !important; }
+        :is(input, select, textarea):disabled:not(.oo-exp *, .ck *, .oo-preview *) { background-color: #f7f7f7 !important; color: #a1a1a1 !important; border-color: #d4d4d4 !important; cursor: not-allowed; }
+        input[type="color"]:not(.oo-exp *, .ck *) { width: 32px; height: 32px; padding: 2px; border: 1px solid #8a8a8a; border-radius: 8px; background: #fff; cursor: pointer; }
+        input[type="checkbox"], input[type="radio"] { accent-color: #303030; width: 16px; height: 16px; margin: 0; vertical-align: -3px; }
+        input[type="file"]:not(.oo-exp *) { height: auto; padding: 6px; border: 1px dashed #b5b5b5; border-radius: 8px; background: #fafafa; font-size: 13px; }
+        /* App buttons (non-Polaris) look and size like Polaris buttons. */
+        .b-btn, input[type="file"]::file-selector-button {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;
+            min-height: 28px !important; padding: 6px 12px !important; border: 0 !important; border-radius: 8px !important;
+            background: #fff !important; color: #303030 !important; box-shadow: inset 0 0 0 1px #d4d4d4, inset 0 -1px 0 #b5b5b5 !important;
+            font-family: inherit; font-size: 12px !important; font-weight: 550 !important; line-height: 16px !important; cursor: pointer; text-decoration: none !important; white-space: nowrap;
+        }
+        .b-btn:hover, input[type="file"]::file-selector-button:hover { background: #f7f7f7 !important; }
+        .b-btn.b-primary { background: #303030 !important; color: #fff !important; box-shadow: inset 0 -1px 0 #000, 0 1px 0 rgba(0, 0, 0, .1) !important; }
+        .b-btn.b-primary:hover { background: #1a1a1a !important; }
+        .b-btn:disabled { opacity: .5; cursor: not-allowed; }
+        input[type="file"]::file-selector-button { margin-right: 10px; }
         /* Cards inside forms keep the page's spacing. */
         form > s-section, form > s-banner, form > s-box { display: block; margin-bottom: 16px; }
         /* Shared tabs (date ranges, filters). */

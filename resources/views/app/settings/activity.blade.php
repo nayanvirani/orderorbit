@@ -45,7 +45,7 @@
                     </tbody>
                 </table>
             </div>
-            <s-stack direction="inline" gap="small-200" style="margin-top:12px">
+            <s-stack direction="inline" gap="small-200" paddingBlockStart="base">
                 @if ($logs->currentPage() > 1)<s-button href="{{ app_route('app.settings.activity', ['page' => $logs->currentPage() - 1]) }}">Newer</s-button>@endif
                 @if ($logs->hasMorePages())<s-button href="{{ app_route('app.settings.activity', ['page' => $logs->currentPage() + 1]) }}">Older</s-button>@endif
             </s-stack>
