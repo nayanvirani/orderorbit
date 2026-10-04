@@ -76,6 +76,7 @@
         <s-banner tone="warning" heading="Published but not placed">
             <s-paragraph>{{ match (true) {
                 $global => 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.',
+                $type['surface'] === 'post-purchase' => 'Shoppers can\'t see this yet. In Shopify, open Settings → Checkout and choose OrderOrbit Space under Post-purchase page.',
                 in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) => 'Shoppers can\'t see this yet. In Shopify\'s checkout editor, add the OrderOrbit Space block and set its type to “'.$experience->type.'”.',
                 default => 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.',
             } }}</s-paragraph>
@@ -108,6 +109,7 @@
                     @switch($experience->placement_status)
                         @case('placed')<s-badge tone="success">Placed in theme</s-badge>@break
                         @case('not_placed')<s-badge tone="critical">Not placed</s-badge>@break
+                        @case('external')<s-badge>Placed in Shopify checkout settings</s-badge>@break
                         @default<s-badge>Not checked</s-badge>
                     @endswitch
                     <span class="oo-muted oo-small">{{ $experience->placement_checked_at ? 'Checked '.$experience->placement_checked_at->diffForHumans() : '' }}</span>

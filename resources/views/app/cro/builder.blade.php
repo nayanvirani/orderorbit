@@ -101,7 +101,9 @@
                     @elseif ($type['discount'] ?? false)
                         <p class="b-muted">Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this {{ lower_label($type['singular']) }}; pausing or archiving it removes the discount. You'll see it under <strong>Discounts</strong> in Shopify admin.</p>
                     @endif
-                    @if (in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true))
+                    @if ($type['surface'] === 'post-purchase')
+                        <p class="b-muted">After publishing, open Shopify's <strong>Settings → Checkout</strong> and choose <strong>OrderOrbit Space</strong> under Post-purchase page. Shopify shows this page after payments that support it (cards, Shop Pay and others); the offer is added to the same order and charged to the same payment.</p>
+                    @elseif (in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true))
                         <p class="b-muted">After publishing, open Shopify's checkout editor{{ $type['surface'] === 'thank-you' ? ' on the Thank You or Order Status page' : '' }}, add the <strong>OrderOrbit Space</strong> block and set its type to <code class="b-code-inline">{{ $experience->type }}</code>. To show this exact one, put <code class="b-code-inline">{{ $experience->handle }}</code> in its Experience ID setting.</p>
                     @elseif ($type['surface'] === 'global')
                         <p class="b-muted">No theme block needed: it shows on every page while the <strong>OrderOrbit Space app embed</strong> is on (Theme Editor → App embeds). Pops use your store's real recent orders — product, country and time only, never names — so it starts showing once orders come in.</p>

@@ -127,6 +127,20 @@ return [
         ],
     ],
 
+    'post-purchase' => [
+        'icon' => 'bolt',
+        'tone' => 'postpurchase',
+        'label' => 'Post-purchase funnel',
+        'types' => ['post-purchase'],
+        'tagline' => 'One more yes, <em>after they pay.</em>',
+        'lead' => 'A one-click offer between payment and the Thank You page. Shoppers add it to the order they just paid for without entering their card again; if they decline, you can show a second offer.',
+        'steps' => [
+            'Choose when it shows, the offer and its discount, and an optional second offer.',
+            'In Shopify, open Settings → Checkout and choose OrderOrbit Space under Post-purchase page.',
+            'After paying, shoppers see the offer; accepting adds it to their order and charges the same payment.',
+        ],
+    ],
+
     'sales-pop' => [
         'icon' => 'users',
         'tone' => 'salespop',

@@ -71,6 +71,13 @@ class PlacementDetector
 
         Experience::where('store_id', $store->id)->where('status', '!=', 'archived')->get()
             ->each(function (Experience $e) use ($found) {
+                // Checkout, post-purchase and Thank You blocks are placed in Shopify's checkout settings,
+                // which a theme scan can't see.
+                if (Registry::has($e->type) && in_array(Registry::type($e->type)['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true)) {
+                    $e->forceFill(['placement_status' => 'external', 'placement_checked_at' => now()])->save();
+
+                    return;
+                }
                 // Global types (Sales pop) need no block: the app embed shows them on every page.
                 $placed = Registry::has($e->type) && Registry::type($e->type)['surface'] === 'global'
                     ? $found['embed']

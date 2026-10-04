@@ -292,7 +292,9 @@
       const section = field.dataset.field.split('.')[0];
       field.hidden = !Object.entries(rules).every(([key, want]) => {
         const input = form.querySelector(`[name="config[${section}][${key}]"]:not([type="hidden"])`) || form.querySelector(`[name="config[${section}][${key}]"]`);
-        return input && String(input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value) === String(want);
+        const value = String(input && (input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value));
+        // A list means "any of these values".
+        return input && (Array.isArray(want) ? want.map(String).includes(value) : value === String(want));
       });
     });
   }

@@ -7,7 +7,7 @@
 import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { choose, fill, numericId, pageFor, progress } from './select.js';
+import { choose, deadlineLeft, fill, numericId, pageFor, progress } from './select.js';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -119,12 +119,33 @@ function Reviews({ exp, c }) {
 
 function Countdown({ exp, c }) {
   const [now, setNow] = useState(Date.now());
+  const [started, setStarted] = useState(null);
+  const timed = c.mode === 'hours' || c.mode === 'minutes';
+
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
-  const left = c.ends_at ? Date.parse(c.ends_at) - now : 0;
+
+  // Hour and minute timers start when this shopper first reaches checkout; the start is kept in
+  // the extension's storage, so reloading the page doesn't restart the timer.
+  useEffect(() => {
+    if (!timed) return;
+    const key = 'oo_cd_' + exp.id + '_' + exp.version;
+    Promise.resolve(shopify.storage?.read(key))
+      .then((saved) => {
+        if (saved) return setStarted(Number(saved));
+        const first = Date.now();
+        setStarted(first);
+        return shopify.storage?.write(key, String(first));
+      })
+      .catch(() => setStarted(Date.now()));
+  }, [exp.id]);
+
+  const left = deadlineLeft(c, now, started);
+  if (left === null) return null; // waiting for the saved start
   if (left <= 0) return c.ended === 'message' ? <Frame exp={exp}><s-text>{c.ended_message}</s-text></Frame> : null;
+
   const pad = (n) => (n < 10 ? '0' : '') + n;
   const days = Math.floor(left / 864e5);
   const time = (days ? days + 'd ' : '') + pad(Math.floor((left % 864e5) / 36e5)) + ':' + pad(Math.floor((left % 36e5) / 6e4)) + ':' + pad(Math.floor((left % 6e4) / 1e3));

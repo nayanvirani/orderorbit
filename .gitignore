@@ -34,3 +34,4 @@ Thumbs.db
 
 # Built by the Shopify CLI on deploy
 extensions/orderorbit-checkout/dist/
+extensions/orderorbit-post-purchase/dist/

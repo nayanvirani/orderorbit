@@ -19,7 +19,7 @@ class ExperienceSchemaTest extends TestCase
 
             // Only product picks, deadlines, ship dates and merchant-only content (real reviews, codes, a promotion headline) need merchant input.
             foreach (array_keys($errors) as $key) {
-                $this->assertContains($key, ['content.products', 'content.gift_products', 'content.buy_products', 'content.ends_at', 'content.ship_date', 'content.reviews', 'content.code', 'content.headline'], "{$type}: unexpected default error {$key}");
+                $this->assertContains($key, ['content.products', 'content.gift_products', 'content.buy_products', 'content.ends_at', 'content.ship_date', 'content.reviews', 'content.code', 'content.headline', 'content.offer_product'], "{$type}: unexpected default error {$key}");
             }
         }
     }

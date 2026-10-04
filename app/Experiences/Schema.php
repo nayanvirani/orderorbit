@@ -20,7 +20,7 @@ class Schema
     public const CART_TYPES = ['bundles', 'quantity-breaks', 'bogo', 'product-upsells', 'cart-upsells', 'free-gifts', 'sticky-atc'];
 
     /** Surfaces rendered by the checkout UI extension instead of the theme. */
-    public const CHECKOUT_SURFACES = ['checkout', 'thank-you'];
+    public const CHECKOUT_SURFACES = ['checkout', 'thank-you', 'post-purchase'];
 
     public const PAGE_TYPES = ['index' => 'Home', 'product' => 'Product pages', 'collection' => 'Collection pages', 'cart' => 'Cart page', 'search' => 'Search', 'page' => 'Other pages'];
 
@@ -339,7 +339,13 @@ class Schema
         if ($type === 'quantity-breaks' && ($c['default_tier'] ?? 1) > count($c['tiers'] ?? [])) {
             $errors['content.default_tier'] = 'Selected tier must be one of your tiers.';
         }
-        if ($type === 'checkout-countdown' && empty($c['ends_at'])) {
+        if ($type === 'post-purchase' && ! empty($c['downsell']) && empty($c['downsell_product'])) {
+            $errors['content.downsell_product'] = 'Choose the second offer, or turn the second offer off.';
+        }
+        if ($type === 'post-purchase' && ($c['trigger'] ?? 'any') === 'products' && empty($c['trigger_products'])) {
+            $errors['content.trigger_products'] = 'Choose at least one product.';
+        }
+        if ($type === 'checkout-countdown' && ($c['mode'] ?? 'date') === 'date' && empty($c['ends_at'])) {
             $errors['content.ends_at'] = 'Set when the campaign ends.';
         }
         if ($type === 'preorder' && ($c['ship_mode'] ?? 'date') === 'date') {

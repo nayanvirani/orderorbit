@@ -143,6 +143,7 @@ return [
         ],
         'benefits' => [
             ['13 block types', 'Six for checkout and seven for Thank You and Order Status, each with ready-made layouts.'],
+            ['Post-purchase funnel', 'A one-click offer right after payment, added to the same order without re-entering card details, with a second offer if declined.'],
             ['Only what your store supports', 'In-checkout blocks appear only on Shopify Plus and development stores; everything else works on every plan.'],
             ['One source of truth', 'Shipping progress and free gifts read your live Progressive gifts campaign, and gifts can be claimed right in checkout.'],
             ['Survey answers in the app', 'Ask one question after checkout and see the answers on the survey\'s page.'],

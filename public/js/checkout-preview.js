@@ -54,10 +54,13 @@
     },
     'checkout-countdown': function (exp) {
       var c = exp.content;
-      var left = c.ends_at ? Math.max(0, Date.parse(c.ends_at) - Date.now()) : 2 * 3600e3 + 14 * 60e3;
+      var timed = c.mode === 'hours' || c.mode === 'minutes';
+      var length = timed ? (c.mode === 'hours' ? (Number(c.hours) || 1) * 3600e3 : (Number(c.minutes) || 1) * 60e3) : 0;
+      var left = timed ? length : c.ends_at ? Math.max(0, Date.parse(c.ends_at) - Date.now()) : 2 * 3600e3 + 14 * 60e3;
       var hh = Math.floor(left / 3600e3), mm = Math.floor(left % 3600e3 / 60e3), ss = Math.floor(left % 60e3 / 1e3);
       var pad = function (n) { return (n < 10 ? '0' : '') + n; };
-      return wrap(exp, '<div class="ck-row ck-between"><p class="ck-text"><b>' + h.esc(c.headline) + '</b></p><p class="ck-timer">' + pad(hh) + ':' + pad(mm) + ':' + pad(ss) + '</p></div>');
+      var note = timed ? '<p class="ck-note">Starts when each shopper reaches checkout' + (c.repeat === 'end' ? ', then stops.' : ' and starts again every ' + (c.mode === 'hours' ? (Number(c.hours) || 1) + ' h.' : (Number(c.minutes) || 1) + ' min.')) + '</p>' : '';
+      return wrap(exp, '<div class="ck-row ck-between"><p class="ck-text"><b>' + h.esc(c.headline) + '</b></p><p class="ck-timer">' + pad(hh) + ':' + pad(mm) + ':' + pad(ss) + '</p></div>' + note);
     },
     'checkout-shipping': function (exp, ctx) { return progress(exp, ctx, 'shipping'); },
     'checkout-gift': function (exp, ctx) { return progress(exp, ctx, 'gift'); },
@@ -84,6 +87,16 @@
       return wrap(exp, title(c.question) + '<ul class="ck-choices">' + (c.options || []).map(function (o, i) { return '<li><span class="ck-radio' + (i === 0 ? ' on' : '') + '"></span>' + h.esc(o.label) + '</li>'; }).join('') + '</ul>' + button(c.button_text, true));
     },
     'ty-discount': function (exp) { var c = exp.content; return wrap(exp, title(c.headline) + para(c.message) + '<div class="ck-row"><span class="ck-code">' + h.esc(c.code || 'YOURCODE') + '</span></div>' + (c.expiry_text ? '<p class="ck-muted">' + h.esc(c.expiry_text) + '</p>' : '')); },
+    'post-purchase': function (exp, ctx) {
+      var c = exp.content;
+      var p = (c.offer_product || [])[0] || { title: 'Your offer product', price: 29, image: window.OO_SAMPLE_IMAGE };
+      var price = Number(p.price || 29), pct = Number(c.discount_percent || 0), now = price * (1 - pct / 100);
+      var head = exp.style === 'premium' ? '<div class="ck-banner ck" style="padding:12px"><p class="ck-title">' + h.esc(c.headline) + '</p>' + para(c.message) + '</div>' : title(c.headline);
+      var second = c.downsell ? '<p class="ck-note">If they decline: “' + h.esc(c.downsell_headline) + '” with ' + h.esc(c.downsell_discount || 0) + '% off ' + h.esc(((c.downsell_product || [])[0] || {}).title || 'the second offer') + '.</p>' : '';
+      return wrap(exp, head + '<div class="ck-row">' + (exp.style === 'minimal' ? '' : h.productImage(p)) + '<div><p class="ck-text"><b>' + h.esc(p.title) + '</b></p>' + (exp.style === 'premium' ? '' : para(c.message)) +
+        '<p class="ck-text">' + (pct ? '<s class="ck-muted">' + h.esc(h.money(price, ctx.currency)) + '</s> ' : '') + '<b>' + h.esc(h.money(now, ctx.currency)) + '</b>' + (pct ? ' · ' + pct + '% off' : '') + '</p></div></div>' +
+        button(c.accept_text + ' · ' + h.money(now, ctx.currency), true) + '<span class="ck-muted" style="justify-self:start">' + h.esc(c.decline_text) + '</span>' + second);
+    },
     'ty-message': function (exp) { var c = exp.content; return wrap(exp, title(c.headline || 'Your headline') + para(c.message) + button(c.button_text, false)); }
   };
 

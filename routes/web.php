@@ -20,6 +20,13 @@ use Illuminate\Support\Facades\Route;
 // Storefront analytics from the OrderOrbit Space web pixel.
 Route::post('/api/pixel', [\App\Http\Controllers\PixelController::class, 'collect'])->middleware('throttle:240,1')->name('pixel.collect');
 Route::options('/api/pixel', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'));
+// Post-purchase funnel, called by the orderorbit-post-purchase extension (token signed by Shopify).
+Route::middleware('throttle:300,1')->group(function () {
+    Route::post('/api/post-purchase/offer', [\App\Http\Controllers\PostPurchaseController::class, 'offer'])->name('post-purchase.offer');
+    Route::post('/api/post-purchase/sign', [\App\Http\Controllers\PostPurchaseController::class, 'sign'])->name('post-purchase.sign');
+    Route::post('/api/post-purchase/decline', [\App\Http\Controllers\PostPurchaseController::class, 'decline'])->name('post-purchase.decline');
+    Route::options('/api/post-purchase/{any}', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'))->where('any', 'offer|sign|decline');
+});
 Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, 'feed'])->middleware('throttle:600,1')->name('sales-pop.feed');
 
 // Owner access to the public website while it's "coming soon".

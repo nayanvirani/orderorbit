@@ -219,6 +219,8 @@ class Store extends Model
             // Checkout and post-purchase blocks are placed in Shopify's checkout editor, not the theme.
             'checkout' => $this->adminUrl('settings/checkout/editor'),
             'thank-you' => $this->adminUrl('settings/checkout/editor?page=thank-you'),
+            // The post-purchase page app is chosen in Settings → Checkout.
+            'post-purchase' => $this->adminUrl('settings/checkout'),
             default => $this->adminUrl('themes/current/editor?template='.($surface === 'product' ? 'product' : ($surface === 'cart' ? 'cart' : 'index'))."&addAppBlockId={$key}/experience&target=newAppsSection"),
         };
     }
@@ -229,6 +231,7 @@ class Store extends Model
         return match ($surface) {
             'global' => 'Turn on app embed',
             'checkout', 'thank-you' => 'Open checkout editor',
+            'post-purchase' => 'Open checkout settings',
             default => 'Open Theme Editor',
         };
     }

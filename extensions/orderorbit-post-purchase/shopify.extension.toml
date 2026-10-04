@@ -1,0 +1,11 @@
+name = "orderorbit-post-purchase"
+type = "checkout_post_purchase"
+uid = "8914804e-9125-777f-75af-0bfa6d20a2ab282375f4"
+
+# [[metafields]]
+# namespace = "my-namespace"
+# key = "my-key"
+
+# [[metafields]]
+# namespace = "my-namespace"
+# key = "my-key-2"

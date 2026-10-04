@@ -80,3 +80,21 @@ export function numericId(gid) {
   const m = String(gid || '').match(/(\d+)$/);
   return m ? m[1] : '';
 }
+
+/**
+ * Milliseconds left on a checkout countdown, or null while a timer's start is still loading.
+ *  - date:            to the campaign's end date, the same for everyone
+ *  - hours / minutes: from `started` (when this shopper reached checkout); with repeat "restart"
+ *                     it starts a new round each time it reaches zero, otherwise it ends
+ */
+export function deadlineLeft(content, now, started) {
+  const c = content || {};
+  if (c.mode !== 'hours' && c.mode !== 'minutes') {
+    return c.ends_at ? Date.parse(c.ends_at) - now : 0;
+  }
+  if (started == null) return null;
+  const length = (c.mode === 'hours' ? Number(c.hours) || 1 : Number(c.minutes) || 1) * (c.mode === 'hours' ? 36e5 : 6e4);
+  const elapsed = Math.max(0, now - started);
+  if (elapsed < length) return length - elapsed;
+  return c.repeat === 'end' ? 0 : length - (elapsed % length);
+}
