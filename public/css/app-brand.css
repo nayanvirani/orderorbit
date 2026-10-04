@@ -204,3 +204,9 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .ob-activity li { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--ob-line); font-size: 13px; }
 .ob-activity li:last-child { border-bottom: 0; }
 .ob-activity time { display: block; color: var(--ob-faint); font-size: 12px; }
+
+/* Dashboard: recommended next actions and running tests. */
+.ob-next { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ob-next li { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--ob-line, #e3e3e3); border-radius: 10px; }
+.ob-tests { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.ob-tests li { display: grid; gap: 4px; }

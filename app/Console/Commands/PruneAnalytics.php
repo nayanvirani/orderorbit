@@ -22,6 +22,13 @@ class PruneAnalytics extends Command
     public function handle(): int
     {
         $deleted = AnalyticsEvent::where('occurred_at', '<', now()->subDays(self::RETENTION_DAYS))->delete();
+        // Stores that chose a shorter retention in Settings → Privacy.
+        foreach (Store::whereNotNull('privacy')->get() as $store) {
+            $months = (int) $store->privacy('retention_months');
+            if ($months < 13) {
+                $deleted += AnalyticsEvent::where('store_id', $store->id)->where('occurred_at', '<', now()->subMonths($months))->delete();
+            }
+        }
         $this->info("Pruned {$deleted} analytics events older than ".self::RETENTION_DAYS.' days.');
 
         // Order totals are only needed for the current and recent sales cycles.

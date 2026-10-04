@@ -11,8 +11,15 @@
     <s-section>
         <div class="oo-inline" style="margin-bottom:12px">
             @foreach (['' => 'All', 'running' => 'Running', 'waiting' => 'Waiting', 'completed' => 'Completed', 'failed' => 'Failed'] as $value => $label)
-                <s-button href="{{ app_route('app.automation.runs', array_filter(['status' => $value])) }}" variant="{{ request('status', '') === $value ? 'primary' : 'secondary' }}">{{ $label }}</s-button>
+                <s-button href="{{ app_route('app.automation.runs', array_filter(['status' => $value, 'workflow' => request('workflow')])) }}" variant="{{ request('status', '') === $value ? 'primary' : 'secondary' }}">{{ $label }}</s-button>
             @endforeach
+            <form method="GET" action="{{ app_route('app.automation.runs') }}" class="oo-inline">
+                @if (request('status'))<input type="hidden" name="status" value="{{ request('status') }}">@endif
+                <select class="oo-select" name="workflow" aria-label="Workflow" data-autosubmit>
+                    <option value="">All workflows</option>
+                    @foreach ($workflowOptions as $id => $name)<option value="{{ $id }}" @selected((int) request('workflow') === $id)>{{ $name }}</option>@endforeach
+                </select>
+            </form>
         </div>
         @if ($runs->isEmpty())
             <s-paragraph>No runs yet. Runs appear here once an enabled workflow is triggered.</s-paragraph>

@@ -18,6 +18,8 @@
         @endforeach
     </nav>
 @endif
+@php($freshest = \App\Models\AnalyticsEvent::where('store_id', $store->id)->max('occurred_at'))
+<p class="oo-muted oo-small an-fresh">Data as of {{ $freshest ? \Illuminate\Support\Carbon::parse($freshest)->diffForHumans() : 'no events yet' }} · only shoppers who allow analytics are counted.</p>
 @if (request('error'))
     <s-banner tone="critical">{{ request('error') }}</s-banner>
 @endif

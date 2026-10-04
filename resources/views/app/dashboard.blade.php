@@ -21,7 +21,10 @@
     <div class="ob-greet">
         <div>
             <h1>{{ $greeting }}{{ $name ? ', '.$name : '' }} 👋</h1>
-            <p>Here's how {{ $store->name ?? 'your store' }} is doing over the last 30 days.</p>
+            <p>Here's how {{ $store->name ?? 'your store' }} is doing over the last {{ $days }} days, compared with the {{ $days }} days before.</p>
+            <nav class="bx-tabs" aria-label="Date range" style="margin:8px 0 0">
+                @foreach ([7 => '7 days', 30 => '30 days', 90 => '90 days'] as $d => $label)<a href="{{ app_route('app.dashboard', ['days' => $d]) }}" class="{{ $days === $d ? 'on' : '' }}">{{ $label }}</a>@endforeach
+            </nav>
         </div>
         <div class="ob-actions" style="margin:0">
             <s-button href="{{ app_route('app.analytics') }}">View analytics</s-button>
@@ -32,7 +35,7 @@
     @foreach ($alerts as $alert)
         <s-banner tone="{{ $alert['tone'] }}">
             <s-paragraph>{{ $alert['text'] }}</s-paragraph>
-            <s-button slot="secondary-actions" href="{{ app_route($alert['route']) }}">{{ $alert['action'] }}</s-button>
+            <s-button slot="secondary-actions" href="{{ app_route($alert['route'], $alert['params'] ?? []) }}">{{ $alert['action'] }}</s-button>
         </s-banner>
     @endforeach
 
@@ -45,6 +48,70 @@
             :trend="$trend($s['aov'], $p['aov'])" :sub="$s['influenced_aov'] ? money($s['influenced_aov'], $s['currency']).' with an offer' : 'Per order'" />
         <x-app.kpi label="Conversion rate" icon="target" tone="countdown" :value="$s['conversion'] === null ? '—' : number_format($s['conversion'], 2).'%'"
             :trend="$trend($s['conversion'], $p['conversion'])" :sub="number_format($s['sessions']).' sessions'" />
+    </div>
+
+    @if ($next)
+        <s-section heading="Recommended next">
+            <ul class="ob-next">
+                @foreach ($next as $n)<li><span>{{ $n['text'] }}</span><s-button href="{{ app_route($n['route'], $n['params'] ?? []) }}">{{ $n['action'] }}</s-button></li>@endforeach
+            </ul>
+        </s-section>
+    @endif
+
+    <s-section heading="Top experiences · last {{ $days }} days">
+        @if ($top->isEmpty())
+            <s-paragraph><span class="oo-muted">Your best-performing experiences appear here once shoppers see them.</span></s-paragraph>
+        @else
+            <div class="oo-scroll">
+                <table class="oo-table stack">
+                    <thead><tr><th>Experience</th><th>Views</th><th>Interactions</th><th>Orders</th><th>Conversion</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                        @foreach ($top as $r)
+                            <tr>
+                                <td data-label="Experience"><s-link href="{{ app_route('app.cro.experiences.show', ['experience' => $r['experience']->id]) }}">{{ $r['experience']->name }}</s-link> <span class="oo-muted oo-small">{{ \App\Experiences\Registry::has($r['experience']->type) ? \App\Experiences\Registry::type($r['experience']->type)['label'] : '' }}</span></td>
+                                <td data-label="Views">{{ number_format($r['views']) }}</td>
+                                <td data-label="Interactions">{{ number_format($r['clicks'] + $r['adds']) }}</td>
+                                <td data-label="Orders">{{ number_format($r['orders']) }}</td>
+                                <td data-label="Conversion">{{ $r['views'] ? number_format($r['orders'] / $r['views'] * 100, 1).'%' : '—' }}</td>
+                                <td data-label="Revenue">{{ money($r['revenue'], $s['currency']) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </s-section>
+
+    <div class="ob-split">
+        <s-section heading="Automation · last 30 days">
+            @if (! $store->planIncludes('automation') && ! $automation['runs'])
+                <s-paragraph><span class="oo-muted">Lifecycle workflows run on the Scale plan.</span> <s-link href="{{ app_route('app.automation.index') }}">Learn more</s-link></s-paragraph>
+            @else
+                <dl class="oo-kv">
+                    <dt>Enabled workflows</dt><dd>{{ $automation['workflows'] }}</dd>
+                    <dt>Runs</dt><dd>{{ number_format($automation['runs']) }}</dd>
+                    <dt>Success rate</dt><dd>{{ ($automation['completed'] + $automation['failed']) ? round($automation['completed'] / ($automation['completed'] + $automation['failed']) * 100, 1).'%' : '—' }}</dd>
+                    <dt>Failed</dt><dd>@if ($automation['failed'])<s-link href="{{ app_route('app.automation.runs', ['status' => 'failed']) }}">{{ $automation['failed'] }}</s-link>@else 0 @endif</dd>
+                    <dt>Retrying</dt><dd>{{ $automation['retrying'] }}</dd>
+                </dl>
+            @endif
+        </s-section>
+        <s-section heading="A/B tests">
+            @if ($tests->isEmpty())
+                <s-paragraph><span class="oo-muted">No tests running.</span> <s-link href="{{ app_route('app.experiments.index') }}">{{ $store->planIncludes('ab_testing') ? 'Create a test' : 'Learn more' }}</s-link></s-paragraph>
+            @else
+                <ul class="ob-tests">
+                    @foreach ($tests as $t)
+                        <li>
+                            <s-link href="{{ app_route('app.experiments.show', ['experiment' => $t['experiment']->id]) }}">{{ $t['experiment']->name }}</s-link>
+                            <span class="oo-muted oo-small">{{ number_format(collect($t['results']['variants'])->sum('visitors')) }} visitors · {{ $t['experiment']->variants->map(fn ($v) => $v->key.' '.$v->allocation.'%')->implode(' / ') }} · {{ \App\Services\Experiments\ExperimentManager::PRIMARY[$t['experiment']->primary_metric] ?? '' }}</span>
+                            <span class="oo-meter" style="display:block;max-width:240px"><i style="width:{{ round($t['results']['decision']['progress'] * 100) }}%"></i></span>
+                            <span class="oo-small">{{ $t['results']['decision']['headline'] }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </s-section>
     </div>
 
     <s-section heading="Your features">

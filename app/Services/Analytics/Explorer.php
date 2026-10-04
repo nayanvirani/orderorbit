@@ -13,10 +13,27 @@ use Illuminate\Support\Carbon;
  */
 class Explorer
 {
+    /** Filters shared by the analytics pages: device, market, UTM source and campaign, experience. */
+    public const FILTERS = ['device' => 'device', 'country' => 'country', 'source' => 'source', 'campaign' => 'campaign', 'experience' => 'experience_handle'];
+
+    private array $filters = [];
+
+    public function filter(array $filters): self
+    {
+        $this->filters = array_filter(array_intersect_key($filters, self::FILTERS), fn ($v) => is_string($v) && $v !== '' && mb_strlen($v) <= 100);
+
+        return $this;
+    }
+
     private function scope(Store $store, Carbon $from, Carbon $to): Builder
     {
-        return AnalyticsEvent::where('store_id', $store->id)->whereBetween('occurred_at', [$from, $to])
+        $query = AnalyticsEvent::where('store_id', $store->id)->whereBetween('occurred_at', [$from, $to])
             ->whereNotNull('name')->where('event', '!=', 'attributed');
+        foreach ($this->filters as $key => $value) {
+            $query->where(self::FILTERS[$key], in_array($key, ['source', 'campaign'], true) ? mb_strtolower($value) : ($key === 'country' ? strtoupper($value) : $value));
+        }
+
+        return $query;
     }
 
     /** @return list<array{name: string, label: string, total: int, visitors: int, sessions: int, previous: int, daily: array<string, int>}> */

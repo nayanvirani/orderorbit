@@ -18,6 +18,17 @@
     @include('app.analytics._nav', ['lockedTitle' => 'Event Explorer is on Growth and Scale'])
 
     @unless ($locked)
+        <form method="GET" action="{{ app_route('app.analytics.events') }}" class="an-filters">
+            <input type="hidden" name="days" value="{{ $days }}">
+            @if ($selected)<input type="hidden" name="event" value="{{ $selected }}"><input type="hidden" name="by" value="{{ $dimension }}">@endif
+            <label class="oo-field">Device<select name="f[device]"><option value="">All</option>@foreach (['mobile' => 'Mobile', 'tablet' => 'Tablet', 'desktop' => 'Desktop'] as $k => $l)<option value="{{ $k }}" @selected(($filters['device'] ?? '') === $k)>{{ $l }}</option>@endforeach</select></label>
+            <label class="oo-field">Market<input type="text" name="f[country]" value="{{ $filters['country'] ?? '' }}" maxlength="2" placeholder="US"></label>
+            <label class="oo-field">UTM source<input type="text" name="f[source]" value="{{ $filters['source'] ?? '' }}" maxlength="60"></label>
+            <label class="oo-field">UTM campaign<input type="text" name="f[campaign]" value="{{ $filters['campaign'] ?? '' }}" maxlength="100"></label>
+            <label class="oo-field">Experience<select name="f[experience]"><option value="">All</option>@foreach ($experiences as $h => $e)<option value="{{ $h }}" @selected(($filters['experience'] ?? '') === $h)>{{ $e->name }}</option>@endforeach</select></label>
+            <s-button type="submit">Apply</s-button>
+            <s-button href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" target="_blank" variant="tertiary">Export CSV</s-button>
+        </form>
         @if ($selected)
             <s-section heading="{{ \App\Services\Analytics\Events::label($selected) }}">
                 <p class="oo-muted oo-small"><span class="oo-code">{{ $selected }}</span> · {{ number_format($byName[$selected]['total'] ?? 0) }} events from {{ number_format($byName[$selected]['visitors'] ?? 0) }} visitors · <a href="{{ request()->fullUrlWithQuery(['event' => null, 'by' => null]) }}">Back to all events</a></p>

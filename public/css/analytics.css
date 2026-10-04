@@ -33,3 +33,7 @@ details summary { cursor: pointer; font-weight: 550; margin-bottom: 12px; }
 .k-purchase .an-dot { color: #0c7a43; }
 .k-experience .an-dot { color: #6d5df6; }
 .k-automation .an-dot { color: #5b4bff; }
+
+.an-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
+.an-filters input[type="text"] { width: 120px; }
+.an-fresh { margin: -6px 0 12px; }

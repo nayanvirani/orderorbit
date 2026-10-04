@@ -27,6 +27,7 @@
             <nav class="bx-tabs">@foreach (Attribution::MODELS as $key => $label)<a href="{{ request()->fullUrlWithQuery(['model' => $key]) }}" class="{{ $model === $key ? 'on' : '' }}">{{ $label }}</a>@endforeach</nav>
             <span class="oo-muted">Attribution window</span>
             <nav class="bx-tabs">@foreach (Attribution::WINDOWS as $key => $label)<a href="{{ request()->fullUrlWithQuery(['window' => $key]) }}" class="{{ $window === $key ? 'on' : '' }}">{{ $label }}</a>@endforeach</nav>
+            <s-button href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" target="_blank" variant="tertiary">Export CSV</s-button>
         </div>
 
         <s-section heading="Overview">

@@ -23,7 +23,7 @@ class Store extends Model
             'access_token' => 'encrypted',
             'refresh_token' => 'encrypted',
             'access_token_expires_at' => 'datetime',
-            'capabilities' => 'array',
+            'capabilities' => 'array', 'privacy' => 'array',
             'capabilities_checked_at' => 'datetime',
             'plan_expires_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
@@ -189,6 +189,14 @@ class Store extends Model
         $granted = array_filter(explode(',', (string) $this->scopes));
 
         return in_array($scope, $granted, true) || in_array(str_replace('read_', 'write_', $scope), $granted, true);
+    }
+
+    /** Settings → Privacy, with defaults: 13 months of analytics, browsing events and journeys on. */
+    public const PRIVACY_DEFAULTS = ['retention_months' => 13, 'browsing_events' => true, 'journeys' => true];
+
+    public function privacy(string $key): mixed
+    {
+        return ($this->privacy ?? [])[$key] ?? self::PRIVACY_DEFAULTS[$key];
     }
 
     public function capability(string $key): mixed

@@ -10,6 +10,7 @@ class Notices
 {
     public const MESSAGES = [
         'saved' => ['Changes saved successfully.', false],
+        'analytics_deleted' => ['All analytics data for your store was deleted.', false],
         'segment_archived' => ['Segment archived.', false],
         'segment_restored' => ['Segment restored.', false],
         'experiment_launched' => ['Test launched. Visitors are now split between the variants.', false],

@@ -124,7 +124,7 @@ class AutomationController extends Controller
             ->when($request->query('workflow'), fn ($q, $w) => $q->where('workflow_id', (int) $w))
             ->latest('id')->paginate(50)->withQueryString();
 
-        return view('app.automation.runs', $this->shared($store) + ['runs' => $runs]);
+        return view('app.automation.runs', $this->shared($store) + ['runs' => $runs, 'workflowOptions' => Workflow::where('store_id', $store->id)->orderBy('name')->pluck('name', 'id')]);
     }
 
     public function run(Request $request, Store $store, int $run): View

@@ -219,6 +219,13 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
             Route::post('/branding', [BrandingController::class, 'update'])->middleware('store.can:manage_settings')->name('branding.update');
 
             Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
+            Route::get('/integrations', [\App\Http\Controllers\App\IntegrationsController::class, 'integrations'])->name('integrations');
+            Route::get('/privacy', [\App\Http\Controllers\App\IntegrationsController::class, 'privacy'])->name('privacy');
+            Route::middleware('store.can:manage_settings')->group(function () {
+                Route::post('/privacy', [\App\Http\Controllers\App\IntegrationsController::class, 'updatePrivacy'])->name('privacy.update');
+                Route::get('/privacy/export', [\App\Http\Controllers\App\IntegrationsController::class, 'export'])->name('privacy.export');
+                Route::post('/privacy/delete-analytics', [\App\Http\Controllers\App\IntegrationsController::class, 'destroyAnalytics'])->name('privacy.delete');
+            });
         });
 
         // Older links before the move to Settings.

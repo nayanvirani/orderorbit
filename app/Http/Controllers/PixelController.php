@@ -32,6 +32,10 @@ class PixelController extends Controller
         }
 
         $base = ['store_id' => $store->id, 'occurred_at' => now()] + $this->context($data);
+        // Settings → Privacy: without customer journeys, no customer ids are kept.
+        if (! $store->privacy('journeys')) {
+            unset($base['customer_id']);
+        }
         $data['e'] = str_replace('orderorbit:', '', (string) ($data['e'] ?? ''));
 
         // OrderOrbit events can start workflows ("OrderOrbit event" trigger).
@@ -42,7 +46,7 @@ class PixelController extends Controller
 
         match ($data['k'] ?? null) {
             's' => AnalyticsEvent::create($base + ['event' => 'session', 'name' => 'session_started']),
-            'v' => $this->standard($data, $base),
+            'v' => $store->privacy('browsing_events') ? $this->standard($data, $base) : null,
             'e' => $this->experience($data, $base),
             'o' => $this->order($store, $data, $base),
             default => null,

@@ -1,0 +1,100 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AnalyticsEvent;
+use App\Models\Automation\Workflow;
+use App\Models\Automation\WorkflowRun;
+use App\Models\Store;
+use App\Models\WebhookReceipt;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
+use Tests\Concerns\InteractsWithShopify;
+use Tests\TestCase;
+
+class PlatformTest extends TestCase
+{
+    use InteractsWithShopify, RefreshDatabase;
+
+    private Store $store;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpShopify();
+        Http::fake(fn (Request $r) => Http::response(['data' => []]));
+        $this->store = $this->installedStore(['plan' => 'scale', 'pixel_token' => str_repeat('a', 40), 'web_pixel_id' => 'gid://shopify/WebPixel/1']);
+    }
+
+    private function makeRun(Workflow $workflow, string $key, string $status, string $subject = 'Order'): WorkflowRun
+    {
+        $version = \App\Models\Automation\WorkflowVersion::firstOrCreate(['workflow_id' => $workflow->id, 'version' => 1], ['definition' => [], 'program' => [], 'published_at' => now()]);
+
+        return WorkflowRun::create(['store_id' => $this->store->id, 'workflow_id' => $workflow->id, 'version_id' => $version->id, 'trigger' => 'order_paid', 'idempotency_key' => $key, 'subject' => $subject, 'status' => $status, 'context' => [], 'results' => []]);
+    }
+
+    public function test_dashboard_shows_health_top_experiences_automation_and_next_steps(): void
+    {
+        $owner = $this->member($this->store, 'owner');
+        $workflow = Workflow::create(['store_id' => $this->store->id, 'handle' => 'wf1', 'name' => 'Reviews', 'status' => 'enabled', 'trigger' => 'order_paid', 'draft' => ['trigger' => 'order_paid', 'steps' => []]]);
+        $this->makeRun($workflow, 'k1', 'failed');
+        $this->makeRun($workflow, 'k2', 'completed');
+
+        $this->get('/app?days=7', $this->as($owner))->assertOk()
+            ->assertSee('last 7 days')->assertSee('1 workflow run failed in the last 7 days.')->assertSee('View failed runs')
+            ->assertSee('Success rate')->assertSee('50%')->assertSee('Recommended next')->assertSee('Create a bundle')->assertSee('No tests running.');
+    }
+
+    public function test_analytics_filters_export_and_runs_filter(): void
+    {
+        $owner = $this->member($this->store, 'owner');
+        foreach ([['mobile', 'US'], ['desktop', 'US'], ['mobile', 'CA']] as $i => [$device, $country]) {
+            AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'std', 'name' => 'product_viewed', 'visitor_id' => 'v'.$i, 'device' => $device, 'country' => $country, 'occurred_at' => now()->subDay()]);
+        }
+        $this->get('/app/analytics/events?f[device]=mobile&f[country]=us', $this->as($owner))->assertOk()->assertSee('Data as of');
+        $csv = $this->get('/app/analytics/events?f[device]=mobile&export=csv', $this->as($owner))->assertOk()->streamedContent();
+        $this->assertStringContainsString('"Product viewed",product_viewed,2,2', $csv);
+        $this->get('/app/analytics/revenue?export=csv', $this->as($owner))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
+
+        $a = Workflow::create(['store_id' => $this->store->id, 'handle' => 'wfa', 'name' => 'Alpha flow', 'status' => 'enabled', 'trigger' => 'order_paid', 'draft' => []]);
+        $b = Workflow::create(['store_id' => $this->store->id, 'handle' => 'wfb', 'name' => 'Beta flow', 'status' => 'enabled', 'trigger' => 'order_paid', 'draft' => []]);
+        $this->makeRun($a, 'a', 'completed', 'Alpha subject');
+        $this->makeRun($b, 'b', 'completed', 'Beta subject');
+        $this->get('/app/automation/runs?workflow='.$a->id, $this->as($owner))->assertOk()->assertSee('Alpha subject')->assertDontSee('Beta subject')->assertSee('All workflows');
+    }
+
+    public function test_privacy_controls_collection_retention_export_and_deletion(): void
+    {
+        $owner = $this->member($this->store, 'owner');
+        $this->get('/app/settings/privacy', $this->as($owner))->assertOk()->assertSee('Keep analytics events for')->assertSee('Link visits to customer numbers');
+        $this->post('/app/settings/privacy', ['retention_months' => 3, 'journeys' => '0'], $this->as($owner))->assertRedirectContains('notice=saved');
+        $this->store->refresh();
+        $this->assertSame([3, false, false], [$this->store->privacy('retention_months'), $this->store->privacy('browsing_events'), $this->store->privacy('journeys')]);
+
+        // The collector honours them: no browsing events, no customer ids.
+        $pixel = fn (array $p) => $this->call('POST', '/api/pixel', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode(['t' => str_repeat('a', 40), 's' => $this->store->shop_domain, 'vid' => 'v1'] + $p));
+        $pixel(['k' => 'v', 'n' => 'page_viewed']);
+        $pixel(['k' => 'o', 'id' => 'gid://shopify/Order/1', 'v' => 10, 'oc' => 'gid://shopify/Customer/55', 'l' => []]);
+        $this->assertSame(['checkout_completed'], AnalyticsEvent::pluck('name')->all());
+        $this->assertNull(AnalyticsEvent::sole()->customer_id);
+
+        // Retention: the nightly prune removes events older than 3 months for this store.
+        AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'session', 'name' => 'session_started', 'occurred_at' => now()->subMonths(4)]);
+        $this->artisan('orderorbit:prune-analytics')->assertSuccessful();
+        $this->assertSame(1, AnalyticsEvent::count());
+
+        $this->assertStringContainsString('checkout_completed', $this->get('/app/settings/privacy/export', $this->as($owner))->assertOk()->streamedContent());
+        $this->post('/app/settings/privacy/delete-analytics', [], $this->as($owner))->assertRedirectContains('analytics_deleted');
+        $this->assertSame(0, AnalyticsEvent::count());
+    }
+
+    public function test_integrations_lists_webhooks_and_extensions(): void
+    {
+        $owner = $this->member($this->store, 'owner');
+        WebhookReceipt::create(['webhook_id' => 'w1', 'shop_domain' => $this->store->shop_domain, 'topic' => 'orders/paid', 'processed_at' => now()]);
+        WebhookReceipt::create(['webhook_id' => 'w2', 'shop_domain' => $this->store->shop_domain, 'topic' => 'orders/create']);
+        $this->get('/app/settings/integrations', $this->as($owner))->assertOk()
+            ->assertSee('Web pixel (analytics)')->assertSee('orders/paid')->assertSee('1 not processed')->assertSee('Customer account extension')->assertSee('Klaviyo');
+    }
+}

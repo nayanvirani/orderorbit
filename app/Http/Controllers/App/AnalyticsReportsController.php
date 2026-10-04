@@ -21,15 +21,23 @@ use Illuminate\View\View;
  */
 class AnalyticsReportsController extends Controller
 {
-    public function events(Request $request, Store $store, Explorer $explorer): View
+    public function events(Request $request, Store $store, Explorer $explorer): View|\Symfony\Component\HttpFoundation\StreamedResponse
     {
+        $explorer->filter((array) $request->query('f', []));
         [$from, $to, $days] = $this->range($request);
         $name = $request->query('event');
         $dimension = array_key_exists((string) $request->query('by'), Events::DIMENSIONS) ? $request->query('by') : 'experience_handle';
         $locked = ! $store->planIncludes('advanced_analytics');
 
+        $events = $locked ? [] : $explorer->events($store, $from, $to);
+        if (! $locked && $request->query('export') === 'csv') {
+            return $this->csv('events', ['Event', 'Name', 'Events', 'Unique visitors', 'Sessions', 'Previous period'],
+                array_map(fn ($e) => [$e['label'], $e['name'], $e['total'], $e['visitors'], $e['sessions'], $e['previous']], $events));
+        }
+
         return view('app.analytics.events', $this->shared($store, $days) + [
-            'events' => $locked ? [] : $explorer->events($store, $from, $to),
+            'events' => $events,
+            'filters' => array_filter((array) $request->query('f', []), fn ($v) => is_string($v) && $v !== ''),
             'selected' => $name && isset(Events::all()[$name]) ? $name : null,
             'dimension' => $dimension,
             'breakdown' => ! $locked && $name ? $explorer->breakdown($store, $name, $dimension, $from, $to) : [],
@@ -92,7 +100,7 @@ class AnalyticsReportsController extends Controller
         return redirect()->to(app_route('app.analytics.funnels', ['notice' => 'deleted']));
     }
 
-    public function revenue(Request $request, Store $store, Attribution $attribution): View
+    public function revenue(Request $request, Store $store, Attribution $attribution): View|\Symfony\Component\HttpFoundation\StreamedResponse
     {
         [$from, $to, $days] = $this->range($request);
         $window = array_key_exists((int) $request->query('window'), Attribution::WINDOWS) ? (int) $request->query('window') : 7;
@@ -101,8 +109,17 @@ class AnalyticsReportsController extends Controller
         $templates = $experiences->map(fn ($e) => $e->publishedVersion?->template_key)->filter()->all();
         $locked = ! $store->planIncludes('advanced_analytics');
 
+        $report = $locked ? null : $attribution->report($store, $from, $to, $window, $model, $templates);
+        if ($report && $request->query('export') === 'csv') {
+            return $this->csv('revenue', ['Group', 'Name', 'Orders', 'Revenue'], array_merge(
+                array_map(fn ($k, $r) => ['Traffic source ('.Attribution::MODELS[$model].')', $k, $r['orders'], round($r['revenue'], 2)], array_keys($report['by_source']), $report['by_source']),
+                array_map(fn ($k, $r) => ['UTM campaign', $k, $r['orders'], round($r['revenue'], 2)], array_keys($report['by_campaign']), $report['by_campaign']),
+                array_map(fn ($k, $r) => ['Experience (direct)', $experiences[$k]->name ?? $k, $r['direct_orders'], round($r['direct_revenue'], 2)], array_keys($report['by_experience']), $report['by_experience']),
+            ));
+        }
+
         return view('app.analytics.revenue', $this->shared($store, $days) + [
-            'report' => $locked ? null : $attribution->report($store, $from, $to, $window, $model, $templates),
+            'report' => $report,
             'window' => $window,
             'model' => $model,
             // Revenue per A/B test variant, for tests that ran in this period.
@@ -134,6 +151,18 @@ class AnalyticsReportsController extends Controller
             'visitor' => $visitor,
             'journey' => $journey,
         ]);
+    }
+
+    private function csv(string $name, array $header, array $rows): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        return response()->streamDownload(function () use ($header, $rows) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $header);
+            foreach ($rows as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, "orderorbit-{$name}-".now()->toDateString().'.csv', ['Content-Type' => 'text/csv']);
     }
 
     /** @return array{0: array, 1: ?string} */
