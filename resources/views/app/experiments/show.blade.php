@@ -10,7 +10,8 @@
     $canManage = request()->attributes->get('storeUser')?->can('manage_experiences');
     $money = fn ($v) => $v === null ? '—' : money($v, $store->currency);
     $pct = fn ($v, $digits = 2) => $v === null ? '—' : number_format($v, $digits).'%';
-    $primary = $experiment->primary_metric === 'conversion_rate' ? 'conversion_rate' : 'revenue_per_visitor';
+    $primary = Results::primaryKey($experiment);
+    $primaryLabel = ['conversion_rate' => 'conversion', 'click_rate' => 'clicks', 'revenue_per_visitor' => 'revenue / visitor'][$primary];
     $tone = ['winner' => 'success', 'control' => 'info', 'no_winner' => 'info', 'guardrail' => 'warning', 'collecting' => 'info'][$d['state']];
     $lift = function ($c) use ($pct) {
         if (! $c || $c['lift'] === null) return '—';
@@ -69,7 +70,7 @@
     <s-section heading="Variants">
         <div class="oo-scroll">
             <table class="oo-table stack xp-table">
-                <thead><tr><th>Variant</th><th>Traffic</th><th>Visitors</th><th>Conversions</th><th>Conversion rate</th><th>Revenue</th><th>Revenue / visitor</th><th>AOV</th><th>Lift vs control ({{ $primary === 'conversion_rate' ? 'conversion' : 'revenue / visitor' }})</th><th>p-value</th></tr></thead>
+                <thead><tr><th>Variant</th><th>Traffic</th><th>Visitors</th><th>Conversions</th><th>Conversion rate</th><th>Revenue</th><th>Revenue / visitor</th><th>AOV</th>@if ($primary === 'click_rate')<th>Click-through</th>@endif<th>Lift vs control ({{ $primaryLabel }})</th><th>p-value</th></tr></thead>
                 <tbody>
                     @foreach ($experiment->variants as $v)
                         @php($m = $r['variants'][$v->key])
@@ -83,6 +84,7 @@
                             <td data-label="Revenue">{{ $money($m['revenue']) }}</td>
                             <td data-label="Revenue / visitor">{{ $money($m['revenue_per_visitor']) }}</td>
                             <td data-label="AOV">{{ $money($m['aov']) }}</td>
+                            @if ($primary === 'click_rate')<td data-label="Click-through">{{ $pct($m['click_rate']) }}</td>@endif
                             <td data-label="Lift">{!! $v->key === 'A' ? '<span class="oo-muted">Baseline</span>' : $lift($c) !!}</td>
                             <td data-label="p-value">{{ $v->key === 'A' ? '—' : Results::p($c['p'] ?? null) }}</td>
                         </tr>
@@ -172,7 +174,7 @@
     </s-section>
 
     <s-section heading="Statistical method">
-        <s-paragraph>Fixed-horizon frequentist test. Conversion rate uses a two-proportion z-test; revenue per visitor and AOV use Welch's t-test. Significance is {{ round((1 - $r['confidence']) * 100, 2) }}% per comparison ({{ count($r['variants']) > 2 ? 'Bonferroni-corrected for '.(count($r['variants']) - 1).' comparisons' : 'one comparison' }}). A winner needs at least {{ $experiment->min_days }} days, {{ number_format($experiment->min_visitors) }} visitors and {{ number_format($experiment->min_conversions) }} conversions in every variant, a significant improvement on the primary metric, and no breached guardrail. Looking at results early doesn't change them, but don't stop a test just because it looks good.</s-paragraph>
+        <s-paragraph>Fixed-horizon frequentist test. Conversion rate uses a two-proportion z-test; revenue per visitor and AOV use Welch's t-test. Significance is {{ round((1 - $r['confidence']) * 100, 2) }}% per comparison ({{ count($r['variants']) > 2 ? 'Bonferroni-corrected for '.(count($r['variants']) - 1).' comparisons' : 'one comparison' }}). A winner needs at least {{ $experiment->min_days }} days, {{ number_format($experiment->min_visitors) }} visitors and {{ number_format($experiment->min_conversions) }} {{ $primary === 'click_rate' ? 'clicks' : 'conversions' }} in every variant, a significant improvement on the primary metric, and no breached guardrail. Looking at results early doesn't change them, but don't stop a test just because it looks good.</s-paragraph>
     </s-section>
 
     <s-section heading="History">

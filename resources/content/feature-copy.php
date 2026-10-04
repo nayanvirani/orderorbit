@@ -202,7 +202,7 @@ return [
         'status' => 'live',
         'summary' => 'A/B and A/B/C tests on live experiences, with honest statistics.',
         'overview' => [
-            'A/B testing splits shoppers between versions of a live experience, such as an upsell, countdown, sticky add to cart or trust block, and reports which one earns more. Variants can change the template, design and text, or hide the experience as a holdout; prices and discounts stay as published, so checkout always matches what shoppers saw.',
+            'A/B testing splits shoppers between versions of a live experience, such as an upsell, countdown, sticky add to cart, trust block or a checkout or Thank You block, and reports which one earns more. Variants can change the template, design and text, or hide the experience as a holdout; prices and discounts stay as published, so checkout always matches what shoppers saw.',
             'Results show visitors, conversion, revenue, revenue per visitor and AOV per variant, with lift, confidence intervals and p-values. A winner is only named after at least 7 days and 1,000 visitors and 100 conversions per variant, when the primary metric is significant and no guardrail is breached. Then apply the winner in one click.',
         ],
         'benefits' => [

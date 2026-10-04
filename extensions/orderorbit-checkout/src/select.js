@@ -163,3 +163,41 @@ export function imageStyle(c) {
   }
   return { width, image, clip };
 }
+
+// FNV-1a: a stable bucket from 0 to 99 (the same hash as the storefront).
+function bucket(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) % 100;
+}
+
+/**
+ * The block this visitor sees when it's in an A/B test: the variant's template, text and design
+ * on top of the published block (null for a holdout). Visitors outside the test's audience (cart
+ * value, country) see the block as published, untracked.
+ * @returns {{ exp, variant: ?string }}
+ */
+export function assign(exp, visitorId, ctx) {
+  const x = exp && exp.x;
+  if (!x || !visitorId || !(x.variants || []).length) return { exp, variant: null };
+  const a = x.audience || {};
+  if (a.cart_min != null && a.cart_min !== '' && ctx.subtotal < Number(a.cart_min)) return { exp, variant: null };
+  if (a.cart_max != null && a.cart_max !== '' && ctx.subtotal > Number(a.cart_max)) return { exp, variant: null };
+  const codes = String(a.countries || '').toUpperCase().split(',').map((s) => s.trim()).filter(Boolean);
+  if (codes.length && codes.indexOf(String(ctx.country || '').toUpperCase()) === -1) return { exp, variant: null };
+
+  const b = bucket(x.id + ':' + visitorId);
+  let sum = 0;
+  const v = x.variants.find((variant) => { sum += variant.alloc; return b < sum; }) || x.variants[0];
+  const shown = Object.assign({}, exp, {
+    template: v.template || exp.template,
+    style: v.style || exp.style,
+    content: Object.assign({}, exp.content, v.content || {}),
+    design: Object.assign({}, exp.design, v.design || {}),
+    xv: v.key,
+  });
+  return { exp: v.hidden ? null : shown, variant: v.key, tracked: shown };
+}

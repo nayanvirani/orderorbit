@@ -28,6 +28,7 @@ class ExperimentManager
         'conversion_rate' => 'Conversion rate',
         'revenue_per_visitor' => 'Revenue per visitor',
         'revenue' => 'Revenue (tested per visitor)',
+        'click_rate' => 'Click-through rate',
     ];
 
     public const SECONDARY = [
@@ -38,6 +39,7 @@ class ExperimentManager
         'units_per_order' => 'Units per order',
         'upsell_acceptance' => 'Upsell acceptance',
         'bundle_completion' => 'Bundle completion',
+        'click_rate' => 'Click-through rate',
     ];
 
     public const GUARDRAILS = [
@@ -47,6 +49,15 @@ class ExperimentManager
 
     /** Audience fields shown in setup: the same live context the storefront knows. */
     public const AUDIENCE = ['device', 'countries', 'products', 'collections', 'cart_min', 'cart_max', 'utm_source', 'utm_campaign', 'customer'];
+
+    /** What checkout and Thank You pages know about a buyer: cart value and country. */
+    public const CHECKOUT_AUDIENCE = ['countries', 'cart_min', 'cart_max'];
+
+    /** Audience fields for an experience's surface. */
+    public static function audienceFor(Experience $experience): array
+    {
+        return in_array(Registry::type($experience->type)['surface'] ?? '', ['checkout', 'thank-you'], true) ? self::CHECKOUT_AUDIENCE : self::AUDIENCE;
+    }
 
     public function __construct(private readonly StorefrontPublisher $publisher, private readonly ExperienceManager $experiences) {}
 
@@ -59,8 +70,12 @@ class ExperimentManager
         if (in_array($experience->type, ['bundles', 'progressive-gifts'], true)) {
             return 'Bundles and Progressive gifts set prices at checkout, so they can\'t be split-tested yet.';
         }
-        if (in_array(Registry::type($experience->type)['surface'], Schema::CHECKOUT_SURFACES, true)) {
-            return 'A/B tests run on storefront experiences. Checkout, Thank You and account blocks can\'t be tested yet.';
+        $surface = Registry::type($experience->type)['surface'];
+        if ($surface === 'post-purchase') {
+            return 'The post-purchase offer is chosen by the server for each order, so it can\'t be split-tested yet.';
+        }
+        if ($surface === 'account') {
+            return 'Customer account blocks can\'t be tested yet.';
         }
 
         return null;
@@ -87,7 +102,9 @@ class ExperimentManager
             $experiment = Experiment::create([
                 'store_id' => $store->id, 'experience_id' => $experience->id, 'handle' => 'x'.Str::lower(Str::random(10)),
                 'name' => mb_substr($experience->name.' test', 0, 120), 'status' => 'draft',
-                'audience' => [], 'primary_metric' => 'conversion_rate', 'secondary_metrics' => ['add_to_cart', 'aov'],
+                // On Thank You and Order Status the order is already placed: clicks are what the block can move.
+                'audience' => [], 'primary_metric' => (Registry::type($experience->type)['surface'] === 'thank-you') ? 'click_rate' : 'conversion_rate',
+                'secondary_metrics' => (Registry::type($experience->type)['surface'] === 'thank-you') ? ['purchase'] : ['add_to_cart', 'aov'],
                 'guardrails' => [['metric' => 'cart_abandonment', 'threshold' => 5]],
             ]);
             $template = $experience->publishedVersion?->template_key ?? $experience->template_key;
@@ -118,7 +135,7 @@ class ExperimentManager
             // Audience: the shared targeting fields, cleaned by the experience schema.
             $targeting = Schema::shared()['targeting'];
             $audience = [];
-            foreach (self::AUDIENCE as $key) {
+            foreach (self::audienceFor($experience) as $key) {
                 if (array_key_exists($key, $input['audience'] ?? [])) {
                     [$value, $error] = Schema::field($targeting[$key], $input['audience'][$key], 'UTC');
                     if ($error) {

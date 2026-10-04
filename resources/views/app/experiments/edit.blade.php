@@ -34,7 +34,7 @@
 
     <form method="POST" action="{{ app_route('app.experiments.update', ['experiment' => $experiment->id]) }}" class="xp-form" data-xp-form>
         <s-section heading="1. Experience" id="step-experience">
-            <p class="oo-muted">Testing <strong>{{ $experience->name }}</strong> ({{ $type['label'] ?? $experience->type }}). Variants can change its template, design and text; products, prices and discounts stay as published, so checkout always matches what shoppers saw.</p>
+            <p class="oo-muted">Testing <strong>{{ $experience->name }}</strong> ({{ $type['label'] ?? $experience->type }}). Variants can change its template, design and text; products, prices and discounts stay as published, so checkout always matches what shoppers saw.@if ($checkoutBlock) The split happens in Shopify's checkout, so it shows wherever the OrderOrbit Space block for this type is placed.@endif</p>
             @if ($experience->status !== 'published')<s-banner tone="warning">This experience isn't published. Publish it before launching the test.</s-banner>@endif
             <div class="b-field"><label for="xp-name">Test name</label><input id="xp-name" type="text" name="name" value="{{ $experiment->name }}" maxlength="120" required></div>
             <div class="b-field"><label for="xp-hypothesis">Hypothesis (optional)</label><textarea id="xp-hypothesis" name="hypothesis" rows="2" maxlength="1000" placeholder="Showing the upsell as a slider instead of cards will raise add to cart, because…">{{ $experiment->hypothesis }}</textarea></div>
@@ -120,14 +120,14 @@
                     @include('app.cro._field', ['section' => 'audience', 'key' => $key, 'field' => $field, 'value' => $experiment->audience[$key] ?? ($field['default'] ?? null), 'namePrefix' => 'audience', 'timezone' => 'UTC'])
                 @endif
             @endforeach
-            <p class="oo-muted oo-small">Customer segments arrive with Audiences & Personalization.</p>
+            <p class="oo-muted oo-small">{{ $checkoutBlock ? 'Checkout and Thank You pages only know the cart value and the buyer\'s country.' : 'Customer segments arrive with Audiences & Personalization.' }}</p>
         </s-section>
 
         <s-section heading="5. Primary metric" id="step-primary">
             <p class="oo-muted">The one number that decides the winner.</p>
             @foreach (ExperimentManager::PRIMARY as $key => $label)
                 <label class="oo-radio"><input type="radio" name="primary_metric" value="{{ $key }}" @checked($experiment->primary_metric === $key)><span><strong>{{ $label }}</strong>
-                    <small>{{ ['conversion_rate' => 'Share of visitors who place an order after seeing the experience. Two-proportion z-test.', 'revenue_per_visitor' => 'Order revenue divided by visitors, so bigger orders count. Welch\'s t-test.', 'revenue' => 'Total revenue, compared per visitor so unequal splits stay fair. Welch\'s t-test.'][$key] }}</small></span></label>
+                    <small>{{ ['conversion_rate' => 'Share of visitors who place an order after seeing the experience. Two-proportion z-test.', 'revenue_per_visitor' => 'Order revenue divided by visitors, so bigger orders count. Welch\'s t-test.', 'revenue' => 'Total revenue, compared per visitor so unequal splits stay fair. Welch\'s t-test.', 'click_rate' => 'Share of visitors who click the block (a button, link or accepting its offer). Best for Thank You and Order Status blocks, where the order is already placed. Two-proportion z-test.'][$key] }}</small></span></label>
             @endforeach
         </s-section>
 
@@ -156,7 +156,7 @@
             <div class="oo-form-row">
                 <label class="oo-field">Minimum days<input type="number" name="min_days" value="{{ $experiment->min_days }}" min="7" max="90"></label>
                 <label class="oo-field">Visitors per variant<input type="number" name="min_visitors" value="{{ $experiment->min_visitors }}" min="1000"></label>
-                <label class="oo-field">Conversions per variant<input type="number" name="min_conversions" value="{{ $experiment->min_conversions }}" min="100"></label>
+                <label class="oo-field">{{ $experiment->primary_metric === 'click_rate' ? 'Clicks' : 'Conversions' }} per variant<input type="number" name="min_conversions" value="{{ $experiment->min_conversions }}" min="100"></label>
                 <label class="oo-field">End date (optional)<input type="date" name="ends_at" value="{{ $experiment->ends_at?->toDateString() }}"></label>
             </div>
             @if ($err('ends_at'))<p class="b-error">{{ $err('ends_at') }}</p>@endif
@@ -198,6 +198,10 @@
 
 @push('scripts')
     <script src="{{ route('storefront.asset', 'orderorbit.js') }}"></script>
+    @if ($checkoutBlock)
+        <script src="{{ asset('js/checkout-preview.js') }}?v={{ filemtime(public_path('js/checkout-preview.js')) }}"></script>
+        <link rel="stylesheet" href="{{ asset('css/checkout-preview.css') }}?v={{ filemtime(public_path('css/checkout-preview.css')) }}">
+    @endif
     <script>
         (() => {
             const form = document.querySelector('[data-xp-form]');

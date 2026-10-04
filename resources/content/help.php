@@ -105,6 +105,7 @@ return [
             ['How are visitors split?', 'Each visitor is put in a variant by a stable hash of the test and a visitor id kept in their browser, so they see the same version every visit. Visitors outside the audience see the experience as published and aren\'t counted.'],
             ['When is a winner declared?', 'Only after the test has run at least 7 days and every variant has 1,000 visitors and 100 conversions, and the primary metric is significantly better at 95% confidence (Bonferroni-corrected for A/B/C) without breaking a guardrail. Until then the results say "Collecting data".'],
             ['What counts as a conversion?', 'A visitor places an order after first seeing the test. Revenue per visitor and AOV use those orders. Only shoppers who allow analytics are counted.'],
+            ['Can I test checkout and Thank You blocks?', 'Yes. The split happens inside Shopify\'s checkout, wherever the OrderOrbit Space block for that type is placed. Checkout tests can target cart value and country. Thank You and Order Status blocks are judged by click-through rate, since the order is already placed.'],
             ['What does "Apply winner" do?', 'It publishes the winning variant\'s template, text and design to the experience for everyone and completes the test.'],
         ],
     ],

@@ -26,7 +26,7 @@
     @if ($canManage)
         <s-section heading="Create a test">
             @if ($testable->isEmpty())
-                <s-paragraph>Publish a storefront experience first, such as an upsell, countdown, sticky add to cart or trust block. Tests split the traffic of a live experience.</s-paragraph>
+                <s-paragraph>Publish an experience first, such as an upsell, countdown, sticky add to cart, trust or checkout block. Tests split the traffic of a live experience.</s-paragraph>
             @else
                 <form method="POST" action="{{ app_route('app.experiments.store') }}" class="oo-form-row">
                     <label class="oo-field" style="flex:1;min-width:240px">Experience to test
@@ -38,7 +38,7 @@
                     </label>
                     <s-button type="submit" variant="primary">Create test</s-button>
                 </form>
-                <p class="oo-muted oo-small">Bundles, Progressive gifts and checkout blocks can't be tested yet.</p>
+                <p class="oo-muted oo-small">Storefront experiences and checkout, Thank You and Order Status blocks can be tested. Bundles, Progressive gifts, the post-purchase offer and customer account blocks can't yet.</p>
             @endif
         </s-section>
     @endif

@@ -8,7 +8,7 @@ import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
 import { createContext } from 'preact';
 import { useContext, useEffect, useState } from 'preact/hooks';
-import { boxStyle, choose, deadlineLeft, fill, imageStyle, numericId, pageFor, progress } from './select.js';
+import { assign, boxStyle, choose, deadlineLeft, fill, imageStyle, numericId, pageFor, progress } from './select.js';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -39,7 +39,7 @@ function track(exp, event, extra) {
   try {
     shopify.analytics?.publish('orderorbit_event', Object.assign({
       event: 'orderorbit:' + event, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version,
-    }, extra || {}));
+    }, exp.xv ? { experiment_id: exp.x.id, variant: exp.xv } : {}, extra || {}));
   } catch (e) {
     /* analytics not available on this page */
   }
@@ -49,11 +49,23 @@ function Extension() {
   const page = pageFor(shopify.extension.target);
   const payload = readPayload();
   const subtotal = Number(shopify.cost?.subtotalAmount?.value?.amount || 0);
-  const exp = choose(payload, shopify.settings?.value, {
-    page,
-    subtotal,
-    country: shopify.localization?.country?.value?.isoCode,
-  });
+  const country = shopify.localization?.country?.value?.isoCode;
+  const published = choose(payload, shopify.settings?.value, { page, subtotal, country });
+  const visitor = useVisitor(published && published.x);
+  // In an A/B test, wait for the visitor id so nobody sees one variant and then another.
+  const test = published && published.x ? (visitor === undefined ? null : assign(published, visitor, { subtotal, country })) : { exp: published, variant: null };
+  const exp = test && test.exp;
+
+  useEffect(() => {
+    if (!test || !test.variant) return;
+    // One exposure per buyer and variant.
+    const key = 'oo_xp_' + published.x.id;
+    Promise.resolve(shopify.storage?.read(key)).then((seen) => {
+      if (seen === test.variant) return;
+      shopify.storage?.write(key, test.variant);
+      track(test.tracked, 'experiment_exposed', { holdout: !test.exp });
+    }).catch(() => {});
+  }, [test && test.variant]);
 
   useEffect(() => {
     if (exp && exp.analytics?.track_views !== false) track(exp, 'experience_viewed', { page_type: page });
@@ -72,6 +84,23 @@ const TextStyle = createContext({});
 function T({ color, tone, type, children }) {
   const style = useContext(TextStyle);
   return <s-text type={type} color={color || style.color} tone={tone || style.tone}>{children}</s-text>;
+}
+
+/** A random id for this buyer, kept in the extension's storage (undefined while loading). */
+function useVisitor(needed) {
+  const [id, setId] = useState(undefined);
+  useEffect(() => {
+    if (!needed) return;
+    Promise.resolve(shopify.storage?.read('oo_vid'))
+      .then((saved) => {
+        if (saved) return setId(String(saved));
+        const fresh = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        setId(fresh);
+        return shopify.storage?.write('oo_vid', fresh);
+      })
+      .catch(() => setId(null)); // storage unavailable: the block shows as published
+  }, [!!needed]);
+  return id;
 }
 
 /**

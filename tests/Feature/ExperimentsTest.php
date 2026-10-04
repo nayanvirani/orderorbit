@@ -108,7 +108,8 @@ class ExperimentsTest extends TestCase
     public function test_unsupported_experiences_holdouts_and_plan(): void
     {
         $this->assertNotNull(ExperimentManager::unsupported(app(ExperienceManager::class)->create($this->store, 'bundles', 'quantity-breaks', null)));
-        $this->assertNotNull(ExperimentManager::unsupported(app(ExperienceManager::class)->create($this->store, 'ty-survey', 'choice-list', null)));
+        $this->assertNotNull(ExperimentManager::unsupported(app(ExperienceManager::class)->create($this->store, 'account-support', 'support-card', null)));
+        $this->assertNotNull(ExperimentManager::unsupported(app(ExperienceManager::class)->create($this->store, 'post-purchase', array_key_first(\App\Experiences\Registry::type('post-purchase')['templates']), null)));
         $countdown = $this->published();
         $this->assertTrue(ExperimentManager::canHoldout($countdown));
         $this->assertFalse(ExperimentManager::canHoldout(app(ExperienceManager::class)->create($this->store, 'free-gifts', \App\Experiences\Registry::type('free-gifts')['templates'] ? array_key_first(\App\Experiences\Registry::type('free-gifts')['templates']) : 'x', null)), 'Discount types can\'t hide the widget while the discount applies.');
@@ -219,5 +220,55 @@ class ExperimentsTest extends TestCase
         // Pixel events carry the test and variant.
         $this->call('POST', '/api/pixel', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode(['t' => str_repeat('a', 40), 's' => $this->store->shop_domain, 'k' => 'e', 'e' => 'experiment_exposed', 'x' => $experience->handle, 'ty' => 'countdown', 'xp' => $experiment->handle, 'xv' => 'B', 'vid' => 'v1']));
         $this->assertSame(['expose', 'orderorbit:experiment_exposed', $experiment->handle, 'B'], array_values(AnalyticsEvent::where('event', 'expose')->sole()->only(['event', 'name', 'experiment_handle', 'variant'])));
+    }
+
+    public function test_checkout_and_thank_you_blocks_can_be_tested(): void
+    {
+        $this->store->forceFill(['capabilities' => ['checkout_blocks' => true]])->save();
+        $manager = app(ExperienceManager::class);
+        $trust = $manager->create($this->store, 'checkout-trust', 'trust-row', null);
+        $manager->publish($trust, null);
+        $survey = $manager->create($this->store, 'ty-survey', 'choice-list', null);
+        $manager->publish($survey, null);
+        $this->assertNull(ExperimentManager::unsupported($trust->fresh()));
+
+        // Thank You blocks are judged on clicks: the order is already placed.
+        $experiments = app(ExperimentManager::class);
+        $ty = $experiments->create($this->store, $survey->fresh('publishedVersion'), null);
+        $this->assertSame('click_rate', $ty->primary_metric);
+
+        $test = $experiments->create($this->store, $trust->fresh('publishedVersion'), null);
+        $this->assertSame('conversion_rate', $test->primary_metric);
+        $this->assertSame(['countries', 'cart_min', 'cart_max'], ExperimentManager::audienceFor($trust));
+        $errors = $experiments->save($test, [
+            'name' => 'Trust layout', 'primary_metric' => 'conversion_rate',
+            'audience' => ['device' => 'mobile', 'countries' => 'US', 'cart_min' => '25'],
+            'variants' => ['A' => ['allocation' => 50], 'B' => ['allocation' => 50, 'template_key' => 'icon-grid', 'design' => ['ck_background' => 'subdued']]],
+        ]);
+        $this->assertSame([], $errors);
+        $test = $test->fresh(['variants', 'experience', 'store']);
+        $this->assertEquals(['countries' => 'US', 'cart_min' => 25], $test->audience, 'Checkout doesn\'t know the device.');
+        $experiments->launch($test, null);
+
+        $block = collect(app(StorefrontPublisher::class)->checkoutPayload($this->store)['experiences'])->firstWhere('type', 'checkout-trust');
+        $this->assertSame($test->handle, $block['x']['id']);
+        $this->assertSame(['key' => 'B', 'alloc' => 50, 'template' => 'icon-grid', 'style' => 'grid', 'design' => ['ck_background' => 'subdued']], $block['x']['variants'][1]);
+
+        // Clicks per visitor decide click-through tests.
+        $test->forceFill(['started_at' => now()->subHour()])->save();
+        $start = now()->subMinutes(30);
+        foreach (['A' => 10, 'B' => 30] as $variant => $clicks) {
+            for ($i = 0; $i < 40; $i++) {
+                AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'expose', 'name' => 'orderorbit:experiment_exposed', 'visitor_id' => $variant.$i, 'experiment_handle' => $test->handle, 'variant' => $variant, 'occurred_at' => $start]);
+                if ($i < $clicks) {
+                    AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'click', 'name' => 'orderorbit:checkout_block_clicked', 'visitor_id' => $variant.$i, 'experience_handle' => $trust->handle, 'occurred_at' => $start->copy()->addMinute()]);
+                }
+            }
+        }
+        $test->forceFill(['primary_metric' => 'click_rate'])->save();
+        $r = app(Results::class)->for($test->fresh(['variants', 'experience']));
+        $this->assertSame([25.0, 75.0], [$r['variants']['A']['click_rate'], $r['variants']['B']['click_rate']]);
+        $this->assertLessThan(0.001, $r['comparisons']['B']['click_rate']['p']);
+        $this->assertStringContainsString('clicks per variant', $r['decision']['headline']);
     }
 }

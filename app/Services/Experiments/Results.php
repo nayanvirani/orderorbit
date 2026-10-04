@@ -23,7 +23,7 @@ class Results
         $handle = $experiment->experience->handle;
 
         $empty = fn () => ['visitors' => 0, 'conversions' => 0, 'orders' => 0, 'revenue' => 0.0, 'units' => 0, 'rpv' => ['n' => 0, 'sum' => 0.0, 'sumsq' => 0.0], 'aov' => ['n' => 0, 'sum' => 0.0, 'sumsq' => 0.0],
-            'add_to_cart' => 0, 'checkout_started' => 0, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundles' => 0, 'abandoned' => 0, 'devices' => [], 'daily' => []];
+            'add_to_cart' => 0, 'checkout_started' => 0, 'clickers' => 0, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundles' => 0, 'abandoned' => 0, 'devices' => [], 'daily' => []];
         $stats = array_fill_keys($keys, null);
         foreach ($keys as $key) {
             $stats[$key] = $empty();
@@ -45,18 +45,19 @@ class Results
         foreach (array_chunk(array_keys($exposed), 500) as $chunk) {
             $events = AnalyticsEvent::where('store_id', $experiment->store_id)->whereIn('visitor_id', $chunk)->whereBetween('occurred_at', [$from, $to])
                 ->where(fn ($q) => $q->whereIn('event', ['order'])->orWhereIn('name', ['product_added_to_cart', 'checkout_started'])
-                    ->orWhere(fn ($q) => $q->where('experience_handle', $handle)->whereIn('event', ['add', 'accept', 'decline', 'close'])))
+                    ->orWhere(fn ($q) => $q->where('experience_handle', $handle)->whereIn('event', ['add', 'click', 'accept', 'decline', 'close'])))
                 ->get(['visitor_id', 'event', 'name', 'value', 'quantity', 'occurred_at', 'experience_handle']);
             foreach ($events as $e) {
                 if ($e->occurred_at->lt($exposed[$e->visitor_id]['at'])) {
                     continue;
                 }
                 $p = &$people[$e->visitor_id];
-                $p ??= ['orders' => [], 'units' => 0, 'atc' => false, 'checkout' => false, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundle' => false];
+                $p ??= ['orders' => [], 'units' => 0, 'atc' => false, 'checkout' => false, 'clicked' => false, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundle' => false];
                 match (true) {
                     $e->event === 'order' => [$p['orders'][] = (float) $e->value, $p['units'] += $e->quantity],
                     $e->name === 'product_added_to_cart' || $e->event === 'add' => $p['atc'] = true,
                     $e->name === 'checkout_started' => $p['checkout'] = true,
+                    $e->event === 'click' => $p['clicked'] = true,
                     $e->event === 'accept' => $p['accepts']++,
                     $e->event === 'decline' => $p['declines']++,
                     $e->event === 'close' => $p['closes']++,
@@ -71,7 +72,7 @@ class Results
 
         foreach ($exposed as $visitor => $x) {
             $s = &$stats[$x['variant']];
-            $p = $people[$visitor] ?? ['orders' => [], 'units' => 0, 'atc' => false, 'checkout' => false, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundle' => false];
+            $p = $people[$visitor] ?? ['orders' => [], 'units' => 0, 'atc' => false, 'checkout' => false, 'clicked' => false, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundle' => false];
             $revenue = array_sum($p['orders']);
             $converted = $p['orders'] !== [];
             $s['visitors']++;
@@ -85,6 +86,8 @@ class Results
             }
             $s['add_to_cart'] += $p['atc'] ? 1 : 0;
             $s['checkout_started'] += $p['checkout'] ? 1 : 0;
+            // Accepting an upsell from the block counts as a click too.
+            $s['clickers'] += $p['clicked'] || $p['accepts'] ? 1 : 0;
             $s['abandoned'] += $p['atc'] && ! $converted ? 1 : 0;
             $s['accepts'] += $p['accepts'];
             $s['declines'] += $p['declines'];
@@ -111,6 +114,7 @@ class Results
             $b = $stats[$key];
             $comparisons[$key] = [
                 'conversion_rate' => Stats::proportions($a['visitors'], $a['conversions'], $b['visitors'], $b['conversions'], $alpha),
+                'click_rate' => Stats::proportions($a['visitors'], $a['clickers'], $b['visitors'], $b['clickers'], $alpha),
                 'revenue_per_visitor' => Stats::welch($a['rpv'], $b['rpv'], $alpha),
                 'aov' => Stats::welch($a['aov'], $b['aov'], $alpha),
                 'guardrails' => $this->guardrails($experiment, $metrics['A'], $metrics[$key]),
@@ -143,6 +147,8 @@ class Results
             'units_per_order' => $s['orders'] ? $s['units'] / $s['orders'] : null,
             'add_to_cart' => $rate($s['add_to_cart']),
             'checkout_started' => $rate($s['checkout_started']),
+            'click_rate' => $rate($s['clickers']),
+            'clickers' => $s['clickers'],
             'purchase' => $rate($s['conversions']),
             'upsell_acceptance' => ($s['accepts'] + $s['declines']) ? $s['accepts'] / ($s['accepts'] + $s['declines']) * 100 : null,
             'bundle_completion' => $rate($s['bundles']),
@@ -171,7 +177,8 @@ class Results
      */
     private function decide(Experiment $experiment, array $stats, array $comparisons, float $alpha): array
     {
-        $metric = $experiment->primary_metric === 'conversion_rate' ? 'conversion_rate' : 'revenue_per_visitor';
+        $metric = self::primaryKey($experiment);
+        $counted = $metric === 'click_rate' ? 'clickers' : 'conversions';
         $days = $experiment->daysRunning();
         $short = [];
         if ($days < $experiment->min_days) {
@@ -181,9 +188,9 @@ class Results
         if ($fewest < $experiment->min_visitors) {
             $short[] = number_format($experiment->min_visitors).' visitors per variant (lowest now '.number_format($fewest).')';
         }
-        $fewestConv = min(array_column($stats, 'conversions') ?: [0]);
+        $fewestConv = min(array_column($stats, $counted) ?: [0]);
         if ($fewestConv < $experiment->min_conversions) {
-            $short[] = number_format($experiment->min_conversions).' conversions per variant (lowest now '.number_format($fewestConv).')';
+            $short[] = number_format($experiment->min_conversions).($counted === 'clickers' ? ' clicks' : ' conversions').' per variant (lowest now '.number_format($fewestConv).')';
         }
         $progress = min(1, $days / max(1, $experiment->min_days), $fewest / max(1, $experiment->min_visitors), $fewestConv / max(1, $experiment->min_conversions));
 
@@ -208,6 +215,15 @@ class Results
         }
 
         return ['state' => 'no_winner', 'winner' => null, 'progress' => 1, 'headline' => 'No clear winner: the difference isn\'t statistically significant at '.round((1 - $alpha) * 100, 1).'% confidence.'];
+    }
+
+    /** The comparison that decides the test: conversion, clicks, or revenue per visitor. */
+    public static function primaryKey(Experiment $experiment): string
+    {
+        return match ($experiment->primary_metric) {
+            'conversion_rate', 'click_rate' => $experiment->primary_metric,
+            default => 'revenue_per_visitor',
+        };
     }
 
     public static function p(?float $p): string

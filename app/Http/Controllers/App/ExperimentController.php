@@ -146,7 +146,7 @@ class ExperimentController extends Controller
             fputcsv($out, ['Variant', 'Name', 'Allocation %', 'Visitors', 'Conversions', 'Conversion rate %', 'Orders', 'Revenue', 'Revenue per visitor', 'AOV', 'Lift vs control %', 'p-value']);
             foreach ($experiment->variants as $v) {
                 $m = $r['variants'][$v->key];
-                $c = $r['comparisons'][$v->key][$experiment->primary_metric === 'conversion_rate' ? 'conversion_rate' : 'revenue_per_visitor'] ?? null;
+                $c = $r['comparisons'][$v->key][Results::primaryKey($experiment)] ?? null;
                 fputcsv($out, [$v->key, $v->name, $v->allocation, $m['visitors'], $m['conversions'], round((float) $m['conversion_rate'], 3), $m['orders'], $m['revenue'],
                     round((float) $m['revenue_per_visitor'], 4), round((float) $m['aov'], 2), $c ? round((float) $c['lift'], 2) : '', $c ? round($c['p'], 5) : '']);
             }
@@ -167,7 +167,8 @@ class ExperimentController extends Controller
             'templates' => $type['templates'] ?? [],
             'textFields' => Registry::has($experience->type) ? ExperimentManager::textFields($experience->type) : [],
             'designFields' => Registry::has($experience->type) ? (Schema::fields($experience->type)['design'] ?? []) : [],
-            'audienceFields' => array_intersect_key(Schema::shared()['targeting'], array_flip(ExperimentManager::AUDIENCE)),
+            'audienceFields' => array_intersect_key(Schema::shared()['targeting'], array_flip(ExperimentManager::audienceFor($experience))),
+            'checkoutBlock' => in_array($type['surface'] ?? '', ['checkout', 'thank-you'], true),
             'canHoldout' => ExperimentManager::canHoldout($experience),
             'problems' => $this->manager->launchProblems($experiment),
             'fieldErrors' => $errors,

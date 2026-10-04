@@ -304,7 +304,7 @@ return [
         'icon' => 'split',
         'eyebrow' => 'EXPERIMENTS',
         'h1' => 'Test ideas, not guesses.',
-        'hero' => 'Run A/B or A/B/C tests on your storefront experiences, with traffic allocation, guardrails and results you can trust.',
+        'hero' => 'Run A/B or A/B/C tests on your storefront experiences and checkout blocks, with traffic allocation, guardrails and results you can trust.',
         'seo_title' => 'Shopify A/B Testing for CRO | OrderOrbit Space',
         'seo_description' => 'Test bundles, upsells and offers with traffic allocation, guardrail metrics and clear results.',
         'keyword' => 'Shopify A/B testing',
@@ -317,7 +317,8 @@ return [
         'faqs' => [
             ['How is the winner decided?', 'A two-proportion z-test for conversion rate and Welch\'s t-test for revenue per visitor, at 95% confidence (Bonferroni-corrected for A/B/C), after at least 7 days and 1,000 visitors and 100 conversions per variant, with no guardrail breached.'],
             ['What can a variant change?', 'The template, design and text, or hide the experience as a holdout. Products, prices and discounts stay as published so checkout matches what shoppers saw.'],
-            ['Which experiences can be tested?', 'Storefront experiences such as upsells, countdowns, sticky add to cart, trust, sales pop and pre-orders. Bundles, Progressive gifts and checkout blocks can\'t be tested yet.'],
+            ['Which experiences can be tested?', 'Storefront experiences such as upsells, countdowns, sticky add to cart, trust, sales pop and pre-orders, plus checkout, Thank You and Order Status blocks. Bundles, Progressive gifts, the post-purchase offer and customer account blocks can\'t be tested yet.'],
+            ['How are Thank You blocks judged?', 'By click-through rate: the share of buyers who click the block or accept its offer, since the order is already placed.'],
             ['Which plan includes it?', 'Growth and Scale.'],
         ],
     ],
