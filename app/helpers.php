@@ -41,3 +41,13 @@ if (! function_exists('money')) {
         return ($amount < 0 ? '-' : '').($symbols[$currency] ?? $currency.' ').number_format(abs((float) $amount), $decimals);
     }
 }
+
+if (! function_exists('page')) {
+    /**
+     * A React admin page: resources/app/pages/{component}.jsx with these props.
+     */
+    function page(string $component, array $props = [], int $status = 200): App\Support\Spa\Page
+    {
+        return new App\Support\Spa\Page($component, $props, $status);
+    }
+}

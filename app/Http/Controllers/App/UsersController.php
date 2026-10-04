@@ -10,19 +10,25 @@ use App\Support\Permissions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 
 class UsersController extends Controller
 {
-    public function index(Request $request, Store $store): View
+    public function index(Request $request, Store $store): Page
     {
         $me = $request->attributes->get('storeUser');
+        $users = $store->users()->orderByRaw('disabled_at is not null')->orderByRaw("case role when 'owner' then 0 when 'admin' then 1 else 2 end")->orderBy('created_at')->get();
 
-        return view('app.settings.users', [
-            'store' => $store,
-            'me' => $me,
-            'users' => $store->users()->orderByRaw('disabled_at is not null')->orderByRaw("case role when 'owner' then 0 when 'admin' then 1 else 2 end")->orderBy('created_at')->get(),
+        return page('settings/users', [
+            'users' => $users->map(fn (StoreUser $u) => [
+                'id' => $u->id, 'name' => $u->displayName(), 'email' => $u->email, 'role' => $u->role, 'status' => $u->status(),
+                'me' => $u->is($me), 'account_owner' => (bool) $u->account_owner, 'pending' => $u->isPendingInvite(),
+                'disabled' => $u->disabled_at !== null, 'last_active_at' => $u->last_active_at,
+                'locked' => $u->is($me) || $u->account_owner || ($u->role === 'owner' && $me->role !== 'owner'),
+            ]),
             'assignable' => Permissions::assignableBy($me->role),
+            'roles' => Permissions::ROLES,
+            'matrix' => array_values(Permissions::MATRIX),
         ]);
     }
 

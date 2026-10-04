@@ -1,10 +1,6 @@
 /* React admin: layout and tiles around Polaris web components. */
 :root { --ink: #303030; --muted: #616161; --line: #e3e3e3; --soft: #f6f6f7; --accent: #6d5df6; --ok: #0c7a43; --bad: #b42318; }
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #f1f1f1; }
-a { color: #005bd3; text-decoration: none; }
-a:hover { text-decoration: underline; }
-s-page[inlinesize="large"] { display: block; max-width: 1240px; margin-inline: auto; }
+body { margin: 0; background: #f1f1f1; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
 
@@ -69,3 +65,20 @@ s-page[inlinesize="large"] { display: block; max-width: 1240px; margin-inline: a
 .tests li:last-child { border-bottom: 0; }
 .empty { display: grid; gap: 10px; justify-items: start; }
 .empty p { margin: 0; color: var(--muted); }
+
+/* Forms */
+.ui-field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.ui-label { font-weight: 550; color: #303030; }
+.ui-help { color: var(--muted); font-size: 12px; font-weight: 450; }
+.ui-error { color: var(--bad); font-size: 12px; font-weight: 550; }
+.ui-field [aria-invalid] { border-color: var(--bad) !important; }
+.ui-check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.ui-check input { margin-top: 2px; }
+.ui-check small { display: block; color: var(--muted); font-size: 12px; }
+.ui-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; }
+.ui-stack { display: grid; gap: 12px; }
+.ui-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ui-between { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.ui-empty { display: grid; gap: 8px; justify-items: center; text-align: center; padding: 28px 16px; }
+.ui-empty strong { font-size: 15px; color: #1a1a1a; }
+.ui-empty p { margin: 0; max-width: 460px; color: var(--muted); }

@@ -96,8 +96,8 @@ class SalesLimitTest extends TestCase
         $this->assertSame(['ok', 2, ['count' => 1, 'usd' => 5000.0]], [$status['state'], $status['orders'], $status['test_orders']]);
 
         // The billing page says why test orders aren't in the total.
-        $this->get('/app/settings/billing', $this->as($this->member($store, 'owner')))->assertOk()
-            ->assertSee('2 orders counted this cycle')->assertSee('1 test order ($5,000) is not counted');
+        $this->page('/app/settings/billing', $this->member($store, 'owner'))->assertOk()
+            ->assertJsonPath('props.sales.orders', 2)->assertJsonPath('props.sales.test_orders', ['count' => 1, 'usd' => 5000]);
 
         // Our own stores can opt in to counting test orders, to try the limit end to end.
         config(['shopify.billing.count_test_orders_for' => [$store->shop_domain]]);
@@ -172,7 +172,7 @@ class SalesLimitTest extends TestCase
         $this->assertSame('published', $store->experiences()->first()->status, 'Nothing is deleted or unpublished.');
         $this->get('/app', $this->as($owner))->assertRedirectContains('/app/settings/billing');
         $this->get('/app/cro', $this->as($owner))->assertRedirectContains('upgrade_required');
-        $this->get('/app/settings/billing', $this->as($owner))->assertOk()->assertSee('All features are stopped')->assertSee('Upgrade plan');
+        $this->page('/app/settings/billing', $owner)->assertOk()->assertJsonPath('props.sales.state', 'paused')->assertJsonPath('props.sales.next.name', 'Starter');
 
         // Upgrading to a plan that fits turns everything back on straight away.
         $store->refresh()->forceFill(['plan' => 'starter'])->save();
@@ -270,9 +270,9 @@ class SalesLimitTest extends TestCase
         $this->travel(5)->minutes();
         $store->forceFill(['sales_checked_at' => now()])->save();
 
-        $this->get('/app/settings/billing', $this->as($owner))->assertOk()
-            ->assertSee('Store sales · this cycle')->assertSee('$1,300')->assertSee('of $1,000 on your plan')
-            ->assertSee('Upgrade required by')->assertSee('Past cycle')->assertSee('$640')
-            ->assertSee('Up to $8,000 in monthly store sales')->assertSee('Live offers on your plan')->assertSee('Checkout, Thank You and Order Status blocks');
+        $this->page('/app/settings/billing', $owner)->assertOk()
+            ->assertJsonPath('props.sales.sales', 1300)->assertJsonPath('props.sales.limit', 1000)->assertJsonPath('props.sales.state', 'over')
+            ->assertJsonPath('props.cycles.0.sales', 640)->assertJsonPath('props.cycles.0.orders', 9)
+            ->assertJsonPath('props.plans.1.features.0', 'Up to $8,000 in monthly store sales')->assertJsonCount(4, 'props.usage');
     }
 }

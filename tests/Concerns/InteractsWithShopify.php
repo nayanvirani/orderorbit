@@ -68,6 +68,14 @@ trait InteractsWithShopify
         return ['Authorization' => 'Bearer '.$this->sessionToken($sub)];
     }
 
+    /**
+     * A React admin page as the client fetches it: {component, props, shared}.
+     */
+    protected function page(string $url, StoreUser|int $user): \Illuminate\Testing\TestResponse
+    {
+        return $this->getJson($url, $this->as($user) + [\App\Support\Spa\Page::HEADER => '1']);
+    }
+
     protected function fakeAssociatedUser(array $user): void
     {
         Http::fake(["{$this->shop}/admin/oauth/access_token" => Http::response([

@@ -8,16 +8,16 @@ use App\Models\CroSetting;
 use App\Models\Store;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 
 /**
  * Settings → Branding (section 40): design tokens every new experience starts from.
  */
 class BrandingController extends Controller
 {
-    public function show(Store $store): View
+    public function show(Store $store): Page
     {
-        return view('app.settings.branding', ['store' => $store, 'branding' => CroSetting::brandingFor($store)]);
+        return page('settings/branding', ['branding' => CroSetting::brandingFor($store), 'currency' => $store->currency ?? 'USD']);
     }
 
     public function update(Request $request, Store $store): RedirectResponse

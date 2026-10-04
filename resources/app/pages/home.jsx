@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApi } from '../useApi.js';
-import { boot, legacy } from '../api.js';
+import { appUrl, useShared } from '../router.jsx';
 import { LoadError, Skeleton, Sparkline, Trend, money, number } from '../components/ui.jsx';
 
 const RANGES = [7, 30, 90];
@@ -9,7 +9,8 @@ const RANGES = [7, 30, 90];
  * Home: what matters first. The page appears at once and each card loads on its own, so a slow
  * report never holds up the rest.
  */
-export default function Dashboard() {
+export default function Home() {
+  const shared = useShared();
   const [days, setDays] = useState(30);
   const overview = useApi('dashboard/overview');
 
@@ -18,8 +19,8 @@ export default function Dashboard() {
       <div className="dash">
         <header className="dash-head">
           <div>
-            <h1>{greeting()}{boot.userName ? `, ${boot.userName}` : ''}</h1>
-            <p>Here's how {boot.storeName || 'your store'} is doing.</p>
+            <h1>{greeting()}{shared.user?.name ? `, ${shared.user.name}` : ''}</h1>
+            <p>Here's how {shared.storeName || 'your store'} is doing.</p>
           </div>
           <div className="dash-range" role="tablist" aria-label="Date range">
             {RANGES.map((d) => (
@@ -32,7 +33,7 @@ export default function Dashboard() {
 
         {overview.data?.alerts?.map((a, i) => (
           <s-banner key={i} tone={a.tone}>
-            {a.text} <s-button variant="tertiary" href={legacy(a.href)}>{a.action}</s-button>
+            {a.text} <s-button variant="tertiary" href={appUrl(a.href)}>{a.action}</s-button>
           </s-banner>
         ))}
 
@@ -68,7 +69,7 @@ function SetupCard({ setup }) {
             <strong>Next: {setup.next.label}</strong>
             <p className="muted">{setup.next.help}</p>
           </div>
-          <s-button variant="primary" href={legacy(setup.next.href)}>{setup.next.action}</s-button>
+          <s-button variant="primary" href={appUrl(setup.next.href)}>{setup.next.action}</s-button>
         </div>
         <ol className="setup-steps">
           {setup.steps.map((s) => <li key={s.label} className={s.done ? 'done' : ''}>{s.label}</li>)}
@@ -112,13 +113,13 @@ function TopExperiences({ days }) {
       {error ? <LoadError error={error} onRetry={reload} /> : loading && !data ? <Skeleton lines={4} /> : !data.items.length ? (
         <div className="empty">
           <p>Your best experiences show up here once shoppers see them.</p>
-          <s-button href={legacy('/app/cro')}>Create an experience</s-button>
+          <s-button href={appUrl('/app/cro')}>Create an experience</s-button>
         </div>
       ) : (
         <ul className="top-list">
           {data.items.map((e) => (
             <li key={e.id}>
-              <a href={legacy(e.href)}>{e.name}</a>
+              <a href={appUrl(e.href)}>{e.name}</a>
               <span className="muted small">{e.type}</span>
               <span className="top-stats"><b>{money(e.revenue, data.currency)}</b> <span className="muted small">{number(e.views)} views · {e.conversion}% bought</span></span>
             </li>
@@ -149,7 +150,7 @@ function QuickActions({ next }) {
       <ul className="actions">
         {quickActions(next).map((a) => (
           <li key={a.label}>
-            <a href={legacy(a.href)}>
+            <a href={appUrl(a.href)}>
               <span className="icon" aria-hidden="true">{a.icon}</span>
               <span><strong>{a.label}</strong><span className="muted small">{a.help}</span></span>
               <span className="arrow" aria-hidden="true">→</span>
@@ -171,7 +172,7 @@ function Activity() {
           <ul className="features">
             {data.features.map((f) => (
               <li key={f.key}>
-                <a href={legacy(f.href)}>{f.label}</a>
+                <a href={appUrl(f.href)}>{f.label}</a>
                 <s-badge tone={f.live ? 'success' : 'neutral'}>{f.live ? `${f.live} live` : f.total ? 'Not live' : 'Not set up'}</s-badge>
               </li>
             ))}
@@ -180,24 +181,24 @@ function Activity() {
       </s-section>
       <s-section heading="Automation">
         {loading && !data ? <Skeleton lines={4} /> : !data.automation.available ? (
-          <p className="muted">Workflows that follow up after orders run on the Scale plan. <a href={legacy('/app/automation')}>Learn more</a></p>
+          <p className="muted">Workflows that follow up after orders run on the Scale plan. <a href={appUrl('/app/automation')}>Learn more</a></p>
         ) : (
           <dl className="facts">
             <dt>Active workflows</dt><dd>{data.automation.workflows}</dd>
             <dt>Runs (30 days)</dt><dd>{number(data.automation.runs)}</dd>
             <dt>Success rate</dt><dd>{data.automation.success_rate === null ? '—' : `${data.automation.success_rate}%`}</dd>
-            <dt>Failed</dt><dd>{data.automation.failed ? <a href={legacy('/app/automation/runs', { status: 'failed' })}>{data.automation.failed}</a> : 0}</dd>
+            <dt>Failed</dt><dd>{data.automation.failed ? <a href={appUrl('/app/automation/runs', { status: 'failed' })}>{data.automation.failed}</a> : 0}</dd>
           </dl>
         )}
       </s-section>
       <s-section heading="A/B tests">
         {loading && !data ? <Skeleton lines={3} /> : !data.tests.length ? (
-          <p className="muted">No tests running. <a href={legacy('/app/experiments')}>Start one</a></p>
+          <p className="muted">No tests running. <a href={appUrl('/app/experiments')}>Start one</a></p>
         ) : (
           <ul className="tests">
             {data.tests.map((t) => (
               <li key={t.id}>
-                <a href={legacy(t.href)}>{t.name}</a>
+                <a href={appUrl(t.href)}>{t.name}</a>
                 <div className="setup-progress small"><i style={{ width: `${t.progress}%` }} /></div>
                 <span className="muted small">{t.headline}</span>
               </li>

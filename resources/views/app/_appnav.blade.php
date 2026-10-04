@@ -1,9 +1,14 @@
+{{-- Shopify's app menu (one level; each section has its own sidebar). Without a plan, only Billing. --}}
+@if (! request()->attributes->get('store')?->hasPlanAccess() || request()->attributes->get('store')?->offersSuspended())
+<s-app-nav>
+    <s-link href="{{ app_route('app.settings.billing') }}" rel="home">{{ request()->attributes->get('store')?->offersSuspended() ? 'Upgrade plan' : 'Choose a plan' }}</s-link>
+</s-app-nav>
+@else
 <s-app-nav>
     <s-link href="{{ app_route('app.dashboard') }}" rel="home">Home</s-link>
     @if (! request()->attributes->get('store')?->goal)
         <s-link href="{{ app_route('app.onboarding') }}">Get started</s-link>
     @endif
-    {{-- Shopify's app menu has one level; each section has its own sub-menu on its pages. --}}
     <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
     <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
     <s-link href="{{ app_route('app.experiments.index') }}">A/B tests</s-link>
@@ -12,3 +17,4 @@
     <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     <s-link href="{{ app_route('app.support.index') }}">Support</s-link>
 </s-app-nav>
+@endif

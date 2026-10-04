@@ -9,7 +9,8 @@ use App\Models\Store;
 use App\Models\WebhookReceipt;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
+use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -26,25 +27,40 @@ class IntegrationsController extends Controller
         'customers/data_request' => 'Customer data requests', 'customers/redact' => 'Customer data deletion', 'shop/redact' => 'Store data deletion',
     ];
 
-    public function integrations(Store $store): View
+    public function integrations(Store $store): Page
     {
         $receipts = WebhookReceipt::where('shop_domain', $store->shop_domain)->where('created_at', '>=', now()->subDays(30))
             ->selectRaw('topic, max(created_at) as last_at, count(*) as n, sum(case when processed_at is null then 1 else 0 end) as unprocessed')
             ->groupBy('topic')->get()->keyBy('topic');
+        $lastEvent = AnalyticsEvent::where('store_id', $store->id)->max('occurred_at');
 
-        return view('app.settings.integrations', [
-            'store' => $store,
-            'receipts' => $receipts,
-            'lastPixelEvent' => AnalyticsEvent::where('store_id', $store->id)->max('occurred_at'),
+        return page('settings/integrations', [
+            'connection' => [
+                'connected' => $store->isInstalled() && ! $store->missingScopes(),
+                'themeBlocks' => $store->capability('online_store_2') !== false,
+                'pixel' => (bool) $store->web_pixel_id,
+                'lastPixelEvent' => $lastEvent ? Carbon::parse($lastEvent) : null,
+                'checkoutBlocks' => (bool) $store->capability('checkout_blocks'),
+                'customerAccounts' => $store->capability('new_customer_accounts') !== false,
+                'themeEditorUrl' => $store->themeEditorUrl('global'),
+            ],
+            'webhooks' => collect(self::TOPICS)->map(fn ($label, $topic) => [
+                'topic' => $topic, 'label' => $label,
+                'received' => (int) ($receipts[$topic]->n ?? 0),
+                'last_at' => isset($receipts[$topic]) ? Carbon::parse($receipts[$topic]->last_at) : null,
+                'unprocessed' => (int) ($receipts[$topic]->unprocessed ?? 0),
+            ])->values(),
         ]);
     }
 
-    public function privacy(Store $store): View
+    public function privacy(Store $store): Page
     {
-        return view('app.settings.privacy', [
-            'store' => $store,
+        $oldest = AnalyticsEvent::where('store_id', $store->id)->min('occurred_at');
+
+        return page('settings/privacy', [
+            'privacy' => collect(array_keys(Store::PRIVACY_DEFAULTS))->mapWithKeys(fn ($k) => [$k => $store->privacy($k)])->all(),
             'events' => AnalyticsEvent::where('store_id', $store->id)->count(),
-            'oldest' => AnalyticsEvent::where('store_id', $store->id)->min('occurred_at'),
+            'oldest' => $oldest ? Carbon::parse($oldest) : null,
         ]);
     }
 

@@ -81,7 +81,7 @@ class PlatformTest extends TestCase
     public function test_privacy_controls_collection_retention_export_and_deletion(): void
     {
         $owner = $this->member($this->store, 'owner');
-        $this->get('/app/settings/privacy', $this->as($owner))->assertOk()->assertSee('Keep analytics events for')->assertSee('Link visits to customer numbers');
+        $this->page('/app/settings/privacy', $owner)->assertOk()->assertJsonPath('props.privacy', ['retention_months' => 13, 'browsing_events' => true, 'journeys' => true]);
         $this->post('/app/settings/privacy', ['retention_months' => 3, 'journeys' => '0'], $this->as($owner))->assertRedirectContains('notice=saved');
         $this->store->refresh();
         $this->assertSame([3, false, false], [$this->store->privacy('retention_months'), $this->store->privacy('browsing_events'), $this->store->privacy('journeys')]);
@@ -108,8 +108,9 @@ class PlatformTest extends TestCase
         $owner = $this->member($this->store, 'owner');
         WebhookReceipt::create(['webhook_id' => 'w1', 'shop_domain' => $this->store->shop_domain, 'topic' => 'orders/paid', 'processed_at' => now()]);
         WebhookReceipt::create(['webhook_id' => 'w2', 'shop_domain' => $this->store->shop_domain, 'topic' => 'orders/create']);
-        $this->get('/app/settings/integrations', $this->as($owner))->assertOk()
-            ->assertSee('Web pixel (analytics)')->assertSee('orders/paid')->assertSee('1 not processed')->assertSee('Customer account extension')->assertSee('Klaviyo');
+        $hooks = collect($this->page('/app/settings/integrations', $owner)->assertOk()->assertJsonPath('props.connection.pixel', true)->json('props.webhooks'))->keyBy('topic');
+        $this->assertSame([1, 0], [$hooks['orders/paid']['received'], $hooks['orders/paid']['unprocessed']]);
+        $this->assertSame(1, $hooks['orders/create']['unprocessed']);
     }
 
     public function test_onboarding_walks_all_eight_steps(): void

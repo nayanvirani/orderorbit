@@ -15,7 +15,8 @@ class Store extends Model
         'onboarding_completed_at', 'installed_at', 'uninstalled_at', 'cart_transform_id', 'pixel_token', 'web_pixel_id',
     ];
 
-    protected $hidden = ['access_token', 'refresh_token'];
+    /** Never serialized (the React admin receives page data as JSON). */
+    protected $hidden = ['access_token', 'refresh_token', 'access_token_expires_at', 'refresh_token_expires_at', 'pixel_token', 'scopes'];
 
     protected function casts(): array
     {

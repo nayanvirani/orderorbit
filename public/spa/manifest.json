@@ -1,0 +1,114 @@
+{
+  "_form-Bc-ykvfw.js": {
+    "file": "assets/form-Bc-ykvfw.js",
+    "name": "form",
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "main.jsx": {
+    "file": "assets/main-mIQFeVD7.js",
+    "name": "main",
+    "src": "main.jsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "pages/forbidden.jsx",
+      "pages/home.jsx",
+      "pages/settings/activity.jsx",
+      "pages/settings/billing.jsx",
+      "pages/settings/branding.jsx",
+      "pages/settings/integrations.jsx",
+      "pages/settings/privacy.jsx",
+      "pages/settings/store.jsx",
+      "pages/settings/users.jsx"
+    ],
+    "css": [
+      "assets/main-BGOg1fLB.css"
+    ]
+  },
+  "pages/forbidden.jsx": {
+    "file": "assets/forbidden-C_lhPKPc.js",
+    "name": "forbidden",
+    "src": "pages/forbidden.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "pages/home.jsx": {
+    "file": "assets/home-CNInU_L_.js",
+    "name": "home",
+    "src": "pages/home.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "pages/settings/activity.jsx": {
+    "file": "assets/activity-BazAL_m2.js",
+    "name": "activity",
+    "src": "pages/settings/activity.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "pages/settings/billing.jsx": {
+    "file": "assets/billing-FCdZs8jY.js",
+    "name": "billing",
+    "src": "pages/settings/billing.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "pages/settings/branding.jsx": {
+    "file": "assets/branding-OrBHeHmG.js",
+    "name": "branding",
+    "src": "pages/settings/branding.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-Bc-ykvfw.js"
+    ]
+  },
+  "pages/settings/integrations.jsx": {
+    "file": "assets/integrations-CRxLbDX1.js",
+    "name": "integrations",
+    "src": "pages/settings/integrations.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "pages/settings/privacy.jsx": {
+    "file": "assets/privacy-DdmobZC-.js",
+    "name": "privacy",
+    "src": "pages/settings/privacy.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-Bc-ykvfw.js"
+    ]
+  },
+  "pages/settings/store.jsx": {
+    "file": "assets/store-xysNLDZ_.js",
+    "name": "store",
+    "src": "pages/settings/store.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-Bc-ykvfw.js"
+    ]
+  },
+  "pages/settings/users.jsx": {
+    "file": "assets/users-Q1EwHlnJ.js",
+    "name": "users",
+    "src": "pages/settings/users.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-Bc-ykvfw.js"
+    ]
+  }
+}

@@ -9,17 +9,25 @@ use App\Services\Shopify\StoreSync;
 use App\Services\Shopify\TokenExchange;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 use Throwable;
 
 class StoreSettingsController extends Controller
 {
-    public function show(Store $store): View
+    public function show(Store $store): Page
     {
-        return view('app.settings.store', [
-            'store' => $store,
+        return page('settings/store', [
+            'store' => [
+                'name' => $store->name, 'shop_domain' => $store->shop_domain, 'shopify_plan' => $store->shopify_plan,
+                'currency' => $store->currency, 'timezone' => $store->timezone, 'installed_at' => $store->installed_at,
+                'installed' => $store->isInstalled(), 'theme_name' => $store->theme_name, 'pixel' => (bool) $store->web_pixel_id,
+                'capabilities_checked_at' => $store->capabilities_checked_at,
+            ],
+            'capabilities' => collect(['presentment_currencies', 'online_store_2', 'checkout_blocks', 'development_store', 'thank_you_blocks', 'new_customer_accounts'])
+                ->mapWithKeys(fn ($key) => [$key => $store->capability($key)])->all(),
             'missingScopes' => $store->missingScopes(),
-            'grantedScopes' => array_filter(explode(',', (string) $store->scopes)),
+            'grantedScopes' => array_values(array_filter(explode(',', (string) $store->scopes))),
+            'themeEditorUrl' => $store->adminUrl('themes/current/editor'),
         ]);
     }
 
@@ -41,7 +49,7 @@ class StoreSettingsController extends Controller
     public function reconnect(Request $request, Store $store, TokenExchange $tokens, StoreSync $sync): RedirectResponse
     {
         try {
-            $tokens->exchange($store, (string) $request->input('id_token'));
+            $tokens->exchange($store, (string) ($request->bearerToken() ?? $request->input('id_token')));
             $sync->sync($store);
         } catch (Throwable $e) {
             report($e);

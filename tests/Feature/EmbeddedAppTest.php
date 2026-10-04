@@ -24,7 +24,7 @@ class EmbeddedAppTest extends TestCase
         $store = $this->installedStore();
         $this->fakeAssociatedUser(['id' => 42, 'first_name' => 'Ava', 'last_name' => 'Lee', 'email' => 'ava@demo.com', 'account_owner' => false]);
 
-        $this->get('/app', $this->as(42))->assertOk()->assertSee('<div id="root"></div>', false)->assertSee('"userName":"Ava"', false);
+        $this->get('/app', $this->as(42))->assertOk()->assertSee('<div id="root"></div>', false)->assertSee('"user":{"name":"Ava"', false);
 
         $user = StoreUser::where('shopify_user_id', 42)->first();
         $this->assertSame('owner', $user->role);
@@ -150,10 +150,15 @@ class EmbeddedAppTest extends TestCase
             ['id' => 'gid://shopify/AppSubscription/1', 'name' => 'Growth', 'status' => 'ACTIVE', 'test' => true, 'trialDays' => 0, 'createdAt' => now()->toIso8601String(), 'currentPeriodEnd' => now()->addMonth()->toIso8601String()],
         ]]]])]);
 
-        $this->get('/app/settings/store', $this->as($owner))->assertOk()->assertSee('Dawn')->assertSee('Requires Shopify Plus');
-        $this->get('/app/settings/users', $this->as($owner))->assertOk()->assertSee('What each role can do');
-        $this->get('/app/settings/billing', $this->as($owner))->assertOk()->assertSee('Store sales · this cycle');
-        $this->get('/app/settings/activity', $this->as($owner))->assertOk();
+        $this->get('/app/settings/store', $this->as($owner))->assertOk()->assertSee('<div id="root"></div>', false);
+        $this->page('/app/settings/store', $owner)->assertOk()->assertJsonPath('component', 'settings/store')
+            ->assertJsonPath('props.store.theme_name', 'Dawn')->assertJsonPath('props.capabilities.checkout_blocks', false)
+            ->assertJsonPath('shared.nav.section', 'settings')->assertJsonPath('shared.nav.groups.0.items.0.active', true)
+            ->assertJsonMissingPath('props.store.access_token');
+        $this->page('/app/settings/users', $owner)->assertOk()->assertJsonPath('component', 'settings/users')->assertJsonPath('props.users.0.me', true);
+        $this->page('/app/settings/billing', $owner)->assertOk()->assertJsonPath('component', 'settings/billing')->assertJsonPath('props.effective', 'growth');
+        $this->page('/app/settings/activity', $owner)->assertOk()->assertJsonPath('component', 'settings/activity');
+        $this->page('/app/settings/branding', $owner)->assertOk()->assertJsonPath('props.branding.button_style', 'filled');
         $this->get('/app/onboarding', $this->as($owner))->assertOk()->assertSee('Store connection');
     }
 

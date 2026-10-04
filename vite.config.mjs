@@ -11,12 +11,15 @@ export default defineConfig({
     outDir: '../../public/spa',
     emptyOutDir: true,
     sourcemap: false,
+    // Hashed names + a manifest (read by Laravel's @vite) so browsers cache each file safely
+    // and every chunk imports the exact same entry module.
+    manifest: 'manifest.json',
     rollupOptions: {
       input: 'resources/app/main.jsx',
       output: {
-        entryFileNames: 'app.js',
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'app.[ext]',
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
   },

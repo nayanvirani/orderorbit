@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'shopify.webhook' => VerifyShopifyWebhook::class,
             'store.can' => EnsureStorePermission::class,
             'store.plan' => RequirePlan::class,
+            'spa' => \App\Http\Middleware\SpaResponses::class,
         ]);
 
         // Embedded requests authenticate with App Bridge session tokens (third-party

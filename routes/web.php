@@ -59,13 +59,13 @@ Route::controller(SiteController::class)->name('site.')->middleware(\App\Http\Mi
 });
 
 // Merchant embedded app (Part B)
-Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function () {
+Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(function () {
     // Billing stays reachable without a plan: it's where plans are chosen.
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
 
     Route::middleware('store.plan')->group(function () {
         // Home is the React admin (resources/app); its cards load from the JSON API below.
-        Route::get('/', fn () => view('spa'))->middleware('store.can:view_dashboard')->name('dashboard');
+        Route::get('/', fn () => page('home'))->middleware('store.can:view_dashboard')->name('dashboard');
         Route::prefix('api/dashboard')->name('api.dashboard.')->middleware('store.can:view_dashboard')->controller(DashboardApiController::class)->group(function () {
             Route::get('/overview', 'overview')->name('overview');
             Route::get('/kpis', 'kpis')->name('kpis');

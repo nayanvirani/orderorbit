@@ -138,9 +138,8 @@ class ManagedPricingTest extends TestCase
         foreach (['/app', '/app/cro', '/app/cro/templates', '/app/settings/store', '/app/onboarding'] as $path) {
             $this->get($path, $this->as($owner))->assertRedirectContains('/app/settings/billing');
         }
-        $this->get('/app/settings/billing', $this->as($owner))->assertOk()
-            ->assertSee('Choose a plan below to start using OrderOrbit')
-            ->assertSee('Choose plan');
+        $this->page('/app/settings/billing', $owner)->assertOk()
+            ->assertJsonPath('props.effective', null)->assertJsonPath('shared.nav', null)->assertJsonCount(4, 'props.plans');
     }
 
     public function test_returning_from_shopifys_plan_page_syncs_the_new_subscription(): void
@@ -187,11 +186,11 @@ class ManagedPricingTest extends TestCase
         $staff = $this->member($store, 'staff');
         $this->shopifyReports([]);
 
-        $this->get('/app/settings/billing', $this->as($owner))->assertOk()
-            ->assertSee('https://admin.shopify.com/store/demo/charges/orderorbit-app/pricing_plans', false);
-        $this->get('/app/settings/billing', $this->as($staff))->assertOk()
-            ->assertSee('Only store owners can change the plan.')
-            ->assertDontSee('charges/orderorbit-app/pricing_plans', false);
+        $this->page('/app/settings/billing', $owner)->assertOk()
+            ->assertJsonPath('props.pricingUrl', 'https://admin.shopify.com/store/demo/charges/orderorbit-app/pricing_plans');
+        $this->page('/app/settings/billing', $staff)->assertOk()
+            ->assertJsonPath('props.pricingUrl', null)
+            ->assertDontSee('charges\/orderorbit-app\/pricing_plans', false);
         $this->assertSame('https://admin.shopify.com/store/demo/charges/orderorbit-app/pricing_plans', Store::first()->pricingUrl());
     }
 }

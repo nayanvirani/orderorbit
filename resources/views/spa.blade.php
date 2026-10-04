@@ -7,25 +7,24 @@
     <title>OrderOrbit Space</title>
     <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
     <script src="https://cdn.shopify.com/shopifycloud/polaris.js"></script>
-    <link rel="stylesheet" href="{{ asset('spa/app.css') }}?v={{ @filemtime(public_path('spa/app.css')) }}">
-    @php
-        $store = request()->attributes->get('store');
-        $boot = [
-            'shop' => $store->shop_domain,
-            'storeName' => $store->name,
-            'userName' => request()->attributes->get('storeUser')?->first_name,
-            'plan' => $store->effectivePlan(),
-            'currency' => $store->currency ?? 'USD',
-        ];
-    @endphp
-    <script>window.OO_BOOT = @json($boot);</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {{-- The same styles as the Blade pages, so both look alike while modules move to React. --}}
+    @foreach (['css/app-brand.css', 'css/app-base.css', 'css/analytics.css', 'css/audiences.css', 'css/automation.css', 'css/builder.css', 'css/bundles.css', 'css/checkout-preview.css', 'css/experiments.css'] as $css)
+        <link rel="stylesheet" href="{{ asset($css) }}?v={{ @filemtime(public_path($css)) }}">
+    @endforeach
+    @vite('main.jsx', 'spa')
+    <script>
+        window.OO_PAGE = @json($page);
+        window.OO_ROUTES = @json(\App\Support\Spa\Shared::routes());
+        window.OO_SAMPLE_IMAGE = @json(\App\Services\Experiences\TemplateLibrary::samples()[0]['image']);
+    </script>
 </head>
 <body>
     @include('app._appnav')
-    @include('app._sales_limit')
-    {{-- The React admin (resources/app) renders here and loads each card's data in the background. --}}
+    {{-- The React admin (resources/app) renders here; later pages load as JSON without reloading. --}}
     <div id="root"></div>
-    <script type="module" src="{{ asset('spa/app.js') }}?v={{ @filemtime(public_path('spa/app.js')) }}"></script>
     @if ($notice = \App\Support\Notices::get(request('notice')))
         <script>
             shopify.toast.show(@json($notice[0]), { isError: @json($notice[1]) });
