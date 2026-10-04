@@ -231,7 +231,7 @@ return [
         'icon' => 'clock',
         'meter' => null,
         'surface' => 'any',
-        'description' => 'Real deadlines for real campaigns, in eight layouts.',
+        'description' => 'Countdowns to a date, hour or minute timers that can start again, or a daily cutoff, in eight layouts.',
         'empty' => 'Add a real deadline to a real campaign.',
         'templates' => [
             'minimal' => ['name' => 'Minimal', 'style' => 'minimal'],
@@ -244,8 +244,11 @@ return [
             'shipping-cutoff' => ['name' => 'Shipping Cutoff', 'style' => 'cutoff', 'content' => ['mode' => 'daily', 'headline' => 'Order within {time} to ship today', 'ended_message' => 'Order now to ship on the next business day']],
         ],
         'content' => [
-            'mode' => ['type' => 'select', 'label' => 'Deadline', 'default' => 'date', 'options' => ['date' => 'A campaign end date', 'daily' => 'A daily cutoff time (e.g. same-day shipping)']],
-            'ends_at' => ['type' => 'datetime', 'when' => ['mode' => 'date'], 'label' => 'Campaign ends', 'help' => 'A real deadline. Timers never reset per visitor.'],
+            'mode' => ['type' => 'select', 'label' => 'Timer type', 'default' => 'date', 'options' => ['date' => 'Count down to a date', 'hours' => 'Hours, from when the shopper arrives', 'minutes' => 'Minutes, from when the shopper arrives', 'daily' => 'A daily cutoff time (e.g. same-day shipping)']],
+            'ends_at' => ['type' => 'datetime', 'when' => ['mode' => 'date'], 'label' => 'Campaign ends', 'help' => 'The same deadline for every shopper.'],
+            'hours' => ['type' => 'number', 'when' => ['mode' => 'hours'], 'label' => 'Timer length (hours)', 'default' => 2, 'min' => 1, 'max' => 72],
+            'minutes' => ['type' => 'number', 'when' => ['mode' => 'minutes'], 'label' => 'Timer length (minutes)', 'default' => 10, 'min' => 1, 'max' => 240],
+            'repeat' => ['type' => 'select', 'when' => ['mode' => ['hours', 'minutes']], 'label' => 'When it reaches zero', 'default' => 'restart', 'options' => ['restart' => 'Start again (e.g. every 10 minutes)', 'end' => 'Stop'], 'help' => 'The timer starts when the shopper first sees it and keeps counting across pages and visits.'],
             'daily_time' => ['type' => 'text', 'when' => ['mode' => 'daily'], 'label' => 'Daily cutoff (24h, store time)', 'default' => '14:00', 'max' => 5, 'help' => 'For example 14:00. After the cutoff it counts to the next day\'s cutoff.'],
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Sale ends in', 'max' => 80, 'help' => 'Shipping cutoff: use {time} for the time left.'],
             'subheadline' => ['type' => 'text', 'label' => 'Subheadline', 'default' => '', 'max' => 120],

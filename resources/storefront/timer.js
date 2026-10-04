@@ -3,7 +3,7 @@
    (hours, minutes and seconds with data-oo-nodays). Each unit's parent gets --p (0–1)
    for ring layouts, "oo-tick" when its value changes (flip layouts), and the element
    gets "oo-urgent" inside its data-oo-urgent window (seconds). Daily cutoffs
-   (data-oo-daily) roll over to the next day. */
+   (data-oo-daily) roll over to the next day; data-oo-every="<ms>" restarts repeating timers. */
 (function () {
   if (OrderOrbit.timers) return;
   var timer = null;
@@ -14,8 +14,10 @@
     var now = Date.now();
     nodes.forEach(function (node) {
       var end = Number(node.getAttribute('data-oo-end'));
-      if (end <= now && node.hasAttribute('data-oo-daily')) {
-        end += 86400000;
+      // Daily cutoffs and repeating hour/minute timers start their next round at zero.
+      var every = Number(node.getAttribute('data-oo-every')) || (node.hasAttribute('data-oo-daily') ? 86400000 : 0);
+      if (end <= now && every) {
+        end += every * Math.ceil((now - end + 1) / every);
         node.setAttribute('data-oo-end', end);
       }
       var left = Math.max(0, Math.floor((end - now) / 1000));

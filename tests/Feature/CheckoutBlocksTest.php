@@ -162,4 +162,23 @@ class CheckoutBlocksTest extends TestCase
             ->assertSee('Blocks inside checkout need Shopify Plus')->assertDontSee('Create checkout reviews block');
         $this->get('/app/cro/features/thank-you', $this->as($owner))->assertOk()->assertSee('On the Growth plan and above')->assertSee('Create survey');
     }
+
+    public function test_older_blocks_pick_up_new_settings_and_storefront_countdown_has_three_types(): void
+    {
+        $owner = $this->member($store = $this->installedStore(['plan' => 'growth', 'capabilities' => ['checkout_blocks' => true]]), 'owner');
+        $experience = app(ExperienceManager::class)->create($store, 'checkout-countdown', 'compact', null);
+        // Saved before timer types existed.
+        $config = $experience->draft_config;
+        unset($config['content']['mode'], $config['content']['hours'], $config['content']['minutes'], $config['content']['repeat']);
+        $experience->forceFill(['draft_config' => $config])->save();
+
+        $this->get('/app/cro/experiences/'.$experience->id.'/edit', $this->as($owner))->assertOk()
+            ->assertSee('Timer type')->assertSee('Minutes, from when the shopper reaches checkout')->assertSee('Timer length (minutes)')->assertSee('Start again (e.g. every 10 minutes)');
+
+        $options = Registry::type('countdown')['content']['mode']['options'];
+        $this->assertSame(['date', 'hours', 'minutes', 'daily'], array_keys($options));
+        $storefront = Schema::defaults('countdown');
+        $storefront['content']['mode'] = 'hours';
+        $this->assertSame([], Schema::normalize('countdown', $storefront)[1], 'Hour timers need no end date.');
+    }
 }

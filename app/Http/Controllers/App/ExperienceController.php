@@ -320,6 +320,13 @@ class ExperienceController extends Controller
     {
         $type = Registry::type($experience->type);
 
+        // Settings added after this experience was made start at their defaults (keys only, so
+        // saved lists like reviews or badges are never padded with sample rows).
+        $defaults = Schema::defaults($experience->type);
+        foreach ($defaults as $section => $values) {
+            $config[$section] = ($config[$section] ?? []) + $values;
+        }
+
         return view('app.cro.builder', [
             'store' => $store,
             'experience' => $experience,
