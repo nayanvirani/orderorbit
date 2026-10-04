@@ -88,9 +88,22 @@
     <script>
         // Session tokens live for one minute, so attach a fresh one to every form post.
         // Forms marked data-confirm ask first (section 2: destructive actions need confirmation).
+        // Browsers silently refuse to submit when an invalid field is hidden (another tab or step),
+        // so forms skip built-in validation and are checked here instead, with a visible message.
+        document.querySelectorAll('form').forEach((f) => { f.noValidate = true; });
         document.addEventListener('submit', async (event) => {
             const form = event.target;
             event.preventDefault();
+            const bad = [...form.elements].find((el) => el.willValidate && !el.checkValidity());
+            if (bad) {
+                if (bad.offsetParent !== null) {
+                    bad.reportValidity();
+                } else {
+                    const label = (bad.labels && bad.labels[0] ? bad.labels[0].textContent : bad.name || 'a field').trim().split('\n')[0];
+                    shopify.toast.show('Check “' + label + '”: ' + bad.validationMessage, { isError: true });
+                }
+                return;
+            }
             if (form.dataset.submitting) return;
             if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;
             form.dataset.submitting = '1';

@@ -25,7 +25,7 @@
         <s-banner tone="{{ $fieldErrors ? 'warning' : 'info' }}">{{ $banner }}</s-banner>
     @endif
 
-    <form method="POST" action="{{ app_route('app.cro.experiences.update', ['experience' => $experience->id]) }}" id="builder" data-builder
+    <form method="POST" action="{{ app_route('app.cro.experiences.update', ['experience' => $experience->id]) }}" id="builder" novalidate data-builder
           data-type="{{ $experience->type }}" data-handle="{{ $experience->handle }}" data-currency="{{ $store->currency ?? 'USD' }}"
           data-styles="{{ json_encode(collect($templates)->map(fn ($t) => $t['style'])) }}" data-start-step="{{ $firstErrorStep ?? 'content' }}">
 

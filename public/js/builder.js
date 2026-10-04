@@ -266,7 +266,21 @@
   // ---------------------------------------------------------------- dirty state
   form.addEventListener('input', () => { dirty = true; $('[data-dirty]').hidden = false; renderPreview(); });
   form.addEventListener('change', () => { dirty = true; $('[data-dirty]').hidden = false; renderPreview(); });
-  form.addEventListener('submit', () => { dirty = false; });
+  // The browser can't point at an invalid field on a hidden step (e.g. a date picked without a
+  // time), so it would refuse to submit without saying why. The form is novalidate; check here,
+  // open the step with the problem and show the browser's message on that field.
+  form.addEventListener('submit', (event) => {
+    const bad = [...form.elements].find((el) => el.willValidate && !el.checkValidity());
+    if (bad) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const section = bad.closest('[data-step]');
+      if (section) show(section.dataset.step);
+      requestAnimationFrame(() => { bad.reportValidity(); bad.focus(); });
+      return;
+    }
+    dirty = false;
+  });
   window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
   show(current);
