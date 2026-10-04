@@ -131,9 +131,15 @@
     </s-app-nav>
     @endif
 
+    @php($section = request()->routeIs('app.automation.*') ? 'automation' : (request()->routeIs('app.experiments.*') ? 'experiments' : (request()->routeIs('app.audiences.*') ? 'audiences' : (request()->routeIs('app.analytics', 'app.analytics.*') ? 'analytics' : (request()->routeIs('app.settings.*') ? 'settings' : null)))))
     @if (request()->routeIs('app.cro.*', 'app.bundles.*', 'app.gifts.*', 'app.features.*'))
         <div class="ob-shell">
             @include('app.cro._subnav')
+            <div class="ob-shell-main">@include('app._sales_limit')@yield('content')</div>
+        </div>
+    @elseif ($section && request()->attributes->get('store')?->hasPlanAccess())
+        <div class="ob-shell">
+            @include('app._modnav', ['section' => $section])
             <div class="ob-shell-main">@include('app._sales_limit')@yield('content')</div>
         </div>
     @else

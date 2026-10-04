@@ -1,7 +1,4 @@
-<nav class="oo-tabs" aria-label="Audiences">
-    <a href="{{ app_route('app.audiences.segments') }}" @if (request()->routeIs('app.audiences.segments*')) aria-current="page" @endif>Segments</a>
-    <a href="{{ app_route('app.audiences.rules') }}" @if (request()->routeIs('app.audiences.rules*')) aria-current="page" @endif>Personalization rules</a>
-</nav>
+
 @if (request('error'))<s-banner tone="critical">{{ request('error') }}</s-banner>@endif
 @unless ($enabled)
     <s-banner tone="info" heading="Personalization runs on the Scale plan">

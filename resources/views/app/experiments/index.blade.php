@@ -45,12 +45,6 @@
         </s-section>
     @endif
 
-    <nav class="oo-tabs" aria-label="Tests">
-        @foreach (['active' => 'Active', 'drafts' => 'Drafts', 'completed' => 'Completed'] as $key => $label)
-            @php($n = $key === 'active' ? ($counts['running'] ?? 0) + ($counts['paused'] ?? 0) : ($key === 'drafts' ? ($counts['draft'] ?? 0) : ($counts['completed'] ?? 0) + ($counts['stopped'] ?? 0)))
-            <a href="{{ app_route('app.experiments.index', ['tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif>{{ $label }} ({{ $n }})</a>
-        @endforeach
-    </nav>
 
     <s-section>
         <form method="GET" action="{{ app_route('app.experiments.index') }}" class="oo-form-row" style="margin-bottom:12px">

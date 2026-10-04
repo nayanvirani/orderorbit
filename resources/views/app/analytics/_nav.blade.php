@@ -6,11 +6,6 @@
     $days = $days ?? 30;
 @endphp
 @if ($current !== 'app.analytics')<s-link slot="breadcrumb-actions" href="{{ app_route('app.analytics') }}">Analytics</s-link>@endif
-<nav class="oo-tabs" aria-label="Analytics">
-    @foreach ($tabs as $route => $label)
-        <a href="{{ app_route($route, ['days' => $days]) }}" @if ($current === $route) aria-current="page" @endif>{{ $label }}</a>
-    @endforeach
-</nav>
 @if (empty($hideRange))
     <nav class="bx-tabs" aria-label="Date range">
         @foreach ([7 => 'Last 7 days', 30 => 'Last 30 days', 90 => 'Last 90 days'] as $d => $label)

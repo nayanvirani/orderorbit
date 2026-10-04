@@ -27,6 +27,19 @@
         'checkout' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
         'calendar' => '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
         'target' => '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>',
+        'mail' => '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
+        'inbox' => '<path d="M4 13h4l1.5 2.5h5L16 13h4"/><path d="M5.5 5h13L20 13v5.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V13z"/>',
+        'play' => '<circle cx="12" cy="12" r="8.5"/><path d="M10 8.5v7l5.5-3.5z"/>',
+        'split' => '<path d="M6 4v5a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v3M18 4v5a4 4 0 0 1-4 4"/><circle cx="6" cy="4" r="1.5"/><circle cx="18" cy="4" r="1.5"/>',
+        'draft' => '<path d="M14 4H6.5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V8.5z"/><path d="M14 4v4.5h4.5M9 13h6M9 16.5h4"/>',
+        'check' => '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.6-4.8"/>',
+        'funnel' => '<path d="M4 5h16l-6 7.5V19l-4-1.5v-5z"/>',
+        'route' => '<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16"/>',
+        'store' => '<path d="M4 9.5 5.5 4h13L20 9.5M4 9.5h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13.5a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10.5zM5.5 13.5V20h13v-6.5"/>',
+        'lock' => '<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+        'plug' => '<path d="M9 3v5M15 3v5M6.5 8h11v3.5a5.5 5.5 0 0 1-11 0zM12 17v4"/>',
+        'activity' => '<path d="M3.5 12h4l2.5-6 4 12 2.5-6h4"/>',
+        'rules' => '<path d="M5 6h14M5 12h9M5 18h5"/><path d="m16 15 2 2 3.5-3.5"/>',
     ];
 @endphp
 <span {{ $attributes->merge(['class' => 'ob-icon'.($size ? ' '.$size : '').($tone ? ' t-'.$tone : '')]) }} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{!! $paths[$name] ?? $paths['sparkle'] !!}</svg></span>
