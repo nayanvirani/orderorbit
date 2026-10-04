@@ -65,7 +65,7 @@ class AnalyticsTest extends TestCase
         $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Revenue per offer is on Starter and above')->assertDontSee('Upsell take rate');
         $store->forceFill(['plan' => 'growth'])->save();
         $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Upsell take rate');
-        $this->get('/app', $this->as($owner))->assertOk()->assertSee('$92.20');
+        $this->getJson('/app/api/dashboard/kpis', $this->as($owner))->assertOk()->assertJsonPath('influenced_revenue', 92.2);
     }
 
     public function test_the_pixel_connects_with_a_store_token(): void

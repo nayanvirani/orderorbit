@@ -24,7 +24,7 @@ class EmbeddedAppTest extends TestCase
         $store = $this->installedStore();
         $this->fakeAssociatedUser(['id' => 42, 'first_name' => 'Ava', 'last_name' => 'Lee', 'email' => 'ava@demo.com', 'account_owner' => false]);
 
-        $this->get('/app', $this->as(42))->assertOk()->assertSee('Dashboard');
+        $this->get('/app', $this->as(42))->assertOk()->assertSee('<div id="root"></div>', false)->assertSee('"userName":"Ava"', false);
 
         $user = StoreUser::where('shopify_user_id', 42)->first();
         $this->assertSame('owner', $user->role);

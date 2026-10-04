@@ -3,5 +3,16 @@
   "private": true,
   "workspaces": [
     "extensions/*"
-  ]
+  ],
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^6.30.6",
+    "vite": "^5.4.21"
+  },
+  "scripts": {
+    "build:app": "vite build",
+    "dev:app": "vite build --watch"
+  }
 }

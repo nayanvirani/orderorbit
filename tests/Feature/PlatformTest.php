@@ -41,9 +41,23 @@ class PlatformTest extends TestCase
         $this->makeRun($workflow, 'k1', 'failed');
         $this->makeRun($workflow, 'k2', 'completed');
 
-        $this->get('/app?days=7', $this->as($owner))->assertOk()
-            ->assertSee('last 7 days')->assertSee('1 workflow run failed in the last 7 days.')->assertSee('View failed runs')
-            ->assertSee('Success rate')->assertSee('50%')->assertSee('Recommended next')->assertSee('Create a bundle')->assertSee('No tests running.');
+        // Home is the React shell; each card has its own JSON endpoint.
+        $this->get('/app', $this->as($owner))->assertOk()->assertSee('<div id="root"></div>', false);
+
+        $overview = $this->getJson('/app/api/dashboard/overview', $this->as($owner))->assertOk()
+            ->assertJsonPath('setup.total', 5)->assertJsonPath('setup.next.label', 'Choose your goal')
+            ->assertJsonFragment(['text' => '1 workflow run failed this week.', 'action' => 'See why']);
+        $this->assertContains('Create a bundle', array_column($overview->json('next'), 'action'));
+
+        $this->getJson('/app/api/dashboard/kpis?days=7', $this->as($owner))->assertOk()
+            ->assertJsonPath('days', 7)->assertJsonCount(7, 'daily.revenue')->assertJsonPath('has_events', false);
+        $this->getJson('/app/api/dashboard/top', $this->as($owner))->assertOk()->assertJsonPath('items', []);
+        $this->getJson('/app/api/dashboard/activity', $this->as($owner))->assertOk()
+            ->assertJsonPath('automation.workflows', 1)->assertJsonPath('automation.failed', 1)->assertJsonPath('automation.success_rate', 50)->assertJsonPath('tests', []);
+
+        // Without a plan the API answers with JSON, not a redirect.
+        $this->store->forceFill(['plan' => null])->save();
+        $this->getJson('/app/api/dashboard/kpis', $this->as($owner))->assertStatus(402);
     }
 
     public function test_analytics_filters_export_and_runs_filter(): void

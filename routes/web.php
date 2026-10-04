@@ -4,7 +4,7 @@ use App\Experiences\Registry;
 use App\Http\Controllers\App\ActivityController;
 use App\Http\Controllers\App\BillingController;
 use App\Http\Controllers\App\BrandingController;
-use App\Http\Controllers\App\DashboardController;
+use App\Http\Controllers\App\Api\DashboardApiController;
 use App\Http\Controllers\App\BundleController;
 use App\Http\Controllers\App\ExperienceController;
 use App\Http\Controllers\App\FeatureController;
@@ -64,7 +64,14 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
 
     Route::middleware('store.plan')->group(function () {
-        Route::get('/', DashboardController::class)->middleware('store.can:view_dashboard')->name('dashboard');
+        // Home is the React admin (resources/app); its cards load from the JSON API below.
+        Route::get('/', fn () => view('spa'))->middleware('store.can:view_dashboard')->name('dashboard');
+        Route::prefix('api/dashboard')->name('api.dashboard.')->middleware('store.can:view_dashboard')->controller(DashboardApiController::class)->group(function () {
+            Route::get('/overview', 'overview')->name('overview');
+            Route::get('/kpis', 'kpis')->name('kpis');
+            Route::get('/top', 'top')->name('top');
+            Route::get('/activity', 'activity')->name('activity');
+        });
         Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
         Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
 
