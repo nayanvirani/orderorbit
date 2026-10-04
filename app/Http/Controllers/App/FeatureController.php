@@ -32,7 +32,7 @@ class FeatureController extends Controller
             ->get();
 
         $branding = CroSetting::brandingFor($store);
-        $templates = collect($types)->flatMap(fn ($type) => collect(Registry::templates($type))->map(fn ($template, $key) => [
+        $templates = collect($types)->flatMap(fn ($type) => collect(Registry::offered($type))->map(fn ($template, $key) => [
             'type' => $type,
             'key' => $key,
             'name' => $template['name'],

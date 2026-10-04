@@ -124,6 +124,16 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         // Images for blocks, saved to the store's Shopify Files.
         Route::post('/uploads/image', [\App\Http\Controllers\App\UploadController::class, 'image'])->middleware('store.can:manage_experiences')->name('uploads.image');
 
+        // Support tickets (section 34)
+        Route::prefix('support')->name('support.')->controller(\App\Http\Controllers\App\SupportController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->middleware('throttle:10,60')->name('store');
+            Route::get('/{ticket}', 'show')->whereNumber('ticket')->name('show');
+            Route::post('/{ticket}/reply', 'reply')->whereNumber('ticket')->middleware('throttle:30,60')->name('reply');
+            Route::post('/{ticket}/close', 'close')->whereNumber('ticket')->name('close');
+            Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
+        });
+
         // Audiences & Personalization (Phase 10)
         Route::prefix('audiences')->name('audiences.')->controller(\App\Http\Controllers\App\AudienceController::class)->group(function () {
             Route::get('/', fn () => redirect()->to(app_route('app.audiences.segments')))->name('index');
@@ -249,3 +259,30 @@ Route::get('/storefront/{file}', function (string $file) {
 Route::post('/webhooks/shopify', WebhookController::class)
     ->middleware('shopify.webhook')
     ->name('webhooks.shopify');
+
+// Internal Admin (section 33): the OrderOrbit team's console, separate from the merchant app.
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Admin\AuthController::class, 'show'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+
+    Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->controller(\App\Http\Controllers\Admin\AdminController::class)->group(function () {
+        Route::get('/', 'home')->name('home');
+        Route::get('/stores', 'stores')->name('stores');
+        Route::get('/stores/{store}', 'store')->whereNumber('store')->name('store');
+        Route::get('/failures', 'failures')->name('failures');
+        Route::get('/analytics', 'analytics')->name('analytics');
+        Route::get('/templates', 'templates')->name('templates');
+        Route::post('/templates/{template}/toggle', 'toggleTemplate')->whereNumber('template')->name('templates.toggle');
+        Route::get('/flags', 'flags')->name('flags');
+        Route::post('/flags', 'saveFlag')->name('flags.save');
+        Route::post('/flags/{flag}/delete', 'deleteFlag')->whereNumber('flag')->name('flags.delete');
+        Route::get('/tickets', 'tickets')->name('tickets');
+        Route::get('/tickets/{ticket}', 'ticket')->whereNumber('ticket')->name('ticket');
+        Route::post('/tickets/{ticket}/reply', 'replyTicket')->whereNumber('ticket')->name('ticket.reply');
+        Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
+        Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
+        Route::get('/audit', 'audit')->name('audit');
+    });
+});
+

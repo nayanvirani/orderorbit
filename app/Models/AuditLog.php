@@ -43,4 +43,9 @@ class AuditLog extends Model
     {
         return $this->belongsTo(StoreUser::class, 'actor_id');
     }
+
+    public function store(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
 }

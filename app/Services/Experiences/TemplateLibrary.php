@@ -48,7 +48,8 @@ class TemplateLibrary
                 foreach ($definition['templates'] as $key => $template) {
                     $record = CroTemplate::firstOrNew(['type' => $type, 'key' => $key]);
                     $isNew = ! $record->exists;
-                    $record->fill(['name' => $template['name'], 'surface' => $definition['surface'], 'status' => 'published'])->save();
+                    // New templates start published; the Internal Admin can unpublish them.
+                    $record->fill(['name' => $template['name'], 'surface' => $definition['surface']] + ($record->exists ? [] : ['status' => 'published']))->save();
                     $stats['created'] += $isNew ? 1 : 0;
 
                     $schema = Schema::fields($type);

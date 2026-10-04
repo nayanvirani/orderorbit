@@ -29,7 +29,7 @@ class TemplateLibraryController extends Controller
             if ($type && $type !== $typeKey) {
                 continue;
             }
-            foreach ($definition['templates'] as $key => $template) {
+            foreach (Registry::offered($typeKey) as $key => $template) {
                 $templates[] = [
                     'type' => $typeKey,
                     'type_label' => $definition['label'],

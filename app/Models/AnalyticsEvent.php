@@ -18,4 +18,9 @@ class AnalyticsEvent extends Model
     {
         return ['occurred_at' => 'datetime', 'value' => 'float', 'quantity' => 'integer', 'properties' => 'array'];
     }
+
+    public function store(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
 }

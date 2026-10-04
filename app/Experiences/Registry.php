@@ -42,6 +42,17 @@ class Registry
         return self::type($type)['templates'];
     }
 
+    /**
+     * Templates offered for new experiences: the OrderOrbit team can unpublish a template in the
+     * Internal Admin. Experiences already using it keep working (template() still finds it).
+     */
+    public static function offered(string $type): array
+    {
+        $hidden = \Illuminate\Support\Facades\Cache::remember('templates:unpublished', 300, fn () => \App\Models\CroTemplate::where('status', '!=', 'published')->get(['type', 'key'])->map(fn ($t) => $t->type.':'.$t->key)->all());
+
+        return array_filter(self::templates($type), fn ($t, $key) => ! in_array($type.':'.$key, $hidden, true), ARRAY_FILTER_USE_BOTH) ?: self::templates($type);
+    }
+
     public static function template(string $type, string $key): ?array
     {
         return self::templates($type)[$key] ?? null;

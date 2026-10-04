@@ -45,7 +45,7 @@ class ExperienceController extends Controller
                     'bundles' => 'qb-classic',
                     'progressive-gifts' => 'pg-steps',
                     'countdown' => 'flip-clock',
-                    default => array_key_first(Registry::templates($type)),
+                    default => array_key_first(Registry::offered($type)),
                 };
 
                 return $feature + ['key' => $key, 'type' => $type, 'preview' => TemplateLibrary::preview($type, $template)];
@@ -95,7 +95,7 @@ class ExperienceController extends Controller
         return view('app.cro.create', [
             'store' => $store,
             'type' => $type,
-            'previews' => $type ? collect(Registry::templates($type))->map(fn ($t, $key) => TemplateLibrary::preview($type, $key))->values()->all() : [],
+            'previews' => $type ? collect(Registry::offered($type))->map(fn ($t, $key) => TemplateLibrary::preview($type, $key))->values()->all() : [],
         ]);
     }
 

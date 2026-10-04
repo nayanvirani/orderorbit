@@ -75,6 +75,7 @@
         <s-link href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>
         <s-link href="{{ app_route('app.analytics') }}">Analytics</s-link>
         <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
+        <s-link href="{{ app_route('app.support.index') }}">Support</s-link>
     </s-app-nav>
     @endif
 
