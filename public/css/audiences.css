@@ -1,0 +1,24 @@
+/* Audiences & Personalization (Phase 10). */
+.au-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.au-template { display: grid; gap: 6px; align-content: start; padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; }
+.au-template s-button { justify-self: start; }
+.au-blank { border-style: dashed; }
+.au-rules { display: grid; gap: 8px; margin-bottom: 10px; }
+.au-rule { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; border: 1px solid #e3e3e3; border-radius: 10px; background: #fafafa; }
+.au-rule select, .au-rule input[type="number"], .au-rule input[type="text"] { font: inherit; height: 34px; padding: 4px 8px; border: 1px solid #8a8a8a; border-radius: 8px; background: #fff; min-width: 0; }
+.au-rule [data-field] { flex: 1 1 200px; }
+.au-rule [data-value-type="text"] input, .au-rule [data-value-type="experience"] select { min-width: 200px; }
+.au-pick { display: inline-flex; gap: 8px; align-items: center; }
+.au-x { margin-left: auto; border: 0; background: none; cursor: pointer; font-size: 16px; color: #616161; }
+.au-help-line { flex-basis: 100%; margin: 0; }
+.au-help-line:empty { display: none; }
+.au-help summary { cursor: pointer; font-weight: 550; margin-top: 12px; }
+.au-usage { display: grid; gap: 6px; margin: 0; padding-left: 18px; }
+.au-rule-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.au-rule-list li { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; }
+.au-rule-list li.is-off { opacity: .6; }
+.au-pri { width: 26px; height: 26px; border-radius: 50%; background: #303030; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 12px; flex: none; }
+.au-rule-main { display: grid; gap: 2px; flex: 1 1 260px; }
+.au-rule-actions { display: flex; gap: 4px; align-items: center; }
+.au-icon { width: 30px; height: 30px; border: 1px solid #c9c9c9; border-radius: 8px; background: #fff; cursor: pointer; }
+.au-icon:disabled { opacity: .35; cursor: default; }

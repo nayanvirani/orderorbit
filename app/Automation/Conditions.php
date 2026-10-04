@@ -90,6 +90,11 @@ class Conditions
                 return $rule['op'] === 'is' ? $is : ! $is;
             case 'ordered_again':
                 return ($this->orderedAgain($run) ? 'yes' : 'no') === $value;
+            case 'segment':
+                $segment = \App\Models\Audiences\Segment::where('store_id', $run->store_id)->find((int) $value);
+                $in = $segment && \App\Services\Audiences\Audiences::matchesContext($segment, $c);
+
+                return $rule['op'] === 'is_not' ? ! $in : $in;
             case 'event_property':
                 return $this->includes($rule['op'], str_contains(strtolower((string) ($c['event']['label'] ?? '')), strtolower((string) $value)));
         }

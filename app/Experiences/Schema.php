@@ -60,6 +60,7 @@ class Schema
                 'cart_max' => ['type' => 'money', 'label' => 'Cart value at most', 'min' => 0],
                 'device' => ['type' => 'select', 'label' => 'Device', 'default' => 'all', 'options' => ['all' => 'All devices', 'mobile' => 'Mobile only', 'desktop' => 'Desktop only']],
                 'customer' => ['type' => 'select', 'label' => 'Shoppers', 'default' => 'all', 'options' => ['all' => 'Everyone', 'new' => 'New shoppers', 'returning' => 'Returning customers']],
+                'segments' => ['type' => 'segments', 'label' => 'Only these segments', 'default' => [], 'help' => 'Shows only to shoppers in at least one of these segments (Audiences). Scale plan.'],
                 'countries' => ['type' => 'text', 'label' => 'Countries', 'default' => '', 'max' => 400, 'help' => 'Two-letter codes separated by commas, e.g. US, CA. Leave empty for all.'],
                 'utm_source' => ['type' => 'text', 'label' => 'UTM source', 'default' => '', 'max' => 100],
                 'utm_campaign' => ['type' => 'text', 'label' => 'UTM campaign', 'default' => '', 'max' => 100],
@@ -295,6 +296,9 @@ class Schema
                     return [null, "{$label} must be a valid date and time."];
                 }
 
+            case 'segments':
+                return [array_values(array_unique(array_map('intval', array_filter((array) ($raw ?? []), 'is_numeric')))), null];
+
             case 'products':
             case 'collections':
                 return self::resources($field, $raw, $field['type'] === 'products' ? 'Product' : 'Collection');
@@ -441,7 +445,7 @@ class Schema
     private static function empty(array $field): mixed
     {
         return match ($field['type']) {
-            'products', 'collections', 'list', 'checkboxes' => [],
+            'products', 'collections', 'list', 'checkboxes', 'segments' => [],
             'toggle' => false,
             'number', 'money', 'datetime' => null,
             default => '',

@@ -2,6 +2,8 @@
 (function () {
   var h = OrderOrbit.h;
   if (h.thresholds) return;
+  // Gift icon for the gift and threshold widgets (kept out of the core to keep it small).
+  h.GIFT = h.GIFT || '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>';
   // Cart-value thresholds (shipping bar, free gift) and their milestone ladder.
   h.thresholds = function(list, total) {
     var sorted = (list || []).filter(function (t) { return t && t.amount != null; }).sort(function (a, b) { return a.amount - b.amount; });

@@ -118,7 +118,7 @@ return [
                 'price' => 59.99,
                 'sales_limit' => null,
                 'includes' => ['offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
-                'features' => ['Unlimited store sales', 'Everything in Growth', 'Lifecycle automation workflows', 'Personalization when released', 'Priority support'],
+                'features' => ['Unlimited store sales', 'Everything in Growth', 'Lifecycle automation workflows', 'Audiences and personalization', 'Priority support'],
                 'limits' => $limits([], 50000),
             ],
         ],

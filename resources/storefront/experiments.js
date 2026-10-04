@@ -35,6 +35,12 @@
     var x = exp.x;
     var id = visitor();
     if (!id || !x.variants || !OrderOrbit.matches({ targeting: x.audience || {} }, ctx)) return exp;
+    // Segment audience (Audiences & Personalization).
+    var seg = (x.audience && x.audience.segments) || [];
+    if (seg.length) {
+      var m = window.OrderOrbitSeg ? window.OrderOrbitSeg(ctx) : {};
+      if (!seg.some(function (s) { return m[s]; })) return exp;
+    }
 
     var b = bucket(x.id + ':' + id);
     var sum = 0;

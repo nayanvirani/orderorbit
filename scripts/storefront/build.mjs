@@ -19,6 +19,7 @@ const outputs = {
   'timer.js': ['oo-timer.js'],
   'thresholds.js': ['oo-thresholds.js'],
   'experiments.js': ['oo-experiments.js'],
+  'audiences.js': ['oo-audiences.js'],
   'types/upsells.js': ['oo-product-upsells.js', 'oo-cart-upsells.js'],
 };
 for (const file of readdirSync(join(src, 'types'))) {

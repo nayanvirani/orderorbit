@@ -53,7 +53,6 @@
     return '<svg class="oo-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
   }
 
-  var GIFT = '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>';
 
   function productImage(p) {
     return p && p.image
@@ -61,7 +60,7 @@
       : '<span class="oo-img oo-img-empty" aria-hidden="true"></span>';
   }
 
-  var h = { esc: esc, money: money, fill: fill, numericId: numericId, icon: icon, GIFT: GIFT, productImage: productImage, };
+  var h = { esc: esc, money: money, fill: fill, numericId: numericId, icon: icon, productImage: productImage, };
 
   function track(name, exp, extra) {
     var a = exp.analytics || {};
@@ -124,7 +123,7 @@
   }
 
   function choose(experiences, type, pinnedId, ctx) {
-    var list = (experiences || []).filter(function (e) {
+    var list = (window.OrderOrbitPz ? OrderOrbitPz(experiences || [], ctx) : experiences || []).filter(function (e) {
       return (pinnedId ? e.id === pinnedId : e.type === type) && matches(e, ctx);
     });
     list.sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); });
@@ -268,6 +267,8 @@
     state.data = state.data || readJson('script[data-oo-data]') || { experiences: [] };
     state.ctx = state.ctx || readJson('script[data-oo-context]') || {};
     setAssets(state.ctx.assets);
+    // Personalization (segments and rules) lives in oo-audiences.js, loaded first when published.
+    if (state.data.p && !loading.audiences) return script('audiences').then(function () { mountAll(reason); });
     // Global types (Sales pop) get one root on the page; they never need a theme block.
     if (!document.querySelector('[data-oo-type="sales-pop"]') && state.data.experiences.some(function (e) { return e.type === 'sales-pop'; })) {
       var g = document.createElement('div');

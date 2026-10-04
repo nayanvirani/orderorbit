@@ -1,11 +1,14 @@
 {%- comment -%}
   Published experiences (app-owned metafield written by OrderOrbit) and the minimal
-  page context the runtime needs for targeting. No customer personal data is output:
-  only whether the shopper is logged in and their order count. Cart lines carry
-  only product, variant, quantity, price and the OrderOrbit offer that added them.
+  page context the runtime needs for targeting. No names, emails or addresses are
+  output. For a signed-in customer, segments (Audiences) also use their order count,
+  total spent, tags, last order date and recently purchased products; this only
+  appears on that customer's own pages. Cart lines carry only product, variant,
+  quantity, price and the OrderOrbit offer that added them.
   Duplicates across several blocks are harmless; the runtime reads the first.
 {%- endcomment -%}
 <script type="application/json" data-oo-data>{{ app.metafields.orderorbit.experiences.value | json }}</script>
+{%- if customer -%}{%- capture oo_products -%}{%- for order in customer.orders limit: 10 -%}{%- for item in order.line_items -%}{{ item.product_id }},{%- endfor -%}{%- endfor -%}{%- endcapture -%}{%- endif -%}
 <script type="application/json" data-oo-context>
   {
     "page": {{ request.page_type | json }},
@@ -20,6 +23,7 @@
     "collections": {{ product.collections | map: 'id' | json }},
     "loggedIn": {% if customer %}true{% else %}false{% endif %},
     "ordersCount": {{ customer.orders_count | default: 0 | json }},
+    "customer": {% if customer %}{"spent": {{ customer.total_spent | default: 0 | json }}, "tags": {{ customer.tags | json }}, "lastOrderAt": {% if customer.last_order %}{{ customer.last_order.created_at | date: '%s' | json }}{% else %}null{% endif %}, "products": {{ oo_products | split: ',' | uniq | json }}}{% else %}null{% endif %},
     "country": {{ localization.country.iso_code | json }},
     "currency": {{ cart.currency.iso_code | json }},
     "cartTotal": {{ cart.total_price | json }},

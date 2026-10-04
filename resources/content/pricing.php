@@ -26,7 +26,7 @@ return [
         ['Customer account blocks', false, false, true, true],
         ['A/B and A/B/C testing', false, false, true, true],
         ['Lifecycle automation workflows', false, false, false, true],
-        ['Personalization (coming soon)', false, false, false, true],
+        ['Audiences & personalization', false, false, false, true],
         ['Support', 'Standard', 'Standard', 'Standard', 'Priority'],
     ],
     'faqs' => [
@@ -34,7 +34,7 @@ return [
         ['What counts as "monthly store sales"?', 'Your store\'s total sales from all orders in the current 30-day cycle, converted to US dollars. Cycles start on the day you install the app. Test orders and cancelled orders don\'t count, and refunds are taken off.'],
         ['What happens when my store passes its plan\'s sales limit?', 'The app tells you as soon as it happens, even early in the cycle, and you have 3 days to upgrade. After that every feature stops until you upgrade. Nothing is deleted, and everything goes live again the moment you do.'],
         ['Does the count start again each cycle?', 'Yes, every 30 days. If your store was stopped for passing its limit, it stays stopped until you upgrade.'],
-        ['Which plan gets the features that are coming soon?', 'Personalization will be on Scale, where lifecycle automation is available now. They appear in the app as they are released, at no extra charge on those plans.'],
+        ['What does Scale add?', 'Unlimited store sales, lifecycle automation, audiences and personalization, and priority support, on top of everything in Growth.'],
         ['How am I billed?', 'Through your Shopify invoice, monthly. You can change or cancel your plan from Shopify at any time.'],
         ['Can I downgrade?', 'Yes, whenever your store\'s sales fit the lower plan. Offers the lower plan doesn\'t cover are paused, not deleted.'],
         ['Do I need Shopify Plus?', 'No. Everything that\'s live today works on any Shopify plan. Blocks inside checkout need Shopify Plus; Thank You and Order Status blocks don\'t.'],

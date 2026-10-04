@@ -72,6 +72,7 @@
         <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
         <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
         <s-link href="{{ app_route('app.experiments.index') }}">A/B tests</s-link>
+        <s-link href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>
         <s-link href="{{ app_route('app.analytics') }}">Analytics</s-link>
         <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     </s-app-nav>

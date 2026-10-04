@@ -10,6 +10,8 @@ class Notices
 {
     public const MESSAGES = [
         'saved' => ['Changes saved successfully.', false],
+        'segment_archived' => ['Segment archived.', false],
+        'segment_restored' => ['Segment restored.', false],
         'experiment_launched' => ['Test launched. Visitors are now split between the variants.', false],
         'experiment_pause' => ['Test paused. Everyone sees the control until you resume.', false],
         'experiment_resume' => ['Test resumed.', false],

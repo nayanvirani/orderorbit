@@ -97,6 +97,18 @@ return [
         ],
     ],
     [
+        'name' => 'Audiences & personalization',
+        'icon' => 'target',
+        'text' => 'Segments, personalization rules and where segments can be used.',
+        'articles' => [
+            ['How do I create a segment?', 'Open Audiences → Segments and add a ready-made segment (new, returning, VIP, high-AOV, at-risk, lapsed and more) or a custom one. Combine rules for orders, total spent, average order, days since last order, tags, products bought, market, device and experiences used, with all or any matching.'],
+            ['How are segments worked out?', 'On your store, during the visit, from the signed-in customer\'s own account (guests have 0 orders) and the visit itself. "Used an experience" is remembered on the shopper\'s device. Nothing about the shopper is sent to OrderOrbit Space.'],
+            ['What do personalization rules do?', 'A rule picks an experience and an audience (segments plus optional device, cart value and UTM conditions), then shows the experience only to them, shows it in another template, or hides it. Rules run top to bottom; for each experience the first match wins.'],
+            ['Where else can I use segments?', 'In an experience\'s Targeting step (Only these segments), as an A/B test audience, and in workflow conditions (Customer segment), which check the order\'s customer.'],
+            ['Why is there no member count?', 'Shopify can only count segments made of customer fields (orders, total spent, tags). Segments with browsing or purchase rules are only known during a visit.'],
+        ],
+    ],
+    [
         'name' => 'A/B testing',
         'icon' => 'split',
         'text' => 'Split tests on live experiences, metrics and how winners are decided. Full guide: orderorbit.space/docs/ab-testing.',
@@ -128,7 +140,7 @@ return [
         'text' => 'Plans, limits, upgrades and cancelling.',
         'articles' => [
             ['How am I billed?', 'Through your Shopify invoice. There is no separate card to add.'],
-            ['How do the plans work?', 'Free covers stores selling up to $1,000 per 30-day cycle, with the core widgets and one live bundle, gift campaign, cart upsell and pre-order. Starter ($14.99, up to $8,000) makes everything unlimited and adds revenue per offer. Growth ($29.99, up to $20,000) and Scale ($59.99, unlimited) add checkout blocks; Scale also includes lifecycle automation, and testing and personalization arrive as they are released.'],
+            ['How do the plans work?', 'Free covers stores selling up to $1,000 per 30-day cycle, with the core widgets and one live bundle, gift campaign, cart upsell and pre-order. Starter ($14.99, up to $8,000) makes everything unlimited and adds revenue per offer. Growth ($29.99, up to $20,000) and Scale ($59.99, unlimited) add checkout blocks, A/B testing, advanced analytics and customer account blocks; Scale also includes lifecycle automation and personalization.'],
             ['What if my store passes its plan\'s limit?', 'The app tells you straight away, whenever in the cycle it happens, and you have 3 days to upgrade. After that every feature stops until you upgrade; nothing is deleted, and it all comes back the moment you do.'],
             ['Can I change plans?', 'Yes, at any time from Plans in the app. Upgrades take effect straight away.'],
             ['What happens if I uninstall?', 'Billing stops, offers are removed from your store and checkout pricing stops. Your store data is deleted as Shopify requires.'],

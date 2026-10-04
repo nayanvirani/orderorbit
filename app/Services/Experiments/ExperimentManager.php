@@ -48,7 +48,7 @@ class ExperimentManager
     ];
 
     /** Audience fields shown in setup: the same live context the storefront knows. */
-    public const AUDIENCE = ['device', 'countries', 'products', 'collections', 'cart_min', 'cart_max', 'utm_source', 'utm_campaign', 'customer'];
+    public const AUDIENCE = ['device', 'countries', 'products', 'collections', 'cart_min', 'cart_max', 'utm_source', 'utm_campaign', 'customer', 'segments'];
 
     /** What checkout and Thank You pages know about a buyer: cart value and country. */
     public const CHECKOUT_AUDIENCE = ['countries', 'cart_min', 'cart_max'];
@@ -241,6 +241,9 @@ class ExperimentManager
         }
         if ($reason = self::unsupported($experience)) {
             $problems[] = $reason;
+        }
+        if (! empty($experiment->audience['segments']) && ! $store->planIncludes('personalization')) {
+            $problems[] = 'Segment audiences need the Scale plan. Remove the segments or upgrade.';
         }
         if ($experience->status !== 'published') {
             $problems[] = 'Publish the experience first: tests split the traffic of a live experience.';

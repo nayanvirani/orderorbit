@@ -124,6 +124,26 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
         // Images for blocks, saved to the store's Shopify Files.
         Route::post('/uploads/image', [\App\Http\Controllers\App\UploadController::class, 'image'])->middleware('store.can:manage_experiences')->name('uploads.image');
 
+        // Audiences & Personalization (Phase 10)
+        Route::prefix('audiences')->name('audiences.')->controller(\App\Http\Controllers\App\AudienceController::class)->group(function () {
+            Route::get('/', fn () => redirect()->to(app_route('app.audiences.segments')))->name('index');
+            Route::get('/segments', 'segments')->middleware('store.can:view_dashboard')->name('segments');
+            Route::get('/rules', 'rules')->middleware('store.can:view_dashboard')->name('rules');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::post('/segments', 'createSegment')->name('segments.store');
+                Route::get('/segments/{segment}', 'editSegment')->whereNumber('segment')->name('segments.edit');
+                Route::post('/segments/{segment}', 'updateSegment')->whereNumber('segment')->name('segments.update');
+                Route::post('/segments/{segment}/duplicate', 'duplicateSegment')->whereNumber('segment')->name('segments.duplicate');
+                Route::post('/segments/{segment}/archive', 'archiveSegment')->whereNumber('segment')->name('segments.archive');
+                Route::post('/segments/{segment}/count', 'countSegment')->whereNumber('segment')->name('segments.count');
+                Route::get('/rules/new', 'createRule')->name('rules.create');
+                Route::post('/rules', 'saveRule')->name('rules.store');
+                Route::get('/rules/{rule}', 'editRule')->whereNumber('rule')->name('rules.edit');
+                Route::post('/rules/{rule}', 'saveRule')->whereNumber('rule')->name('rules.update');
+                Route::post('/rules/{rule}/{action}', 'ruleAction')->whereNumber('rule')->whereIn('action', ['toggle', 'up', 'down', 'delete'])->name('rules.action');
+            });
+        });
+
         // A/B testing (Phase 9)
         Route::prefix('experiments')->name('experiments.')->controller(\App\Http\Controllers\App\ExperimentController::class)->group(function () {
             Route::get('/', 'index')->middleware('store.can:view_dashboard')->name('index');

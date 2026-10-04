@@ -168,13 +168,23 @@ class AutomationController extends Controller
     {
         return view('app.automation.editor', $this->shared($store) + [
             'workflow' => $workflow,
-            'catalog' => Definition::catalog(),
+            'catalog' => $this->catalogFor($store),
             'errors' => $errors,
             'banner' => $banner,
             'versions' => $workflow->versions()->where('version', '>', 0)->orderByDesc('version')->get(),
             'recentRuns' => $workflow->runs()->latest('id')->limit(10)->get(),
             'otherWorkflows' => Workflow::where('store_id', $store->id)->whereKeyNot($workflow->id)->orderBy('name')->get(['handle', 'name']),
         ]);
+    }
+
+    /** The catalog with this store's segments as the "Customer segment" choices. */
+    private function catalogFor(Store $store): array
+    {
+        $catalog = Definition::catalog();
+        $segments = \App\Models\Audiences\Segment::where('store_id', $store->id)->active()->orderBy('name')->pluck('name', 'id')->mapWithKeys(fn ($n, $id) => [(string) $id => $n])->all();
+        $catalog['conditions']['segment'] = ['type' => 'select', 'options' => $segments ?: ['' => 'No segments yet: create one in Audiences']] + $catalog['conditions']['segment'];
+
+        return $catalog;
     }
 
     private function shared(Store $store): array

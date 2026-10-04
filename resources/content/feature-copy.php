@@ -214,14 +214,17 @@ return [
     ],
 
     'personalization' => [
-        'status' => 'soon',
-        'summary' => 'Show different offers to different audiences.',
+        'status' => 'live',
+        'summary' => 'Segments and rules that show the right experience to each shopper.',
         'overview' => [
-            'Personalization lets you show different offers to new and returning customers, by market or by traffic source. This module is being built now.',
+            'A first-time visitor and a five-order customer need different nudges. Segments group shoppers by orders, total spent, average order, last order, tags, products bought, market, device and the experiences they used, starting from ten ready-made segments such as new, returning, VIP, high-AOV, at-risk and lapsed.',
+            'Rules then show an experience only to an audience, show it in another template, or hide it, with extra conditions for device, cart value and UTM. Segments are shared: target experiences with them, use them as A/B test audiences and check them in workflows. Everything is worked out on your store, without sending shopper data anywhere.',
         ],
         'benefits' => [
-            ['Audiences', 'New vs returning, markets, traffic sources.'],
-            ['Dynamic offers', 'The right bundle or reward for each audience.'],
+            ['Ready-made segments', 'New, returning, first-time, VIP, high-AOV, at-risk, lapsed, mobile and more.'],
+            ['Show, swap or hide', 'Rules run in priority order, with conflict warnings.'],
+            ['One segment, everywhere', 'Experiences, A/B tests and workflows share the same segments.'],
+            ['Member counts', 'Shopify counts customer-based segments for you.'],
         ],
     ],
 

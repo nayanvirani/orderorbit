@@ -44,6 +44,7 @@ return [
         'collection' => ['label' => 'Collection', 'type' => 'collections', 'ops' => ['contains', 'not_contains']],
         'customer' => ['label' => 'Customer', 'type' => 'select', 'ops' => ['is'], 'options' => ['new' => 'First order', 'returning' => 'Returning customer']],
         'customer_tag' => ['label' => 'Customer tag', 'type' => 'text', 'ops' => ['has', 'has_not']],
+        'segment' => ['label' => 'Customer segment', 'type' => 'segment', 'ops' => ['is', 'is_not'], 'help' => 'Uses the customer and the order. Device and experience rules never match here.'],
         'country' => ['label' => 'Shipping country', 'type' => 'text', 'ops' => ['in', 'not_in'], 'help' => 'Two-letter codes separated by commas, e.g. US, CA.'],
         'province' => ['label' => 'Shipping state / province', 'type' => 'text', 'ops' => ['in', 'not_in'], 'help' => 'Codes separated by commas, e.g. CA, NY.'],
         'shipping_method' => ['label' => 'Shipping method', 'type' => 'text', 'ops' => ['contains', 'not_contains']],

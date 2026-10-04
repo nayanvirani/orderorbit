@@ -335,13 +335,15 @@ return [
         'seo_description' => 'Segments and audience rules for new, returning, VIP and mobile shoppers on Shopify.',
         'keyword' => 'Shopify personalization',
         'problem' => ['One offer rarely fits everyone.', 'A first-time visitor and a five-order customer need different nudges.'],
-        'steps' => ['Pick or build a segment.', 'Create a rule.', 'Choose the experience to show.'],
-        'grid' => ['Prebuilt segments', 'Custom rules', 'Device, cart value and UTM conditions', 'Segments shared across experiences, tests and workflows'],
+        'steps' => ['Start from a ready-made segment or build your own.', 'Create a rule: show, swap the template of, or hide an experience.', 'Order rules by priority; the first match wins.'],
+        'grid' => ['10 ready-made segments', 'Orders, spend, AOV, last order, tags, products, market, device and experience rules', 'Show, swap template or hide', 'Device, cart value and UTM conditions', 'Priority order with conflict warnings', 'Segments shared across experiences, A/B tests and workflows', 'Member counts from Shopify'],
         'example' => ['title' => 'The premium upsell.', 'text' => 'Returning + cart over $75 → premium upsell.', 'flow' => ['Returning customer', 'Cart over $75', 'Premium upsell']],
         'templates' => [],
         'metrics' => [['Segments', '8'], ['Personalized views', '21,560'], ['Segment conversion', '4.4%'], ['vs. everyone else', '+0.9 pts']],
         'faqs' => [
             ['Can I reuse a segment?', 'Yes. Segments are shared across experiences, tests and workflows.'],
+            ['Is shopper data sent anywhere?', 'No. Segments are worked out on your store from the signed-in customer\'s own account and the visit. Guests count as new shoppers.'],
+            ['Which plan includes it?', 'Scale.'],
         ],
     ],
 

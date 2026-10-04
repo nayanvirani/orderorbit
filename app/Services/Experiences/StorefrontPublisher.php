@@ -51,12 +51,15 @@ class StorefrontPublisher
             ->reject(fn (array $e) => in_array(Registry::type($e['type'])['surface'], Schema::CHECKOUT_SURFACES, true))
             ->values()->all();
 
+        // Segments and rules (oo-audiences.js), when the plan includes personalization.
+        $personalization = \App\Services\Audiences\Audiences::payload($store, array_column($experiences, 'id'));
+
         return [
             'v' => 1,
             'currency' => $store->currency,
             'updated_at' => now()->toIso8601String(),
             'experiences' => $experiences,
-        ];
+        ] + ($personalization ? ['p' => $personalization] : []);
     }
 
     /**

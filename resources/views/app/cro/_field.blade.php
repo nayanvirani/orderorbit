@@ -68,6 +68,20 @@
             </div>
             @break
 
+        @case('segments')
+            @php($segmentOptions = \App\Models\Audiences\Segment::where('store_id', $store->id)->active()->orderBy('name')->get(['id', 'name']))
+            <span class="b-label">{{ $field['label'] }}</span>
+            @if ($segmentOptions->isEmpty())
+                <p class="b-help">No segments yet. Create them in <a href="{{ app_route('app.audiences.segments') }}" target="_top">Audiences</a>.</p>
+            @else
+                <div class="b-checks">
+                    @foreach ($segmentOptions as $segment)
+                        <label><input type="checkbox" name="{{ $name }}[]" value="{{ $segment->id }}" @checked(in_array($segment->id, array_map('intval', (array) $value), true))> {{ $segment->name }}</label>
+                    @endforeach
+                </div>
+            @endif
+            @break
+
         @case('datetime')
             <label for="{{ $id }}">{{ $field['label'] }} <span class="b-muted">({{ $timezone }})</span></label>
             <input type="datetime-local" id="{{ $id }}" name="{{ $name }}" value="{{ $value ? \Illuminate\Support\Carbon::parse($value)->setTimezone($timezone)->format('Y-m-d\TH:i') : '' }}" data-tz-offset="{{ now($timezone)->format('P') }}">

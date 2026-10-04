@@ -91,6 +91,8 @@ class Definition
                             $value = is_numeric($value) ? (float) $value : null;
                         } elseif (in_array($field['type'], ['products', 'collections'], true)) {
                             $value = array_values(array_filter(array_map(fn ($v) => is_array($v) ? array_intersect_key($v, array_flip(['id', 'title'])) : null, (array) $value)));
+                        } elseif ($field['type'] === 'segment') {
+                            $value = ctype_digit((string) $value) ? (string) $value : null;
                         } elseif ($field['type'] === 'select') {
                             $value = isset($field['options'][$value]) ? $value : array_key_first($field['options']);
                         } else {
