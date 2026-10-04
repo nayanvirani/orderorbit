@@ -66,7 +66,7 @@ class PlatformTest extends TestCase
         foreach ([['mobile', 'US'], ['desktop', 'US'], ['mobile', 'CA']] as $i => [$device, $country]) {
             AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'std', 'name' => 'product_viewed', 'visitor_id' => 'v'.$i, 'device' => $device, 'country' => $country, 'occurred_at' => now()->subDay()]);
         }
-        $this->get('/app/analytics/events?f[device]=mobile&f[country]=us', $this->as($owner))->assertOk()->assertSee('Data as of');
+        $this->page('/app/analytics/events?f[device]=mobile&f[country]=us', $owner)->assertOk()->assertJsonPath('props.filters', ['device' => 'mobile', 'country' => 'us'])->assertJsonPath('props.events.product_viewed.total', 1);
         $csv = $this->get('/app/analytics/events?f[device]=mobile&export=csv', $this->as($owner))->assertOk()->streamedContent();
         $this->assertStringContainsString('"Product viewed",product_viewed,2,2', $csv);
         $this->get('/app/analytics/revenue?export=csv', $this->as($owner))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -118,14 +118,15 @@ class PlatformTest extends TestCase
         $owner = $this->member($this->store, 'owner');
         $this->store->forceFill(['goal' => null])->save();
         $this->post('/app/onboarding', ['goal' => 'conversion'], $this->as($owner))->assertRedirectContains('step=3');
-        $this->get('/app/onboarding', $this->as($owner))->assertOk()->assertSee('3. Choose your first experience')->assertSee('Sticky add to cart')->assertSee('type=sticky-atc', false);
-        $this->get('/app/onboarding?step=5', $this->as($owner))->assertOk()->assertSee('Start by choosing your first experience.');
+        $this->page('/app/onboarding', $owner)->assertOk()->assertJsonPath('props.step', 3)->assertJsonPath('props.recommended.1.label', 'Sticky add to cart')
+            ->assertJsonPath('props.recommended.1.href', '/app/cro/experiences/new?type=sticky-atc&onboarding=1');
+        $this->page('/app/onboarding?step=5', $owner)->assertOk()->assertJsonPath('props.step', 5)->assertJsonPath('props.first', null);
 
         $experience = app(\App\Services\Experiences\ExperienceManager::class)->create($this->store, 'trust', 'trust-row', null, 'Trust row');
-        $this->get('/app/onboarding?step=7', $this->as($owner))->assertOk()->assertSee('Trust row')->assertSee('Open the builder');
-        $this->get('/app/onboarding?step=8', $this->as($owner))->assertOk()->assertSee('Waiting');
+        $this->page('/app/onboarding?step=7', $owner)->assertOk()->assertJsonPath('props.first.name', 'Trust row')->assertJsonPath('props.first.edit', '/app/cro/experiences/'.$experience->id.'/edit');
+        $this->page('/app/onboarding?step=8', $owner)->assertOk()->assertJsonPath('props.lastEvent', null);
         AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'session', 'name' => 'session_started', 'occurred_at' => now()]);
-        $this->get('/app/onboarding?step=8', $this->as($owner))->assertOk()->assertSee('Received')->assertSee('Go to your dashboard');
+        $this->assertNotNull($this->page('/app/onboarding?step=8', $owner)->assertOk()->json('props.lastEvent'));
     }
 
     public function test_security_headers(): void

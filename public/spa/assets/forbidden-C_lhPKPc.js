@@ -1,1 +1,0 @@
-import{j as e,P as n}from"./main-mIQFeVD7.js";function i({message:r,removed:s}){return e.jsx(n,{heading:s?"Access removed":"Permission needed",children:e.jsx("s-section",{children:e.jsx("s-paragraph",{children:r||"Your role doesn't include this page. Ask a store owner or admin to change your role in Settings → Users & roles."})})})}export{i as default};

@@ -7,7 +7,8 @@ use App\Models\AuditLog;
 use App\Models\Store;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Experiences\Registry;
+use App\Support\Spa\Page;
 
 class OnboardingController extends Controller
 {
@@ -47,7 +48,7 @@ class OnboardingController extends Controller
         ],
     ];
 
-    public function show(Request $request, Store $store): View
+    public function show(Request $request, Store $store): Page
     {
         $first = $store->experiences()->oldest('id')->first();
         $events = \App\Models\AnalyticsEvent::where('store_id', $store->id)->exists();
@@ -65,17 +66,30 @@ class OnboardingController extends Controller
         $default = collect($done)->search(false) ?: 8;
         $step = max(1, min(8, (int) $request->query('step', $default)));
 
-        return view('app.onboarding', [
-            'store' => $store,
+        $lastEvent = \App\Models\AnalyticsEvent::where('store_id', $store->id)->max('occurred_at');
+        $surface = $first && Registry::has($first->type) ? Registry::type($first->type)['surface'] : 'product';
+
+        return page('onboarding', [
             'goals' => self::GOALS,
+            'goal' => $store->goal,
             'steps' => self::STEPS,
             'step' => $step,
             'done' => $done,
-            'first' => $first,
-            'recommended' => self::RECOMMENDED[$store->goal ?? 'aov'],
-            'pixelConnected' => (bool) $store->web_pixel_id,
-            'lastEvent' => \App\Models\AnalyticsEvent::where('store_id', $store->id)->max('occurred_at'),
+            'store' => ['name' => $store->name ?? $store->shop_domain, 'domain' => $store->shop_domain, 'currency' => $store->currency, 'currencies' => $store->capability('presentment_currencies') ?? []],
             'missingScopes' => $store->missingScopes(),
+            'recommended' => array_map(fn ($r) => ['label' => $r[0], 'help' => $r[1], 'href' => route($r[2], $r[3] + ['onboarding' => 1], false)], self::RECOMMENDED[$store->goal ?? 'aov']),
+            'first' => $first ? [
+                'name' => $first->name, 'status' => $first->status, 'placement' => str_replace('_', ' ', $first->placement_status ?? 'not checked'),
+                'type' => Registry::has($first->type) ? Registry::type($first->type)['label'] : $first->type,
+                'edit' => match ($first->type) {
+                    'bundles' => route('app.bundles.edit', ['bundle' => $first->id], false),
+                    'progressive-gifts' => route('app.gifts.edit', ['gift' => $first->id], false),
+                    default => route('app.cro.experiences.edit', ['experience' => $first->id], false),
+                },
+                'editorUrl' => $store->themeEditorUrl($surface), 'editorLabel' => $store->editorLabel($surface),
+            ] : null,
+            'pixelConnected' => (bool) $store->web_pixel_id,
+            'lastEvent' => $lastEvent ? \Illuminate\Support\Carbon::parse($lastEvent) : null,
         ]);
     }
 

@@ -44,6 +44,18 @@ export function route(name, params = {}) {
   return path + (qs ? `?${qs}` : '');
 }
 
+/** The URL with some query parameters changed (null removes one). */
+export function withQuery(url, params) {
+  const u = new URL(url, window.location.origin);
+  Object.entries(params).forEach(([k, v]) => (v === null || v === undefined || v === '' ? u.searchParams.delete(k) : u.searchParams.set(k, v)));
+  return u.pathname + u.search;
+}
+
+/** The current page's URL (without the embedded-app parameters). */
+export function useUrl() {
+  return useContext(RouterContext).page.url;
+}
+
 /** An app URL with the shop (and host) added. */
 export function appUrl(path, params = {}) {
   const url = new URL(path, window.location.origin);

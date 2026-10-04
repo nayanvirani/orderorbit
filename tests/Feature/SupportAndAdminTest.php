@@ -39,8 +39,8 @@ class SupportAndAdminTest extends TestCase
     public function test_merchants_open_tickets_and_follow_the_conversation(): void
     {
         $owner = $this->member($this->store, 'owner');
-        $this->get('/app/support', $this->as($owner))->assertOk()->assertSee('Open a ticket')->assertSee('No tickets yet.');
-        $this->post('/app/support', ['subject' => '', 'body' => 'x', 'category' => 'setup'], $this->as($owner))->assertOk()->assertSee('The subject field is required.');
+        $this->page('/app/support', $owner)->assertOk()->assertJsonPath('component', 'support/index')->assertJsonPath('props.tickets', []);
+        $this->postJson('/app/support', ['subject' => '', 'body' => 'x', 'category' => 'setup'], $this->as($owner))->assertStatus(422)->assertJsonValidationErrors('subject');
 
         $this->post('/app/support', [
             'subject' => 'Bundle not showing', 'body' => 'The bundle doesn\'t appear on the Serum page.', 'category' => 'publishing', 'priority' => 'high',
@@ -55,7 +55,7 @@ class SupportAndAdminTest extends TestCase
         $this->actingAs($admin)->post('/admin/tickets/'.$ticket->id.'/reply', ['body' => 'Is the app embed on?'])->assertRedirect();
         $this->actingAs($admin)->post('/admin/tickets/'.$ticket->id.'/reply', ['body' => 'Their theme is old.', 'internal' => '1'])->assertRedirect();
         $this->assertSame('pending', $ticket->fresh()->status);
-        $this->get('/app/support/'.$ticket->id, $this->as($owner))->assertOk()->assertSee('Is the app embed on?')->assertDontSee('Their theme is old.')->assertSee('screen.png');
+        $this->page('/app/support/'.$ticket->id, $owner)->assertOk()->assertSee('Is the app embed on?')->assertDontSee('Their theme is old.')->assertSee('screen.png');
 
         $attachment = $ticket->messages()->first()->attachments()->first();
         $this->get('/app/support/attachments/'.$attachment->id, $this->as($owner))->assertOk()->assertHeader('content-type', 'image/png');

@@ -177,8 +177,9 @@ class AnalyticsReportsTest extends TestCase
         $this->assertSame(2, collect($journey['sessions'])->flatMap(fn ($s) => $s['events'])->max('order_number'));
 
         $owner = $this->member($this->store, 'owner');
-        $this->get('/app/analytics/journeys', $this->as($owner))->assertOk()->assertSee('Customer 55')->assertSee('Repeat');
-        $this->get('/app/analytics/journeys/v1', $this->as($owner))->assertOk()->assertSee('Repeat purchase (order 2)')->assertSee('Win-back')->assertSee('Run #7');
+        $people = collect($this->page('/app/analytics/journeys', $owner)->assertOk()->json('props.people.data'));
+        $this->assertTrue($people->firstWhere('name', 'Customer 55')['repeat']);
+        $this->page('/app/analytics/journeys/v1', $owner)->assertOk()->assertJsonPath('props.journey.customer', '55')->assertSee('Win-back')->assertSee('"run_id":7', false);
         $this->get('/app/analytics/journeys/nobody', $this->as($owner))->assertNotFound();
 
         // customers/redact removes the customer's events and the browsers they used.
@@ -192,16 +193,18 @@ class AnalyticsReportsTest extends TestCase
         $this->event('a', 'product_viewed', '-1 day', ['product_id' => '1', 'label' => 'Serum']);
         $this->event('a', 'checkout_completed', '-1 day', ['value' => 20, 'order_ref' => 'o1', 'source' => 'direct']);
 
-        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Funnels')->assertSee('Customer journeys');
-        $this->get('/app/analytics/events', $this->as($owner))->assertOk()->assertSee('Product viewed')->assertSee('Payment info submitted')->assertSee('orderorbit:automation_completed');
-        $this->get('/app/analytics/events?event=product_viewed&by=product_id', $this->as($owner))->assertOk()->assertSee('Serum');
-        $this->get('/app/analytics/revenue?model=first&window=30', $this->as($owner))->assertOk()->assertSee('First touch')->assertSee('not proof');
+        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('shared.nav.section', 'analytics')->assertJsonPath('shared.nav.groups.0.items.2.label', 'Funnels');
+        $this->page('/app/analytics/events', $owner)->assertOk()->assertJsonPath('props.events.product_viewed.total', 1)
+            ->assertJsonPath('props.catalogue.Shopify storefront events.payment_info_submitted', 'Payment info submitted')->assertSee('orderorbit:automation_completed');
+        $this->page('/app/analytics/events?event=product_viewed&by=product_id', $owner)->assertOk()->assertJsonPath('props.breakdown.0.label', 'Serum');
+        $this->page('/app/analytics/revenue?model=first&window=30', $owner)->assertOk()->assertJsonPath('props.model', 'first')->assertJsonPath('props.report.orders', 1);
 
         $this->post('/app/analytics/funnels', ['preset' => 'purchase'], $this->as($owner))->assertRedirectContains('/app/analytics/funnels/');
         $funnel = AnalyticsFunnel::sole();
         $this->assertSame(['product_viewed', 'product_added_to_cart', 'checkout_started', 'checkout_completed'], array_column($funnel->steps, 'event'));
-        $this->get('/app/analytics/funnels/'.$funnel->id.'?compare=period', $this->as($owner))->assertOk()->assertSee('Previous period')->assertSee('Checkout started');
-        $this->get('/app/analytics/funnels/'.$funnel->id.'?compare=device', $this->as($owner))->assertOk();
+        $this->page('/app/analytics/funnels/'.$funnel->id.'?compare=period', $owner)->assertOk()->assertJsonPath('props.report.steps.2.label', 'Checkout started')->assertJsonPath('props.previous.steps.0.visitors', 0);
+        $this->page('/app/analytics/funnels/'.$funnel->id.'?compare=device', $owner)->assertOk();
+        $this->page('/app/analytics/funnels', $owner)->assertOk()->assertJsonPath('props.funnels.0.steps', 'Product viewed → Product added to cart → Checkout started → Checkout completed (purchase)');
 
         $this->post('/app/analytics/funnels', ['name' => 'Too short', 'steps' => [['event' => 'product_viewed'], ['event' => 'bogus']]], $this->as($owner))->assertRedirectContains('error=');
         $this->post('/app/analytics/funnels/'.$funnel->id, ['name' => 'Bundle path', 'within' => 'session', 'steps' => [['event' => 'orderorbit:bundle_viewed', 'experience' => 'bnd1'], ['event' => 'checkout_completed'], ['event' => '']]], $this->as($owner))->assertRedirect();
@@ -212,7 +215,7 @@ class AnalyticsReportsTest extends TestCase
 
         // Starter sees what the reports do, not the data.
         $this->store->forceFill(['plan' => 'starter'])->save();
-        $this->get('/app/analytics/events', $this->as($owner))->assertOk()->assertSee('Event Explorer is on Growth and Scale')->assertDontSee('Serum');
+        $this->page('/app/analytics/events', $owner)->assertOk()->assertJsonPath('props.locked', true)->assertJsonPath('props.events', [])->assertDontSee('Serum');
         $this->get('/app/analytics/journeys/a', $this->as($owner))->assertNotFound();
     }
 }

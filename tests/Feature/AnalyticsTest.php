@@ -58,13 +58,13 @@ class AnalyticsTest extends TestCase
         $this->assertSame(1, $summary['experiences']['gift1']['unlocks']);
 
         $owner = $this->member($store, 'owner');
-        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Revenue from offers')->assertSee('$92.20');
+        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.summary.influenced_revenue', 92.2)->assertJsonPath('props.offerAnalytics', true)
+            ->assertJsonPath('props.offers.0.handle', 'bnd1')->assertJsonPath('props.offers.0.accepts', 1);
 
         // Free shows store totals; revenue per offer is on Starter and above.
         $store->forceFill(['plan' => 'free'])->save();
-        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Revenue per offer is on Starter and above')->assertDontSee('Upsell take rate');
+        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.offerAnalytics', false);
         $store->forceFill(['plan' => 'growth'])->save();
-        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertSee('Upsell take rate');
         $this->getJson('/app/api/dashboard/kpis', $this->as($owner))->assertOk()->assertJsonPath('influenced_revenue', 92.2);
     }
 
@@ -77,7 +77,7 @@ class AnalyticsTest extends TestCase
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
 
-        $this->get('/app/analytics', $this->as($owner))->assertOk()->assertDontSee('isn&#039;t connected', false);
+        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.connected', true);
 
         $store->refresh();
         $this->assertSame('gid://shopify/WebPixel/9', $store->web_pixel_id);

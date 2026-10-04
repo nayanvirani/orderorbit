@@ -8,12 +8,12 @@ use App\Services\Analytics\Analytics;
 use App\Services\Analytics\PixelConnector;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 use Throwable;
 
 class AnalyticsController extends Controller
 {
-    public function index(Request $request, Store $store, Analytics $analytics, PixelConnector $pixel): View
+    public function index(Request $request, Store $store, Analytics $analytics, PixelConnector $pixel): Page
     {
         // Connect the pixel the first time analytics is opened (also done on install).
         $error = null;
@@ -29,12 +29,17 @@ class AnalyticsController extends Controller
         $days = in_array((int) $request->query('days'), [7, 30, 90], true) ? (int) $request->query('days') : 30;
         $summary = $analytics->summary($store, $days);
 
-        return view('app.analytics.index', [
-            'store' => $store,
-            'summary' => $summary,
+        $experiences = AnalyticsReportsController::experienceMap($store);
+        $p = $summary['previous'];
+        $trend = fn ($key) => Analytics::trend($summary[$key], $p[$key]);
+
+        return page('analytics/index', AnalyticsReportsController::sharedProps($store, $days) + [
+            'summary' => collect($summary)->except(['experiences', 'previous'])->all(),
+            'trends' => ['influenced_revenue' => $trend('influenced_revenue'), 'influenced_orders' => $trend('influenced_orders'), 'revenue' => $trend('revenue'), 'aov' => $trend('aov'), 'conversion' => $trend('conversion')],
+            'offers' => collect($summary['experiences'])->map(fn ($r, $handle) => $r + ['handle' => $handle, 'experience' => $experiences[$handle] ?? null])->sortByDesc('revenue')->values(),
             'connected' => $pixel->connected($store->fresh()),
             'error' => $error,
-            'experiences' => $store->experiences()->where('status', '!=', 'archived')->get()->keyBy('handle'),
+            'offerAnalytics' => $store->planIncludes('offer_analytics'),
         ]);
     }
 

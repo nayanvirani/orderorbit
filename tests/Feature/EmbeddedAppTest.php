@@ -159,7 +159,7 @@ class EmbeddedAppTest extends TestCase
         $this->page('/app/settings/billing', $owner)->assertOk()->assertJsonPath('component', 'settings/billing')->assertJsonPath('props.effective', 'growth');
         $this->page('/app/settings/activity', $owner)->assertOk()->assertJsonPath('component', 'settings/activity');
         $this->page('/app/settings/branding', $owner)->assertOk()->assertJsonPath('props.branding.button_style', 'filled');
-        $this->get('/app/onboarding', $this->as($owner))->assertOk()->assertSee('Store connection');
+        $this->page('/app/onboarding', $owner)->assertOk()->assertJsonPath('component', 'onboarding')->assertJsonPath('props.steps.0', 'Store connection');
     }
 
     public function test_legacy_non_expiring_tokens_are_swapped_for_expiring_ones(): void

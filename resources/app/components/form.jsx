@@ -38,9 +38,13 @@ export function useForm(initial = {}) {
     return { name: path, value: value ?? '', onChange: (e) => setValue(path, e.target.value), 'aria-invalid': errors[path] ? true : undefined };
   };
 
+  const busy = useRef(false);
   const send = async (url, { method = 'POST', data: override, confirm } = {}) => {
+    if (busy.current) return { ok: false, cancelled: true };
+    busy.current = true;
     setProcessing(true);
     const result = await submit(url, override ?? dataRef.current, { method, confirm });
+    busy.current = false;
     setProcessing(false);
     if (!result.cancelled) setErrors(result.errors || {});
     return result;
@@ -73,7 +77,7 @@ export function Check({ label, help, ...props }) {
   );
 }
 
-/** A <form> that submits through the router; Polaris submit buttons work inside it. */
+/** A <form> that submits through the router (Polaris submit buttons and Enter submit it natively). */
 export function Form({ onSubmit, children, className }) {
   return (
     <form
@@ -82,10 +86,6 @@ export function Form({ onSubmit, children, className }) {
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit?.(e);
-      }}
-      onClick={(e) => {
-        const button = e.target.closest?.('s-button[type="submit"]');
-        if (button && !button.hasAttribute('disabled') && !button.hasAttribute('loading')) e.currentTarget.requestSubmit();
       }}
     >
       {children}

@@ -1,33 +1,140 @@
 {
-  "_form-Bc-ykvfw.js": {
-    "file": "assets/form-Bc-ykvfw.js",
+  "_form-CerIaO90.js": {
+    "file": "assets/form-CerIaO90.js",
     "name": "form",
     "imports": [
       "main.jsx"
     ]
   },
   "main.jsx": {
-    "file": "assets/main-mIQFeVD7.js",
+    "file": "assets/main-BT6pLDUu.js",
     "name": "main",
     "src": "main.jsx",
     "isEntry": true,
     "dynamicImports": [
+      "pages/analytics/_funnelForm.jsx",
+      "pages/analytics/_nav.jsx",
+      "pages/analytics/events.jsx",
+      "pages/analytics/funnel.jsx",
+      "pages/analytics/funnels.jsx",
+      "pages/analytics/index.jsx",
+      "pages/analytics/journey.jsx",
+      "pages/analytics/journeys.jsx",
+      "pages/analytics/revenue.jsx",
       "pages/forbidden.jsx",
       "pages/home.jsx",
+      "pages/onboarding.jsx",
       "pages/settings/activity.jsx",
       "pages/settings/billing.jsx",
       "pages/settings/branding.jsx",
       "pages/settings/integrations.jsx",
       "pages/settings/privacy.jsx",
       "pages/settings/store.jsx",
-      "pages/settings/users.jsx"
+      "pages/settings/users.jsx",
+      "pages/support/index.jsx",
+      "pages/support/show.jsx"
     ],
     "css": [
-      "assets/main-BGOg1fLB.css"
+      "assets/main-Kqpvvc5n.css"
+    ]
+  },
+  "pages/analytics/_funnelForm.jsx": {
+    "file": "assets/_funnelForm-CMR6UK8r.js",
+    "name": "_funnelForm",
+    "src": "pages/analytics/_funnelForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js"
+    ]
+  },
+  "pages/analytics/_nav.jsx": {
+    "file": "assets/_nav-CkIL9R6t.js",
+    "name": "_nav",
+    "src": "pages/analytics/_nav.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
+  "pages/analytics/events.jsx": {
+    "file": "assets/events-xQwmQLfe.js",
+    "name": "events",
+    "src": "pages/analytics/events.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js",
+      "pages/analytics/_nav.jsx"
+    ]
+  },
+  "pages/analytics/funnel.jsx": {
+    "file": "assets/funnel-748aOSoe.js",
+    "name": "funnel",
+    "src": "pages/analytics/funnel.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js",
+      "pages/analytics/_nav.jsx",
+      "pages/analytics/_funnelForm.jsx"
+    ]
+  },
+  "pages/analytics/funnels.jsx": {
+    "file": "assets/funnels-DCXgSp8H.js",
+    "name": "funnels",
+    "src": "pages/analytics/funnels.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js",
+      "pages/analytics/_nav.jsx",
+      "pages/analytics/_funnelForm.jsx"
+    ]
+  },
+  "pages/analytics/index.jsx": {
+    "file": "assets/index-DuFXvsba.js",
+    "name": "index",
+    "src": "pages/analytics/index.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js",
+      "pages/analytics/_nav.jsx"
+    ]
+  },
+  "pages/analytics/journey.jsx": {
+    "file": "assets/journey-DXl_whd3.js",
+    "name": "journey",
+    "src": "pages/analytics/journey.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "pages/analytics/_nav.jsx"
+    ]
+  },
+  "pages/analytics/journeys.jsx": {
+    "file": "assets/journeys-C066gMxx.js",
+    "name": "journeys",
+    "src": "pages/analytics/journeys.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "pages/analytics/_nav.jsx"
+    ]
+  },
+  "pages/analytics/revenue.jsx": {
+    "file": "assets/revenue-BaIe10mf.js",
+    "name": "revenue",
+    "src": "pages/analytics/revenue.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "pages/analytics/_nav.jsx"
     ]
   },
   "pages/forbidden.jsx": {
-    "file": "assets/forbidden-C_lhPKPc.js",
+    "file": "assets/forbidden-HGxmEih0.js",
     "name": "forbidden",
     "src": "pages/forbidden.jsx",
     "isDynamicEntry": true,
@@ -36,7 +143,7 @@
     ]
   },
   "pages/home.jsx": {
-    "file": "assets/home-CNInU_L_.js",
+    "file": "assets/home-vWukDX0N.js",
     "name": "home",
     "src": "pages/home.jsx",
     "isDynamicEntry": true,
@@ -44,8 +151,17 @@
       "main.jsx"
     ]
   },
+  "pages/onboarding.jsx": {
+    "file": "assets/onboarding-BbvKsXg7.js",
+    "name": "onboarding",
+    "src": "pages/onboarding.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx"
+    ]
+  },
   "pages/settings/activity.jsx": {
-    "file": "assets/activity-BazAL_m2.js",
+    "file": "assets/activity-DUYLt9dY.js",
     "name": "activity",
     "src": "pages/settings/activity.jsx",
     "isDynamicEntry": true,
@@ -54,7 +170,7 @@
     ]
   },
   "pages/settings/billing.jsx": {
-    "file": "assets/billing-FCdZs8jY.js",
+    "file": "assets/billing-oHNAyxzM.js",
     "name": "billing",
     "src": "pages/settings/billing.jsx",
     "isDynamicEntry": true,
@@ -63,17 +179,17 @@
     ]
   },
   "pages/settings/branding.jsx": {
-    "file": "assets/branding-OrBHeHmG.js",
+    "file": "assets/branding-D88CRK7U.js",
     "name": "branding",
     "src": "pages/settings/branding.jsx",
     "isDynamicEntry": true,
     "imports": [
       "main.jsx",
-      "_form-Bc-ykvfw.js"
+      "_form-CerIaO90.js"
     ]
   },
   "pages/settings/integrations.jsx": {
-    "file": "assets/integrations-CRxLbDX1.js",
+    "file": "assets/integrations-BZmiMGsi.js",
     "name": "integrations",
     "src": "pages/settings/integrations.jsx",
     "isDynamicEntry": true,
@@ -82,33 +198,54 @@
     ]
   },
   "pages/settings/privacy.jsx": {
-    "file": "assets/privacy-DdmobZC-.js",
+    "file": "assets/privacy-CCxCrZaz.js",
     "name": "privacy",
     "src": "pages/settings/privacy.jsx",
     "isDynamicEntry": true,
     "imports": [
       "main.jsx",
-      "_form-Bc-ykvfw.js"
+      "_form-CerIaO90.js"
     ]
   },
   "pages/settings/store.jsx": {
-    "file": "assets/store-xysNLDZ_.js",
+    "file": "assets/store-BodYbGzr.js",
     "name": "store",
     "src": "pages/settings/store.jsx",
     "isDynamicEntry": true,
     "imports": [
       "main.jsx",
-      "_form-Bc-ykvfw.js"
+      "_form-CerIaO90.js"
     ]
   },
   "pages/settings/users.jsx": {
-    "file": "assets/users-Q1EwHlnJ.js",
+    "file": "assets/users-CBLYWxTz.js",
     "name": "users",
     "src": "pages/settings/users.jsx",
     "isDynamicEntry": true,
     "imports": [
       "main.jsx",
-      "_form-Bc-ykvfw.js"
+      "_form-CerIaO90.js"
+    ]
+  },
+  "pages/support/index.jsx": {
+    "file": "assets/index-B2sIaBfI.js",
+    "name": "index",
+    "src": "pages/support/index.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js"
+    ]
+  },
+  "pages/support/show.jsx": {
+    "file": "assets/show-SBdQyd8a.js",
+    "name": "show",
+    "src": "pages/support/show.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "main.jsx",
+      "_form-CerIaO90.js",
+      "pages/support/index.jsx"
     ]
   }
 }
