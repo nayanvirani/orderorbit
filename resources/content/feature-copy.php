@@ -152,14 +152,17 @@ return [
     ],
 
     'customer-accounts' => [
-        'status' => 'soon',
-        'summary' => 'Reorder, reviews and rewards blocks in new customer accounts.',
+        'status' => 'live',
+        'summary' => 'My orders, tracking, reorder, rewards, reviews, products and support in customer accounts.',
         'overview' => [
-            'Customer account blocks help returning shoppers reorder in one tap, leave reviews and see their rewards — inside Shopify\'s new customer accounts. This module is being built now.',
+            'Your best customers sign in to their account, and most stores show them an order list and nothing else. OrderOrbit Space adds seven blocks to Shopify\'s new customer accounts: a summary of their orders, live shipment tracking, one-tap reorder, reward tiers by total spend, review requests for what they bought, a shelf of their products with buy again, and your support options and answers.',
+            'Each block reads the customer\'s own orders, so what they see is always theirs. You place the blocks in Shopify\'s customer accounts editor, give them your size, background, border and corners, and "Buy again" can also appear in every order\'s menu.',
         ],
         'benefits' => [
-            ['One-tap reorder', 'Returning customers reorder past purchases quickly.'],
-            ['Reviews and rewards', 'Ask for reviews and show rewards where customers already look.'],
+            ['One-tap reorder', 'Buy again from any order\'s menu or a block, with all items or the ones the customer picks.'],
+            ['Where is my order?', 'Shipment status, carrier, tracking links and estimated delivery on the account and order pages.'],
+            ['Rewards and reviews', 'Reward tiers with progress to the next perk, and review requests for the products they bought.'],
+            ['Their products and your support', 'A shelf of purchased products with buy again, plus contact options and answers to common questions.'],
         ],
     ],
 

@@ -10,7 +10,8 @@
     $canManage = request()->attributes->get('storeUser')?->can('manage_experiences');
     // Only offer what Shopify allows: blocks inside checkout need Shopify Plus (or a development store).
     $checkoutLocked = $surface === 'checkout' && ! $store->capability('checkout_blocks');
-    $needsPlan = in_array($surface, \App\Experiences\Schema::CHECKOUT_SURFACES, true) && ! $store->planIncludes('checkout');
+    $needsPlan = in_array($surface, \App\Experiences\Schema::CHECKOUT_SURFACES, true) && ! $store->planIncludes(\App\Models\Store::surfacePlanFeature($surface));
+    $legacyAccounts = $surface === 'account' && $store->capability('new_customer_accounts') === false;
 @endphp
 
 @push('head')
@@ -33,6 +34,11 @@
         <s-banner tone="info" heading="Blocks inside checkout need Shopify Plus">
             <s-paragraph>Your store isn't on Shopify Plus, so Shopify doesn't allow apps to add blocks inside checkout. Thank You and Order Status blocks work on every plan.</s-paragraph>
             <s-button slot="secondary-actions" href="{{ app_route('app.features.show', ['feature' => 'thank-you']) }}">Thank You & Order Status</s-button>
+        </s-banner>
+    @elseif ($legacyAccounts)
+        <s-banner tone="warning" heading="Your store uses classic customer accounts">
+            <s-paragraph>These blocks need Shopify's new customer accounts. Turn them on in Shopify under Settings → Customer accounts, then re-check your store in OrderOrbit Space Settings. You can set up blocks now.</s-paragraph>
+            <s-button slot="secondary-actions" href="{{ $store->adminUrl('settings/customer_accounts') }}" target="_top">Customer account settings</s-button>
         </s-banner>
     @elseif ($needsPlan)
         <s-banner tone="info" heading="On the Growth plan and above">

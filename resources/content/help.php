@@ -85,6 +85,18 @@ return [
         ],
     ],
     [
+        'name' => 'Customer accounts',
+        'icon' => 'user',
+        'text' => 'Orders, tracking, reorder, rewards, reviews, products and support in customer accounts.',
+        'articles' => [
+            ['How do I add a customer account block?', 'Create the block in OrderOrbit Space and publish it. In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page, add the OrderOrbit Space account block and choose its type. Customers see it the next time they sign in.'],
+            ['Which stores can use them?', 'Stores on Shopify\'s new customer accounts (Settings → Customer accounts). Classic accounts can\'t show app blocks. The blocks are on the Growth and Scale plans.'],
+            ['How does "Buy again" work?', 'It adds the order\'s items to the cart on your store, with all items or the ones the customer picks. With the Reorder block published, "Buy again" also appears in each order\'s menu.'],
+            ['How are reward tiers worked out?', 'From the customer\'s total spend across their recent orders (cancelled orders don\'t count). You set the tiers, thresholds and perks.'],
+            ['Where does "Write a review" go?', 'To the review link you set, such as {product_url}#reviews or your review app\'s page, with the product filled in.'],
+        ],
+    ],
+    [
         'name' => 'Automation',
         'icon' => 'flow',
         'text' => 'Workflows that follow up after orders, deliveries, refunds and new customers.',

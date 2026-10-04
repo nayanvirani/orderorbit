@@ -22,7 +22,7 @@
   var PAD = { none: '0', small: '8px', base: '14px', large: '20px', 'large-200': '28px' };
   var TONE = { info: '#0b5cad', success: '#0c7a43', warning: '#8a5a00', critical: '#c5281c' };
   var BANNER = ['banner', 'announcement', 'unlocked'];
-  var PLAIN = ['compact', 'row', 'button', 'simple', 'plain'];
+  var PLAIN = ['compact', 'row', 'button', 'simple', 'plain', 'faq'];
 
   function size(kind, value) {
     var n = Math.round(Number(value) || 0);
@@ -144,6 +144,59 @@
       return wrap(exp, head + '<div class="ck-row">' + (exp.style === 'minimal' ? '' : h.productImage(p)) + '<div><p class="ck-text"><b>' + h.esc(p.title) + '</b></p>' + (exp.style === 'premium' ? '' : para(c.message)) +
         '<p class="ck-text">' + (pct ? '<s class="ck-muted">' + h.esc(h.money(price, ctx.currency)) + '</s> ' : '') + '<b>' + h.esc(h.money(now, ctx.currency)) + '</b>' + (pct ? ' · ' + pct + '% off' : '') + '</p></div></div>' +
         button(c.accept_text + ' · ' + h.money(now, ctx.currency), true) + '<span class="ck-muted" style="justify-self:start">' + h.esc(c.decline_text) + '</span>' + second);
+    },
+    'account-orders': function (exp, ctx) {
+      var c = exp.content;
+      return wrap(exp, title(c.headline) + para(fill(c.message, { count: 4, spent: h.money(312, ctx.currency), first_name: 'Alex' })) +
+        (c.show_latest ? '<div class="ck-quote"><p class="ck-text"><b>#1052 · Oct 2, 2026</b></p><p class="ck-row"><span class="ck-badge">In transit</span><span class="ck-muted">Total ' + h.esc(h.money(86, ctx.currency)) + '</span></p>' +
+          (c.show_tracking ? '<p class="ck-muted">UPS · 1Z999AA10123456784 <u>Shipped</u></p>' : '') + '</div>' : '') +
+        (c.show_reorder ? button(c.button_text, false) : '') + '<p class="ck-note">Preview with sample orders. Customers see their own.</p>');
+    },
+    'account-tracking': function (exp) {
+      var c = exp.content;
+      var steps = ['Ordered', 'Shipped', 'Out for delivery', 'Delivered'];
+      var body = exp.style === 'timeline'
+        ? '<ul class="ck-steps">' + steps.map(function (s, i) { return '<li class="' + (i <= 1 ? 'done' : '') + '">' + (i <= 1 ? '● ' : '○ ') + s + '</li>'; }).join('') + '</ul>'
+        : '<div class="ck-bar"><i style="width:33%"></i></div>';
+      return wrap(exp, title(c.headline) + '<p class="ck-text"><b>#1052 · In transit</b></p>' + body + '<p class="ck-text">Estimated delivery: Oct 7, 2026</p><p class="ck-muted">UPS · 1Z999AA10123456784 <u>' + h.esc(c.button_text) + '</u></p>' + (c.help_text ? '<p class="ck-muted"><u>' + h.esc(c.help_text) + '</u></p>' : ''));
+    },
+    'account-reorder': function (exp) {
+      var c = exp.content;
+      if (exp.style === 'button') return wrap(exp, button(c.button_text, true));
+      var items = ['2 × Glow Serum', '1 × Night Cream'];
+      return wrap(exp, title(c.headline) + para(c.message) + (c.behavior === 'pick' ? '<ul class="ck-choices">' + items.map(function (i) { return '<li><span class="ck-check"></span>' + i + '</li>'; }).join('') + '</ul>' : '') + button(c.behavior === 'pick' ? 'Add 2 to cart' : c.button_text, true) +
+        (c.menu_action ? '<p class="ck-note">"' + h.esc(c.button_text) + '" also appears in each order\'s menu.</p>' : ''));
+    },
+    'account-rewards': function (exp, ctx) {
+      var c = exp.content;
+      var tiers = (c.tiers || []).slice().sort(function (a, b) { return (a.threshold || 0) - (b.threshold || 0); });
+      var spent = 320, tier = null, next = null;
+      tiers.forEach(function (t) { if (spent >= (t.threshold || 0)) tier = t; else if (!next) next = t; });
+      var from = tier ? tier.threshold || 0 : 0, pct = next ? Math.round((spent - from) / Math.max(1, next.threshold - from) * 100) : 100;
+      var vars = { tier: tier ? tier.name : '', next_tier: next ? next.name : '', remaining: h.money(next ? next.threshold - spent : 0, ctx.currency), spent: h.money(spent, ctx.currency) };
+      return wrap(exp, title(c.headline) + (tier ? '<p class="ck-text"><b>' + h.esc(tier.name) + (tier.perks ? ' · ' + h.esc(tier.perks) : '') + '</b></p>' : '') + '<div class="ck-bar"><i style="width:' + pct + '%"></i></div>' +
+        '<p class="ck-text">' + (next ? fill(c.progress_message, vars) : fill(c.top_message, vars)) + '</p>' + (next && next.perks ? '<p class="ck-muted">' + h.esc(next.name) + ': ' + h.esc(next.perks) + '</p>' : '') + '<p class="ck-note">Preview for a customer who has spent ' + h.esc(h.money(spent, ctx.currency)) + '.</p>');
+    },
+    'account-reviews': function (exp) {
+      var c = exp.content;
+      var list = [{ title: 'Glow Serum', image: window.OO_SAMPLE_IMAGE }, { title: 'Night Cream', image: window.OO_SAMPLE_IMAGE }].slice(0, Math.max(1, Number(c.max_products) || 2));
+      return wrap(exp, title(c.headline) + para(c.message) + '<div class="ck-products' + (exp.style === 'grid' ? '' : ' ck-list') + '">' + list.map(function (p) {
+        return '<div class="ck-product">' + h.productImage(p) + '<p class="ck-text"><b>' + h.esc(p.title) + '</b></p><p class="ck-muted"><u>' + h.esc(c.button_text) + '</u></p></div>';
+      }).join('') + '</div>');
+    },
+    'account-products': function (exp) {
+      var c = exp.content;
+      var list = [{ title: 'Glow Serum', image: window.OO_SAMPLE_IMAGE, n: 5 }, { title: 'Night Cream', image: window.OO_SAMPLE_IMAGE, n: 1 }, { title: 'Travel Kit', image: window.OO_SAMPLE_IMAGE, n: 2 }].slice(0, Math.max(1, Number(c.max_products) || 3));
+      return wrap(exp, title(c.headline) + para(c.message) + '<div class="ck-products' + (exp.style === 'grid' ? '' : ' ck-list') + '">' + list.map(function (p) {
+        return '<div class="ck-product">' + h.productImage(p) + '<p class="ck-text"><b>' + h.esc(p.title) + '</b></p><p class="ck-muted">' + (p.n > 1 ? 'Bought ' + p.n + ' times · ' : '') + '<u>' + h.esc(c.button_text) + '</u> <u>' + h.esc(c.view_text) + '</u></p></div>';
+      }).join('') + '</div>');
+    },
+    'account-support': function (exp) {
+      var c = exp.content;
+      var links = [c.email ? 'Email us' : '', c.phone ? 'Call us · ' + c.phone : '', c.help_url ? 'Help center' : '', c.returns_url ? 'Returns' : ''].filter(Boolean);
+      var faqs = exp.style === 'compact' ? [] : (c.faqs || []).filter(function (f) { return f.question; });
+      return wrap(exp, title(c.headline) + para(c.message) + (links.length ? '<p class="ck-row">' + links.map(function (l) { return '<u class="ck-text">' + h.esc(l) + '</u>'; }).join('') + '</p>' : '<p class="ck-note">Add an email, phone or links to show contact options.</p>') +
+        faqs.map(function (f) { return '<div><p class="ck-text"><b>' + h.esc(f.question) + '</b></p><p class="ck-muted">' + h.esc(f.answer) + '</p></div>'; }).join(''));
     },
     'checkout-image': image,
     'ty-image': image,

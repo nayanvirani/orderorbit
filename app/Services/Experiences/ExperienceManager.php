@@ -213,8 +213,11 @@ class ExperienceManager
 
         // Checkout and post-purchase blocks: Growth and above, and only where Shopify allows them.
         if (in_array($type['surface'], Schema::CHECKOUT_SURFACES, true)) {
-            if (! $store->planIncludes('checkout')) {
-                throw new PublishException('Checkout and Thank You blocks are on the Growth plan and above. Upgrade to publish.', 'plan');
+            if (! $store->planIncludes(Store::surfacePlanFeature($type['surface']))) {
+                throw new PublishException(($type['surface'] === 'account' ? 'Customer account blocks' : 'Checkout and Thank You blocks').' are on the Growth plan and above. Upgrade to publish.', 'plan');
+            }
+            if ($type['surface'] === 'account' && $store->capability('new_customer_accounts') === false) {
+                throw new PublishException('Customer account blocks need Shopify\'s new customer accounts. Turn them on in Shopify under Settings → Customer accounts, then re-check your store in Settings.', 'unavailable');
             }
             if ($type['surface'] === 'checkout' && ! $store->capability('checkout_blocks')) {
                 throw new PublishException('Blocks inside checkout need Shopify Plus. Shopify doesn\'t allow them on your plan; Thank You and Order Status blocks work on every plan.', 'unavailable');

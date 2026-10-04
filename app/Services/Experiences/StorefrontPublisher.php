@@ -11,6 +11,7 @@ use App\Models\RecentPurchase;
 use App\Models\Store;
 use App\Services\SalesPop\RecentOrders;
 use App\Services\Shopify\AdminApi;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -36,6 +37,9 @@ class StorefrontPublisher
     public const CHECKOUT_NAMESPACE = '$app';
 
     public const CHECKOUT_KEY = 'checkout';
+
+    /** Shop metafield read by the customer account extension (through the Customer Account API). */
+    public const ACCOUNT_KEY = 'account';
 
     /**
      * The theme's experiences (storefront blocks and the app embed).
@@ -66,8 +70,25 @@ class StorefrontPublisher
             'v' => 1,
             'currency' => $store->currency,
             'updated_at' => now()->toIso8601String(),
-            'experiences' => $live->filter(fn (array $e) => in_array(Registry::type($e['type'])['surface'], Schema::CHECKOUT_SURFACES, true))->values()->all(),
+            'experiences' => $live->filter(fn (array $e) => in_array(Registry::type($e['type'])['surface'], Schema::CHECKOUT_SURFACES, true) && Registry::type($e['type'])['surface'] !== 'account')->values()->all(),
             'gifts' => ($gifts = $live->firstWhere('type', 'progressive-gifts')) ? array_intersect_key($gifts, array_flip(['id', 'content'])) : null,
+        ];
+    }
+
+    /**
+     * What the customer account extension reads: the live account blocks and the storefront URL
+     * (for reorder and product links). No secrets: customers can read it.
+     */
+    public function accountPayload(Store $store, ?string $storefrontUrl = null): array
+    {
+        return [
+            'v' => 1,
+            'currency' => $store->currency,
+            'shop_url' => rtrim($storefrontUrl ?: 'https://'.$store->shop_domain, '/'),
+            'updated_at' => now()->toIso8601String(),
+            'experiences' => collect($this->live($store))->filter(fn (array $e) => Registry::type($e['type'])['surface'] === 'account')
+                ->map(fn (array $e) => array_diff_key($e, array_flip(['targeting', 'behavior'])) + ['targeting' => array_intersect_key($e['targeting'] ?? [], ['countries' => 1])])
+                ->values()->all(),
         ];
     }
 
@@ -137,7 +158,7 @@ class StorefrontPublisher
             Log::warning('Storefront payload is close to the metafield size limit', ['store' => $store->shop_domain, 'bytes' => strlen($json)]);
         }
 
-        $owners = $this->api->graphql($store, '{ currentAppInstallation { id } shop { id } }');
+        $owners = $this->api->graphql($store, '{ currentAppInstallation { id } shop { id primaryDomain { url } } }');
         $metafields = [[
             'ownerId' => $owners['currentAppInstallation']['id'],
             'namespace' => self::NAMESPACE,
@@ -154,6 +175,16 @@ class StorefrontPublisher
                 'type' => 'json',
                 'value' => json_encode($this->checkoutPayload($store), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ];
+            // Customer account pages read the shop through the Customer Account API, which needs
+            // a definition that lets customer accounts read this metafield.
+            $this->ensureAccountDefinition($store);
+            $metafields[] = [
+                'ownerId' => $owners['shop']['id'],
+                'namespace' => self::CHECKOUT_NAMESPACE,
+                'key' => self::ACCOUNT_KEY,
+                'type' => 'json',
+                'value' => json_encode($this->accountPayload($store, $owners['shop']['primaryDomain']['url'] ?? null), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ];
         }
 
         $result = $this->api->graphql($store, <<<'GQL'
@@ -167,6 +198,32 @@ class StorefrontPublisher
         }
 
         return $payload;
+    }
+
+    private function ensureAccountDefinition(Store $store): void
+    {
+        $key = "account-metafield-definition:{$store->id}";
+        if (Cache::get($key)) {
+            return;
+        }
+        try {
+            $result = $this->api->graphql($store, <<<'GQL'
+                mutation ($definition: MetafieldDefinitionInput!) {
+                  metafieldDefinitionCreate(definition: $definition) { createdDefinition { id } userErrors { code message } }
+                }
+                GQL, ['definition' => [
+                'name' => 'OrderOrbit Space account blocks', 'namespace' => self::CHECKOUT_NAMESPACE, 'key' => self::ACCOUNT_KEY,
+                'ownerType' => 'SHOP', 'type' => 'json', 'access' => ['customerAccount' => 'READ'],
+            ]]);
+            $error = $result['metafieldDefinitionCreate']['userErrors'][0] ?? null;
+            if ($error === null || ($error['code'] ?? '') === 'TAKEN') {
+                Cache::forever($key, true);
+            } else {
+                Log::warning('Account metafield definition not created', ['store' => $store->shop_domain, 'error' => $error['message'] ?? null]);
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /**

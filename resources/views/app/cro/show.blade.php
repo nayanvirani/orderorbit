@@ -77,6 +77,7 @@
             <s-paragraph>{{ match (true) {
                 $global => 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.',
                 $type['surface'] === 'post-purchase' => 'Shoppers can\'t see this yet. In Shopify, open Settings → Checkout and choose OrderOrbit Space under Post-purchase page.',
+                $type['surface'] === 'account' => 'Customers can\'t see this yet. In Shopify\'s customer accounts editor, add the OrderOrbit Space account block and set its type to “'.$experience->type.'”.',
                 in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) => 'Shoppers can\'t see this yet. In Shopify\'s checkout editor, add the OrderOrbit Space block and set its type to “'.$experience->type.'”.',
                 default => 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.',
             } }}</s-paragraph>

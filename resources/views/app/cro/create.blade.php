@@ -10,7 +10,7 @@
 @section('content')
 <s-page heading="Create experience">
     <x-app.hero eyebrow="New experience" :title="$type ? 'Choose a <em>'.e(lower_label(\App\Experiences\Registry::type($type)['singular'])).'</em> template.' : 'What do you want to <em>build?</em>'"
-        :lead="$type ? (in_array(\App\Experiences\Registry::type($type)['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) ? 'Pick a layout, then set the content, cart-value and country conditions. Checkout uses your checkout branding.' : 'Every template is fully customisable — content, design, targeting and schedule.') : 'Pick a feature. Every one goes live on your storefront, and savings apply automatically at checkout.'" />
+        :lead="$type ? (\App\Experiences\Registry::type($type)['surface'] === 'account' ? 'Pick a layout, then set the content and style. Customer accounts use your checkout branding.' : (in_array(\App\Experiences\Registry::type($type)['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true) ? 'Pick a layout, then set the content, cart-value and country conditions. Checkout uses your checkout branding.' : 'Every template is fully customisable — content, design, targeting and schedule.')) : 'Pick a feature. Every one goes live on your storefront, and savings apply automatically at checkout.'" />
     <div class="b-steps" aria-label="Steps">
         <span class="b-step" aria-current="{{ $type ? 'false' : 'step' }}"><span>1</span>Type</span>
         <span class="b-step" aria-current="{{ $type ? 'step' : 'false' }}"><span>2</span>Template</span>

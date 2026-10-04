@@ -768,6 +768,171 @@ return [
         ],
     ],
 
+    // Customer account blocks (orderorbit-account extension): placed in Shopify's customer accounts
+    // editor on the Orders, Profile or Order status page. Need Shopify's new customer accounts.
+    'account-orders' => [
+        'label' => 'My orders',
+        'singular' => 'My orders block',
+        'icon' => 'bag',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'A summary of the customer\'s orders with the latest status, tracking and buy again.',
+        'empty' => 'Greet returning customers with their latest order and a one-tap reorder.',
+        'templates' => [
+            'order-summary' => ['name' => 'Order Summary', 'style' => 'card'],
+            'latest-order' => ['name' => 'Latest Order', 'style' => 'compact', 'content' => ['headline' => 'Your latest order']],
+            'loyal-banner' => ['name' => 'Loyal Customer Banner', 'style' => 'banner', 'content' => ['headline' => 'Thanks for being a regular']],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Your orders', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'You\'ve placed {count} orders with us.', 'max' => 160, 'help' => 'Placeholders: {count} orders, {spent} total spent, {first_name}.'],
+            'show_latest' => ['type' => 'toggle', 'label' => 'Show the latest order and its status', 'default' => true],
+            'show_tracking' => ['type' => 'toggle', 'label' => 'Show tracking for the latest order', 'default' => true],
+            'show_reorder' => ['type' => 'toggle', 'label' => 'Show a buy again button', 'default' => true],
+            'button_text' => ['type' => 'text', 'label' => 'Buy again button', 'default' => 'Buy again', 'max' => 30],
+        ],
+    ],
+
+    'account-tracking' => [
+        'label' => 'Track order',
+        'singular' => 'Track order block',
+        'icon' => 'truck',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'Shipment status, carrier, tracking links and estimated delivery for an order.',
+        'empty' => 'Answer "where is my order?" before customers have to ask.',
+        'templates' => [
+            'tracking-card' => ['name' => 'Tracking Card', 'style' => 'card'],
+            'tracking-timeline' => ['name' => 'Tracking Timeline', 'style' => 'timeline'],
+            'tracking-compact' => ['name' => 'Compact', 'style' => 'compact'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Track your order', 'max' => 80],
+            'pending_message' => ['type' => 'text', 'label' => 'Before it ships', 'default' => 'We\'re getting your order ready. Tracking appears here as soon as it ships.', 'max' => 200],
+            'delivered_message' => ['type' => 'text', 'label' => 'After delivery', 'default' => 'Delivered. We hope you love it!', 'max' => 200],
+            'button_text' => ['type' => 'text', 'label' => 'Tracking link text', 'default' => 'Track package', 'max' => 30],
+            'help_text' => ['type' => 'text', 'label' => 'Help link text (optional)', 'default' => 'Questions about delivery?', 'max' => 60],
+            'help_url' => ['type' => 'text', 'label' => 'Help link', 'default' => '', 'max' => 300, 'help' => 'An https link or a store path such as /pages/contact.'],
+        ],
+    ],
+
+    'account-reorder' => [
+        'label' => 'Reorder',
+        'singular' => 'Reorder block',
+        'icon' => 'repeat',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'One-tap buy again: on each order\'s menu, and as a block on the order page.',
+        'empty' => 'Make the second, third and tenth order one tap away.',
+        'templates' => [
+            'reorder-card' => ['name' => 'Reorder Card', 'style' => 'card'],
+            'reorder-button' => ['name' => 'Button Only', 'style' => 'button'],
+            'reorder-banner' => ['name' => 'Running Low Banner', 'style' => 'banner', 'content' => ['headline' => 'Running low?', 'message' => 'Order the same items again in one tap.']],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Order it again', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Add everything from this order to your cart.', 'max' => 160],
+            'behavior' => ['type' => 'select', 'label' => 'Reorder', 'default' => 'all', 'options' => ['all' => 'The same items, in one tap', 'pick' => 'Let customers pick the items']],
+            'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Buy again', 'max' => 30],
+            'menu_action' => ['type' => 'toggle', 'label' => 'Add "Buy again" to each order\'s menu', 'default' => true, 'help' => 'Shows in the order menu on the Orders and order pages.'],
+        ],
+    ],
+
+    'account-rewards' => [
+        'label' => 'My rewards',
+        'singular' => 'Rewards block',
+        'icon' => 'tag',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'Reward tiers by total spend, with progress to the next tier and its perks.',
+        'empty' => 'Show customers what they\'ve earned and how close the next perk is.',
+        'templates' => [
+            'tier-card' => ['name' => 'Tier Card', 'style' => 'card'],
+            'progress-banner' => ['name' => 'Progress Banner', 'style' => 'banner'],
+            'vip-premium' => ['name' => 'VIP Premium', 'style' => 'premium', 'content' => ['headline' => 'Your VIP status']],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Your rewards', 'max' => 80],
+            'tiers' => ['type' => 'list', 'label' => 'Tiers (by total spend)', 'max_items' => 5,
+                'fields' => ['name' => ['type' => 'text', 'label' => 'Tier name', 'max' => 30], 'threshold' => ['type' => 'money', 'label' => 'Total spend from', 'min' => 0], 'perks' => ['type' => 'text', 'label' => 'Perks', 'max' => 120]],
+                'default' => [['name' => 'Member', 'threshold' => 0, 'perks' => 'Early access to sales'], ['name' => 'Silver', 'threshold' => 250, 'perks' => 'Free shipping on every order'], ['name' => 'Gold', 'threshold' => 750, 'perks' => 'Free shipping and a birthday gift']]],
+            'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => 'Spend {remaining} more to reach {next_tier}.', 'max' => 160, 'help' => 'Placeholders: {tier}, {next_tier}, {remaining}, {spent}.'],
+            'top_message' => ['type' => 'text', 'label' => 'At the top tier', 'default' => 'You\'ve reached our top tier. Thank you!', 'max' => 160],
+            'perks_url' => ['type' => 'text', 'label' => 'Rewards page link (optional)', 'default' => '', 'max' => 300],
+        ],
+    ],
+
+    'account-reviews' => [
+        'label' => 'My reviews',
+        'singular' => 'Review request block',
+        'icon' => 'star',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'Products the customer bought, each with a "Write a review" button.',
+        'empty' => 'Collect more reviews from the customers who know your products best.',
+        'templates' => [
+            'review-list' => ['name' => 'Review List', 'style' => 'card'],
+            'review-grid' => ['name' => 'Review Grid', 'style' => 'grid'],
+            'review-prompt' => ['name' => 'Single Prompt', 'style' => 'compact', 'content' => ['max_products' => 1]],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'How are you liking them?', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'Your review helps other shoppers choose.', 'max' => 160],
+            'review_url' => ['type' => 'text', 'label' => 'Review link', 'default' => '{product_url}#reviews', 'max' => 300, 'help' => 'Where "Write a review" goes. Placeholders: {product_url}, {handle}, {product_id}. Use your review app\'s link if it has one.'],
+            'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Write a review', 'max' => 30],
+            'max_products' => ['type' => 'number', 'label' => 'Products to show', 'default' => 4, 'min' => 1, 'max' => 8],
+        ],
+    ],
+
+    'account-products' => [
+        'label' => 'My products',
+        'singular' => 'My products block',
+        'icon' => 'package',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'Everything the customer has bought, with buy again and product links.',
+        'empty' => 'Give customers a shelf of their favourite products.',
+        'templates' => [
+            'product-grid' => ['name' => 'Product Grid', 'style' => 'grid'],
+            'product-list' => ['name' => 'Product List', 'style' => 'card'],
+            'favourites' => ['name' => 'Favourites', 'style' => 'compact', 'content' => ['headline' => 'Your favourites', 'max_products' => 3]],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Your products', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message (optional)', 'default' => '', 'max' => 160],
+            'button_text' => ['type' => 'text', 'label' => 'Buy again button', 'default' => 'Buy again', 'max' => 30],
+            'view_text' => ['type' => 'text', 'label' => 'Product link text', 'default' => 'View', 'max' => 30],
+            'max_products' => ['type' => 'number', 'label' => 'Products to show', 'default' => 6, 'min' => 1, 'max' => 12],
+            'sort' => ['type' => 'select', 'label' => 'Order', 'default' => 'recent', 'options' => ['recent' => 'Most recently bought', 'frequent' => 'Most often bought']],
+        ],
+    ],
+
+    'account-support' => [
+        'label' => 'Support',
+        'singular' => 'Support block',
+        'icon' => 'message',
+        'meter' => null,
+        'surface' => 'account',
+        'description' => 'Contact options, help and returns links, and answers to common questions.',
+        'empty' => 'Help customers help themselves, and reach you fast when they can\'t.',
+        'templates' => [
+            'support-card' => ['name' => 'Support Card', 'style' => 'card'],
+            'help-center' => ['name' => 'Help Center', 'style' => 'faq'],
+            'contact-row' => ['name' => 'Contact Row', 'style' => 'compact'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Need help?', 'max' => 80],
+            'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'We usually reply within one business day.', 'max' => 200],
+            'email' => ['type' => 'text', 'label' => 'Support email (optional)', 'default' => '', 'max' => 120],
+            'phone' => ['type' => 'text', 'label' => 'Support phone (optional)', 'default' => '', 'max' => 40],
+            'help_url' => ['type' => 'text', 'label' => 'Help center link (optional)', 'default' => '', 'max' => 300],
+            'returns_url' => ['type' => 'text', 'label' => 'Returns link (optional)', 'default' => '', 'max' => 300],
+            'faqs' => ['type' => 'list', 'label' => 'Questions and answers', 'max_items' => 6,
+                'fields' => ['question' => ['type' => 'text', 'label' => 'Question', 'max' => 120], 'answer' => ['type' => 'text', 'label' => 'Answer', 'max' => 400]],
+                'default' => [['question' => 'How do I return an item?', 'answer' => 'Open the order and choose Request return, or contact us.'], ['question' => 'When will my order arrive?', 'answer' => 'Most orders arrive in 3–5 business days. Tracking is on the order page.']]],
+        ],
+    ],
+
     // Post-purchase funnel: a one-click offer between payment and the Thank You page, drawn by the
     // orderorbit-post-purchase extension. The app picks the offer and signs the order change.
     'post-purchase' => [

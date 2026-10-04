@@ -141,6 +141,20 @@ return [
         ],
     ],
 
+    'customer-accounts' => [
+        'icon' => 'users',
+        'tone' => 'thankyou',
+        'label' => 'Customer accounts',
+        'types' => ['account-orders', 'account-tracking', 'account-reorder', 'account-rewards', 'account-reviews', 'account-products', 'account-support'],
+        'tagline' => 'Turn customer accounts into <em>repeat sales.</em>',
+        'lead' => 'My orders, order tracking, one-tap reorder, rewards, reviews, purchased products and support, inside Shopify\'s customer accounts. Needs Shopify\'s new customer accounts.',
+        'steps' => [
+            'Create a block and pick a layout. Set its size, background, border and corners.',
+            'In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page and add the OrderOrbit Space account block.',
+            'Choose the block type in its settings. Customers see it the next time they sign in.',
+        ],
+    ],
+
     'sales-pop' => [
         'icon' => 'users',
         'tone' => 'salespop',

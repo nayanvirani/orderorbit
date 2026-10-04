@@ -26,7 +26,7 @@
         },
     ];
     $order = ['bundles', 'progressive-gifts', 'cart-upsells'];
-    $checkout = ['checkout', 'post-purchase', 'thank-you'];
+    $checkout = ['checkout', 'post-purchase', 'thank-you', 'customer-accounts'];
     $groups = [
         'Order value' => array_map($link, array_values(array_filter($order, fn ($k) => isset($features[$k])))),
         'Conversion' => array_map($link, array_values(array_filter(array_keys($features), fn ($k) => ! in_array($k, array_merge($order, $checkout), true)))),

@@ -234,13 +234,15 @@ return [
         'seo_description' => 'Reorder, rewards, reviews and support blocks inside Shopify customer accounts.',
         'keyword' => 'Shopify customer account extensions',
         'problem' => ['The account page is where loyal customers go.', 'Most stores give them an order list and nothing else.'],
-        'steps' => ['Enable the blocks you want.', 'Customise text and behaviour.', 'Publish — customers see them next time they sign in.'],
-        'grid' => ['My Orders', 'Track Order', 'One-click Reorder', 'My Rewards', 'My Reviews', 'My Products', 'Support'],
+        'steps' => ['Create the blocks you want and pick a layout.', 'Customise text, behaviour and style.', 'Publish, then add the OrderOrbit Space account block in Shopify\'s customer accounts editor. Customers see it next time they sign in.'],
+        'grid' => ['My Orders: latest order, status and tracking', 'Track Order: shipment progress, carrier links and delivery estimate', 'One-tap Reorder, also in every order\'s menu', 'My Rewards: tiers by total spend with progress', 'My Reviews: review requests for purchased products', 'My Products: buy again from their shelf', 'Support: contact options, help links and FAQs'],
         'example' => ['title' => 'Reorder in one click.', 'text' => 'A returning customer signs in, sees their last order and reorders it without searching the store.', 'flow' => ['Sign in', 'My Orders', 'Reorder', 'Checkout']],
         'templates' => ['My Orders', 'Track Order', 'Reorder', 'My Rewards', 'My Reviews', 'My Products', 'Support'],
         'metrics' => [['Account visits', '9,420'], ['Reorders', '1,136'], ['Reviews submitted', '488'], ['Reorder revenue', '$41,070']],
         'faqs' => [
-            ['Which customer accounts are supported?', 'Shopify\'s new customer accounts.'],
+            ['Which customer accounts are supported?', 'Shopify\'s new customer accounts. Classic accounts can\'t show app blocks; the app tells you if your store uses them.'],
+            ['Which plan includes it?', 'Growth and Scale.'],
+            ['Do I need a loyalty app for rewards?', 'No. Tiers are based on each customer\'s total spend, with the perks you describe. If you use a loyalty app, link to its page instead.'],
         ],
     ],
 

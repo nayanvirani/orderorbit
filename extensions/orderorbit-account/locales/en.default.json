@@ -1,0 +1,51 @@
+{
+  "loading": "Loading…",
+  "noOrders": "No orders yet.",
+  "status": {
+    "UNFULFILLED": "Being prepared",
+    "PARTIALLY_FULFILLED": "Partly shipped",
+    "FULFILLED": "Shipped",
+    "IN_PROGRESS": "In progress",
+    "ON_HOLD": "On hold",
+    "OPEN": "Being prepared",
+    "PENDING_FULFILLMENT": "Being prepared",
+    "RESTOCKED": "Returned",
+    "SCHEDULED": "Scheduled",
+    "CANCELLED": "Cancelled"
+  },
+  "shipment": {
+    "CONFIRMED": "Confirmed",
+    "LABEL_PRINTED": "Label created",
+    "LABEL_PURCHASED": "Label created",
+    "READY_FOR_PICKUP": "Ready for pickup",
+    "IN_TRANSIT": "In transit",
+    "OUT_FOR_DELIVERY": "Out for delivery",
+    "ATTEMPTED_DELIVERY": "Delivery attempted",
+    "DELAYED": "Delayed",
+    "DELIVERED": "Delivered",
+    "FAILURE": "Delivery problem",
+    "CARRIER_PICKED_UP": "Picked up by carrier",
+    "PICKED_UP": "Picked up"
+  },
+  "steps": {
+    "ordered": "Ordered",
+    "shipped": "Shipped",
+    "out": "Out for delivery",
+    "delivered": "Delivered"
+  },
+  "estimated": "Estimated delivery: {date}",
+  "latest": "{name} · {date}",
+  "orderTotal": "Total {total}",
+  "carrier": "{company} · {number}",
+  "chooseItems": "Choose what to add to your cart:",
+  "addItems": "Add {count} to cart",
+  "cancel": "Cancel",
+  "allItems": "These items will be added to your cart:",
+  "unavailable": "Some items may no longer be available.",
+  "boughtTimes": "Bought {count} times",
+  "email": "Email us",
+  "call": "Call us",
+  "helpCenter": "Help center",
+  "returns": "Returns",
+  "viewRewards": "See all rewards"
+}

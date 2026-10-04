@@ -1,0 +1,55 @@
+# OrderOrbit Space blocks for Shopify's customer accounts: My orders, Track order, Reorder,
+# My rewards, My reviews, My products and Support. The app publishes live blocks to a shop
+# metafield ($app:account) that this extension reads through the Customer Account API, together
+# with the customer's own orders. Kept separate from the theme blocks and checkout extension.
+api_version = "2026-07"
+
+[[extensions]]
+name = "OrderOrbit Space account"
+handle = "orderorbit-account"
+type = "ui_extension"
+uid = "91110eaa-ee9b-73fb-5082-960e02f83d521bc848a5"
+
+# Orders page (order index).
+[[extensions.targeting]]
+module = "./src/Block.jsx"
+target = "customer-account.order-index.block.render"
+
+# Profile page.
+[[extensions.targeting]]
+module = "./src/Block.jsx"
+target = "customer-account.profile.block.render"
+
+# Order status page (one order).
+[[extensions.targeting]]
+module = "./src/Block.jsx"
+target = "customer-account.order-status.block.render"
+
+# "Buy again" in each order's menu, and the dialog it opens.
+[[extensions.targeting]]
+module = "./src/ReorderMenu.jsx"
+target = "customer-account.order.action.menu-item.render"
+
+[[extensions.targeting]]
+module = "./src/ReorderAction.jsx"
+target = "customer-account.order.action.render"
+
+[extensions.capabilities]
+# Storefront API (product links and images for My products and My reviews).
+api_access = true
+
+[extensions.settings]
+  [[extensions.settings.fields]]
+  key = "block"
+  type = "single_line_text_field"
+  name = "Block type"
+  description = "Which OrderOrbit Space account block to show here."
+    [[extensions.settings.fields.validations]]
+    name = "choices"
+    value = "[\"account-orders\", \"account-tracking\", \"account-reorder\", \"account-rewards\", \"account-reviews\", \"account-products\", \"account-support\"]"
+
+  [[extensions.settings.fields]]
+  key = "experience_id"
+  type = "single_line_text_field"
+  name = "Experience ID (optional)"
+  description = "Show one specific block. Copy its ID from the block's page in OrderOrbit Space."

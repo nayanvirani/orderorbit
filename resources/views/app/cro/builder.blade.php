@@ -103,6 +103,8 @@
                     @endif
                     @if ($type['surface'] === 'post-purchase')
                         <p class="b-muted">After publishing, open Shopify's <strong>Settings → Checkout</strong> and choose <strong>OrderOrbit Space</strong> under Post-purchase page. Shopify shows this page after payments that support it (cards, Shop Pay and others); the offer is added to the same order and charged to the same payment.</p>
+                    @elseif ($type['surface'] === 'account')
+                        <p class="b-muted">After publishing, open Shopify's customer accounts editor (Settings → Checkout → Customize, then the Orders, Profile or Order status page), add the <strong>OrderOrbit Space account</strong> block and set its type to <code class="b-code-inline">{{ $experience->type }}</code>. To show this exact one, put <code class="b-code-inline">{{ $experience->handle }}</code> in its Experience ID setting.@if ($experience->type === 'account-reorder') "Buy again" in each order's menu appears on its own.@endif</p>
                     @elseif (in_array($type['surface'], \App\Experiences\Schema::CHECKOUT_SURFACES, true))
                         <p class="b-muted">After publishing, open Shopify's checkout editor{{ $type['surface'] === 'thank-you' ? ' on the Thank You or Order Status page' : '' }}, add the <strong>OrderOrbit Space</strong> block and set its type to <code class="b-code-inline">{{ $experience->type }}</code>. To show this exact one, put <code class="b-code-inline">{{ $experience->handle }}</code> in its Experience ID setting.</p>
                     @elseif ($type['surface'] === 'global')

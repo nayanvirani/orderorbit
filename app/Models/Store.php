@@ -221,6 +221,8 @@ class Store extends Model
             'thank-you' => $this->adminUrl('settings/checkout/editor?page=thank-you'),
             // The post-purchase page app is chosen in Settings → Checkout.
             'post-purchase' => $this->adminUrl('settings/checkout'),
+            // Customer account blocks go in the same editor, on the customer account pages.
+            'account' => $this->adminUrl('settings/checkout/editor?page=order-index'),
             default => $this->adminUrl('themes/current/editor?template='.($surface === 'product' ? 'product' : ($surface === 'cart' ? 'cart' : 'index'))."&addAppBlockId={$key}/experience&target=newAppsSection"),
         };
     }
@@ -232,7 +234,14 @@ class Store extends Model
             'global' => 'Turn on app embed',
             'checkout', 'thank-you' => 'Open checkout editor',
             'post-purchase' => 'Open checkout settings',
+            'account' => 'Open customer accounts editor',
             default => 'Open Theme Editor',
         };
+    }
+
+    /** The plan feature an extension-rendered surface needs. */
+    public static function surfacePlanFeature(string $surface): string
+    {
+        return $surface === 'account' ? 'customer_accounts' : 'checkout';
     }
 }

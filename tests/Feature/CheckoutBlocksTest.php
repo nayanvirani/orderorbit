@@ -25,7 +25,7 @@ class CheckoutBlocksTest extends TestCase
         $this->setUpShopify();
         app(TemplateLibrary::class)->sync();
         Http::fake(fn (Request $request) => match (true) {
-            str_contains($request['query'] ?? '', 'currentAppInstallation { id } shop { id }') => Http::response(['data' => ['currentAppInstallation' => ['id' => 'gid://shopify/AppInstallation/1'], 'shop' => ['id' => 'gid://shopify/Shop/7']]]),
+            str_contains($request['query'] ?? '', 'currentAppInstallation { id } shop {') => Http::response(['data' => ['currentAppInstallation' => ['id' => 'gid://shopify/AppInstallation/1'], 'shop' => ['id' => 'gid://shopify/Shop/7']]]),
             str_contains($request['query'] ?? '', 'metafieldsSet') => Http::response(['data' => ['metafieldsSet' => ['userErrors' => []]]]),
             default => Http::response(['data' => []]),
         });

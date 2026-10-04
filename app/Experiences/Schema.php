@@ -20,7 +20,7 @@ class Schema
     public const CART_TYPES = ['bundles', 'quantity-breaks', 'bogo', 'product-upsells', 'cart-upsells', 'free-gifts', 'sticky-atc'];
 
     /** Surfaces rendered by the checkout UI extension instead of the theme. */
-    public const CHECKOUT_SURFACES = ['checkout', 'thank-you', 'post-purchase'];
+    public const CHECKOUT_SURFACES = ['checkout', 'thank-you', 'post-purchase', 'account'];
 
     public const PAGE_TYPES = ['index' => 'Home', 'product' => 'Product pages', 'collection' => 'Collection pages', 'cart' => 'Cart page', 'search' => 'Search', 'page' => 'Other pages'];
 
@@ -141,7 +141,8 @@ class Schema
         if (in_array($surface, self::CHECKOUT_SURFACES, true)) {
             $shared['design'] = $surface === 'post-purchase' ? [] : self::checkoutDesign();
             $shared['behavior'] = array_intersect_key($shared['behavior'], array_flip(['priority']));
-            $shared['targeting'] = array_intersect_key($shared['targeting'], array_flip(['cart_min', 'cart_max', 'countries']));
+            // Customer accounts have no cart: only the country applies.
+            $shared['targeting'] = array_intersect_key($shared['targeting'], array_flip($surface === 'account' ? ['countries'] : ['cart_min', 'cart_max', 'countries']));
         }
 
         return ['content' => Registry::type($type)['content']] + $shared;
@@ -419,10 +420,10 @@ class Schema
         }
 
         $t = $config['targeting'];
-        if ($t['cart_min'] !== null && $t['cart_max'] !== null && $t['cart_min'] > $t['cart_max']) {
+        if (($t['cart_min'] ?? null) !== null && ($t['cart_max'] ?? null) !== null && $t['cart_min'] > $t['cart_max']) {
             $errors['targeting.cart_max'] = 'Maximum cart value must be at least the minimum.';
         }
-        if ($t['countries'] !== '') {
+        if (($t['countries'] ?? '') !== '') {
             $codes = array_filter(array_map(fn ($c) => strtoupper(trim($c)), explode(',', $t['countries'])));
             if (array_filter($codes, fn ($code) => ! preg_match('/^[A-Z]{2}$/', $code))) {
                 $errors['targeting.countries'] = 'Use two-letter country codes separated by commas, e.g. US, CA.';
