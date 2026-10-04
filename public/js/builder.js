@@ -285,6 +285,49 @@
 
   show(current);
   renderPreview();
+  // ---------------------------------------------------------------- image fields
+  // Uploads go to the store's Shopify Files through the app; the field keeps the image's CDN link.
+  $$('[data-image-field]', form).forEach((box) => {
+    const url = $('[data-image-url]', box);
+    const thumb = $('[data-image-thumb]', box);
+    const clear = $('[data-image-clear]', box);
+    const status = $('[data-image-status]', box);
+    const file = $('[data-image-upload]', box);
+    const sync = () => {
+      const ok = /^https:\/\//.test(url.value.trim());
+      thumb.hidden = !ok;
+      if (ok) thumb.src = url.value.trim();
+      clear.hidden = !url.value;
+    };
+    const set = (value) => {
+      url.value = value;
+      sync();
+      url.dispatchEvent(new Event('input', { bubbles: true }));
+      url.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    url.addEventListener('input', sync);
+    clear.addEventListener('click', () => set(''));
+    file.addEventListener('change', async () => {
+      const chosen = file.files[0];
+      file.value = '';
+      if (!chosen) return;
+      if (chosen.size > 5 * 1024 * 1024) { status.textContent = 'That image is over 5 MB.'; return; }
+      status.textContent = 'Uploading…';
+      try {
+        const body = new FormData();
+        body.append('image', chosen);
+        const response = await fetch(file.dataset.imageUpload, { method: 'POST', body, headers: { Accept: 'application/json', Authorization: 'Bearer ' + await shopify.idToken() } });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.url) throw new Error(result.message || 'The upload failed. Try again.');
+        set(result.url);
+        status.textContent = 'Uploaded to your Shopify Files.';
+      } catch (e) {
+        status.textContent = '';
+        shopify.toast.show(e.message, { isError: true });
+      }
+    });
+  });
+
   // ---------------------------------------------------------------- conditional fields ("when")
   function applyWhen() {
     $$('[data-when]', form).forEach((field) => {

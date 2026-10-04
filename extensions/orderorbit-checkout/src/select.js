@@ -98,3 +98,68 @@ export function deadlineLeft(content, now, started) {
   if (elapsed < length) return length - elapsed;
   return c.repeat === 'end' ? 0 : length - (elapsed % length);
 }
+
+const BANNER = ['banner', 'announcement', 'unlocked'];
+const PLAIN = ['compact', 'row', 'button', 'simple', 'plain'];
+const BORDERS = ['base', 'large', 'large-100', 'large-200'];
+
+function size(kind, value) {
+  const n = Math.round(Number(value) || 0);
+  if (kind === 'px' && n > 0) return n + 'px';
+  if (kind === 'percent' && n > 0) return Math.min(100, n) + '%';
+  return undefined;
+}
+
+/**
+ * How a block's frame is drawn, from its layout and Design step (ck_* fields; missing on blocks
+ * published before box styles existed, which then look as before).
+ * @returns { kind: 'banner'|'plain'|'box', props: s-box props, size: { inlineSize, minBlockSize } }
+ */
+export function boxStyle(style, design) {
+  const d = design || {};
+  const set = (key) => d[key] && d[key] !== 'auto';
+  const custom = set('ck_background') || set('ck_border') || set('ck_radius') || set('ck_padding');
+  const sized = {
+    inlineSize: d.ck_width && d.ck_width !== 'full' ? size(d.ck_width, d.ck_width_value) : undefined,
+    minBlockSize: d.ck_height === 'px' ? size('px', d.ck_height_value) : undefined,
+  };
+  if (!custom && BANNER.indexOf(style) !== -1) return { kind: 'banner', props: {}, size: sized };
+  if (!custom && PLAIN.indexOf(style) !== -1) return { kind: 'plain', props: {}, size: sized };
+
+  const plain = PLAIN.indexOf(style) !== -1;
+  const border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
+  return {
+    kind: 'box',
+    props: {
+      background: set('ck_background') ? d.ck_background : style === 'premium' || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
+      border: BORDERS.indexOf(border) !== -1 ? border + ' base ' + (d.ck_border_style || 'solid') : 'none',
+      borderRadius: set('ck_radius') ? d.ck_radius : plain ? 'none' : 'base',
+      padding: set('ck_padding') ? d.ck_padding : plain ? 'none' : 'base',
+    },
+    size: sized,
+  };
+}
+
+/** Sizing for an image block's picture: width, aspect ratio or a fixed, clipped height. */
+export function imageStyle(c) {
+  const width = c.img_width === 'px' || c.img_width === 'percent' ? size(c.img_width, c.img_width_value) : '100%';
+  const border = BORDERS.indexOf(c.img_border) !== -1 ? c.img_border + ' base ' + (c.img_border_style || 'solid') : undefined;
+  const radius = c.img_radius || 'base';
+  const image = { inlineSize: 'fill', borderRadius: radius, border };
+  let clip = null;
+  if (c.img_height === 'ratio' && c.img_ratio) {
+    image.aspectRatio = c.img_ratio;
+    image.objectFit = c.img_fit || 'cover';
+  } else if (c.img_height === 'px') {
+    const h = Math.max(20, Math.round(Number(c.img_height_value) || 200));
+    image.objectFit = c.img_fit || 'cover';
+    if (c.img_width === 'px') {
+      // Both sides in pixels: an exact shape.
+      image.aspectRatio = Math.round(Number(c.img_width_value) || 240) + '/' + h;
+    } else {
+      // Width follows the column: keep the height by clipping the picture.
+      clip = { blockSize: h + 'px', overflow: 'hidden', borderRadius: radius };
+    }
+  }
+  return { width, image, clip };
+}

@@ -41,3 +41,9 @@
 .ck-premium .ck-bar { background: rgba(255, 255, 255, .2); }
 .ck-premium .ck-bar i { background: #fff; }
 .ck-compact { padding: 10px 14px; }
+
+.ck-plain { padding: 0; border: 0; background: none; }
+.ck-subdued, .ck-subdued .ck-title { color: #707070; }
+.ck-toned, .ck-toned .ck-title, .ck-toned .ck-muted { color: var(--ck-text); }
+.ck-image { display: grid; gap: 8px; }
+.ck-image img { max-width: 100%; }

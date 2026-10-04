@@ -51,6 +51,22 @@
             </div>
             @break
 
+        @case('image')
+            <label for="{{ $id }}">{{ $field['label'] }}</label>
+            <div class="b-image" data-image-field>
+                <img src="{{ $value }}" alt="" data-image-thumb @if (! $value) hidden @endif>
+                <input type="url" id="{{ $id }}" name="{{ $name }}" value="{{ $value }}" maxlength="1000" placeholder="https://cdn.shopify.com/…" data-image-url>
+                <div class="b-image-actions">
+                    <label class="b-btn">
+                        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" data-image-upload="{{ app_route('app.uploads.image') }}" hidden>
+                        Upload image
+                    </label>
+                    <button type="button" class="b-btn" data-image-clear @if (! $value) hidden @endif>Remove</button>
+                    <span class="b-muted" data-image-status role="status"></span>
+                </div>
+            </div>
+            @break
+
         @case('datetime')
             <label for="{{ $id }}">{{ $field['label'] }} <span class="b-muted">({{ $timezone }})</span></label>
             <input type="datetime-local" id="{{ $id }}" name="{{ $name }}" value="{{ $value ? \Illuminate\Support\Carbon::parse($value)->setTimezone($timezone)->format('Y-m-d\TH:i') : '' }}" data-tz-offset="{{ now($timezone)->format('P') }}">

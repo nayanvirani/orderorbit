@@ -41,16 +41,17 @@ class CheckoutBlocksTest extends TestCase
         return $experience->fresh();
     }
 
-    public function test_thirteen_block_types_with_checkout_only_settings(): void
+    public function test_fifteen_block_types_with_checkout_only_settings(): void
     {
         $checkout = array_keys(array_filter(Registry::types(), fn ($t) => $t['surface'] === 'checkout'));
         $thankYou = array_keys(array_filter(Registry::types(), fn ($t) => $t['surface'] === 'thank-you'));
-        $this->assertCount(6, $checkout);
-        $this->assertCount(7, $thankYou);
+        $this->assertCount(7, $checkout);
+        $this->assertCount(8, $thankYou);
 
-        // Checkout uses the store's checkout branding: no design settings, and only the targeting checkout knows.
+        // Checkout uses the store's checkout branding: Shopify's box styles only, and only the targeting checkout knows.
         $fields = Schema::fields('checkout-trust');
-        $this->assertSame([], $fields['design']);
+        $this->assertSame(['ck_background', 'ck_border', 'ck_border_style', 'ck_radius', 'ck_padding', 'ck_width', 'ck_width_value', 'ck_height', 'ck_height_value', 'ck_text', 'ck_tone'], array_keys($fields['design']));
+        $this->assertSame([], Schema::fields('post-purchase')['design']);
         $this->assertSame(['priority'], array_keys($fields['behavior']));
         $this->assertSame(['cart_min', 'cart_max', 'countries'], array_keys($fields['targeting']));
 
@@ -154,7 +155,7 @@ class CheckoutBlocksTest extends TestCase
 
         $this->post('/app/cro/experiences', ['type' => 'checkout-gift', 'template' => 'reward-card'], $this->as($owner))->assertRedirectContains('/edit');
         $this->get('/app/cro/experiences/1/edit', $this->as($owner))->assertOk()
-            ->assertSee('Checkout blocks use your checkout\'s own fonts and colours', false)->assertSee('checkout-gift')->assertSee('Claim button');
+            ->assertSee('Shopify doesn\'t let apps use their own colours in checkout', false)->assertSee('Corner radius')->assertSee('checkout-gift')->assertSee('Claim button');
 
         // Without Shopify Plus the in-checkout blocks aren't offered; without Growth, publishing is explained.
         $plus->forceFill(['plan' => 'starter', 'capabilities' => ['checkout_blocks' => false]])->save();
@@ -180,5 +181,71 @@ class CheckoutBlocksTest extends TestCase
         $storefront = Schema::defaults('countdown');
         $storefront['content']['mode'] = 'hours';
         $this->assertSame([], Schema::normalize('countdown', $storefront)[1], 'Hour timers need no end date.');
+    }
+
+    public function test_image_blocks_and_box_styles_reach_the_extension(): void
+    {
+        $manager = app(ExperienceManager::class);
+        $store = $this->installedStore(['plan' => 'growth', 'capabilities' => ['checkout_blocks' => true]]);
+
+        // An image is required, and only https images and links are accepted.
+        $errors = Schema::normalize('checkout-image', Schema::defaults('checkout-image'))[1];
+        $this->assertSame('Add an image: upload one or paste its link.', $errors['content.image']);
+        $bad = Schema::defaults('ty-image');
+        $bad['content'] = array_merge($bad['content'], ['image' => 'http://example.com/a.png', 'link_url' => 'javascript:alert(1)', 'img_width' => 'percent', 'img_width_value' => 150]);
+        $bad['design']['ck_width'] = 'percent';
+        $bad['design']['ck_width_value'] = 120;
+        $this->assertEqualsCanonicalizing(['content.image', 'content.link_url', 'content.img_width_value', 'design.ck_width_value'], array_keys(Schema::normalize('ty-image', $bad)[1]));
+
+        // The Framed template presets its box; the merchant's styles are published with the block.
+        $framed = TemplateLibrary::defaults('ty-image', 'framed');
+        $this->assertSame(['subdued', 'large', 'dashed'], [$framed['design']['ck_background'], $framed['design']['ck_border'], $framed['design']['ck_border_style']]);
+
+        $image = $manager->create($store, 'checkout-image', 'wide-banner', null);
+        $config = $image->draft_config;
+        $config['content']['image'] = 'https://cdn.shopify.com/s/files/1/banner.png';
+        $config['content']['link_url'] = '/collections/all';
+        $config['design'] = array_merge($config['design'], ['ck_background' => 'subdued', 'ck_radius' => 'large', 'ck_width' => 'px', 'ck_width_value' => 480, 'ck_tone' => 'success']);
+        [$clean, $errors] = Schema::normalize('checkout-image', $config);
+        $this->assertSame([], $errors);
+        $manager->saveDraft($image, $clean, [], null);
+        $manager->publish($image->fresh(), null);
+        $trust = $this->ready($manager, $store, 'checkout-trust', 'trust-row');
+        $manager->publish($trust, null);
+
+        $blocks = collect(app(StorefrontPublisher::class)->checkoutPayload($store)['experiences'])->keyBy('type');
+        $this->assertSame(['plain', '21/9', '/collections/all'], [$blocks['checkout-image']['style'], $blocks['checkout-image']['content']['img_ratio'], $blocks['checkout-image']['content']['link_url']]);
+        $this->assertSame(['subdued', 'large', 'px', 480, 'success'], array_values(array_intersect_key($blocks['checkout-image']['design'], array_flip(['ck_background', 'ck_radius', 'ck_width', 'ck_width_value', 'ck_tone']))));
+        $this->assertSame('auto', $blocks['checkout-trust']['design']['ck_background'], 'Other blocks keep their layout\'s look by default.');
+    }
+
+    public function test_images_upload_to_shopify_files(): void
+    {
+        config(['shopify.scopes' => $granted = 'read_products,write_discounts,write_files']);
+        $store = $this->installedStore(['plan' => 'growth', 'scopes' => $granted]);
+        $owner = $this->member($store, 'owner');
+        Http::swap(new \Illuminate\Http\Client\Factory); // replace the suite's catch-all fake
+        Http::fake(fn (Request $request) => match (true) {
+            str_contains($request->url(), '/admin/oauth/access_token') => Http::response(['access_token' => 'shpat_new', 'scope' => $granted, 'expires_in' => 3600, 'refresh_token' => 'r', 'refresh_token_expires_in' => 7776000]),
+            str_contains($request->url(), 'storage.googleapis.com') => Http::response('', 204),
+            str_contains($request['query'] ?? '', 'stagedUploadsCreate') => Http::response(['data' => ['stagedUploadsCreate' => ['stagedTargets' => [['url' => 'https://storage.googleapis.com/upload', 'resourceUrl' => 'https://storage.googleapis.com/upload/banner.png', 'parameters' => [['name' => 'key', 'value' => 'abc']]]], 'userErrors' => []]]]),
+            str_contains($request['query'] ?? '', 'fileCreate') => Http::response(['data' => ['fileCreate' => ['files' => [['id' => 'gid://shopify/MediaImage/9', 'fileStatus' => 'UPLOADED']], 'userErrors' => []]]]),
+            str_contains($request['query'] ?? '', 'node(id') => Http::response(['data' => ['node' => ['id' => 'gid://shopify/MediaImage/9', 'fileStatus' => 'READY', 'image' => ['url' => 'https://cdn.shopify.com/s/files/1/banner.png']]]]),
+            default => Http::response(['data' => []]),
+        });
+
+        $file = \Illuminate\Http\UploadedFile::fake()->image('Summer banner.png', 1200, 400);
+        $this->post('/app/uploads/image', ['image' => $file], $this->as($owner) + ['Accept' => 'application/json'])
+            ->assertJson(['url' => 'https://cdn.shopify.com/s/files/1/banner.png'])->assertOk();
+        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'stagedUploadsCreate') && json_decode($r->body(), true)['variables']['input'][0]['filename'] === 'orderorbit-Summer-banner.png');
+
+        $this->post('/app/uploads/image', ['image' => \Illuminate\Http\UploadedFile::fake()->create('notes.pdf', 10, 'application/pdf')], $this->as($owner) + ['Accept' => 'application/json'])
+            ->assertStatus(422)->assertJson(['message' => 'Use a JPG, PNG, GIF or WebP image.']);
+
+        // Stores that haven't approved the new permission are told how to fix it.
+        $store->forceFill(['scopes' => 'read_products,write_discounts'])->save();
+        $response = app(\App\Http\Controllers\App\UploadController::class)->image(\Illuminate\Http\Request::create('/', 'POST', [], [], ['image' => $file]), $store, app(\App\Services\Shopify\Files::class));
+        $this->assertSame(403, $response->status());
+        $this->assertStringContainsString('approve', $response->getData(true)['message']);
     }
 }

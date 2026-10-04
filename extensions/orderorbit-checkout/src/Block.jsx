@@ -6,8 +6,9 @@
  */
 import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
-import { choose, deadlineLeft, fill, numericId, pageFor, progress } from './select.js';
+import { createContext } from 'preact';
+import { useContext, useEffect, useState } from 'preact/hooks';
+import { boxStyle, choose, deadlineLeft, fill, imageStyle, numericId, pageFor, progress } from './select.js';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -60,28 +61,46 @@ function Extension() {
 
   if (!exp) return null;
   const Render = BLOCKS[exp.type];
-  return Render ? <Render exp={exp} c={exp.content || {}} payload={payload} page={page} /> : null;
+  const d = exp.design || {};
+  const text = { color: d.ck_text === 'subdued' ? 'subdued' : undefined, tone: d.ck_tone && d.ck_tone !== 'auto' ? d.ck_tone : undefined };
+  return Render ? <TextStyle.Provider value={text}><Render exp={exp} c={exp.content || {}} payload={payload} page={page} /></TextStyle.Provider> : null;
 }
 
-/** The outer frame for a layout: banners for announcements, boxes for cards, plain for compact. */
+/** The block's text colour and tone (Design step), applied to every text in it. */
+const TextStyle = createContext({});
+
+function T({ color, tone, type, children }) {
+  const style = useContext(TextStyle);
+  return <s-text type={type} color={color || style.color} tone={tone || style.tone}>{children}</s-text>;
+}
+
+/**
+ * The outer frame for a layout: banners for announcements, boxes for cards, plain for compact.
+ * The Design step's box styles (background, border, corners, spacing, width, height) apply on top;
+ * any of them turns a banner into a box, since banners can't be restyled.
+ */
 function Frame({ exp, heading, tone, children }) {
-  const style = exp.style;
-  if (style === 'banner' || style === 'announcement' || style === 'unlocked') {
-    return <s-banner heading={heading || undefined} tone={tone || 'info'}><s-stack gap="small-200">{children}</s-stack></s-banner>;
+  const box = boxStyle(exp.style, exp.design);
+  if (box.kind === 'banner') {
+    return <Sized size={box.size}><s-banner heading={heading || undefined} tone={tone || 'info'}><s-stack gap="small-200">{children}</s-stack></s-banner></Sized>;
   }
-  if (style === 'compact' || style === 'row' || style === 'button' || style === 'simple') {
-    return <s-stack gap="small-200">{heading ? <s-text type="strong">{heading}</s-text> : null}{children}</s-stack>;
+  if (box.kind === 'plain') {
+    return <Sized size={box.size}><s-stack gap="small-200">{heading ? <T type="strong">{heading}</T> : null}{children}</s-stack></Sized>;
   }
   return (
-    <s-box padding="base" border="base" borderRadius="base" background={style === 'premium' ? 'subdued' : undefined}>
+    <s-box {...box.props} {...box.size}>
       <s-stack gap="small-300">{heading ? <s-heading>{heading}</s-heading> : null}{children}</s-stack>
     </s-box>
   );
 }
 
+function Sized({ size, children }) {
+  return size.inlineSize || size.minBlockSize ? <s-box {...size}>{children}</s-box> : children;
+}
+
 function Stars({ rating }) {
   const n = Math.round(Number(rating) || 0);
-  return <s-text>{'★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n)}</s-text>;
+  return <T>{'★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n)}</T>;
 }
 
 // ------------------------------------------------------------------ checkout blocks
@@ -96,20 +115,20 @@ function Reviews({ exp, c }) {
       {c.rating ? (
         <s-stack direction="inline" gap="small-200" alignItems="center">
           <Stars rating={c.rating} />
-          <s-text>{c.rating}{c.review_count ? ' · ' + shopify.i18n.translate('reviews', { count: Number(c.review_count).toLocaleString() }) : ''}</s-text>
+          <T>{c.rating}{c.review_count ? ' · ' + shopify.i18n.translate('reviews', { count: Number(c.review_count).toLocaleString() }) : ''}</T>
         </s-stack>
       ) : null}
       {shown.map((r) => (
         <s-stack gap="small-100">
           <Stars rating={r.rating} />
-          <s-text>“{r.quote}”</s-text>
-          <s-text color="subdued">{r.author}</s-text>
+          <T>“{r.quote}”</T>
+          <T color="subdued">{r.author}</T>
         </s-stack>
       ))}
       {exp.style === 'slider' && reviews.length > 1 ? (
         <s-stack direction="inline" gap="small-200" alignItems="center">
           <s-button variant="secondary" onClick={() => setI((i + reviews.length - 1) % reviews.length)}>{shopify.i18n.translate('previous')}</s-button>
-          <s-text color="subdued">{shopify.i18n.translate('slide', { current: (i % reviews.length) + 1, total: reviews.length })}</s-text>
+          <T color="subdued">{shopify.i18n.translate('slide', { current: (i % reviews.length) + 1, total: reviews.length })}</T>
           <s-button variant="secondary" onClick={() => setI(i + 1)}>{shopify.i18n.translate('next')}</s-button>
         </s-stack>
       ) : null}
@@ -144,7 +163,7 @@ function Countdown({ exp, c }) {
 
   const left = deadlineLeft(c, now, started);
   if (left === null) return null; // waiting for the saved start
-  if (left <= 0) return c.ended === 'message' ? <Frame exp={exp}><s-text>{c.ended_message}</s-text></Frame> : null;
+  if (left <= 0) return c.ended === 'message' ? <Frame exp={exp}><T>{c.ended_message}</T></Frame> : null;
 
   const pad = (n) => (n < 10 ? '0' : '') + n;
   const days = Math.floor(left / 864e5);
@@ -152,8 +171,8 @@ function Countdown({ exp, c }) {
   return (
     <Frame exp={exp} heading={exp.style === 'banner' ? c.headline : undefined} tone="warning">
       <s-stack direction="inline" gap="base" alignItems="center" justifyContent="space-between">
-        {exp.style !== 'banner' ? <s-text type="strong">{c.headline}</s-text> : null}
-        <s-text type="strong">{time}</s-text>
+        {exp.style !== 'banner' ? <T type="strong">{c.headline}</T> : null}
+        <T type="strong">{time}</T>
       </s-stack>
     </Frame>
   );
@@ -177,11 +196,11 @@ function ShippingProgress({ exp, c, payload }) {
     : fill(c.unlocked_message, { reward: st.milestones[st.milestones.length - 1].label });
   return (
     <Frame exp={exp} tone={st.next ? 'info' : 'success'}>
-      <s-text>{text}</s-text>
+      <T>{text}</T>
       <s-progress value={st.percent} max={100} />
       {exp.style !== 'single'
         ? st.milestones.map((m) => (
-          <s-text color={st.value >= m.threshold ? undefined : 'subdued'}>{(st.value >= m.threshold ? '✓ ' : '○ ') + amount(m.threshold) + ' · ' + m.label}</s-text>
+          <T color={st.value >= m.threshold ? undefined : 'subdued'}>{(st.value >= m.threshold ? '✓ ' : '○ ') + amount(m.threshold) + ' · ' + m.label}</T>
         ))
         : null}
     </Frame>
@@ -213,20 +232,20 @@ function FreeGift({ exp, c, payload }) {
   if (offer && product) {
     return (
       <Frame exp={exp} heading={exp.style === 'unlocked' ? c.unlocked_message : undefined} tone="success">
-        {exp.style !== 'unlocked' ? <s-text type="strong">{c.unlocked_message}</s-text> : null}
+        {exp.style !== 'unlocked' ? <T type="strong">{c.unlocked_message}</T> : null}
         <s-stack direction="inline" gap="base" alignItems="center">
           {product.image ? <s-product-thumbnail src={product.image} alt={product.title} /> : null}
-          <s-text>{product.title}</s-text>
+          <T>{product.title}</T>
         </s-stack>
         {canAdd ? <s-button variant="primary" onClick={claim}>{c.button_text}</s-button> : null}
-        {status ? <s-text color="subdued">{status}</s-text> : null}
+        {status ? <T color="subdued">{status}</T> : null}
       </Frame>
     );
   }
   if (!st.next) return null;
   return (
     <Frame exp={exp}>
-      <s-text>{fill(c.progress_message, { remaining: amount(st.remaining), reward: st.next.label })}</s-text>
+      <T>{fill(c.progress_message, { remaining: amount(st.remaining), reward: st.next.label })}</T>
       <s-progress value={st.percent} max={100} />
     </Frame>
   );
@@ -242,14 +261,14 @@ function Promotion({ exp, c }) {
   }
   return (
     <Frame exp={exp} heading={c.headline}>
-      {c.message ? <s-text>{c.message}</s-text> : null}
+      {c.message ? <T>{c.message}</T> : null}
       {c.code ? (
         <s-stack direction="inline" gap="base" alignItems="center">
-          <s-text type="strong">{c.code}</s-text>
+          <T type="strong">{c.code}</T>
           {canApply ? <s-button variant="secondary" onClick={apply}>{c.apply_text}</s-button> : null}
         </s-stack>
       ) : null}
-      {status ? <s-text color="subdued">{status}</s-text> : null}
+      {status ? <T color="subdued">{status}</T> : null}
     </Frame>
   );
 }
@@ -259,13 +278,13 @@ function Trust({ exp, c }) {
   const items = badges.map((b) => (
     <s-stack direction="inline" gap="small-200" alignItems="center">
       <s-icon type={ICON[b.icon] || 'check-circle'} />
-      <s-text>{b.label}</s-text>
+      <T>{b.label}</T>
     </s-stack>
   ));
   return (
     <Frame exp={exp} heading={c.headline} tone="success">
       {exp.style === 'grid' ? <s-grid gridTemplateColumns="1fr 1fr" gap="small-300">{items}</s-grid> : <s-stack direction={exp.style === 'row' ? 'inline' : 'block'} gap="base">{items}</s-stack>}
-      {c.guarantee ? <s-text color="subdued">{c.guarantee}</s-text> : null}
+      {c.guarantee ? <T color="subdued">{c.guarantee}</T> : null}
     </Frame>
   );
 }
@@ -282,14 +301,14 @@ function CrossSell({ exp, c }) {
   if (!products.length) return null;
   return (
     <Frame exp={exp} heading={c.headline}>
-      {c.message ? <s-text>{c.message}</s-text> : null}
+      {c.message ? <T>{c.message}</T> : null}
       <s-grid gridTemplateColumns={exp.style === 'cards' ? '1fr 1fr' : '1fr'} gap="base">
         {products.map((p) => (
           <s-stack direction={exp.style === 'cards' ? 'block' : 'inline'} gap="small-200" alignItems="center">
             {p.image ? <s-product-thumbnail src={p.image} alt={p.title} /> : null}
             <s-stack gap="small-100">
-              <s-text type="strong">{p.title}</s-text>
-              {p.price != null ? <s-text color="subdued">{money(p.price)}</s-text> : null}
+              <T type="strong">{p.title}</T>
+              {p.price != null ? <T color="subdued">{money(p.price)}</T> : null}
               <s-link href={storefront(p.handle ? '/products/' + p.handle : '')} onClick={() => track(exp, 'upsell_accepted')}>{c.button_text}</s-link>
             </s-stack>
           </s-stack>
@@ -305,7 +324,7 @@ function Reorder({ exp, c }) {
   const permalink = storefront('/cart/' + lines.map((l) => numericId(l.merchandise.id) + ':' + l.quantity).join(','));
   return (
     <Frame exp={exp} heading={c.headline}>
-      {c.message ? <s-text>{c.message}</s-text> : null}
+      {c.message ? <T>{c.message}</T> : null}
       <s-button variant="primary" href={permalink} onClick={() => track(exp, 'experience_clicked', { action: 'reorder' })}>{c.button_text}</s-button>
     </Frame>
   );
@@ -316,8 +335,8 @@ function ReviewRequest({ exp, c }) {
   const titles = (shopify.lines?.value || []).map((l) => l.merchandise?.title || l.merchandise?.product?.title).filter(Boolean);
   return (
     <Frame exp={exp} heading={c.headline}>
-      {c.message ? <s-text>{c.message}</s-text> : null}
-      {exp.style === 'products' ? titles.slice(0, 4).map((t) => <s-text>• {t}</s-text>) : null}
+      {c.message ? <T>{c.message}</T> : null}
+      {exp.style === 'products' ? titles.slice(0, 4).map((t) => <T>• {t}</T>) : null}
       <s-button variant="primary" href={url} onClick={() => track(exp, 'experience_clicked', { action: 'review' })}>{c.button_text}</s-button>
     </Frame>
   );
@@ -327,9 +346,9 @@ function Referral({ exp, c }) {
   if (!c.code) return null;
   return (
     <Frame exp={exp} heading={c.headline}>
-      {c.message ? <s-text>{c.message}</s-text> : null}
+      {c.message ? <T>{c.message}</T> : null}
       <s-stack direction="inline" gap="base" alignItems="center">
-        <s-text type="strong">{c.code}</s-text>
+        <T type="strong">{c.code}</T>
         <s-link href={c.share_url || storefront('')} onClick={() => track(exp, 'experience_clicked', { action: 'share' })}>{shopify.i18n.translate('share')}</s-link>
       </s-stack>
     </Frame>
@@ -339,7 +358,7 @@ function Referral({ exp, c }) {
 function Survey({ exp, c }) {
   const [answer, setAnswer] = useState('');
   const [sent, setSent] = useState(false);
-  if (sent) return <Frame exp={exp} tone="success"><s-text>{c.thanks_message}</s-text></Frame>;
+  if (sent) return <Frame exp={exp} tone="success"><T>{c.thanks_message}</T></Frame>;
   const options = (c.options || []).map((o) => o.label).filter(Boolean);
   if (!options.length) return null;
   return (
@@ -366,9 +385,9 @@ function NextDiscount({ exp, c }) {
   if (!c.code) return null;
   return (
     <Frame exp={exp} heading={c.headline} tone="success">
-      {c.message ? <s-text>{c.message}</s-text> : null}
-      <s-text type="strong">{c.code}</s-text>
-      {c.expiry_text ? <s-text color="subdued">{c.expiry_text}</s-text> : null}
+      {c.message ? <T>{c.message}</T> : null}
+      <T type="strong">{c.code}</T>
+      {c.expiry_text ? <T color="subdued">{c.expiry_text}</T> : null}
     </Frame>
   );
 }
@@ -377,10 +396,28 @@ function Message({ exp, c }) {
   if (!c.headline && !c.message) return null;
   return (
     <Frame exp={exp} heading={c.headline}>
-      {c.message ? <s-text>{c.message}</s-text> : null}
+      {c.message ? <T>{c.message}</T> : null}
       {c.button_text && c.button_url ? (
         <s-button variant="secondary" href={c.button_url} onClick={() => track(exp, 'experience_clicked', { action: 'link' })}>{c.button_text}</s-button>
       ) : null}
+    </Frame>
+  );
+}
+
+function ImageBlock({ exp, c }) {
+  if (!c.image) return null;
+  const img = imageStyle(c);
+  const picture = <s-image src={c.image} alt={c.alt || ''} loading="lazy" {...img.image} />;
+  const framed = img.clip ? <s-box {...img.clip}>{picture}</s-box> : picture;
+  const sized = <s-box inlineSize={img.width}>{c.link_url ? (
+    <s-clickable href={c.link_url.charAt(0) === '/' ? storefront(c.link_url) : c.link_url} accessibilityLabel={c.alt || undefined} onClick={() => track(exp, 'experience_clicked', { action: 'image' })}>{framed}</s-clickable>
+  ) : framed}</s-box>;
+  return (
+    <Frame exp={exp}>
+      <s-stack gap="small-200" alignItems={c.align || 'center'}>
+        {sized}
+        {c.caption ? <T color="subdued">{c.caption}</T> : null}
+      </s-stack>
     </Frame>
   );
 }
@@ -399,4 +436,6 @@ const BLOCKS = {
   'ty-survey': Survey,
   'ty-discount': NextDiscount,
   'ty-message': Message,
+  'checkout-image': ImageBlock,
+  'ty-image': ImageBlock,
 };

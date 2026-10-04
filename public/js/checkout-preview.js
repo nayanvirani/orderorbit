@@ -16,8 +16,56 @@
     { index: 1, threshold: 80, reward: 'gift', label: 'a free gift', products: [{ title: 'Travel-size serum', image: window.OO_SAMPLE_IMAGE }] }
   ] } };
 
+  // Close likenesses of Shopify's checkout tokens, for the Design step's box styles.
+  var RADIUS = { none: '0', 'small-100': '2px', small: '4px', base: '6px', large: '10px', 'large-100': '14px', max: '999px' };
+  var BORDER = { none: '0', base: '1px', large: '2px', 'large-100': '3px', 'large-200': '4px' };
+  var PAD = { none: '0', small: '8px', base: '14px', large: '20px', 'large-200': '28px' };
+  var TONE = { info: '#0b5cad', success: '#0c7a43', warning: '#8a5a00', critical: '#c5281c' };
+  var BANNER = ['banner', 'announcement', 'unlocked'];
+  var PLAIN = ['compact', 'row', 'button', 'simple', 'plain'];
+
+  function size(kind, value) {
+    var n = Math.round(Number(value) || 0);
+    if (kind === 'px' && n > 0) return n + 'px';
+    if (kind === 'percent' && n > 0) return Math.min(100, n) + '%';
+    return '';
+  }
+
   function wrap(exp, body) {
-    return '<div class="ck ck-' + h.esc(exp.style || 'card') + '">' + body + '</div>';
+    var d = exp.design || {};
+    var set = function (k) { return d[k] && d[k] !== 'auto'; };
+    var style = exp.style || 'card';
+    var css = [];
+    var custom = set('ck_background') || set('ck_border') || set('ck_radius') || set('ck_padding');
+    if (custom) {
+      var plain = PLAIN.indexOf(style) !== -1;
+      style = 'card';
+      var bg = set('ck_background') ? d.ck_background : 'base';
+      css.push('background:' + (bg === 'subdued' ? '#f4f4f4' : bg === 'transparent' ? 'transparent' : '#fff'));
+      var border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
+      css.push('border:' + (BORDER[border] || '0') + ' ' + (d.ck_border_style || 'solid') + ' #cfcfcf');
+      css.push('border-radius:' + RADIUS[set('ck_radius') ? d.ck_radius : plain ? 'none' : 'base']);
+      css.push('padding:' + PAD[set('ck_padding') ? d.ck_padding : plain ? 'none' : 'base']);
+    }
+    var w = d.ck_width && d.ck_width !== 'full' ? size(d.ck_width, d.ck_width_value) : '';
+    if (w) css.push('width:' + w + ';max-width:100%');
+    if (d.ck_height === 'px') css.push('min-height:' + size('px', d.ck_height_value) + ';align-content:start');
+    if (d.ck_tone && TONE[d.ck_tone]) css.push('--ck-text:' + TONE[d.ck_tone]);
+    var cls = 'ck ck-' + h.esc(style) + (d.ck_text === 'subdued' ? ' ck-subdued' : '') + (d.ck_tone && TONE[d.ck_tone] ? ' ck-toned' : '');
+    return '<div class="' + cls + '" style="' + css.join(';') + '">' + body + '</div>';
+  }
+
+  function image(exp) {
+    var c = exp.content;
+    var src = c.image || window.OO_SAMPLE_IMAGE;
+    var width = c.img_width === 'px' || c.img_width === 'percent' ? size(c.img_width, c.img_width_value) : '100%';
+    var css = ['width:100%', 'display:block', 'border-radius:' + (RADIUS[c.img_radius || 'base'] || '6px')];
+    if (BORDER[c.img_border] && c.img_border !== 'none') css.push('border:' + BORDER[c.img_border] + ' ' + (c.img_border_style || 'solid') + ' #cfcfcf');
+    if (c.img_height === 'ratio') css.push('aspect-ratio:' + (c.img_ratio || '16/9'), 'object-fit:' + (c.img_fit || 'cover'));
+    if (c.img_height === 'px') css.push('height:' + Math.max(20, Number(c.img_height_value) || 200) + 'px', 'object-fit:' + (c.img_fit || 'cover'));
+    var align = { start: 'start', center: 'center', end: 'end' }[c.align] || 'center';
+    return wrap(exp, '<div class="ck-image" style="justify-items:' + align + '"><div style="width:' + width + ';max-width:100%"><img src="' + h.esc(src) + '" alt="' + h.esc(c.alt || '') + '" style="' + css.join(';') + '"></div>' +
+      (c.caption ? '<p class="ck-muted">' + h.esc(c.caption) + '</p>' : '') + (c.image ? '' : '<p class="ck-note">Sample image. Upload yours in the Content step.</p>') + '</div>');
   }
   function title(text) { return text ? '<p class="ck-title">' + h.esc(text) + '</p>' : ''; }
   function para(text) { return text ? '<p class="ck-text">' + h.esc(text) + '</p>' : ''; }
@@ -97,6 +145,8 @@
         '<p class="ck-text">' + (pct ? '<s class="ck-muted">' + h.esc(h.money(price, ctx.currency)) + '</s> ' : '') + '<b>' + h.esc(h.money(now, ctx.currency)) + '</b>' + (pct ? ' · ' + pct + '% off' : '') + '</p></div></div>' +
         button(c.accept_text + ' · ' + h.money(now, ctx.currency), true) + '<span class="ck-muted" style="justify-self:start">' + h.esc(c.decline_text) + '</span>' + second);
     },
+    'checkout-image': image,
+    'ty-image': image,
     'ty-message': function (exp) { var c = exp.content; return wrap(exp, title(c.headline || 'Your headline') + para(c.message) + button(c.button_text, false)); }
   };
 

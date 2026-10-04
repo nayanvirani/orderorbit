@@ -120,6 +120,9 @@ Route::prefix('app')->middleware('shopify.auth')->name('app.')->group(function (
             Route::get('/templates', [TemplateLibraryController::class, 'index'])->name('templates');
         });
 
+        // Images for blocks, saved to the store's Shopify Files.
+        Route::post('/uploads/image', [\App\Http\Controllers\App\UploadController::class, 'image'])->middleware('store.can:manage_experiences')->name('uploads.image');
+
         // Automation (Phase 7)
         Route::prefix('automation')->name('automation.')->controller(\App\Http\Controllers\App\AutomationController::class)->group(function () {
             Route::get('/', 'index')->middleware('store.can:view_dashboard')->name('index');

@@ -102,6 +102,8 @@ class TemplateLibrary
             $preset = array_diff_key($preset, array_flip(['background_color', 'text_color', 'accent_color', 'primary_color']));
         }
         $config['design'] = array_merge($config['design'], $preset);
+        // Templates may also preset design fields of their own (checkout box styles, for example).
+        $config['design'] = array_merge($config['design'], array_intersect_key($template['design'] ?? [], $config['design']));
 
         return $config;
     }

@@ -40,7 +40,7 @@ key = "checkout"
   description = "Which OrderOrbit Space block to show here. Checkout: checkout-*. Thank You and Order Status: ty-*."
     [[extensions.settings.fields.validations]]
     name = "choices"
-    value = "[\"checkout-reviews\", \"checkout-countdown\", \"checkout-shipping\", \"checkout-gift\", \"checkout-promo\", \"checkout-trust\", \"ty-cross-sell\", \"ty-reorder\", \"ty-review\", \"ty-referral\", \"ty-survey\", \"ty-discount\", \"ty-message\"]"
+    value = "[\"checkout-reviews\", \"checkout-countdown\", \"checkout-shipping\", \"checkout-gift\", \"checkout-promo\", \"checkout-trust\", \"checkout-image\", \"ty-cross-sell\", \"ty-reorder\", \"ty-review\", \"ty-referral\", \"ty-survey\", \"ty-discount\", \"ty-message\", \"ty-image\"]"
 
   [[extensions.settings.fields]]
   key = "experience_id"

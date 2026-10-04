@@ -10,12 +10,14 @@
 | analytics fields are shared by every type (App\Experiences\Schema).
 |
 | Field types: text, textarea, number, money, select, toggle, color,
-| datetime, products, collections, list (rows of sub-fields).
+| datetime, products, collections, list (rows of sub-fields), image (an
+| uploaded or linked https image).
 |
 | Template "style" picks the renderer variant: minimal, card, banner,
 | premium, compact, ladder, grid, carousel, slider, table, row.
 |
-| Templates may preset content ("content" => [...]) on top of the type defaults.
+| Templates may preset content ("content" => [...]) and design ("design" => [...])
+| on top of the type defaults.
 |
 | "discount" types apply real savings at checkout: bundles merge into one
 | cart line through the OrderOrbit cart transform (BundleSync); the others use
@@ -549,6 +551,39 @@ return [
         ],
     ],
 
+    'checkout-image' => [
+        'label' => 'Checkout image',
+        'singular' => 'Checkout image',
+        'icon' => 'layout',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'A banner, badge or lifestyle image inside checkout, with size, shape and link settings.',
+        'empty' => 'Show a seasonal banner, payment badges or a guarantee seal in checkout.',
+        'templates' => [
+            'full-width' => ['name' => 'Full Width', 'style' => 'plain'],
+            'wide-banner' => ['name' => 'Wide Banner', 'style' => 'plain', 'content' => ['img_height' => 'ratio', 'img_ratio' => '21/9', 'img_radius' => 'large']],
+            'image-card' => ['name' => 'Image Card', 'style' => 'card', 'content' => ['img_height' => 'ratio', 'img_ratio' => '16/9', 'caption' => 'Free returns within 30 days']],
+            'centered-logo' => ['name' => 'Centered Logo', 'style' => 'plain', 'content' => ['img_width' => 'px', 'img_width_value' => 160, 'img_radius' => 'none']],
+            'framed' => ['name' => 'Framed', 'style' => 'card', 'content' => ['img_radius' => 'large'], 'design' => ['ck_background' => 'subdued', 'ck_border' => 'large', 'ck_border_style' => 'dashed', 'ck_radius' => 'large-100', 'ck_padding' => 'large']],
+        ],
+        'content' => [
+            'image' => ['type' => 'image', 'label' => 'Image', 'required' => true, 'help' => 'Upload a JPG, PNG, GIF or WebP up to 5 MB (saved to your Shopify Files), or paste an https link.'],
+            'alt' => ['type' => 'text', 'label' => 'Alt text', 'default' => '', 'max' => 200, 'help' => 'Describes the image for shoppers using screen readers.'],
+            'caption' => ['type' => 'text', 'label' => 'Caption (optional)', 'default' => '', 'max' => 160],
+            'link_url' => ['type' => 'text', 'label' => 'Link (optional)', 'default' => '', 'max' => 300, 'help' => 'Where the image goes when clicked: an https link or a store path like /collections/all.'],
+            'img_width' => ['type' => 'select', 'label' => 'Image width', 'default' => 'fill', 'options' => ['fill' => 'Full width', 'px' => 'Fixed width (px)', 'percent' => 'Percent of the block']],
+            'img_width_value' => ['type' => 'number', 'label' => 'Width value', 'default' => 240, 'min' => 10, 'max' => 1200, 'when' => ['img_width' => ['px', 'percent']], 'help' => 'Pixels, or 10–100 for a percentage.'],
+            'img_height' => ['type' => 'select', 'label' => 'Image height', 'default' => 'natural', 'options' => ['natural' => 'Natural (keep the image\'s shape)', 'ratio' => 'Aspect ratio', 'px' => 'Fixed height (px)']],
+            'img_ratio' => ['type' => 'select', 'label' => 'Aspect ratio', 'default' => '16/9', 'when' => ['img_height' => 'ratio'], 'options' => ['1/1' => 'Square 1:1', '4/3' => 'Landscape 4:3', '3/2' => 'Landscape 3:2', '16/9' => 'Wide 16:9', '21/9' => 'Banner 21:9', '3/4' => 'Portrait 3:4', '2/3' => 'Portrait 2:3']],
+            'img_height_value' => ['type' => 'number', 'label' => 'Height (px)', 'default' => 200, 'min' => 20, 'max' => 1200, 'when' => ['img_height' => 'px']],
+            'img_fit' => ['type' => 'select', 'label' => 'Fit', 'default' => 'cover', 'when' => ['img_height' => ['ratio', 'px']], 'options' => ['cover' => 'Fill the space (crops the edges)', 'contain' => 'Show the whole image']],
+            'img_radius' => ['type' => 'select', 'label' => 'Image corner radius', 'default' => 'base', 'options' => array_diff_key(\App\Experiences\Schema::CHECKOUT_RADIUS, ['auto' => 1])],
+            'img_border' => ['type' => 'select', 'label' => 'Image border', 'default' => 'none', 'options' => ['none' => 'No border', 'base' => 'Thin', 'large' => 'Medium', 'large-100' => 'Thick']],
+            'img_border_style' => ['type' => 'select', 'label' => 'Image border style', 'default' => 'solid', 'when' => ['img_border' => ['base', 'large', 'large-100']], 'options' => ['solid' => 'Solid', 'dashed' => 'Dashed', 'dotted' => 'Dotted']],
+            'align' => ['type' => 'select', 'label' => 'Alignment', 'default' => 'center', 'options' => ['start' => 'Left', 'center' => 'Centre', 'end' => 'Right']],
+        ],
+    ],
+
     'ty-cross-sell' => [
         'label' => 'Thank You cross-sell',
         'singular' => 'Thank You cross-sell',
@@ -695,6 +730,40 @@ return [
             'message' => ['type' => 'textarea', 'label' => 'Message', 'default' => '', 'max' => 400],
             'button_text' => ['type' => 'text', 'label' => 'Button text (optional)', 'default' => '', 'max' => 30],
             'button_url' => ['type' => 'text', 'label' => 'Button link', 'default' => '', 'max' => 300],
+            'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'both', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
+        ],
+    ],
+
+    'ty-image' => [
+        'label' => 'Thank You image',
+        'singular' => 'Thank You image',
+        'icon' => 'layout',
+        'meter' => null,
+        'surface' => 'thank-you',
+        'description' => 'An image on the Thank You and Order Status pages, with size, shape and link settings.',
+        'empty' => 'Thank customers with a brand image, or link a banner to your next collection.',
+        'templates' => [
+            'full-width' => ['name' => 'Full Width', 'style' => 'plain'],
+            'wide-banner' => ['name' => 'Wide Banner', 'style' => 'plain', 'content' => ['img_height' => 'ratio', 'img_ratio' => '21/9', 'img_radius' => 'large']],
+            'image-card' => ['name' => 'Image Card', 'style' => 'card', 'content' => ['img_height' => 'ratio', 'img_ratio' => '16/9', 'caption' => 'Free returns within 30 days']],
+            'centered-logo' => ['name' => 'Centered Logo', 'style' => 'plain', 'content' => ['img_width' => 'px', 'img_width_value' => 160, 'img_radius' => 'none']],
+            'framed' => ['name' => 'Framed', 'style' => 'card', 'content' => ['img_radius' => 'large'], 'design' => ['ck_background' => 'subdued', 'ck_border' => 'large', 'ck_border_style' => 'dashed', 'ck_radius' => 'large-100', 'ck_padding' => 'large']],
+        ],
+        'content' => [
+            'image' => ['type' => 'image', 'label' => 'Image', 'required' => true, 'help' => 'Upload a JPG, PNG, GIF or WebP up to 5 MB (saved to your Shopify Files), or paste an https link.'],
+            'alt' => ['type' => 'text', 'label' => 'Alt text', 'default' => '', 'max' => 200, 'help' => 'Describes the image for shoppers using screen readers.'],
+            'caption' => ['type' => 'text', 'label' => 'Caption (optional)', 'default' => '', 'max' => 160],
+            'link_url' => ['type' => 'text', 'label' => 'Link (optional)', 'default' => '', 'max' => 300, 'help' => 'Where the image goes when clicked: an https link or a store path like /collections/all.'],
+            'img_width' => ['type' => 'select', 'label' => 'Image width', 'default' => 'fill', 'options' => ['fill' => 'Full width', 'px' => 'Fixed width (px)', 'percent' => 'Percent of the block']],
+            'img_width_value' => ['type' => 'number', 'label' => 'Width value', 'default' => 240, 'min' => 10, 'max' => 1200, 'when' => ['img_width' => ['px', 'percent']], 'help' => 'Pixels, or 10–100 for a percentage.'],
+            'img_height' => ['type' => 'select', 'label' => 'Image height', 'default' => 'natural', 'options' => ['natural' => 'Natural (keep the image\'s shape)', 'ratio' => 'Aspect ratio', 'px' => 'Fixed height (px)']],
+            'img_ratio' => ['type' => 'select', 'label' => 'Aspect ratio', 'default' => '16/9', 'when' => ['img_height' => 'ratio'], 'options' => ['1/1' => 'Square 1:1', '4/3' => 'Landscape 4:3', '3/2' => 'Landscape 3:2', '16/9' => 'Wide 16:9', '21/9' => 'Banner 21:9', '3/4' => 'Portrait 3:4', '2/3' => 'Portrait 2:3']],
+            'img_height_value' => ['type' => 'number', 'label' => 'Height (px)', 'default' => 200, 'min' => 20, 'max' => 1200, 'when' => ['img_height' => 'px']],
+            'img_fit' => ['type' => 'select', 'label' => 'Fit', 'default' => 'cover', 'when' => ['img_height' => ['ratio', 'px']], 'options' => ['cover' => 'Fill the space (crops the edges)', 'contain' => 'Show the whole image']],
+            'img_radius' => ['type' => 'select', 'label' => 'Image corner radius', 'default' => 'base', 'options' => array_diff_key(\App\Experiences\Schema::CHECKOUT_RADIUS, ['auto' => 1])],
+            'img_border' => ['type' => 'select', 'label' => 'Image border', 'default' => 'none', 'options' => ['none' => 'No border', 'base' => 'Thin', 'large' => 'Medium', 'large-100' => 'Thick']],
+            'img_border_style' => ['type' => 'select', 'label' => 'Image border style', 'default' => 'solid', 'when' => ['img_border' => ['base', 'large', 'large-100']], 'options' => ['solid' => 'Solid', 'dashed' => 'Dashed', 'dotted' => 'Dotted']],
+            'align' => ['type' => 'select', 'label' => 'Alignment', 'default' => 'center', 'options' => ['start' => 'Left', 'center' => 'Centre', 'end' => 'Right']],
             'pages' => ['type' => 'select', 'label' => 'Show on', 'default' => 'both', 'options' => ['both' => 'Thank You and Order Status', 'thank_you' => 'Thank You only', 'order_status' => 'Order Status only']],
         ],
     ],

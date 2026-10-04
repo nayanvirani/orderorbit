@@ -88,3 +88,9 @@
 .b-step[aria-current="step"] span { background: var(--ob-accent, #4f46e5); color: #fff; }
 .b-template:has(> input:checked) { border-color: var(--ob-accent, #4f46e5); box-shadow: 0 0 0 3px var(--ob-accent-soft, #eef2ff); }
 .b-seg button[aria-pressed="true"] { color: #1a1a1a; }
+
+/* Image fields */
+.b-image { display: grid; gap: 8px; }
+.b-image img { max-width: 220px; max-height: 140px; border-radius: 8px; border: 1px solid #e3e3e3; object-fit: contain; background: #f6f6f6; }
+.b-image-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.b-image-actions label.b-btn { cursor: pointer; }

@@ -75,6 +75,33 @@ class Schema
         ];
     }
 
+    /**
+     * Box styles for checkout, Thank You and Order Status blocks. Checkout extensions can't use
+     * custom colours or CSS: Shopify only allows its own tokens, which follow the store's checkout
+     * branding. So these are the choices Shopify offers, and "Layout default" keeps the template's.
+     */
+    public static function checkoutDesign(): array
+    {
+        $borders = ['base', 'large', 'large-100', 'large-200'];
+
+        return [
+            'ck_background' => ['type' => 'select', 'label' => 'Background', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'transparent' => 'None (transparent)', 'base' => 'Checkout background', 'subdued' => 'Subtle tint']],
+            'ck_border' => ['type' => 'select', 'label' => 'Border', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'none' => 'No border', 'base' => 'Thin', 'large' => 'Medium', 'large-100' => 'Thick', 'large-200' => 'Extra thick']],
+            'ck_border_style' => ['type' => 'select', 'label' => 'Border style', 'default' => 'solid', 'when' => ['ck_border' => $borders], 'options' => ['solid' => 'Solid', 'dashed' => 'Dashed', 'dotted' => 'Dotted']],
+            'ck_radius' => ['type' => 'select', 'label' => 'Corner radius', 'default' => 'auto', 'options' => self::CHECKOUT_RADIUS],
+            'ck_padding' => ['type' => 'select', 'label' => 'Inner spacing', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'none' => 'None', 'small' => 'Small', 'base' => 'Medium', 'large' => 'Large', 'large-200' => 'Extra large']],
+            'ck_width' => ['type' => 'select', 'label' => 'Width', 'default' => 'full', 'options' => ['full' => 'Full width', 'px' => 'Fixed width (px)', 'percent' => 'Percent of the column']],
+            'ck_width_value' => ['type' => 'number', 'label' => 'Width value', 'default' => 100, 'min' => 10, 'max' => 1200, 'when' => ['ck_width' => ['px', 'percent']], 'help' => 'Pixels, or 10–100 for a percentage.'],
+            'ck_height' => ['type' => 'select', 'label' => 'Height', 'default' => 'auto', 'options' => ['auto' => 'Fit the content', 'px' => 'Minimum height (px)']],
+            'ck_height_value' => ['type' => 'number', 'label' => 'Minimum height (px)', 'default' => 120, 'min' => 20, 'max' => 1200, 'when' => ['ck_height' => 'px']],
+            'ck_text' => ['type' => 'select', 'label' => 'Text colour', 'default' => 'base', 'options' => ['base' => 'Standard', 'subdued' => 'Muted']],
+            'ck_tone' => ['type' => 'select', 'label' => 'Text tone', 'default' => 'auto', 'options' => ['auto' => 'Checkout default', 'info' => 'Info', 'success' => 'Success', 'warning' => 'Warning', 'critical' => 'Critical'], 'help' => 'Tones use the colours from your checkout branding.'],
+        ];
+    }
+
+    /** Shopify's corner radius tokens for checkout components. */
+    public const CHECKOUT_RADIUS = ['auto' => 'Layout default', 'none' => 'Square', 'small-100' => 'Extra small', 'small' => 'Small', 'base' => 'Medium', 'large' => 'Large', 'large-100' => 'Extra large', 'max' => 'Fully round'];
+
     private static function variants(mixed $raw): ?array
     {
         if (! is_array($raw)) {
@@ -107,10 +134,12 @@ class Schema
         // Shared fields marked with "types" only apply to those types.
         $shared = array_map(fn ($fields) => array_filter($fields, fn ($f) => ! isset($f['types']) || in_array($type, $f['types'], true)), self::shared());
 
-        // Checkout and post-purchase blocks use the store's checkout branding (no design settings)
-        // and can only be targeted by what checkout knows: the cart value and the country.
-        if (in_array(Registry::type($type)['surface'], self::CHECKOUT_SURFACES, true)) {
-            $shared['design'] = [];
+        // Checkout and post-purchase blocks follow the store's checkout branding: checkout and
+        // Thank You blocks get Shopify's box styles, post-purchase none. They can only be targeted
+        // by what checkout knows: the cart value and the country.
+        $surface = Registry::type($type)['surface'];
+        if (in_array($surface, self::CHECKOUT_SURFACES, true)) {
+            $shared['design'] = $surface === 'post-purchase' ? [] : self::checkoutDesign();
             $shared['behavior'] = array_intersect_key($shared['behavior'], array_flip(['priority']));
             $shared['targeting'] = array_intersect_key($shared['targeting'], array_flip(['cart_min', 'cart_max', 'countries']));
         }
@@ -130,7 +159,7 @@ class Schema
             return GiftSchema::defaults('pg-classic', $branding);
         }
 
-        // Every section is present, even one without fields (checkout blocks have no design).
+        // Every section is present, even one without fields (post-purchase blocks have no design).
         $config = array_fill_keys(self::SECTIONS, []);
         foreach (self::fields($type) as $section => $fields) {
             foreach ($fields as $key => $field) {
@@ -159,7 +188,7 @@ class Schema
             return GiftSchema::normalize($input, $timezone);
         }
 
-        // Every section is present, even one without fields (checkout blocks have no design).
+        // Every section is present, even one without fields (post-purchase blocks have no design).
         $config = array_fill_keys(self::SECTIONS, []);
         $errors = [];
 
@@ -207,6 +236,17 @@ class Schema
                 }
 
                 return mb_strlen($value) > $max ? [mb_substr($value, 0, $max), "{$label} must be {$max} characters or fewer."] : [$value, null];
+
+            case 'image':
+                $value = trim((string) ($raw ?? ''));
+                if ($value === '') {
+                    return ['', $required ? 'Add an image: upload one or paste its link.' : null];
+                }
+                if (mb_strlen($value) > 1000 || ! preg_match('#^https://[^\s"\'<>]+$#', $value)) {
+                    return ['', 'Use an uploaded image or a full https:// link.'];
+                }
+
+                return [$value, null];
 
             case 'number':
             case 'money':
@@ -324,6 +364,19 @@ class Schema
     {
         $errors = [];
         $c = $config['content'];
+
+        $d = $config['design'] ?? [];
+        if (($d['ck_width'] ?? '') === 'percent' && ($d['ck_width_value'] ?? 0) > 100) {
+            $errors['design.ck_width_value'] = 'A percentage can be at most 100.';
+        }
+        if (in_array($type, ['checkout-image', 'ty-image'], true)) {
+            if (($c['img_width'] ?? '') === 'percent' && ($c['img_width_value'] ?? 0) > 100) {
+                $errors['content.img_width_value'] = 'A percentage can be at most 100.';
+            }
+            if (($c['link_url'] ?? '') !== '' && ! preg_match('#^(https://|/)[^\s"\'<>]*$#', $c['link_url'])) {
+                $errors['content.link_url'] = 'Use a full https:// link, or a path on your store such as /collections/all.';
+            }
+        }
 
         if ($type === 'bundles' && isset($c['min_items'], $c['max_items']) && $c['min_items'] > $c['max_items']) {
             $errors['content.max_items'] = 'Maximum selections must be at least the minimum.';
