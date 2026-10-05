@@ -270,10 +270,13 @@ class ExperienceEngineTest extends TestCase
         $this->get('/app', $this->as($owner))->assertOk()
             ->assertSee('/app/cro?', false)->assertSee('/app/analytics', false)->assertDontSee('Volume discounts');
         // The CRO sub-menu lists every conversion feature.
-        $this->get('/app/cro', $this->as($owner))->assertOk()
-            ->assertSee('ob-subnav', false)->assertSee('/app/cro/progressive-gifts', false)->assertSee('All offers')->assertSee('Templates');
+        $nav = $this->page('/app/cro', $owner)->assertOk()->assertJsonPath('shared.nav.section', 'cro')->json('shared.nav.groups');
+        $items = collect($nav)->flatMap(fn ($g) => $g['items']);
+        $this->assertContains('/app/cro/progressive-gifts', $items->pluck('href')->all());
+        $this->assertContains('All offers', $items->pluck('label')->all());
+        $this->assertContains('Templates', $items->pluck('label')->all());
         foreach (['cart-upsells', 'countdown', 'sticky-atc', 'trust'] as $feature) {
-            $this->get("/app/cro/features/{$feature}", $this->as($owner))->assertOk()->assertSee('How it works');
+            $this->page("/app/cro/features/{$feature}", $owner)->assertOk()->assertJsonPath('component', 'cro/feature');
         }
         $this->get('/app/cro/features/progressive-gifts', $this->as($owner))->assertRedirectContains('/app/cro/progressive-gifts');
         $this->get('/app/cro/features/bundles', $this->as($owner))->assertRedirectContains('/app/cro/bundles');
@@ -288,22 +291,22 @@ class ExperienceEngineTest extends TestCase
         $staff = $this->member($store, 'staff');
         $other = $this->installedStore(['shop_domain' => 'other.myshopify.com']);
 
-        $this->get('/app/cro', $this->as($owner))->assertOk()->assertSee('Features')->assertSee('Countdown timer');
-        $this->get('/app/cro/experiences/new?type=countdown', $this->as($owner))->assertOk()->assertSee('Premium Card');
+        $this->page('/app/cro', $owner)->assertOk()->assertJsonPath('component', 'cro/overview')->assertSee('Countdown timer');
+        $this->page('/app/cro/experiences/new?type=countdown', $owner)->assertOk()->assertSee('Premium Card');
         $this->post('/app/cro/experiences', ['type' => 'countdown', 'template' => 'banner'], $this->as($owner))->assertRedirectContains('/edit');
 
         $experience = Experience::firstOrFail();
-        $this->get("/app/cro/experiences/{$experience->id}/edit", $this->as($owner))->assertOk()->assertSee('Campaign ends');
-        $this->get("/app/cro/experiences/{$experience->id}", $this->as($owner))->assertOk()->assertSee($experience->handle);
-        $this->get('/app/cro/features/countdown', $this->as($owner))->assertOk()->assertSee($experience->name);
-        $this->get('/app/cro/templates', $this->as($owner))->assertOk()->assertSee('Radial counter')->assertDontSee('Tier Cards');
+        $this->page("/app/cro/experiences/{$experience->id}/edit", $owner)->assertOk()->assertSee('Campaign ends');
+        $this->page("/app/cro/experiences/{$experience->id}", $owner)->assertOk()->assertSee($experience->handle);
+        $this->page('/app/cro/features/countdown', $owner)->assertOk()->assertJsonPath('props.experiences.0.name', $experience->name);
+        $this->page('/app/cro/templates', $owner)->assertOk()->assertSee('Radial counter')->assertDontSee('Tier Cards');
 
         // Invalid publish re-renders the builder with the error; the draft is still saved.
         $config = $experience->draft_config;
         $config['content']['ends_at'] = '';
         $config['content']['headline'] = 'Weekend sale';
         $this->post("/app/cro/experiences/{$experience->id}", ['action' => 'publish', 'config' => $config], $this->as($owner))
-            ->assertOk()->assertSee('Set when the campaign ends.');
+            ->assertStatus(422)->assertSee('Set when the campaign ends.');
         $this->assertSame('Weekend sale', $experience->fresh()->draft_config['content']['headline']);
         $this->assertSame('draft', $experience->fresh()->status);
 

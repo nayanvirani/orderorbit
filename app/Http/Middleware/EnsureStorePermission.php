@@ -21,6 +21,6 @@ class EnsureStorePermission
             return response()->json(['message' => 'You don\'t have permission to perform this action.'], 403);
         }
 
-        return response()->view('app.forbidden', ['permission' => $permission], 403);
+        return page('forbidden', [], 403)->toResponse($request);
     }
 }

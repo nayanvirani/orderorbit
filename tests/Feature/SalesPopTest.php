@@ -172,8 +172,7 @@ class SalesPopTest extends TestCase
         $this->assertSame('CA', RecentPurchase::where('product_id', '31')->value('country'));
 
         // The experience page shows what's ready and offers an import.
-        $this->get('/app/cro/experiences/'.$pop->id, $this->as($owner))->assertOk()
-            ->assertSee('3 recent purchases ready to show')->assertSee('Import recent orders');
+        $this->page('/app/cro/experiences/'.$pop->id, $owner)->assertOk()->assertJsonPath('props.salesPop.recent', 3)->assertJsonPath('props.salesPop.canRead', true);
         $this->post('/app/cro/experiences/'.$pop->id.'/import-orders', [], $this->as($owner))->assertRedirectContains('orders_imported');
     }
 
@@ -193,7 +192,6 @@ class SalesPopTest extends TestCase
         $manager->publish($pop, $owner); // publishing still works
 
         $this->post('/app/cro/experiences/'.$pop->id.'/import-orders', [], $this->as($owner))->assertRedirectContains('orders_blocked');
-        $this->get('/app/cro/experiences/'.$pop->id, $this->as($owner))->assertOk()
-            ->assertSee('Shopify needs to approve order access')->assertSee('Protected customer data');
+        $this->page('/app/cro/experiences/'.$pop->id, $owner)->assertOk()->assertJsonPath('props.salesPop.blocked', true);
     }
 }

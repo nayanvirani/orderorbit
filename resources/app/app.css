@@ -90,3 +90,6 @@ body { margin: 0; background: #f1f1f1; }
 .sp-thread li.sp-team { background: #f7f6ff; border-color: #e1ddff; }
 .sp-meta { margin-bottom: 6px; }
 .sp-body { white-space: pre-wrap; line-height: 1.55; }
+
+/* Template pickers: smaller live previews */
+.b-zoom { zoom: .8; max-height: 260px; }

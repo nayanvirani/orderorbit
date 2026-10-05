@@ -10,11 +10,11 @@ use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Experiences\TemplateLibrary;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 
 class TemplateLibraryController extends Controller
 {
-    public function index(Request $request, Store $store): View
+    public function index(Request $request, Store $store): Page
     {
         $type = Registry::has($request->query('type')) ? $request->query('type') : null;
         $branding = CroSetting::brandingFor($store);
@@ -43,6 +43,10 @@ class TemplateLibraryController extends Controller
             }
         }
 
-        return view('app.templates.index', ['store' => $store, 'type' => $type, 'templates' => $templates]);
+        return page('cro/templates', [
+            'type' => $type,
+            'templates' => $templates,
+            'types' => collect(Registry::creatable())->map(fn ($t) => $t['label'])->all(),
+        ]);
     }
 }

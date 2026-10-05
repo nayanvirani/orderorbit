@@ -11,7 +11,7 @@ use App\Services\Experiences\PublishException;
 use App\Services\Experiences\TemplateLibrary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 use Throwable;
 
 /**
@@ -21,22 +21,30 @@ class GiftController extends Controller
 {
     public function __construct(private readonly ExperienceManager $manager) {}
 
-    public function index(Store $store): View
+    public function index(Store $store): Page
     {
         $items = $store->experiences()->where('type', 'progressive-gifts')->where('status', '!=', 'archived')->latest('updated_at')->get();
+        $stats = app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $items->pluck('handle')->all());
 
-        return view('app.gifts.index', [
-            'store' => $store,
-            'items' => $items,
-            'stats' => app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $items->pluck('handle')->all()),
+        return page('gifts/index', [
+            'items' => $items->map(function (Experience $e) use ($stats) {
+                $c = $e->draft_config;
+
+                return ExperienceController::row($e) + [
+                    'layout' => GiftSchema::LAYOUTS[$c['settings']['layout'] ?? 'classic'] ?? '',
+                    'unlock' => ($c['settings']['unlock'] ?? 'value') === 'count' ? 'Item count' : 'Cart value',
+                    'rewards' => collect($c['milestones'] ?? [])->pluck('label')->implode(' · '),
+                    'stats' => $stats[$e->handle] ?? ['views' => 0, 'orders' => 0, 'revenue' => 0],
+                ];
+            }),
         ]);
     }
 
-    public function models(Store $store): View
+    public function models(Store $store): Page
     {
-        return view('app.gifts.models', [
-            'store' => $store,
-            'groups' => collect(GiftSchema::models())->map(fn ($m, $key) => $m + ['key' => $key, 'preview' => TemplateLibrary::giftPreview($key)])->groupBy('group')->all(),
+        return page('gifts/models', [
+            'groups' => collect(GiftSchema::models())->map(fn ($m, $key) => ['key' => $key, 'name' => $m['name'], 'description' => $m['description'], 'group' => $m['group'], 'preview' => TemplateLibrary::giftPreview($key)])
+                ->groupBy('group')->map(fn ($models, $group) => ['group' => $group, 'models' => $models->values()])->values(),
         ]);
     }
 
@@ -49,17 +57,17 @@ class GiftController extends Controller
         return redirect()->to(app_route('app.gifts.edit', ['gift' => $experience->id]));
     }
 
-    public function edit(Store $store, int $gift): View
+    public function edit(Store $store, int $gift): Page
     {
         $experience = $this->find($store, $gift);
 
         return $this->editor($store, $experience, GiftSchema::normalize($experience->draft_config, $store->timezone ?? 'UTC')[0], []);
     }
 
-    public function update(Request $request, Store $store, int $gift): RedirectResponse|View
+    public function update(Request $request, Store $store, int $gift): RedirectResponse|Page
     {
         $experience = $this->find($store, $gift);
-        $input = json_decode((string) $request->input('config_json', '{}'), true);
+        $input = $request->input('config') ?? json_decode((string) $request->input('config_json', '{}'), true);
         [$config, $errors] = GiftSchema::normalize(is_array($input) ? $input : [], $store->timezone ?? 'UTC');
         $name = trim(strip_tags((string) $request->input('name', ''))) ?: $experience->name;
 
@@ -108,16 +116,20 @@ class GiftController extends Controller
         return redirect()->to(app_route('app.gifts.index', ['notice' => $notice]));
     }
 
-    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): View
+    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): Page
     {
-        return view('app.gifts.editor', [
-            'store' => $store,
-            'experience' => $experience,
+        return page('gifts/editor', [
+            'experience' => ExperienceController::row($experience),
             'config' => $config,
-            'fieldErrors' => $errors,
+            'fieldErrors' => (object) $errors,
             'banner' => $banner ?? (request('error') ? (string) request('error') : null),
-            'timezone' => $store->timezone ?? 'UTC',
-        ]);
+            'meta' => [
+                'samples' => TemplateLibrary::samples(),
+                'timezone' => $store->timezone ?? 'UTC',
+                'rewards' => GiftSchema::REWARDS,
+                'layouts' => GiftSchema::LAYOUTS,
+            ],
+        ], $errors ? 422 : 200);
     }
 
     private function find(Store $store, int $id): Experience

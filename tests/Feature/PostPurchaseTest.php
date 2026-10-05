@@ -147,9 +147,9 @@ class PostPurchaseTest extends TestCase
         $this->assertSame('restart', Schema::normalize('checkout-countdown', $cd)[0]['content']['repeat']);
 
         $owner = $this->member($this->installedStore(['plan' => 'growth']), 'owner');
-        $this->get('/app/cro/features/post-purchase', $this->as($owner))->assertOk()->assertSee('Open checkout settings')->assertSee('Create post-purchase funnel');
+        $this->page('/app/cro/features/post-purchase', $owner)->assertOk()->assertJsonPath('props.editor.label', 'Open checkout settings')->assertJsonPath('props.types.0.singular', 'post-purchase funnel');
         $this->post('/app/cro/experiences', ['type' => 'post-purchase', 'template' => 'classic-offer'], $this->as($owner))->assertRedirectContains('/edit');
-        $this->get('/app/cro/experiences/1/edit', $this->as($owner))->assertOk()
-            ->assertSee('Offer something else if they decline')->assertSee('choose <strong>OrderOrbit Space</strong> under Post-purchase page', false);
+        $builder = $this->page('/app/cro/experiences/1/edit', $owner)->assertOk()->assertSee('Offer something else if they decline');
+        $this->assertStringContainsString('choose <strong>OrderOrbit Space</strong> under Post-purchase page', implode(' ', $builder->json('props.publishHelp')));
     }
 }

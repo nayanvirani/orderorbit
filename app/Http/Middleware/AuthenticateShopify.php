@@ -86,7 +86,7 @@ class AuthenticateShopify
         $request->attributes->set('storeUser', $user);
 
         if ($user?->disabled_at !== null) {
-            $response = response()->view('app.forbidden', ['removed' => true], 403);
+            $response = page('forbidden', ['removed' => true], 403)->toResponse($request);
         } else {
             $response = $next($request);
         }

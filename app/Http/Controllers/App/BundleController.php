@@ -12,7 +12,7 @@ use App\Services\Experiences\PublishException;
 use App\Services\Experiences\TemplateLibrary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 use Throwable;
 
 /**
@@ -23,7 +23,7 @@ class BundleController extends Controller
 {
     public function __construct(private readonly ExperienceManager $manager) {}
 
-    public function index(Request $request, Store $store): View
+    public function index(Request $request, Store $store): Page
     {
         $tab = in_array($request->query('tab'), ['active', 'scheduled', 'draft', 'paused', 'archived'], true) ? $request->query('tab') : 'all';
         $all = $store->experiences()->where('type', 'bundles')->with('publishedVersion')->latest('updated_at')->get();
@@ -35,11 +35,28 @@ class BundleController extends Controller
             default => $e->status === $tab,
         });
 
-        return view('app.bundles.index', [
-            'store' => $store,
+        $stats = app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $all->pluck('handle')->all());
+        $summary = function (Experience $e) {
+            $c = $e->draft_config;
+            $names = collect($c['offers'] ?? [])->flatMap(fn ($o) => array_merge($o['products'] ?? [], $o['product'] ?? []))
+                ->merge($c['mix']['pool'] ?? [])->pluck('title')->filter()->unique()->take(3);
+            $visibility = match ($c['settings']['visibility'] ?? 'all') {
+                'products' => count($c['settings']['products'] ?? []).' selected products',
+                'collections' => count($c['settings']['collections'] ?? []).' collections',
+                default => 'All products',
+            };
+
+            return trim($visibility.($names->isNotEmpty() ? ' · '.$names->implode(', ') : ''));
+        };
+
+        return page('bundles/index', [
             'tab' => $tab,
-            'bundles' => $bundles,
-            'stats' => app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $all->pluck('handle')->all()),
+            'bundles' => $bundles->values()->map(fn (Experience $e) => ExperienceController::row($e) + [
+                'kind' => BundleSchema::TYPES[$e->draft_config['bundle_type'] ?? '']['label'] ?? 'Bundle',
+                'summary' => $summary($e),
+                'stats' => $stats[$e->handle] ?? ['views' => 0, 'adds' => 0, 'orders' => 0, 'revenue' => 0],
+            ]),
+            'revenue' => ['amount' => collect($stats)->sum('revenue'), 'orders' => collect($stats)->sum('orders')],
             'counts' => [
                 'all' => $all->where('status', '!=', 'archived')->count(),
                 'active' => $all->filter(fn ($e) => $e->displayStatus() === 'published')->count(),
@@ -51,30 +68,29 @@ class BundleController extends Controller
         ]);
     }
 
-    public function types(Store $store): View
+    public function types(Store $store): Page
     {
         $branding = CroSetting::brandingFor($store);
 
-        return view('app.bundles.types', [
-            'store' => $store,
-            'types' => collect(BundleSchema::TYPES)->map(fn ($type, $key) => $type + [
+        return page('bundles/types', [
+            'types' => collect(BundleSchema::TYPES)->map(fn ($type, $key) => ['key' => $key, 'label' => $type['label'], 'lead' => $type['lead'], 'example' => $type['example'], 'goal' => $type['goal'],
                 'preview' => TemplateLibrary::bundlePreview(BundleSchema::firstModel($key), $branding),
-            ])->all(),
+            ])->values(),
         ]);
     }
 
-    public function models(Store $store, string $type): View
+    public function models(Store $store, string $type): Page
     {
         abort_unless(array_key_exists($type, BundleSchema::TYPES), 404);
         $branding = CroSetting::brandingFor($store);
 
-        return view('app.bundles.models', [
-            'store' => $store,
+        return page('bundles/models', [
             'typeKey' => $type,
-            'type' => BundleSchema::TYPES[$type],
-            'models' => collect(BundleSchema::models())->where('type', $type)->map(fn ($model, $key) => $model + [
+            'type' => ['label' => BundleSchema::TYPES[$type]['label'], 'lead' => BundleSchema::TYPES[$type]['lead']],
+            'models' => collect(BundleSchema::models())->where('type', $type)->map(fn ($model, $key) => [
+                'key' => $key, 'name' => $model['name'], 'description' => $model['description'], 'layout' => $model['layout'],
                 'previews' => collect(BundleSchema::PRESETS)->keys()->mapWithKeys(fn ($preset) => [$preset => TemplateLibrary::bundlePreview($key, $branding, $preset)])->all(),
-            ])->all(),
+            ])->values(),
             'presets' => BundleSchema::PRESETS,
         ]);
     }
@@ -93,17 +109,17 @@ class BundleController extends Controller
         return redirect()->to(app_route('app.bundles.edit', ['bundle' => $experience->id]));
     }
 
-    public function edit(Request $request, Store $store, int $bundle): View
+    public function edit(Request $request, Store $store, int $bundle): Page
     {
         $experience = $this->find($store, $bundle);
 
         return $this->editor($store, $experience, BundleSchema::normalize($experience->draft_config, $store->timezone ?? 'UTC')[0], []);
     }
 
-    public function update(Request $request, Store $store, int $bundle): RedirectResponse|View
+    public function update(Request $request, Store $store, int $bundle): RedirectResponse|Page
     {
         $experience = $this->find($store, $bundle);
-        $input = json_decode((string) $request->input('config_json', '{}'), true);
+        $input = $request->input('config') ?? json_decode((string) $request->input('config_json', '{}'), true);
         [$config, $errors] = BundleSchema::normalize(is_array($input) ? $input : [], $store->timezone ?? 'UTC');
         $name = trim(strip_tags((string) $request->input('name', ''))) ?: $experience->name;
 
@@ -156,17 +172,25 @@ class BundleController extends Controller
         return redirect()->to(app_route('app.bundles.index', ['notice' => $notice]));
     }
 
-    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): View
+    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): Page
     {
-        return view('app.bundles.editor', [
-            'store' => $store,
-            'experience' => $experience,
+        $type = BundleSchema::TYPES[$config['bundle_type']];
+
+        return page('bundles/editor', [
+            'experience' => ExperienceController::row($experience),
             'config' => $config,
-            'fieldErrors' => $errors,
+            'fieldErrors' => (object) $errors,
             'banner' => $banner ?? (request('error') ? (string) request('error') : null),
-            'type' => BundleSchema::TYPES[$config['bundle_type']],
-            'timezone' => $store->timezone ?? 'UTC',
-        ]);
+            'type' => ['label' => $type['label']],
+            'meta' => [
+                'samples' => TemplateLibrary::samples(),
+                'timezone' => $store->timezone ?? 'UTC',
+                'tzOffset' => now($store->timezone ?? 'UTC')->format('P'),
+                'offerKinds' => array_intersect_key(BundleSchema::OFFER_KINDS, array_flip($type['offer_kinds'])),
+                'discounts' => BundleSchema::DISCOUNTS,
+                'presets' => BundleSchema::PRESETS,
+            ],
+        ], $errors ? 422 : 200);
     }
 
     private function find(Store $store, int $id): Experience

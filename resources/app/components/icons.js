@@ -1,4 +1,4 @@
-// Feature and navigation icons (same set as resources/views/components/app/icon.blade.php).
+// Feature and navigation icons for the React admin (Icon in components/ui.jsx).
 export const ICONS = {
   "package": "<path d=\"m12 3 8 4.5v9L12 21l-8-4.5v-9z\"\/><path d=\"m4 7.5 8 4.5 8-4.5M12 12v9\"\/>",
   "gift": "<rect x=\"3.5\" y=\"8\" width=\"17\" height=\"4\" rx=\"1\"\/><path d=\"M5 12v7.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V12M12 8v12.5M8 8a2.5 2.5 0 1 1 4-2.5V8M16 8a2.5 2.5 0 1 0-4-2.5\"\/>",

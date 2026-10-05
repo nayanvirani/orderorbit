@@ -68,7 +68,8 @@ class EmbeddedAppTest extends TestCase
         $this->member($store, 'owner');
         $staff = $this->member($store, 'staff');
 
-        $this->get('/app/settings/users', $this->as($staff))->assertForbidden()->assertSee('You don\'t have permission to perform this action.', false);
+        $this->get('/app/settings/users', $this->as($staff))->assertForbidden()->assertSee('"component":"forbidden"', false);
+        $this->page('/app/settings/users', $staff)->assertForbidden()->assertJsonPath('message', 'You don\'t have permission to perform this action.');
         $this->get('/app/settings/activity', $this->as($staff))->assertForbidden();
     }
 
@@ -129,7 +130,7 @@ class EmbeddedAppTest extends TestCase
         $this->member($store, 'owner');
         $gone = $this->member($store, 'staff', ['disabled_at' => now()]);
 
-        $this->get('/app', $this->as($gone))->assertForbidden()->assertSee('Access removed');
+        $this->get('/app', $this->as($gone))->assertForbidden()->assertSee('"removed":true', false);
     }
 
     public function test_users_from_another_store_cannot_be_changed(): void

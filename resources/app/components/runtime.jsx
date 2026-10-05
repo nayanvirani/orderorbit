@@ -36,12 +36,18 @@ export function useRuntime(options = {}) {
 }
 
 /** Draws an experience into an element with the storefront runtime (again only when it changes). */
-export function Preview({ experience, context, ready, className = 'oo-preview' }) {
+export function Preview({ experience, context, ready, className = 'oo-preview', empty }) {
   const ref = useRef(null);
   const key = JSON.stringify([experience, context]);
   useEffect(() => {
     if (ref.current && ready && window.OrderOrbit && experience) {
-      window.OrderOrbit.render(ref.current, experience, { preview: true, ...context });
+      const el = ref.current;
+      Promise.resolve(window.OrderOrbit.render(el, experience, { preview: true, ...context })).then((shown) => {
+        if (shown === false && empty) {
+          el.hidden = false;
+          el.innerHTML = `<p class="b-muted b-empty-preview">${empty}</p>`;
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, key]);

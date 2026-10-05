@@ -66,7 +66,7 @@ class AccountBlocksTest extends TestCase
             $this->assertStringContainsString('new customer accounts', $e->getMessage());
         }
         $owner = $this->member($classic, 'owner');
-        $this->get('/app/cro/features/customer-accounts', $this->as($owner))->assertOk()->assertSee('Your store uses classic customer accounts')->assertSee('Create my orders block');
+        $this->page('/app/cro/features/customer-accounts', $owner)->assertOk()->assertJsonPath('props.notice', 'accounts')->assertJsonPath('props.types.0.singular', 'my orders block');
     }
 
     public function test_account_blocks_are_published_for_customer_accounts_only(): void
@@ -99,7 +99,10 @@ class AccountBlocksTest extends TestCase
         });
 
         $owner = $this->member($store, 'owner');
-        $this->get('/app/cro/features/customer-accounts', $this->as($owner))->assertOk()->assertSee('Open customer accounts editor')->assertSee('settings/checkout/editor?page=order-index', false);
-        $this->get('/app/cro/experiences/'.$rewards->id.'/edit', $this->as($owner))->assertOk()->assertSee('customer accounts editor')->assertSee('Tiers (by total spend)');
+        $editor = $this->page('/app/cro/features/customer-accounts', $owner)->assertOk()->assertJsonPath('props.editor.label', 'Open customer accounts editor')->json('props.editor.url');
+        $this->assertStringContainsString('settings/checkout/editor?page=order-index', $editor);
+        $builder = $this->page('/app/cro/experiences/'.$rewards->id.'/edit', $owner)->assertOk();
+        $this->assertStringContainsString('customer accounts editor', implode(' ', $builder->json('props.publishHelp')));
+        $this->assertSame('Tiers (by total spend)', collect($builder->json('props.fields.content'))->firstWhere('label', 'Tiers (by total spend)')['label']);
     }
 }

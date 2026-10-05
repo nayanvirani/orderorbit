@@ -49,11 +49,14 @@ class BundleModuleTest extends TestCase
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
 
-        $this->get('/app/cro/bundles', $this->as($owner))->assertOk()->assertSee('No bundles yet')->assertSee('Create bundle');
-        $this->get('/app/cro/bundles/new', $this->as($owner))->assertOk()
-            ->assertSee('Quantity breaks')->assertSee('Bundle builder &amp; mix and match', false)->assertSee('Fixed bundle + gifts');
-        $this->get('/app/cro/bundles/new/quantity-breaks', $this->as($owner))->assertOk()
-            ->assertSee('Classic quantity breaks')->assertSee('1 bought = 1 free')->assertSee('Use this template');
+        $this->page('/app/cro/bundles', $owner)->assertOk()->assertJsonPath('component', 'bundles/index')->assertJsonPath('props.bundles', []);
+        $labels = array_column($this->page('/app/cro/bundles/new', $owner)->assertOk()->json('props.types'), 'label');
+        $this->assertContains('Quantity breaks', $labels);
+        $this->assertContains('Bundle builder & mix and match', $labels);
+        $this->assertContains('Fixed bundle + gifts', $labels);
+        $names = array_column($this->page('/app/cro/bundles/new/quantity-breaks', $owner)->assertOk()->json('props.models'), 'name');
+        $this->assertContains('Classic quantity breaks', $names);
+        $this->assertContains('1 bought = 1 free', $names);
         $this->get('/app/cro/bundles/new/nope', $this->as($owner))->assertNotFound();
 
         $this->post('/app/cro/bundles', ['model' => 'qb-inversion', 'preset' => 'blue'], $this->as($owner))->assertRedirectContains('/app/cro/bundles/');
@@ -62,10 +65,10 @@ class BundleModuleTest extends TestCase
         $this->assertSame('#2448ff', $bundle->draft_config['design']['accent']);
         $this->assertSame('20% Additional discount', $bundle->draft_config['offers'][0]['label']);
 
-        $this->get("/app/cro/bundles/{$bundle->id}", $this->as($owner))->assertOk()->assertSee('BundleEditor')->assertSee('Save as draft');
+        $this->page("/app/cro/bundles/{$bundle->id}", $owner)->assertOk()->assertJsonPath('component', 'bundles/editor')->assertJsonPath('props.config.bundle_type', 'quantity-breaks');
         $this->get("/app/cro/experiences/{$bundle->id}/edit", $this->as($owner))->assertRedirectContains("/app/cro/bundles/{$bundle->id}");
         $this->get('/app/cro/experiences/new?type=bundles', $this->as($owner))->assertRedirectContains('/app/cro/bundles/new');
-        $this->get('/app/cro/bundles', $this->as($owner))->assertOk()->assertSee('Quantity inversion offer')->assertSee('All products');
+        $this->page('/app/cro/bundles', $owner)->assertOk()->assertJsonPath('props.bundles.0.name', 'Quantity inversion offer')->assertSee('All products');
     }
 
     public function test_save_validate_publish_and_toggle(): void
@@ -80,7 +83,7 @@ class BundleModuleTest extends TestCase
         $config['settings']['visibility'] = 'products';
         $config['offers'][2]['discount_value'] = 25;
         $this->post("/app/cro/bundles/{$bundle->id}", ['config_json' => json_encode($config), 'name' => 'Serum tiers', 'action' => 'publish'], $this->as($owner))
-            ->assertOk()->assertSee('Fix the highlighted settings before publishing.');
+            ->assertStatus(422)->assertSee('Fix the highlighted settings before publishing.');
         $this->assertSame('draft', $bundle->fresh()->status);
         $this->assertEquals(25, $bundle->fresh()->draft_config['offers'][2]['discount_value']);
         $this->assertSame('Serum tiers', $bundle->fresh()->name);

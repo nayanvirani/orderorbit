@@ -38,16 +38,16 @@ class GiftModuleTest extends TestCase
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
 
-        $this->get('/app/cro/progressive-gifts', $this->as($owner))->assertOk()->assertSee('No progressive gifts yet');
-        $this->get('/app/cro/progressive-gifts/new', $this->as($owner))->assertOk()
+        $this->page('/app/cro/progressive-gifts', $owner)->assertOk()->assertJsonPath('props.items', []);
+        $this->page('/app/cro/progressive-gifts/new', $owner)->assertOk()
             ->assertSee('Classic')->assertSee('Expressive')->assertSee('Minimal strip')->assertSee('Radial counter');
         $this->post('/app/cro/progressive-gifts', ['model' => 'pg-steps'], $this->as($owner))->assertRedirectContains('/app/cro/progressive-gifts/');
 
         $gift = Experience::where('type', 'progressive-gifts')->firstOrFail();
         $this->assertSame('steps', $gift->draft_config['settings']['layout']);
-        $this->get("/app/cro/progressive-gifts/{$gift->id}", $this->as($owner))->assertOk()->assertSee('GiftEditor');
+        $this->page("/app/cro/progressive-gifts/{$gift->id}", $owner)->assertOk()->assertJsonPath('component', 'gifts/editor');
         $this->get("/app/cro/experiences/{$gift->id}/edit", $this->as($owner))->assertRedirectContains("/app/cro/progressive-gifts/{$gift->id}");
-        $this->get('/app/cro/progressive-gifts', $this->as($owner))->assertSee('Free gift · Free shipping · Choose your gift');
+        $this->page('/app/cro/progressive-gifts', $owner)->assertJsonPath('props.items.0.rewards', 'Free gift · Free shipping · Choose your gift');
     }
 
     public function test_validate_then_publish_with_the_right_discount_classes(): void
@@ -60,7 +60,7 @@ class GiftModuleTest extends TestCase
         // Gift rewards without a product can't publish.
         $config = $gift->draft_config;
         $this->post("/app/cro/progressive-gifts/{$gift->id}", ['config_json' => json_encode($config), 'action' => 'publish'], $this->as($owner))
-            ->assertOk()->assertSee('Fix the highlighted settings before publishing.');
+            ->assertStatus(422)->assertSee('Fix the highlighted settings before publishing.');
 
         $config['milestones'][0]['products'] = [['id' => 'gid://shopify/Product/9', 'title' => 'Tote', 'variant_id' => 'gid://shopify/ProductVariant/90']];
         $config['milestones'][2] = GiftSchema::milestone(120, 'percent', '10% off', 10);

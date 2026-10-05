@@ -141,27 +141,32 @@ class CheckoutBlocksTest extends TestCase
         $send('<b>A friend</b>');
 
         $this->assertSame(['A friend', 'Instagram', 'Instagram'], AnalyticsEvent::where('event', 'survey')->orderBy('label')->pluck('label')->all());
-        $this->get('/app/cro/experiences/'.$survey->id, $this->as($owner))->assertOk()
-            ->assertSee('Answers · last 30 days')->assertSee('Instagram')->assertSee('67%');
+        $answers = collect($this->page('/app/cro/experiences/'.$survey->id, $owner)->assertOk()->json('props.survey'))->pluck('total', 'label');
+        $this->assertSame(2, $answers['Instagram']);
+        $this->assertSame(67, (int) round($answers['Instagram'] / $answers->sum() * 100));
     }
 
     public function test_app_screens_explain_where_blocks_go(): void
     {
         $owner = $this->member($plus = $this->installedStore(['plan' => 'growth', 'capabilities' => ['checkout_blocks' => true]]), 'owner');
-        $this->get('/app/cro/features/checkout', $this->as($owner))->assertOk()
-            ->assertSee('Create checkout reviews block')->assertSee('Open checkout editor')->assertSee('settings/checkout/editor', false);
-        $this->get('/app/cro/features/thank-you', $this->as($owner))->assertOk()->assertSee('Create survey')->assertSee('page=thank-you', false);
-        $this->get('/app/cro', $this->as($owner))->assertOk()->assertSee('Checkout blocks')->assertSee('Thank You &amp; Order Status', false);
+        $checkout = $this->page('/app/cro/features/checkout', $owner)->assertOk()->assertJsonPath('props.notice', null)->assertJsonPath('props.editor.label', 'Open checkout editor');
+        $this->assertContains('checkout reviews block', array_column($checkout->json('props.types'), 'singular'));
+        $this->assertStringContainsString('settings/checkout/editor', $checkout->json('props.editor.url'));
+        $thankYou = $this->page('/app/cro/features/thank-you', $owner)->assertOk();
+        $this->assertContains('survey', array_column($thankYou->json('props.types'), 'singular'));
+        $this->assertStringContainsString('page=thank-you', $thankYou->json('props.editor.url'));
+        $features = array_column($this->page('/app/cro', $owner)->assertOk()->json('props.features'), 'label');
+        $this->assertContains('Checkout blocks', $features);
+        $this->assertContains('Thank You & Order Status', $features);
 
         $this->post('/app/cro/experiences', ['type' => 'checkout-gift', 'template' => 'reward-card'], $this->as($owner))->assertRedirectContains('/edit');
-        $this->get('/app/cro/experiences/1/edit', $this->as($owner))->assertOk()
-            ->assertSee('Shopify doesn\'t let apps use their own colours in checkout', false)->assertSee('Corner radius')->assertSee('checkout-gift')->assertSee('Claim button');
+        $this->page('/app/cro/experiences/1/edit', $owner)->assertOk()->assertJsonPath('props.designNote', 'checkout-boxes')
+            ->assertJsonPath('props.experience.type', 'checkout-gift')->assertSee('Corner radius')->assertSee('Claim button');
 
         // Without Shopify Plus the in-checkout blocks aren't offered; without Growth, publishing is explained.
         $plus->forceFill(['plan' => 'starter', 'capabilities' => ['checkout_blocks' => false]])->save();
-        $this->get('/app/cro/features/checkout', $this->as($owner))->assertOk()
-            ->assertSee('Blocks inside checkout need Shopify Plus')->assertDontSee('Create checkout reviews block');
-        $this->get('/app/cro/features/thank-you', $this->as($owner))->assertOk()->assertSee('On the Growth plan and above')->assertSee('Create survey');
+        $this->page('/app/cro/features/checkout', $owner)->assertOk()->assertJsonPath('props.notice', 'plus');
+        $this->page('/app/cro/features/thank-you', $owner)->assertOk()->assertJsonPath('props.notice', 'plan');
     }
 
     public function test_older_blocks_pick_up_new_settings_and_storefront_countdown_has_three_types(): void

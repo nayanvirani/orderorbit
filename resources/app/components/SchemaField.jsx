@@ -15,12 +15,27 @@ export function visible(field, values) {
 }
 
 /** An ISO date shown as a datetime-local value in the store's time zone. */
-function toLocalInput(iso, timeZone) {
+export function toLocalInput(iso, timeZone) {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d).map((x) => [x.type, x.value]));
   return `${p.year}-${p.month}-${p.day}T${p.hour === '24' ? '00' : p.hour}:${p.minute}`;
+}
+
+/**
+ * Opens Shopify's resource picker and returns the picks as the app stores them (products with
+ * chosen variants and prices; collections as id/title/handle), or null when cancelled.
+ */
+export async function pickResources(kind, max, current = []) {
+  if (!window.shopify?.resourcePicker) return null;
+  const picked = await window.shopify.resourcePicker({
+    type: kind, multiple: max > 1 ? max : false, filter: kind === 'product' ? { variants: true } : undefined,
+    // Re-opening keeps the variants already mapped for each product.
+    selectionIds: current.map((c) => (c.variants?.length ? { id: c.id, variants: c.variants.map((v) => ({ id: v.id })) } : { id: c.id })),
+  });
+  if (!picked) return null;
+  return kind === 'collection' ? picked.map((r) => ({ id: r.id, title: r.title, handle: r.handle })) : mapPicked(picked, current);
 }
 
 /** Shopify's resource picker result as the app stores it (with chosen variants and prices). */
@@ -172,13 +187,8 @@ function ResourceField({ field, value, onChange }) {
   const type = field.type === 'products' ? 'product' : 'collection';
   const max = field.max_items ?? 20;
   const pick = async () => {
-    if (!window.shopify?.resourcePicker) return;
-    const picked = await window.shopify.resourcePicker({
-      type, multiple: max > 1 ? max : false, filter: { variants: true },
-      // Re-opening keeps the variants already mapped for each product.
-      selectionIds: items.map((c) => (c.variants?.length ? { id: c.id, variants: c.variants.map((v) => ({ id: v.id })) } : { id: c.id })),
-    });
-    if (picked) onChange(mapPicked(picked, items));
+    const picked = await pickResources(type, max, items);
+    if (picked) onChange(picked);
   };
   const setQty = (i, q) => onChange(items.map((it, j) => (j === i ? { ...it, quantity: Math.max(1, Math.min(20, Number(q) || 1)) } : it)));
   return (
