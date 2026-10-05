@@ -290,8 +290,21 @@ class ExperienceController extends Controller
         $notice = ['pause' => 'paused', 'resume' => 'resumed', 'archive' => 'archived', 'unarchive' => 'unarchived', 'discard' => 'discarded'][$action];
 
         return $action === 'archive'
-            ? redirect()->to(app_route('app.cro.experiences.index', ['notice' => $notice]))
+            ? redirect()->to($this->listUrl($experience, $notice))
             : $this->back($experience, $notice);
+    }
+
+    /** The list an experience belongs to (Bundles, Progressive gifts, its feature), not all offers. */
+    private function listUrl(Experience $experience, string $notice): string
+    {
+        $feature = \App\Experiences\Registry::featureFor($experience->type);
+
+        return match ($feature) {
+            'bundles' => app_route('app.bundles.index', ['notice' => $notice]),
+            'progressive-gifts' => app_route('app.gifts.index', ['notice' => $notice]),
+            null => app_route('app.cro.experiences.index', ['notice' => $notice]),
+            default => app_route('app.features.show', ['feature' => $feature, 'notice' => $notice]),
+        };
     }
 
     public function duplicate(Request $request, Store $store, int $experience): RedirectResponse

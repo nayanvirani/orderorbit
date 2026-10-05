@@ -23,6 +23,17 @@ class Usage
         'automation_executions' => 'Automation executions this month',
     ];
 
+    /** What each limit counts, where it isn't obvious from the name. */
+    public const HELP = [
+        'active_experiences' => 'Live countdowns, sticky add to cart, trust and social proof, sales pop, product upsells and checkout blocks. Bundles, gift campaigns, shipping bars, cart upsells and pre-orders have their own limits.',
+    ];
+
+    /** Experience types counted by "Active experiences": the ones without a limit of their own. */
+    public static function countsAsActive(string $type): bool
+    {
+        return \App\Experiences\Registry::has($type) && empty(\App\Experiences\Registry::type($type)['meter']);
+    }
+
     /** @var array<string, Closure(Store): int> */
     private array $counters = [];
 
@@ -80,6 +91,7 @@ class Usage
             'label' => $label,
             'used' => $this->current($store, $meter),
             'limit' => $store->hasPlanAccess() ? $store->planLimit($meter) : 0,
+            'help' => self::HELP[$meter] ?? null,
         ], array_keys(self::METERS), self::METERS);
     }
 }

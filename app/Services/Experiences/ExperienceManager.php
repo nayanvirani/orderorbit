@@ -232,7 +232,7 @@ class ExperienceManager
 
         // Only a newly live experience adds to the plan's counts.
         if ($experience->status !== 'published') {
-            if (! $this->usage->allows($store, 'active_experiences')) {
+            if (\App\Services\Usage::countsAsActive($experience->type) && ! $this->usage->allows($store, 'active_experiences')) {
                 $limit = (int) $store->planLimit('active_experiences');
                 $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
 

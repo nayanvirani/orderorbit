@@ -58,7 +58,8 @@ class AppServiceProvider extends ServiceProvider
         $live = fn (Store $store) => Experience::with('publishedVersion')->where('store_id', $store->id)->where('status', 'published')->get()
             ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion?->config));
 
-        $usage->register('active_experiences', fn (Store $store) => $live($store)->count());
+        // Types with their own limit (bundles, gifts, shipping bars, cart upsells, pre-orders) don't count here.
+        $usage->register('active_experiences', fn (Store $store) => $live($store)->filter(fn (Experience $e) => Usage::countsAsActive($e->type))->count());
         // Several types can share a meter (bundles and BOGO; both gift types): count them together.
         foreach (collect(Registry::meters())->groupBy(fn ($meter) => $meter, true) as $meter => $types) {
             $usage->register($meter, fn (Store $store) => $live($store)->whereIn('type', $types->keys()->all())->count());

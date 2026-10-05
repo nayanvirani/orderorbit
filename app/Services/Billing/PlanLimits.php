@@ -45,7 +45,7 @@ class PlanLimits
             $live->filter(fn ($e) => in_array($e->type, $types, true))->values()->slice($limit)->each($pause);
         }
         if (($limit = $store->planLimit('active_experiences')) !== null) {
-            $live->slice($limit)->each($pause);
+            $live->filter(fn ($e) => \App\Services\Usage::countsAsActive($e->type))->values()->slice($limit)->each($pause);
         }
 
         // Workflows over the plan's limit are switched off, newest first; they stay saved.

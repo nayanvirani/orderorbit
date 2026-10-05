@@ -58,6 +58,7 @@ export default function Billing(p) {
                   <div><strong>{number(m.used)}</strong> <span className="oo-muted">/ {m.limit === 0 ? 'not included' : number(m.limit)}</span></div>
                   <div className="oo-meter"><i className={tone} style={{ width: `${pct}%` }} /></div>
                   {tone === 'full' && <span className="oo-muted oo-small">Limit reached: what's live keeps working.</span>}
+                  {m.help && <span className="oo-muted oo-small">{m.help}</span>}
                 </div>
               );
             })}
