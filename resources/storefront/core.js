@@ -267,6 +267,8 @@
     state.data = state.data || readJson('script[data-oo-data]') || { experiences: [] };
     state.ctx = state.ctx || readJson('script[data-oo-context]') || {};
     setAssets(state.ctx.assets);
+    // Gift lines keep the quantity their reward sets: oo-gift-lock.js hides their cart controls.
+    if ((state.ctx.cartLines || []).some(function (l) { return l.gift != null; })) script('gift-lock');
     // Personalization (segments and rules) lives in oo-audiences.js, loaded first when published.
     if (state.data.p && !loading.audiences) return script('audiences').then(function () { mountAll(reason); });
     // Global types (Sales pop) get one root on the page; they never need a theme block.
@@ -287,7 +289,7 @@
       } else if (state.ctx.designMode) {
         // Only merchants in the Theme Editor see this; shoppers see nothing.
         el.hidden = false;
-        el.innerHTML = '<div class="oo-editor-note">OrderOrbit Space: nothing published matches this block here yet.</div>';
+        el.innerHTML = '<div class="oo-editor-note">OrderOrbit Space: nothing published matches this block yet.</div>';
       } else {
         el.hidden = true;
       }

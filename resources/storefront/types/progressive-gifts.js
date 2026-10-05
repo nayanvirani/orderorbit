@@ -36,6 +36,37 @@
     return h.fill(c.progress_message, { remaining: amount(Math.round((st.next.threshold - st.progress) * 100) / 100, st, ctx), reward: st.next.label });
   }
 
+  // Bar labels: each gets the room up to its neighbours, so close milestones never overlap.
+  // When that room is too tight, labels alternate below and above the bar.
+  function barLabels(ms) {
+    var top = ms[ms.length - 1].threshold;
+    var at = ms.map(function (m) { return m.threshold / top * 100; });
+    var room = function (step) {
+      return at.map(function (a, i) {
+        var prev = i - step >= 0 ? at[i - step] : null;
+        var next = i + step < at.length ? at[i + step] : null;
+        var left = prev == null ? a : (a - prev) / 2;
+        // The last label ends at the bar's end, aligned right.
+        if (next == null) return i === at.length - 1 ? left : Math.min(left, 100 - a) * 2;
+        return Math.min(left, (next - a) / 2) * 2;
+      });
+    };
+    var w = room(1);
+    var stagger = ms.length > 2 && Math.min.apply(null, w) < 24;
+    return { at: at, w: stagger ? room(2) : w, stagger: stagger };
+  }
+
+  function barHtml(exp, st) {
+    var ms = exp.content.milestones;
+    var l = barLabels(ms);
+    return '<div class="oo-pg-bar' + (l.stagger ? ' oo-pg-stagger' : '') + '"><div class="oo-pg-track"><i style="width:' + st.pct + '%"></i></div>' + ms.map(function (m, i) {
+      var done = st.progress >= m.threshold;
+      var last = i === ms.length - 1;
+      return '<span class="oo-pg-mark' + (done ? ' oo-pg-done' : '') + (last ? ' oo-pg-end' : '') + '" style="--at:' + l.at[i] + '%"><i>' + iconFor(m, done) + '</i></span>' +
+        '<small class="oo-pg-lbl' + (last ? ' oo-pg-end' : '') + (l.stagger && i % 2 ? ' oo-pg-up' : '') + (done ? ' oo-pg-done' : '') + '" style="--at:' + l.at[i] + '%;--w:' + l.w[i] + '%">' + h.esc(m.label) + '</small>';
+    }).join('') + '</div>';
+  }
+
   function milestonesHtml(exp, st, ctx, cls) {
     return exp.content.milestones.map(function (m) {
       var done = st.progress >= m.threshold;
@@ -81,7 +112,7 @@
       body = '<div class="oo-pg-radial"><span class="oo-pg-ring" style="--deg:' + deg + 'deg"><b>' + st.reached + '/' + c.milestones.length + '</b></span><div class="oo-pg-list">' + milestonesHtml(exp, st, ctx, 'oo-pg-li') + '</div></div>';
       return '<div class="oo-body oo-pg oo-pg-l-radial" style="' + vars(exp.design || {}) + '">' + body.replace('<div class="oo-pg-list">', '<div class="oo-pg-list">' + head) + giftsHtml(exp, st, ctx) + '<p class="oo-status" data-oo-status role="status"></p></div>';
     } else {
-      body = '<div class="oo-pg-bar"><div class="oo-pg-track"><i style="width:' + st.pct + '%"></i></div>' + milestonesHtml(exp, st, ctx, 'oo-pg-mark') + '</div>';
+      body = barHtml(exp, st);
     }
     return '<div class="oo-body oo-pg oo-pg-l-' + layout + '" style="' + vars(exp.design || {}) + '">' + head + body + giftsHtml(exp, st, ctx) + '<p class="oo-status" data-oo-status role="status"></p></div>';
   }, {
@@ -121,6 +152,16 @@
         return !m || st.progress < m.threshold;
       })[0];
       if (lost) { S.change(lost.key, 0).then(OrderOrbit.refreshCart); return; }
+      // A gift's quantity is what its reward gives, whatever was typed in the cart.
+      var off = gifts.filter(function (l) {
+        var m = c.milestones.filter(function (x) { return String(x.index) === String(l.gift); })[0];
+        return l.qty !== ((m && m.quantity) || 1);
+      })[0];
+      if (off) {
+        var om = c.milestones.filter(function (x) { return String(x.index) === String(off.gift); })[0];
+        S.change(off.key, (om && om.quantity) || 1).then(OrderOrbit.refreshCart);
+        return;
+      }
       // Auto mode adds each reached single gift once per session.
       if (c.settings.claim === 'auto') {
         c.milestones.forEach(function (m) {
