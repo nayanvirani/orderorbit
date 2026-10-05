@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OrderOrbit Space"><title>OrderOrbit Space</title><defs>
+    <clipPath id="mk-top"><rect x="-60" y="-60" width="120" height="60" transform="translate(50 50) rotate(-24)"/></clipPath>
+    <mask id="mk-ring" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="50" r="20.8" fill="#000" clip-path="url(#mk-top)"/><circle cx="72.95" cy="32.46" r="9.2" fill="#000"/></mask>
+    <mask id="mk-planet" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M -42 0 A 42 9 0 0 0 42 0" transform="translate(50 50) rotate(-24)" fill="none" stroke="#000" stroke-width="10.8"/></mask>
+  </defs>
+  <g fill="#0a0a0a">
+    <g mask="url(#mk-ring)"><ellipse cx="0" cy="0" rx="42" ry="9" transform="translate(50 50) rotate(-24)" fill="none" stroke="#0a0a0a" stroke-width="5.2"/></g>
+    <circle cx="50" cy="50" r="18" mask="url(#mk-planet)"/>
+    <circle cx="72.95" cy="32.46" r="6.4"/>
+  </g></svg>

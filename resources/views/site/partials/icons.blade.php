@@ -53,9 +53,14 @@
     <symbol id="i-bag" viewBox="0 0 24 24" {!! $s !!}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
     <symbol id="i-smartphone" viewBox="0 0 24 24" {!! $s !!}><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
     <symbol id="i-monitor" viewBox="0 0 24 24" {!! $s !!}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></symbol>
-    <symbol id="i-orbit" viewBox="0 0 32 32">
-        <circle cx="16" cy="16" r="6.5" fill="currentColor"/>
-        <ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-30 16 16)"/>
-        <circle cx="27.2" cy="9.6" r="2.6" fill="currentColor"/>
-    </symbol>
+    <symbol id="i-orbit" viewBox="0 0 100 100"><defs>
+    <clipPath id="sym-top"><rect x="-60" y="-60" width="120" height="60" transform="translate(50 50) rotate(-24)"/></clipPath>
+    <mask id="sym-ring" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="50" r="20.8" fill="#000" clip-path="url(#sym-top)"/><circle cx="72.95" cy="32.46" r="9.2" fill="#000"/></mask>
+    <mask id="sym-planet" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M -42 0 A 42 9 0 0 0 42 0" transform="translate(50 50) rotate(-24)" fill="none" stroke="#000" stroke-width="10.8"/></mask>
+  </defs>
+  <g fill="currentColor">
+    <g mask="url(#sym-ring)"><ellipse cx="0" cy="0" rx="42" ry="9" transform="translate(50 50) rotate(-24)" fill="none" stroke="currentColor" stroke-width="5.2"/></g>
+    <circle cx="50" cy="50" r="18" mask="url(#sym-planet)"/>
+    <circle cx="72.95" cy="32.46" r="6.4"/>
+  </g></symbol>
 </svg>

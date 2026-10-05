@@ -40,3 +40,20 @@ The build fails if any file exceeds Shopify's 10 KB app-block JavaScript guideli
 ```bash
 php artisan test
 ```
+
+## Brand
+
+Logo files live in `public/brand/` (served at `/brand/...`):
+
+| File | Use |
+|---|---|
+| `orderorbit-logo.svg` / `.png` | Full logo (mark + wordmark), dark, for light backgrounds |
+| `orderorbit-logo-white.svg` / `.png` | Full logo for dark backgrounds |
+| `orderorbit-logo-color.svg` | Full logo with the mark in brand violet |
+| `orderorbit-icon.svg` | App icon (rounded), used by the admin and as `/favicon.svg` |
+| `orderorbit-icon-square.svg` | App icon without rounded corners |
+| `orderorbit-icon-shopify-1200.png` | Shopify app icon (1200×1200, Shopify rounds the corners) |
+| `orderorbit-icon-512.png`, `apple-touch-icon.png`, `favicon-32.png` | Smaller icon sizes |
+| `orderorbit-mark.svg` / `-white.svg` / `-512.png` | The mark alone, no background |
+
+The website draws the mark from the `#i-orbit` symbol (`resources/views/site/partials/icons.blade.php`), so it takes the text colour. Brand violet: `#6d5dfc` → `#3b1fb8`. Wordmark: Instrument Serif, converted to outlines.

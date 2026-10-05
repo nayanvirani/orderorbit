@@ -7,6 +7,8 @@
     <meta name="robots" content="noindex">
     <title>@yield('title') · OrderOrbit Space</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
@@ -36,7 +38,7 @@
 </head>
 <body>
     <main>
-        <a class="logo" href="/"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-20 12 12)"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>OrderOrbit Space</a>
+        <a class="logo" href="/"><img src="/brand/orderorbit-logo.svg" alt="OrderOrbit Space" width="190" height="34"></a>
         <div class="orbit" aria-hidden="true"><span></span><b></b><i></i></div>
         <div class="code">@yield('code')</div>
         <h1>@yield('heading')</h1>
