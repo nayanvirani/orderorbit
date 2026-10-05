@@ -4,7 +4,7 @@
         <div class="plan {{ $key === 'growth' ? 'featured' : '' }} reveal">
             @if ($key === 'growth')<span class="badge">MOST POPULAR</span>@endif
             <h3>{{ $plan['name'] }}</h3>
-            <div class="tagline">{{ $pricing['taglines'][$key] }}</div>
+            <div class="tagline">{{ $plan['description'] ?? null ?: ($pricing['taglines'][$key] ?? '') }}</div>
             <div class="price">@if ($plan['price'] > 0)${{ number_format($plan['price'], 2) }}<small>/mo</small>@else Free @endif</div>
             <div class="muted" style="font-size:14px">{{ $plan['price'] > 0 ? 'Billed through Shopify' : 'No card needed' }}</div>
             <ul>

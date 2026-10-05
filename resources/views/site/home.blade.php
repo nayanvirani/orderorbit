@@ -49,7 +49,7 @@
         <div class="ring r2"></div>
         <div class="planet">
             <span class="planet-name">OrderOrbit Space</span>
-            <span class="planet-sub">{{ count($features) - count($soonFeatures) }} features live · {{ count($soonFeatures) }} on the way</span>
+            <span class="planet-sub">{{ count($features) - count($soonFeatures) }} features live{{ count($soonFeatures) ? ' · '.count($soonFeatures).' on the way' : '' }}</span>
             <div class="soon-pills">
                 @foreach ($soonFeatures as $slug => $f)
                     <a href="{{ route('site.feature', $slug) }}" style="animation-delay:-{{ $loop->index * 1.3 }}s"><x-icon :name="$f['icon']"/>{{ $f['name'] }}<em>Soon</em></a>

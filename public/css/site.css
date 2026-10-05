@@ -568,8 +568,8 @@ label.fld .err { display: block; color: #b42318; font: 500 13px/1.4 var(--sans);
 @media (min-width: 900px) { .footer-top { grid-template-columns: 1fr 2fr; } }
 
 /* Reveal */
-.reveal { opacity: 0; transform: translateY(20px); transition: opacity .8s ease, transform .8s ease; }
-.reveal.in { opacity: 1; transform: none; }
+.js .reveal { opacity: 0; transform: translateY(20px); transition: opacity .8s ease, transform .8s ease; }
+.js .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .reveal { opacity: 1; transform: none; } }
 
 @media (max-width: 640px) {
@@ -863,3 +863,51 @@ label.fld .err { display: block; color: #b42318; font: 500 13px/1.4 var(--sans);
 /* Code samples in help articles */
 .faq pre.code { margin: 0 0 26px; padding: 18px 20px; border-radius: 14px; background: #0a0a0a; color: #f5f5f4; overflow-x: auto; font: 500 13px/1.65 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace); tab-size: 2; }
 .faq pre.code code { font: inherit; white-space: pre; }
+
+/* ==========================================================================
+   Polish: spacing under the fixed header, gutters, wrapping and small screens.
+   ========================================================================== */
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+
+/* The header floats 14px from the top and is 60px tall: keep page titles clear of it. */
+.mn-hero { padding-top: clamp(116px, 11vw, 136px); }
+@media (max-width: 600px) { .mn-hero { padding-bottom: 32px; } .mn-hero h1 { font-size: clamp(36px, 10vw, 48px); } }
+
+/* Same side gutters as .wrap on tablets and up. */
+@media (min-width: 720px) { .mn-narrow, .mn-wide { padding: 0 32px; } }
+
+/* Floating chips on product mockups stay inside the screen. */
+@media (max-width: 1240px) { body .float-chip.c1 { left: 8px; } body .float-chip.c2 { right: 8px; } }
+@media (max-width: 900px) { body .float-chip { display: none; } }
+
+/* App stack stats: one line per figure. */
+.hx-stats b { font-size: clamp(26px, 2.6vw, 36px); white-space: nowrap; }
+/* Home feature orbit on tablets: an even grid with proper gutters. */
+@media (min-width: 601px) and (max-width: 1100px) { .mn-orbit { padding: 10px 32px 0; } }
+@media (min-width: 860px) and (max-width: 1100px) { .mn-orbit { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 601px) and (max-width: 859px) { .mn-orbit .osat.p9 { grid-column: 1 / -1; } }
+
+/* Home feature orbit on phones: a swipeable row instead of nine stacked cards. */
+@media (max-width: 600px) {
+    .mn-orbit { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 84%; gap: 14px; padding: 6px 16px 22px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none; }
+    .mn-orbit::-webkit-scrollbar { display: none; }
+    .mn-orbit .osat { scroll-snap-align: start; }
+    .mn-orbit .planet { display: none; }
+}
+
+/* Plan comparison on small screens: feature names stay visible while the plans scroll. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 760px) {
+    .compare { min-width: 600px; font-size: 14px; }
+    .compare th, .compare td { padding: 14px 12px; }
+    .compare thead th { font-size: 24px; }
+    .compare th:first-child, .compare td:first-child { position: sticky; left: 0; z-index: 1; min-width: 150px; max-width: 170px; background: var(--bg); box-shadow: 1px 0 0 var(--line-2); }
+}
+
+/* Footer legal links: one quiet row above the copyright line. */
+.footer-legal { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); }
+.footer-legal a { color: var(--muted); font-size: 13.5px; text-decoration: none; transition: color .15s; }
+.footer-legal a:hover { color: var(--text); }
+.footer-legal + .footer-bottom { margin-top: 20px; padding-top: 0; border-top: 0; }
+@media (max-width: 640px) { .footer-legal { gap: 4px 16px; margin-top: 40px; } .footer-bottom { flex-direction: column; } }

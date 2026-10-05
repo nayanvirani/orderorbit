@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>document.documentElement.classList.add('js');</script>
     <title>@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')</title>
     <meta name="description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <link rel="canonical" href="{{ url()->current() }}">
@@ -179,17 +180,17 @@
                         <a href="{{ route('site.contact') }}">Contact</a>
                         <a href="{{ route('site.security') }}">Security</a>
                     </div>
-                    <div>
-                        <h4>Legal</h4>
-                        @forelse (array_filter(\App\Support\Legal::pages(), fn ($p) => $p['footer']) as $legal)
-                            <a href="{{ \App\Support\Legal::url($legal['slug']) }}">{{ $legal['title'] }}</a>
-                        @empty
-                            <a href="{{ route('site.privacy') }}">Privacy Policy</a>
-                            <a href="{{ route('site.terms') }}">Terms of Service</a>
-                        @endforelse
-                    </div>
                 </div>
             </div>
+            @php($footerLegal = array_filter(\App\Support\Legal::pages(), fn ($p) => $p['footer']))
+            <nav class="footer-legal" aria-label="Legal">
+                @forelse ($footerLegal as $legal)
+                    <a href="{{ \App\Support\Legal::url($legal['slug']) }}">{{ $legal['title'] }}</a>
+                @empty
+                    <a href="{{ route('site.privacy') }}">Privacy Policy</a>
+                    <a href="{{ route('site.terms') }}">Terms of Service</a>
+                @endforelse
+            </nav>
             <div class="footer-bottom">
                 <span>© {{ date('Y') }} OrderOrbit Space. Built for Shopify.</span>
                 <span>Placed in the Theme Editor · Prices applied at checkout · Consent-aware analytics</span>

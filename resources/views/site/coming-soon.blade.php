@@ -56,7 +56,7 @@
         @if ($failed)<p class="error" role="alert">That password isn't right.</p>@endif
     </details>
 
-    <footer>&copy; {{ date('Y') }} OrderOrbit Space · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a></footer>
+    <footer>&copy; {{ date('Y') }} OrderOrbit Space · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a> · <a href="{{ route('site.legal.index') }}">All policies</a></footer>
 </main>
 </body>
 </html>

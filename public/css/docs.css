@@ -83,3 +83,5 @@
 .legal-card b { font: 400 24px/1.15 var(--serif); }
 .legal-card span { color: var(--muted); font-size: 15px; line-height: 1.5; }
 .legal-card small { color: var(--dim); font-size: 13px; }
+.docs .mn-hero .wrap { max-width: 1240px; }
+.docs .mn-hero .mn-lead { max-width: 640px; }
