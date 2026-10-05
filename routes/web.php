@@ -17,6 +17,17 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
+// Shopper-facing endpoints (called on every storefront page) and Shopify's webhooks carry no
+// session: no cookies in the response, no session row written. Keeps them small and cheap.
+$stateless = [
+    \Illuminate\Cookie\Middleware\EncryptCookies::class,
+    \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+];
+
+Route::withoutMiddleware($stateless)->group(function () {
 // Storefront analytics from the OrderOrbit Space web pixel.
 Route::post('/api/pixel', [\App\Http\Controllers\PixelController::class, 'collect'])->middleware('throttle:240,1')->name('pixel.collect');
 Route::options('/api/pixel', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'));
@@ -28,6 +39,7 @@ Route::middleware('throttle:300,1')->group(function () {
     Route::options('/api/post-purchase/{any}', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'))->where('any', 'offer|sign|decline');
 });
 Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, 'feed'])->middleware('throttle:600,1')->name('sales-pop.feed');
+});
 
 // Owner access to the public website while it's "coming soon".
 Route::post('/site-access', [SiteController::class, 'unlock'])->middleware('throttle:5,1')->name('site.unlock');
@@ -268,7 +280,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
 
 // The storefront runtime, served from the theme extension so the builder preview
 // renders with exactly the code shoppers get.
-Route::get('/storefront/{file}', function (string $file) {
+Route::withoutMiddleware($stateless)->get('/storefront/{file}', function (string $file) {
     $path = base_path('extensions/orderorbit-theme/assets/'.$file);
     abort_unless(is_file($path), 404);
 
@@ -279,7 +291,7 @@ Route::get('/storefront/{file}', function (string $file) {
 })->where('file', 'orderorbit\.(js|css)|oo-[a-z\-]+\.js')->name('storefront.asset');
 
 // Shopify webhooks (app lifecycle, billing, GDPR compliance)
-Route::post('/webhooks/shopify', WebhookController::class)
+Route::withoutMiddleware($stateless)->post('/webhooks/shopify', WebhookController::class)
     ->middleware('shopify.webhook')
     ->name('webhooks.shopify');
 

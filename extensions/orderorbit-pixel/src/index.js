@@ -20,13 +20,34 @@ register(({analytics, browser, init, settings}) => {
   const ua = (init.context && init.context.navigator && init.context.navigator.userAgent) || '';
   const device = /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|Android|iPhone/i.test(ua) ? 'mobile' : 'desktop';
 
-  const post = (payload) => fetch(ENDPOINT, {
+  const transmit = (payload) => fetch(ENDPOINT, {
     method: 'POST',
     keepalive: true,
     // text/plain keeps this a simple request (no CORS preflight).
     headers: {'Content-Type': 'text/plain'},
     body: JSON.stringify(Object.assign({t: settings.token, s: shop}, payload)),
   }).catch(() => {});
+
+  // Events that fire together while a page loads (session start, page and product views, offer
+  // views) go out as one request. Anything a shopper does that may leave the page (clicks, adds to
+  // cart, checkout, orders) is sent at once, together with whatever is waiting.
+  const AT_LOAD = {page_viewed: 1, product_viewed: 1, collection_viewed: 1, cart_viewed: 1, experience_viewed: 1};
+  let buffer = [];
+  let timer = null;
+  const flush = () => {
+    clearTimeout(timer);
+    timer = null;
+    if (!buffer.length) return;
+    const batch = buffer;
+    buffer = [];
+    transmit(batch.length === 1 ? batch[0] : {b: batch});
+  };
+  const post = (payload) => {
+    buffer.push(payload);
+    const atLoad = payload.k === 's' || AT_LOAD[payload.n] || AT_LOAD[payload.e];
+    if (!atLoad || buffer.length >= 20) flush();
+    else if (!timer) timer = setTimeout(flush, 500);
+  };
 
   /** The traffic source of a landing page: UTM tags, else the referring site, else direct. */
   function sourceOf(location, referrer) {

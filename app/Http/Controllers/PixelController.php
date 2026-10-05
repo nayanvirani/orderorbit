@@ -31,6 +31,18 @@ class PixelController extends Controller
             return $ok;
         }
 
+        // Events that fire together at page load arrive as one batch: {t, s, b: [event, …]}.
+        $events = isset($data['b']) && is_array($data['b']) ? array_slice(array_filter($data['b'], 'is_array'), 0, 25) : [$data];
+        foreach ($events as $event) {
+            $this->one($store, $event);
+        }
+
+        return $ok;
+    }
+
+    /** One event from the pixel. */
+    private function one(Store $store, array $data): void
+    {
         $base = ['store_id' => $store->id, 'occurred_at' => now()] + $this->context($data);
         // Settings → Privacy: without customer journeys, no customer ids are kept.
         if (! $store->privacy('journeys')) {
@@ -51,8 +63,6 @@ class PixelController extends Controller
             'o' => $this->order($store, $data, $base),
             default => null,
         };
-
-        return $ok;
     }
 
     /** Visitor, session, customer, device, page and traffic source, cleaned. */

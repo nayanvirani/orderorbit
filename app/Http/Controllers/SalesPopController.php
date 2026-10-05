@@ -28,7 +28,8 @@ class SalesPopController extends Controller
 
         return response()->json(['items' => $items])
             ->header('Access-Control-Allow-Origin', '*')
-            ->header('Cache-Control', 'public, max-age=60');
+            // Shoppers' browsers keep it for 5 minutes while they browse; recent orders change slowly.
+            ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 
     private function items(string $shop, int $days): array
