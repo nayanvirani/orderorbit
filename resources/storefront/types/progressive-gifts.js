@@ -157,12 +157,14 @@
       if (!settled) return;
       // Auto mode adds each reached gift that isn't in the cart. Shoppers can't remove gifts (oo-gift-lock.js),
       // so a missing one was taken out when the cart dropped below its milestone: add it again once it's
-      // reached. One try per gift per page load, so an unavailable gift doesn't loop.
+      // reached. One try each time it's reached, so an unavailable gift doesn't loop.
       if (c.settings.claim === 'auto') {
         c.milestones.forEach(function (m) {
+          var key = exp.id + '_' + m.index;
+          // Below the milestone again: the gift may be added again once it's reached.
+          if (st.progress < m.threshold) delete tried[key];
           if (m.reward !== 'gift' || st.progress < m.threshold || !m.products.length) return;
           if (gifts.some(function (l) { return String(l.gift) === String(m.index); })) return;
-          var key = exp.id + '_' + m.index;
           if (tried[key]) return;
           tried[key] = true;
           addGift(m, 0, null);
