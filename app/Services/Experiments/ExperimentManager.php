@@ -237,13 +237,22 @@ class ExperimentManager
         $store = $experiment->store;
         $experience = $experiment->experience;
         if (! $store->planIncludes('ab_testing')) {
-            $problems[] = 'A/B tests run on the Growth and Scale plans. Upgrade to launch.';
+            $problems[] = 'A/B testing isn\'t included in your plan. Upgrade to launch.';
         }
         if ($reason = self::unsupported($experience)) {
             $problems[] = $reason;
         }
-        if (! empty($experiment->audience['segments']) && ! $store->planIncludes('personalization')) {
-            $problems[] = 'Segment audiences need the Scale plan. Remove the segments or upgrade.';
+        if (! empty($experiment->audience['segments']) && ! $store->planIncludes('ab_testing_advanced')) {
+            $problems[] = 'Testing a chosen audience is Advanced experimentation, which isn\'t in your plan. Remove the segments or upgrade.';
+        }
+        if (! $store->planIncludes('ab_traffic_guardrails')) {
+            $shares = $experiment->variants->pluck('allocation')->unique();
+            if ($shares->count() > 1 && $shares->max() - $shares->min() > 1) {
+                $problems[] = 'Uneven traffic splits are part of Traffic allocation & guardrails, which isn\'t in your plan. Split traffic evenly or upgrade.';
+            }
+            if (! empty($experiment->guardrails)) {
+                $problems[] = 'Guardrail metrics are part of Traffic allocation & guardrails, which isn\'t in your plan. Remove them or upgrade.';
+            }
         }
         if ($experience->status !== 'published') {
             $problems[] = 'Publish the experience first: tests split the traffic of a live experience.';

@@ -46,11 +46,11 @@ class AccountBlocksTest extends TestCase
         $this->assertSame('Open customer accounts editor', $this->installedStore()->editorLabel('account'));
     }
 
-    public function test_publishing_needs_growth_and_new_customer_accounts(): void
+    public function test_publishing_needs_scale_and_new_customer_accounts(): void
     {
         $manager = app(ExperienceManager::class);
 
-        $starter = $this->installedStore(['shop_domain' => 'starter.myshopify.com', 'plan' => 'starter', 'capabilities' => ['new_customer_accounts' => true]]);
+        $starter = $this->installedStore(['shop_domain' => 'starter.myshopify.com', 'plan' => 'growth', 'capabilities' => ['new_customer_accounts' => true]]);
         try {
             $manager->publish($manager->create($starter, 'account-support', 'support-card', null), null);
             $this->fail('Account blocks need Growth or Scale.');
@@ -58,7 +58,7 @@ class AccountBlocksTest extends TestCase
             $this->assertSame(['plan', true], [$e->reason, str_contains($e->getMessage(), 'Customer account blocks')]);
         }
 
-        $classic = $this->installedStore(['plan' => 'growth', 'capabilities' => ['new_customer_accounts' => false], 'capabilities_checked_at' => now()]);
+        $classic = $this->installedStore(['plan' => 'scale', 'capabilities' => ['new_customer_accounts' => false], 'capabilities_checked_at' => now()]);
         try {
             $manager->publish($manager->create($classic, 'account-support', 'support-card', null), null);
             $this->fail('Classic customer accounts can\'t show extension blocks.');
@@ -72,7 +72,7 @@ class AccountBlocksTest extends TestCase
     public function test_account_blocks_are_published_for_customer_accounts_only(): void
     {
         $manager = app(ExperienceManager::class);
-        $store = $this->installedStore(['plan' => 'growth', 'capabilities' => ['new_customer_accounts' => true, 'checkout_blocks' => true]]);
+        $store = $this->installedStore(['plan' => 'scale', 'capabilities' => ['new_customer_accounts' => true, 'checkout_blocks' => true]]);
         $rewards = $manager->create($store, 'account-rewards', 'tier-card', null);
         $manager->publish($rewards, null);
         $manager->publish($manager->create($store, 'account-reorder', 'reorder-card', null), null);

@@ -16,7 +16,8 @@
             <label>Name in Shopify Managed Pricing<input name="shopify_name" value="{{ old('shopify_name', $plan->shopify_name) }}" required maxlength="120"><small>Must match exactly, so subscriptions map to this plan.</small></label>
             <label>Price per month (USD)<span class="ad-input-prefix"><span>$</span><input type="number" name="price" step="0.01" min="0" value="{{ old('price', $plan->price ?? 0) }}" required></span></label>
             <label>Trial days<input type="number" name="trial_days" min="0" max="365" value="{{ old('trial_days', $plan->trial_days ?? 0) }}"><small>Shown to merchants; set the same in Shopify.</small></label>
-            <label>Monthly store sales limit (USD)<span class="ad-input-prefix"><span>$</span><input type="number" name="sales_limit" min="0" step="1" value="{{ old('sales_limit', $plan->sales_limit) }}" placeholder="Unlimited"></span><small>Empty = unlimited.</small></label>
+            <label>Badge (optional)<input name="badge" value="{{ old('badge', $plan->badge) }}" maxlength="40" placeholder="Most Popular"><small>Highlights the plan on pricing pages.</small></label>
+            <label>Support level<input name="support_label" value="{{ old('support_label', $plan->support_label) }}" maxlength="80" placeholder="Standard"><small>Shown in the plan comparison.</small></label>
             <label>Order on pricing pages<input type="number" name="position" min="0" max="1000" value="{{ old('position', $plan->position) }}"></label>
         </div>
         <div class="ad-fields" style="margin-top:14px">
@@ -26,12 +27,12 @@
     </section>
 
     <section class="ad-card">
-        <h2>Modules</h2>
+        <h2>Features</h2>
         @foreach (\App\Support\Modules::grouped() as $group => $modules)
             <p class="ad-group-title">{{ $group }}</p>
             <div class="ad-fields">
-                @foreach ($modules as $key => [$label, , $help])
-                    <label class="ad-check"><input type="checkbox" name="modules[]" value="{{ $key }}" @checked(in_array($key, old('modules', $plan->modules ?? []), true))><span>{{ $label }}<small>{{ $help }}</small></span></label>
+                @foreach ($modules as $key => [$label, , $help, $parent])
+                    <label class="ad-check {{ $parent ? 'ad-child' : '' }}"><input type="checkbox" name="modules[]" value="{{ $key }}" @checked(in_array($key, old('modules', $plan->modules ?? []), true))><span>{{ $label }}<small>{{ $help }}</small></span></label>
                 @endforeach
             </div>
         @endforeach
@@ -50,7 +51,7 @@
     <section class="ad-card">
         <h2>Pricing page</h2>
         <div class="ad-fields">
-            <label>Short description<input name="description" maxlength="300" value="{{ old('description', $plan->description) }}"></label>
+            <label>Tagline (who it's for)<input name="description" maxlength="300" value="{{ old('description', $plan->description) }}"></label>
         </div>
         <label style="margin-top:14px">What's included (one line each)<textarea name="features" rows="6">{{ old('features', implode("\n", $plan->features ?? [])) }}</textarea><small>Shown on the in-app billing page and the public pricing page.</small></label>
     </section>

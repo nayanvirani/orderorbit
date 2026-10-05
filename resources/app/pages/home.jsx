@@ -181,7 +181,7 @@ function Activity() {
       </s-section>
       <s-section heading="Automation">
         {loading && !data ? <Skeleton lines={4} /> : !data.automation.available ? (
-          <p className="muted">Workflows that follow up after orders run on the Scale plan. <a href={appUrl('/app/automation')}>Learn more</a></p>
+          <p className="muted">Workflows that follow up after orders aren't on your plan yet. <a href={appUrl('/app/automation')}>Learn more</a></p>
         ) : (
           <dl className="facts">
             <dt>Active workflows</dt><dd>{data.automation.workflows}</dd>

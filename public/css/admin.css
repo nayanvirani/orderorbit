@@ -231,3 +231,19 @@ textarea.ad-code { display: block; width: 100%; padding: 12px 14px; border-radiu
 .ad-pick-card span { color: var(--muted); font-size: 13px; }
 .ad-choice { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
 .ad-choice:has(input:checked) { border-color: var(--accent); background: #f7f6ff; }
+
+/* Plans & features matrix */
+.ad-matrix tr.child td:first-child { padding-left: 34px; position: relative; }
+.ad-matrix tr.child td:first-child::before { content: "↳"; position: absolute; left: 16px; top: 12px; color: var(--muted); }
+.ad-limit { width: 84px; text-align: center; padding: 6px 8px !important; }
+.ad-badge.accent { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.ad-check.ad-child { margin-left: 22px; }
+.ad-collapse { padding: 0; }
+.ad-collapse > summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 16px 18px; cursor: pointer; list-style: none; }
+.ad-collapse > summary::-webkit-details-marker { display: none; }
+.ad-collapse > summary h2 { margin: 0; }
+.ad-collapse > summary::after { content: "▾"; margin-left: auto; color: var(--muted); }
+.ad-collapse[open] > summary::after { content: "▴"; }
+.ad-collapse > form { padding: 0 18px 18px; }
+.ad-collapse .ad-table input { width: 100%; }
+.ad-module.child { padding-left: 26px; }

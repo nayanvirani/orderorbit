@@ -56,7 +56,7 @@ class PostPurchase
      */
     public function funnel(Store $store, array $productIds, float $total): ?array
     {
-        if ($store->offersSuspended() || ! $store->planIncludes('checkout')) {
+        if (! $store->planIncludes('post_purchase')) {
             return null;
         }
 

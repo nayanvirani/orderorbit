@@ -93,3 +93,12 @@ body { margin: 0; background: #f1f1f1; }
 
 /* Template pickers: smaller live previews */
 .b-zoom { zoom: .8; max-height: 260px; }
+
+/* Billing: plan comparison and usage meters */
+.oo-scroll { overflow-x: auto; }
+.ob-compare { min-width: 560px; }
+.ob-compare th:not(:first-child), .ob-compare td:not(:first-child) { text-align: center; }
+.ob-compare tr.group td { padding-top: 16px; font-size: 11px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: #616161; background: none; }
+.ob-compare .current { background: #f4f1ff; font-weight: 600; }
+.oo-meter i.near { background: #d08a00 !important; }
+.oo-meter i.full { background: #c0262d !important; }

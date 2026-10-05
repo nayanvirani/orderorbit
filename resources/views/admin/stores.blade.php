@@ -7,7 +7,7 @@
 <form method="GET" class="ad-filters">
     <input type="search" name="q" value="{{ request('q') }}" placeholder="Search domain or name">
     <select name="status">
-        @foreach (['' => 'All stores', 'installed' => 'Installed', 'uninstalled' => 'Uninstalled', 'custom' => 'Special access', 'suspended' => 'Offers stopped'] as $k => $l)<option value="{{ $k }}" @selected(request('status', '') === $k)>{{ $l }}</option>@endforeach
+        @foreach (['' => 'All stores', 'installed' => 'Installed', 'uninstalled' => 'Uninstalled', 'custom' => 'Special access'] as $k => $l)<option value="{{ $k }}" @selected(request('status', '') === $k)>{{ $l }}</option>@endforeach
     </select>
     <select name="plan">
         <option value="">Any plan</option>

@@ -60,9 +60,10 @@ class FeatureController extends Controller
             'notice' => match (true) {
                 $surface === 'checkout' && ! $store->capability('checkout_blocks') => 'plus',
                 $surface === 'account' && $store->capability('new_customer_accounts') === false => 'accounts',
-                in_array($surface, \App\Experiences\Schema::CHECKOUT_SURFACES, true) && ! $store->planIncludes(Store::surfacePlanFeature($surface)) => 'plan',
+                ($planFeature = \App\Support\Modules::forType((string) $defs->keys()->first())) && ! $store->planIncludes($planFeature) => 'plan',
                 default => null,
             },
+            'planFeature' => \App\Support\Modules::forType((string) $defs->keys()->first()),
             'accountsUrl' => $store->adminUrl('settings/customer_accounts'),
             'docsUrl' => route('site.docs', ['bundles' => 'bundles', 'progressive-gifts' => 'progressive-gifts', 'checkout' => 'checkout-blocks', 'thank-you' => 'checkout-blocks', 'post-purchase' => 'checkout-blocks', 'customer-accounts' => 'customer-accounts'][$feature] ?? 'storefront-widgets'),
         ]);

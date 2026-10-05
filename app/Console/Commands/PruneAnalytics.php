@@ -6,7 +6,6 @@ use App\Models\AnalyticsEvent;
 use App\Models\ContactSubmission;
 use App\Models\RecentPurchase;
 use App\Models\Store;
-use App\Models\StoreOrder;
 use Illuminate\Console\Command;
 
 /**
@@ -31,10 +30,6 @@ class PruneAnalytics extends Command
             }
         }
         $this->info("Pruned {$deleted} analytics events older than ".self::RETENTION_DAYS.' days.');
-
-        // Order totals are only needed for the current and recent sales cycles.
-        $orders = StoreOrder::where('ordered_at', '<', now()->subDays(StoreOrder::KEEP_CYCLES * Store::CYCLE_DAYS))->delete();
-        $this->info("Pruned {$orders} order totals older than ".StoreOrder::KEEP_CYCLES.' sales cycles.');
 
         $purchases = RecentPurchase::where('purchased_at', '<', now()->subDays(RecentPurchase::MAX_DAYS))->delete();
         $this->info("Pruned {$purchases} Sales pop purchases older than ".RecentPurchase::MAX_DAYS.' days.');

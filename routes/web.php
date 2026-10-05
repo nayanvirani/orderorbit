@@ -332,7 +332,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // A store's plan, modules and limits, and support actions on it.
         Route::middleware('admin.can:stores.manage')->controller(\App\Http\Controllers\Admin\StoreAccessController::class)->group(function () {
             Route::post('/stores/{store}/access', 'save')->whereNumber('store')->name('store.access');
-            Route::post('/stores/{store}/actions/{action}', 'action')->whereNumber('store')->whereIn('action', ['sync-billing', 'recheck-placement', 'recount-sales', 'resume-offers', 'refresh-store'])->name('store.action');
+            Route::post('/stores/{store}/actions/{action}', 'action')->whereNumber('store')->whereIn('action', ['sync-billing', 'recheck-placement', 'apply-access', 'refresh-store'])->name('store.action');
         });
 
         Route::controller(\App\Http\Controllers\Admin\PlanController::class)->group(function () {
@@ -341,6 +341,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/plans/new', 'create')->name('plans.create');
                 Route::post('/plans', 'store')->name('plans.store');
                 Route::post('/plans/modules', 'matrix')->name('plans.matrix');
+                Route::post('/plans/catalog', 'catalog')->name('plans.catalog');
+                Route::post('/plans/pricing-page', 'pricingPage')->name('plans.pricing');
                 Route::get('/plans/{plan}', 'edit')->whereNumber('plan')->name('plans.edit');
                 Route::post('/plans/{plan}', 'update')->whereNumber('plan')->name('plans.update');
             });

@@ -11,7 +11,7 @@
     <div><small>Installed stores</small><b>{{ number_format($kpis['installed']) }}</b><span>+{{ $kpis['new_30d'] }} new · −{{ $kpis['uninstalled_30d'] }} uninstalled (30 days)</span></div>
     <div><small>Monthly recurring revenue</small><b>{{ $money($kpis['mrr']) }}</b><span>{{ $kpis['paying'] }} paying {{ \Illuminate\Support\Str::plural('store', $kpis['paying']) }}</span></div>
     <div><small>Stores with special access</small><b>{{ $kpis['custom'] }}</b><span><a href="{{ route('admin.stores', ['status' => 'custom']) }}">Complimentary plans and overrides</a></span></div>
-    <div class="{{ $kpis['suspended'] ? 'alert' : '' }}"><small>Over sales limit</small><b>{{ $kpis['over_limit'] }}</b><span>{{ $kpis['suspended'] }} with offers stopped</span></div>
+    <div><small>Upgrade clicks · 30 days</small><b>{{ number_format($kpis['upgrade_clicks_30d']) }}</b><span>{{ $kpis['upgrades_30d'] }} led to an upgrade · <a href="{{ route('admin.plans') }}">What drives them</a></span></div>
     <div class="{{ $kpis['open_tickets'] ? 'alert' : '' }}"><small>Open tickets</small><b>{{ $kpis['open_tickets'] }}</b><span><a href="{{ route('admin.tickets') }}">Support desk</a></span></div>
     <div class="{{ $kpis['failed_runs_24h'] ? 'alert' : '' }}"><small>Failed workflow runs · 24 h</small><b>{{ $kpis['failed_runs_24h'] }}</b><span><a href="{{ route('admin.failures') }}">View failures</a></span></div>
     <div><small>Analytics events · 24 h</small><b>{{ number_format($kpis['events_24h']) }}</b><span>{{ $kpis['pixel_off'] }} {{ \Illuminate\Support\Str::plural('store', $kpis['pixel_off']) }} without the pixel</span></div>

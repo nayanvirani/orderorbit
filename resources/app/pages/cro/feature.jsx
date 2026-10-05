@@ -1,9 +1,9 @@
 import { Preview, useRuntime } from '../../components/runtime.jsx';
-import { ago, EmptyState, Hero, Page } from '../../components/ui.jsx';
+import { EmptyState, Hero, Page, Upgrade, ago } from '../../components/ui.jsx';
 import { appUrl, route, useShared } from '../../router.jsx';
 import ExperienceStatus from './_status.jsx';
 
-export default function Feature({ feature, types, experiences, counts, discounts, templates, editor, checkout, notice, accountsUrl, docsUrl }) {
+export default function Feature({ feature, types, experiences, counts, discounts, templates, editor, checkout, notice, planFeature, accountsUrl, docsUrl }) {
   const { can, currency } = useShared();
   const ready = useRuntime({ checkout });
   const first = types[0];
@@ -31,12 +31,7 @@ export default function Feature({ feature, types, experiences, counts, discounts
           <s-button slot="secondary-actions" href={accountsUrl} target="_top">Customer account settings</s-button>
         </s-banner>
       )}
-      {notice === 'plan' && (
-        <s-banner tone="info" heading="On the Growth plan and above">
-          <s-paragraph>You can set these blocks up now; publishing them needs the Growth or Scale plan.</s-paragraph>
-          <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'))}>See plans</s-button>
-        </s-banner>
-      )}
+      {notice === 'plan' && <Upgrade feature={planFeature} />}
 
       <s-section>
         <div className="ob-kpis">

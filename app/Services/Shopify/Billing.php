@@ -5,8 +5,6 @@ namespace App\Services\Shopify;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\Subscription;
-use App\Services\Billing\PlanLimits;
-use App\Services\Billing\SalesMeter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -184,11 +182,16 @@ class Billing
             'plan_expires_at' => $known && $grace ? $grace->current_period_ends_at : null,
         ])->save();
 
-        // A new plan has new limits: pause offers it doesn't cover, and clear or start the
-        // over-sales-limit state straight away.
+        // A new plan: features it doesn't include stop on the storefront and at checkout, and
+        // live counts over its limits are paused, straight away.
         if ($store->plan !== $before) {
-            app(PlanLimits::class)->apply($store);
-            app(SalesMeter::class)->evaluate($store);
+            app(\App\Services\Billing\Entitlements::class)->apply($store);
+            // An upgrade within a week of clicking "Upgrade" counts for the feature that prompted it.
+            $price = fn ($key) => (float) config("shopify.billing.plans.{$key}.price", 0);
+            if ($store->plan && $price($store->plan) > $price((string) $before)) {
+                \App\Models\UpgradeEvent::where('store_id', $store->id)->whereNull('converted_at')->where('created_at', '>=', now()->subDays(7))
+                    ->update(['to_plan' => $store->plan, 'converted_at' => now()]);
+            }
         }
     }
 }

@@ -1,15 +1,14 @@
-import { appUrl, route } from '../../router.jsx';
+import { Upgrade } from '../../components/ui.jsx';
 
 /** Errors passed back in the URL, and the plan note. */
-export default function AudienceNotes({ enabled, error }) {
+export default function AudienceNotes({ enabled, advanced, error }) {
   return (
     <>
       {error && <s-banner tone="critical">{error}</s-banner>}
-      {!enabled && (
-        <s-banner tone="info" heading="Personalization runs on the Scale plan">
-          <s-paragraph>You can build segments and rules now. They start working on your store, in A/B tests and in workflows once you're on Scale.</s-paragraph>
-          <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'))}>See plans</s-button>
-        </s-banner>
+      {!enabled ? (
+        <Upgrade feature="personalization">You can build segments and rules now. They start working on your store once your plan includes personalization.</Upgrade>
+      ) : advanced === false && (
+        <Upgrade feature="personalization_advanced">Your plan targets by country, sign-in, customer tags, traffic source and offer activity. Upgrade to also target by order history and spend (VIP, returning, lifecycle), products bought, device and cart value.</Upgrade>
       )}
     </>
   );

@@ -5,7 +5,6 @@
 @else
     <span class="ad-badge">No plan</span>
 @endif
-@if (! empty($store->entitlements['modules_on']) || ! empty($store->entitlements['modules_off']) || ! empty($store->entitlements['limits']) || array_key_exists('sales_limit', $store->entitlements ?? []))
-    <span class="ad-badge accent" title="Custom modules or limits">Custom</span>
+@if (! empty($store->entitlements['modules_on']) || ! empty($store->entitlements['modules_off']) || ! empty($store->entitlements['limits'])))
+    <span class="ad-badge accent" title="Custom features or limits">Custom</span>
 @endif
-@if ($store->offersSuspended())<span class="ad-badge bad">Stopped</span>@elseif ($store->over_limit_since)<span class="ad-badge warn">Over limit</span>@endif

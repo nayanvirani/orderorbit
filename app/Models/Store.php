@@ -31,11 +31,6 @@ class Store extends Model
             'onboarding_completed_at' => 'datetime',
             'installed_at' => 'datetime',
             'uninstalled_at' => 'datetime',
-            'sales_checked_at' => 'datetime',
-            'cycle_anchor_at' => 'datetime',
-            'cycle_started_at' => 'datetime',
-            'over_limit_since' => 'datetime',
-            'offers_suspended_at' => 'datetime',
         ];
     }
 
@@ -131,64 +126,31 @@ class Store extends Model
         return $this->adminUrl('charges/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/pricing_plans');
     }
 
-    public const CYCLE_DAYS = 30;
-
-    public function salesCycles(): HasMany
-    {
-        return $this->hasMany(SalesCycle::class);
-    }
-
     /**
-     * The start of the 30-day sales cycle that contains $at. Cycles run back to back from the
-     * first install.
-     */
-    public function cycleStart(?\Carbon\CarbonInterface $at = null): \Illuminate\Support\Carbon
-    {
-        $at ??= now();
-        $anchor = $this->cycle_anchor_at ?? $this->installed_at ?? $this->created_at ?? $at;
-        $cycles = max(0, intdiv(max(0, (int) $anchor->diffInSeconds($at, false)), self::CYCLE_DAYS * 86400));
-
-        return \Illuminate\Support\Carbon::parse($anchor)->addDays($cycles * self::CYCLE_DAYS);
-    }
-
-    /**
-     * The plan's limit on total store sales per 30-day cycle (USD); null means unlimited.
-     * Our own test shops are never limited.
-     */
-    public function salesLimit(): ?float
-    {
-        $limit = match (true) {
-            $this->isTestShop() => null,
-            array_key_exists('sales_limit', $this->entitlements ?? []) => $this->entitlements['sales_limit'],
-            default => config('shopify.billing.plans.'.$this->effectivePlan().'.sales_limit'),
-        };
-
-        return $limit === null ? null : (float) $limit;
-    }
-
-    /**
-     * Whether this shop's test orders count toward the sales limit (only our own test stores).
-     */
-    public function countsTestOrders(): bool
-    {
-        return in_array($this->shop_domain, config('shopify.billing.count_test_orders_for', []), true);
-    }
-
-    /**
-     * Offers are paused because the store stayed over its plan's sales limit past the grace period.
-     */
-    public function offersSuspended(): bool
-    {
-        return $this->offers_suspended_at !== null;
-    }
-
-    /**
-     * Whether the store can use a module (App\Support\Modules): its plan's modules, plus or
-     * minus the overrides set for this store in the Internal Admin.
+     * Whether the store can use a feature (App\Support\Modules): its plan's features, plus or
+     * minus the overrides set for this store in the super admin. A feature with a parent (e.g.
+     * Quantity breaks under Bundles) also needs the parent.
      */
     public function planIncludes(string $feature): bool
     {
-        return in_array($feature, $this->modules(), true);
+        $modules = $this->modules();
+
+        return collect(\App\Support\Modules::chain($feature))->every(fn ($key) => in_array($key, $modules, true));
+    }
+
+    /** Whether every feature an experience needs (App\Support\Modules::forExperience) is included. */
+    public function allowsExperience(string $type, ?array $config = null): bool
+    {
+        return collect(\App\Support\Modules::forExperience($type, $config))->every(fn ($key) => $this->planIncludes($key));
+    }
+
+    /** Fingerprint of what the store may use; when it changes, the storefront and checkout are re-applied. */
+    public function entitlementsFingerprint(): string
+    {
+        $modules = $this->modules();
+        sort($modules);
+
+        return hash('sha256', json_encode([$this->effectivePlan(), $modules, collect(array_keys(\App\Services\Usage::METERS))->mapWithKeys(fn ($m) => [$m => $this->planLimit($m)])->all()]));
     }
 
     /**
@@ -285,6 +247,11 @@ class Store extends Model
     /** The plan feature an extension-rendered surface needs. */
     public static function surfacePlanFeature(string $surface): string
     {
-        return $surface === 'account' ? 'customer_accounts' : 'checkout';
+        return match ($surface) {
+            'account' => 'customer_accounts',
+            'thank-you' => 'thank_you',
+            'post-purchase' => 'post_purchase',
+            default => 'checkout',
+        };
     }
 }

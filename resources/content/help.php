@@ -90,7 +90,7 @@ return [
         'text' => 'Orders, tracking, reorder, rewards, reviews, products and support in customer accounts.',
         'articles' => [
             ['How do I add a customer account block?', 'Create the block in OrderOrbit Space and publish it. In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page, add the OrderOrbit Space account block and choose its type. Customers see it the next time they sign in.'],
-            ['Which stores can use them?', 'Stores on Shopify\'s new customer accounts (Settings → Customer accounts). Classic accounts can\'t show app blocks. The blocks are on the Growth and Scale plans.'],
+            ['Which stores can use them?', 'Stores on Shopify\'s new customer accounts (Settings → Customer accounts). Classic accounts can\'t show app blocks. Which plans include them is shown on the Pricing page.'],
             ['How does "Buy again" work?', 'It adds the order\'s items to the cart on your store, with all items or the ones the customer picks. With the Reorder block published, "Buy again" also appears in each order\'s menu.'],
             ['How are reward tiers worked out?', 'From the customer\'s total spend across their recent orders (cancelled orders don\'t count). You set the tiers, thresholds and perks.'],
             ['Where does "Write a review" go?', 'To the review link you set, such as {product_url}#reviews or your review app\'s page, with the product filled in.'],
@@ -131,7 +131,7 @@ return [
             ['Are emails sent?', 'Not yet. Email steps prepare each message with the order\'s details and keep it under Automation → Emails. Sending through an email provider is being connected now; tags, discount codes, tasks and webhooks work today.'],
             ['What happens when a step fails?', 'It is retried after 5 minutes and again after 30. Steps that already finished are never repeated. If it still fails, the run is marked failed and the log shows why.'],
             ['Can the same order start a workflow twice?', 'No. Each Shopify event starts each workflow once, even if Shopify sends the event again.'],
-            ['Which plan includes automation?', 'Scale. On other plans you can build and test workflows and publish them after upgrading.'],
+            ['Which plan includes automation?', 'Every plan includes workflows, with a number of active workflows and runs a month that grows with the plan. If/else branching and webhooks are on higher plans; the Pricing page compares them.'],
         ],
     ],
     [
@@ -140,8 +140,8 @@ return [
         'text' => 'Plans, limits, upgrades and cancelling.',
         'articles' => [
             ['How am I billed?', 'Through your Shopify invoice. There is no separate card to add.'],
-            ['How do the plans work?', 'Free covers stores selling up to $1,000 per 30-day cycle, with the core widgets and one live bundle, gift campaign, cart upsell and pre-order. Starter ($14.99, up to $8,000) makes everything unlimited and adds revenue per offer. Growth ($29.99, up to $20,000) and Scale ($59.99, unlimited) add checkout blocks, A/B testing, advanced analytics and customer account blocks; Scale also includes lifecycle automation and personalization.'],
-            ['What if my store passes its plan\'s limit?', 'The app tells you straight away, whenever in the cycle it happens, and you have 3 days to upgrade. After that every feature stops until you upgrade; nothing is deleted, and it all comes back the moment you do.'],
+            ['How do the plans work?', 'Start free, then upgrade when you need more experiences, testing, automation and personalization. Plans differ by the features they include and by their limits (live offers, workflows, automation runs a month). The Pricing page and Settings → Billing in the app compare them.'],
+            ['What happens when I reach a limit?', 'The app warns you as you get close. At the limit, everything already live keeps working; you just can\'t add more until you upgrade. Nothing is deleted.'],
             ['Can I change plans?', 'Yes, at any time from Plans in the app. Upgrades take effect straight away.'],
             ['What happens if I uninstall?', 'Billing stops, offers are removed from your store and checkout pricing stops. Your store data is deleted as Shopify requires.'],
         ],

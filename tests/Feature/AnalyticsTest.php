@@ -61,10 +61,12 @@ class AnalyticsTest extends TestCase
         $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.summary.influenced_revenue', 92.2)->assertJsonPath('props.offerAnalytics', true)
             ->assertJsonPath('props.offers.0.handle', 'bnd1')->assertJsonPath('props.offers.0.accepts', 1);
 
-        // Free shows store totals; revenue per offer is on Starter and above.
+        // Basic analytics (revenue per offer) is on every plan, Free included; a store without it sees store totals.
         $store->forceFill(['plan' => 'free'])->save();
-        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.offerAnalytics', false);
-        $store->forceFill(['plan' => 'growth'])->save();
+        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.offerAnalytics', true);
+        $store->forceFill(['entitlements' => ['modules_off' => ['offer_analytics']]])->save();
+        $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('props.offerAnalytics', false)->assertJsonPath('shared.featurePlans.offer_analytics', 'Free');
+        $store->forceFill(['plan' => 'growth', 'entitlements' => null])->save();
         $this->getJson('/app/api/dashboard/kpis', $this->as($owner))->assertOk()->assertJsonPath('influenced_revenue', 92.2);
     }
 

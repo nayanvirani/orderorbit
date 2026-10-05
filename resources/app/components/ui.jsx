@@ -1,6 +1,6 @@
 // Shared building blocks for the React admin: Polaris web components plus the app's own tiles,
 // styled by the same CSS as the Blade pages (app-brand.css, app-base.css).
-import { appUrl } from '../router.jsx';
+import { appUrl, route, useShared } from '../router.jsx';
 import { ICONS } from './icons.js';
 
 /** A page: Polaris s-page at the app's width, with an optional breadcrumb and actions. */
@@ -218,4 +218,20 @@ export function Kpi({ label, value, sub, trend, spark, icon, tone }) {
 /** "order" / "orders" */
 export function plural(word, n) {
   return n === 1 ? word : `${word}s`;
+}
+
+/**
+ * A locked feature: names the plan that unlocks it (from the super admin's plans) and links to
+ * Billing with ?from=<feature>, so upgrades can be traced back to what prompted them.
+ */
+export function Upgrade({ feature, heading, children }) {
+  const { featurePlans = {}, featureLabels = {} } = useShared();
+  const plan = featurePlans[feature];
+  const label = featureLabels[feature] || 'This feature';
+  return (
+    <s-banner tone="info" heading={heading || (plan ? `${label} is on the ${plan} plan` : `${label} isn't included in your plan`)}>
+      <s-paragraph>{children || (plan ? `You can set it up now; it works on your store once you're on ${plan}.` : 'Contact us if you need it.')}</s-paragraph>
+      <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'), { from: feature })}>{plan ? `Upgrade to ${plan}` : 'See plans'}</s-button>
+    </s-banner>
+  );
 }

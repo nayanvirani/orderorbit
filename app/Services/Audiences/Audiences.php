@@ -56,6 +56,19 @@ class Audiences
     public const CONDITIONS = ['device', 'cart_min', 'cart_max', 'utm_source', 'utm_campaign'];
 
     /**
+     * Advanced personalization (its own plan feature): VIP / returning / lifecycle (order history),
+     * product and device segments, and device or cart-value rule conditions.
+     */
+    public const ADVANCED_FIELDS = ['orders_count', 'ltv', 'aov', 'days_since_order', 'product_purchased', 'device'];
+
+    public const ADVANCED_CONDITIONS = ['device', 'cart_min', 'cart_max'];
+
+    public static function usesAdvanced(array $rules): bool
+    {
+        return collect($rules)->contains(fn ($r) => in_array($r['field'] ?? null, self::ADVANCED_FIELDS, true));
+    }
+
+    /**
      * Cleans a segment's rules. Returns [match, rules, errors keyed "rules.N"].
      *
      * @return array{0: string, 1: array, 2: array<string, string>}
@@ -224,6 +237,12 @@ class Audiences
         $ids = $ids->merge(Experience::with('publishedVersion')->where('store_id', $store->id)->where('status', 'published')->get()->flatMap(fn ($e) => $e->publishedVersion?->config['targeting']['segments'] ?? []));
         $ids = $ids->merge(Experiment::where('store_id', $store->id)->where('status', 'running')->get()->flatMap(fn ($x) => $x->audience['segments'] ?? []));
         $segments = Segment::where('store_id', $store->id)->active()->whereIn('id', $ids->map(fn ($id) => (int) $id)->unique()->all())->get();
+        // Without Advanced personalization, segments and rules that need it are left out: the
+        // shoppers they'd pick out don't match, so a targeted offer never reaches everyone.
+        if (! $store->planIncludes('personalization_advanced')) {
+            $segments = $segments->reject(fn ($s) => self::usesAdvanced($s->rules ?? []))->values();
+            $rules = $rules->reject(fn ($r) => array_intersect(array_keys($r->conditions ?? []), self::ADVANCED_CONDITIONS) !== []);
+        }
         if ($rules->isEmpty() && $segments->isEmpty()) {
             return null;
         }

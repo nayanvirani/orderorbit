@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Store;
 use App\Models\WebhookReceipt;
-use App\Services\Billing\SalesMeter;
 use App\Services\SalesPop\RecentOrders;
 use App\Services\Shopify\Billing;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -52,20 +51,12 @@ class WebhookController extends Controller
         return response()->noContent();
     }
 
-    /**
-     * A new or changed order: its total counts toward the plan's sales limit (refunds and
-     * cancellations arrive as updates), and a new order's products feed Sales pop.
-     */
+    /** A new or changed order: a new order's products feed Sales pop, and either can start workflows. */
     private function orderChanged(Store $store, array $payload, RecentOrders $orders, bool $created): void
     {
-        $meter = app(SalesMeter::class);
-        $meter->record($store, $payload);
         if ($created) {
             $orders->fromWebhook($store, $payload);
         }
-
-        // Recount and apply the limit after responding; stopping or resuming a store calls Shopify.
-        defer(fn () => $meter->recount($store));
         $this->automation($store, $created ? 'orders/create' : (string) request()->header('X-Shopify-Topic'), $payload);
     }
 

@@ -30,7 +30,7 @@ export default function EventExplorer(props) {
 
   return (
     <Page heading="Event Explorer" back={route('app.analytics', { days })} backLabel="Analytics">
-      <AnalyticsNav {...props} lockedTitle="Event Explorer is on Growth and Scale" />
+      <AnalyticsNav {...props} />
       {!locked && (
         <>
           <Form className="an-filters" onSubmit={apply}>

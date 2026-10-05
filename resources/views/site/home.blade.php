@@ -256,7 +256,7 @@
                 ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
                 ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],
                 ['How do you measure revenue?', 'A Shopify web pixel records completed orders and credits each order line to the offer that added it. Only shoppers who allow analytics are counted.'],
-                ['What does it cost?', 'It\'s free while your store sells up to $1,000 a month, with the core widgets and one of each revenue feature. Paid plans are $14.99, $29.99 and $59.99 a month, billed through your Shopify invoice.'],
+                ['What does it cost?', 'There\'s a free plan to start. Paid plans are '.collect(\App\Support\Plans::public())->filter(fn ($p) => $p['price'] > 0)->map(fn ($p) => $p['name'].' $'.number_format($p['price'], 2))->implode(', ').' a month, billed through your Shopify invoice.'],
             ]])
         </div>
     </section>

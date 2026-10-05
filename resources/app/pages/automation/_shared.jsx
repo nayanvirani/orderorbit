@@ -1,3 +1,4 @@
+import { Upgrade } from '../../components/ui.jsx';
 import { appUrl, route } from '../../router.jsx';
 
 const STATUS = { completed: ['success', 'Completed'], waiting: ['info', 'Waiting'], failed: ['critical', 'Failed'], running: ['warning', 'Running'], ok: ['success', 'Done'], skipped: ['neutral', 'Skipped'] };
@@ -19,10 +20,7 @@ export function WorkflowStatus({ status }) {
 export function PlanNote({ automationOn }) {
   if (automationOn) return null;
   return (
-    <s-banner tone="info" heading="Workflows run on the Scale plan">
-      <s-paragraph>You can build and test workflows now. Publishing them, so they run on real orders, needs the Scale plan.</s-paragraph>
-      <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'))}>See plans</s-button>
-    </s-banner>
+    <Upgrade feature="automation">You can build and test workflows now. Publishing them, so they run on real orders, needs a plan with automation.</Upgrade>
   );
 }
 

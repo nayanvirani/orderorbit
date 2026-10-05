@@ -131,8 +131,11 @@ class AudiencesTest extends TestCase
         $this->post('/app/audiences/segments/'.$returning->id.'/archive', [], $this->as($owner))->assertRedirectContains('error=');
         $this->assertNull($returning->fresh()->archived_at);
 
-        // Without personalization in the plan, the storefront gets nothing to apply.
+        // Growth has basic personalization only: segments on order history (Advanced) are left out.
         $this->store->forceFill(['plan' => 'growth'])->save();
+        $this->assertArrayNotHasKey((string) $returning->id, (array) (app(StorefrontPublisher::class)->payload($this->store)['p']['segments'] ?? []));
+        // Without personalization in the plan, the storefront gets nothing to apply.
+        $this->store->forceFill(['plan' => 'starter'])->save();
         $this->assertArrayNotHasKey('p', app(StorefrontPublisher::class)->payload($this->store));
     }
 

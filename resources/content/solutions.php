@@ -96,7 +96,7 @@ return [
         ],
         'setup' => [
             ['Team roles and audit log', 'Control who can publish, and see who changed what.'],
-            ['Bundles and gifts across your catalogue', 'Unlimited offers on the Growth and Scale plans.'],
+            ['Bundles and gifts across your catalogue', 'Unlimited offers on higher plans.'],
             ['Per-offer revenue', 'Views, adds to cart, orders and revenue for each offer.'],
         ],
         'later' => ['Blocks inside checkout (Plus)', 'A/B testing', 'Personalization by audience'],

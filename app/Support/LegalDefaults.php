@@ -68,7 +68,7 @@ Analytics, attribution, A/B test results, recommendations and revenue figures ar
 
 ## 7. Plans and billing
 
-Paid plans are billed by Shopify, on your Shopify invoice, in the currency and at the price shown in the App when you subscribe. Plan limits, including the monthly store-sales limit, are shown in the App and on our [Pricing]({{website}}/pricing) page. The [Billing, Cancellation & Refund Policy]({{url:billing}}) explains trials, plan changes, cancellations, the sales limit and refunds.
+Paid plans are billed by Shopify, on your Shopify invoice, in the currency and at the price shown in the App when you subscribe. Each plan's features and usage limits are shown in the App and on our [Pricing]({{website}}/pricing) page. The [Billing, Cancellation & Refund Policy]({{url:billing}}) explains trials, plan changes, usage limits, cancellations and refunds.
 
 ## 8. Your data and privacy
 
@@ -177,10 +177,10 @@ This Privacy Policy explains how {{operator}} ("we", "us"), the individual devel
 - Store details: shop domain, store name, contact email, currency, time zone, Shopify plan and theme.
 - The access tokens Shopify grants the App. These are stored encrypted.
 - Staff who open the App: Shopify user ID, first name, email and role. We use these for permissions and the activity log.
-- Order information needed to measure your monthly store sales against your plan and to show sales pop:
-  - order ID, total, currency and date;
-  - test or cancelled status;
-  - for sales pop only, the product purchased and the shopper's country.
+- Order information needed to show sales pop and to run the workflows you set up:
+  - order ID and date;
+  - for sales pop, the product purchased and the shopper's country;
+  - for workflows, the order details a workflow uses (for example its total and tags).
 
   We do not store shoppers' names, addresses or payment details from orders.
 - Products, collections and themes, read as needed to build and place your offers.
@@ -245,7 +245,6 @@ Our providers may process data in countries other than yours, including the Unit
 | --- | --- |
 | Storefront analytics events | The period the merchant chooses in Settings → Privacy (3, 6 or 13 months; 13 by default), then deleted automatically |
 | Store configuration, offers, workflows | While the App is installed |
-| Order totals used for plan usage | The last 3 sales cycles (about 90 days) |
 | Sales pop purchases (product and country) | 30 days |
 | Support tickets | While the App is installed, or longer if needed to resolve a dispute |
 | Billing and audit records | As long as needed for legal, tax and security purposes |
@@ -381,14 +380,13 @@ All charges are made by Shopify and appear on your Shopify invoice. We never col
 
 Plans, prices, included features and limits are shown in the App under Settings → Billing and on our [Pricing]({{website}}/pricing) page. Where a plan has a free trial, you are not charged until the trial ends. Uninstalling before the trial ends means you are not charged. Trials are available once per store.
 
-## 3. Store-sales limits
+## 3. Usage limits
 
-Each plan includes a monthly store-sales limit, measured over 30-day cycles from your install date using your store's orders.
+Each plan includes a set of features and usage limits, such as the number of live experiences, bundles, gift campaigns, shipping bars and workflows, and automation runs per month.
 
-- **Test and cancelled orders:** these are not counted.
-- **Warning:** the App warns you as you get close to your plan's limit.
-- **Going over the limit:** if your store's sales pass the limit, everything keeps working for a grace period. After that, the App's storefront offers pause until you upgrade or a new cycle starts.
-- **Your data:** pausing never deletes your data or settings.
+- **Warning:** the App warns you as you get close to a limit, and shows your usage in Settings → Billing.
+- **At a limit:** everything already live keeps working; you can't add more until you upgrade.
+- **Your data:** limits never delete your data or settings.
 
 ## 4. Upgrades and downgrades
 
@@ -453,7 +451,7 @@ You must not use the App:
 You must not:
 
 - access the App other than through your Shopify admin, or share access with people outside your business;
-- try to get around plan limits, billing, the sales limit or security controls;
+- try to get around plan limits, billing or security controls;
 - probe, scan or test the App for vulnerabilities without our written permission. Please report vulnerabilities to {{contact}};
 - interfere with or overload the App, for example by automated scraping or load testing;
 - upload malware, or content that infringes someone else's rights; or

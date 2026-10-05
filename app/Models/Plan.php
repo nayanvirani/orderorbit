@@ -16,7 +16,7 @@ class Plan extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'float', 'sales_limit' => 'float', 'trial_days' => 'integer', 'position' => 'integer',
+            'price' => 'float', 'trial_days' => 'integer', 'position' => 'integer',
             'modules' => 'array', 'limits' => 'array', 'features' => 'array', 'is_public' => 'boolean', 'is_active' => 'boolean',
         ];
     }

@@ -16,11 +16,9 @@ class PlatformSettings
 
     /** key => [config path, label, type, help] */
     public const FIELDS = [
-        'grace_days' => ['shopify.billing.grace_days', 'Days to upgrade after passing the sales limit', 'number', 'Everything keeps working this long, then offers stop until the store upgrades.'],
-        'warn_at' => ['shopify.billing.warn_at', 'Warn merchants at this share of their sales limit', 'percent', 'Shown in the app as "You\'re close to your plan\'s sales limit".'],
+        'warn_at' => ['shopify.billing.warn_at', 'Warn merchants when a usage limit reaches', 'percent', 'Shown in the app as "You\'re close to your plan\'s limit for …", for every limit (experiences, bundles, workflows, automation runs…).'],
         'test_shops' => ['shopify.test_shops', 'Test stores (full access without a subscription)', 'list', 'One myshopify.com domain per line. They get the test plan below for free.'],
         'test_shop_plan' => ['shopify.test_shop_plan', 'Plan for test stores', 'plan', null],
-        'count_test_orders_for' => ['shopify.billing.count_test_orders_for', 'Stores whose test orders count toward the sales limit', 'list', 'Lets our own stores try the limit flow end to end.'],
     ];
 
     public static function boot(): void

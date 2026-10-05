@@ -18,31 +18,49 @@ class PlanLimits
     /**
      * @return int how many offers were paused
      */
-    public function apply(Store $store): int
+    public function apply(Store $store, bool $sync = true): int
     {
         if (! $store->hasPlanAccess()) {
             return 0;
         }
 
         $paused = 0;
+        // Only experiences the plan still includes are live (and count); the newest stay live.
+        $live = Experience::with('publishedVersion')->where('store_id', $store->id)->where('status', 'published')
+            ->orderByDesc('published_at')->orderByDesc('id')->get()
+            ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion?->config))->values();
+        $pause = function (Experience $experience) use ($store, &$paused, &$live) {
+            $experience->forceFill(['status' => 'paused'])->save();
+            AuditLog::record('experience.paused_by_plan', $store, ['plan' => $store->effectivePlan()], $experience);
+            $live = $live->reject(fn ($e) => $e->id === $experience->id)->values();
+            $paused++;
+        };
+
         foreach (array_unique(Registry::meters()) as $meter) {
             $limit = $store->planLimit($meter);
             if ($limit === null) {
                 continue;
             }
             $types = array_keys(Registry::meters(), $meter, true);
+            $live->filter(fn ($e) => in_array($e->type, $types, true))->values()->slice($limit)->each($pause);
+        }
+        if (($limit = $store->planLimit('active_experiences')) !== null) {
+            $live->slice($limit)->each($pause);
+        }
 
-            Experience::where('store_id', $store->id)->whereIn('type', $types)->where('status', 'published')
-                ->orderByDesc('published_at')->orderByDesc('id')->get()
-                ->slice($limit)
-                ->each(function (Experience $experience) use ($store, &$paused) {
-                    $experience->forceFill(['status' => 'paused'])->save();
-                    AuditLog::record('experience.paused_by_plan', $store, ['plan' => $store->effectivePlan()], $experience);
+        // Workflows over the plan's limit are switched off, newest first; they stay saved.
+        $workflows = $store->planLimit('workflows');
+        if ($workflows !== null) {
+            \App\Models\Automation\Workflow::where('store_id', $store->id)->where('status', 'enabled')
+                ->orderByDesc('updated_at')->orderByDesc('id')->get()->slice($workflows)
+                ->each(function ($workflow) use ($store, &$paused) {
+                    $workflow->forceFill(['status' => 'disabled'])->save();
+                    AuditLog::record('workflow.disabled_by_plan', $store, ['plan' => $store->effectivePlan()], $workflow);
                     $paused++;
                 });
         }
 
-        if ($paused > 0) {
+        if ($paused > 0 && $sync) {
             try {
                 app(StorefrontPublisher::class)->sync($store);
             } catch (Throwable $e) {

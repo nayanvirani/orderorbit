@@ -13,7 +13,7 @@ use Throwable;
  */
 class Plans
 {
-    private const KEY = 'billing-plans:v1';
+    private const KEY = 'billing-plans:v2';
 
     /** Loads the stored plans over the config defaults; a no-op until the table exists. */
     public static function boot(): void
@@ -23,8 +23,9 @@ class Plans
             if ($plans === null && Schema::hasTable('plans')) {
                 $plans = Plan::orderBy('position')->orderBy('id')->get()->mapWithKeys(fn (Plan $p) => [$p->key => [
                     'name' => $p->name, 'shopify_name' => $p->shopify_name, 'price' => $p->price, 'trial_days' => $p->trial_days,
-                    'sales_limit' => $p->sales_limit, 'includes' => array_values($p->modules ?? []), 'limits' => $p->limits ?? [],
-                    'features' => $p->features ?? [], 'description' => $p->description, 'public' => $p->is_public, 'active' => $p->is_active,
+                    'includes' => array_values($p->modules ?? []), 'limits' => $p->limits ?? [],
+                    'features' => $p->features ?? [], 'description' => $p->description, 'badge' => $p->badge, 'support' => $p->support_label,
+                    'public' => $p->is_public, 'active' => $p->is_active,
                 ]])->all() ?: null;
                 if ($plans) {
                     Cache::forever(self::KEY, $plans);
@@ -49,5 +50,19 @@ class Plans
     public static function public(): array
     {
         return array_filter((array) config('shopify.billing.plans'), fn ($p) => ($p['public'] ?? true) && ($p['active'] ?? true));
+    }
+
+    /** feature => name of the cheapest active public plan that includes it (for upgrade prompts). */
+    public static function firstWith(): array
+    {
+        $plans = collect(self::public())->sortBy('price');
+        $first = [];
+        foreach (array_keys(Modules::ALL) as $feature) {
+            $needs = Modules::chain($feature);
+            $plan = $plans->first(fn ($p) => collect($needs)->every(fn ($k) => in_array($k, $p['includes'] ?? [], true)));
+            $first[$feature] = $plan['name'] ?? null;
+        }
+
+        return $first;
     }
 }

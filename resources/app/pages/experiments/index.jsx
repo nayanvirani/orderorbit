@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Field, Form } from '../../components/form.jsx';
-import { Hero, Page } from '../../components/ui.jsx';
+import { Hero, Page, Upgrade } from '../../components/ui.jsx';
 import { appUrl, route, useRouter, useShared, useUrl, withQuery } from '../../router.jsx';
 import TestStatus from './_status.jsx';
 
@@ -27,10 +27,7 @@ export default function Experiments({ tab, q, experiments, testable, abTesting, 
       </Hero>
       {error && <s-banner tone="critical">{error}</s-banner>}
       {!abTesting && (
-        <s-banner tone="info" heading="A/B tests run on Growth and Scale">
-          <s-paragraph>You can set up tests now and launch them after upgrading.</s-paragraph>
-          <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'))}>See plans</s-button>
-        </s-banner>
+        <Upgrade feature="ab_testing">You can set up tests now and launch them after upgrading.</Upgrade>
       )}
 
       {can.manage_experiences && (

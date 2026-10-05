@@ -18,7 +18,7 @@
         $nav = [
             null => [['admin.home', 'Dashboard', 'home', 'dashboard']],
             'Customers' => [['admin.stores', 'Stores', 'store', 'stores'], ['admin.tickets', 'Support', 'message', 'support']],
-            'Billing' => [['admin.plans', 'Plans & modules', 'card', 'plans']],
+            'Billing' => [['admin.plans', 'Plans & features', 'card', 'plans']],
             'Product' => [['admin.templates', 'Templates', 'palette', 'templates'], ['admin.flags', 'Feature flags', 'flag', 'flags']],
             'Operations' => [['admin.failures', 'Workflow failures', 'alert', 'failures'], ['admin.analytics', 'Event processing', 'chart', 'analytics'], ['admin.audit', 'Audit log', 'list', 'audit']],
             'Admin' => [['admin.email', 'Email providers', 'mail', 'email'], ['admin.legal', 'Legal & policies', 'doc', 'legal'], ['admin.settings', 'Platform settings', 'settings', 'settings'], ['admin.team', 'Team', 'users', 'team']],

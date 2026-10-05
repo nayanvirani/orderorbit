@@ -9,7 +9,7 @@ export default function FunnelList(props) {
   const { can } = useShared();
   return (
     <Page heading="Funnels" back={route('app.analytics', { days })} backLabel="Analytics">
-      <AnalyticsNav {...props} hideRange lockedTitle="Funnels are on Growth and Scale" />
+      <AnalyticsNav {...props} hideRange />
       <s-section heading="Your funnels">
         {!funnels.length ? (
           <s-paragraph>A funnel shows how many shoppers go from one step to the next, such as product view → bundle view → add to cart → checkout → purchase, and where they drop off.</s-paragraph>

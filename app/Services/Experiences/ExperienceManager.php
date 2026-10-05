@@ -210,16 +210,14 @@ class ExperienceManager
         if (! $store->hasPlanAccess()) {
             throw new PublishException('Choose a plan to start publishing.', 'plan');
         }
-        $module = \App\Support\Modules::forType($experience->type);
-        if ($module && ! in_array($type['surface'], Schema::CHECKOUT_SURFACES, true) && ! $store->planIncludes($module)) {
-            throw new PublishException(\App\Support\Modules::label($module).' isn\'t included in your plan. Upgrade to publish it.', 'plan');
+        foreach (\App\Support\Modules::forExperience($experience->type, $experience->draft_config) as $feature) {
+            if (! $store->planIncludes($feature)) {
+                throw new PublishException(\App\Support\Modules::label($feature).' isn\'t included in your plan. Upgrade to publish it.', 'plan');
+            }
         }
 
-        // Checkout and post-purchase blocks: Growth and above, and only where Shopify allows them.
+        // Checkout and post-purchase blocks: only where Shopify allows them.
         if (in_array($type['surface'], Schema::CHECKOUT_SURFACES, true)) {
-            if (! $store->planIncludes(Store::surfacePlanFeature($type['surface']))) {
-                throw new PublishException(($type['surface'] === 'account' ? 'Customer account blocks' : 'Checkout and Thank You blocks').' are on the Growth plan and above. Upgrade to publish.', 'plan');
-            }
             if ($type['surface'] === 'account' && $store->capability('new_customer_accounts') === false) {
                 throw new PublishException('Customer account blocks need Shopify\'s new customer accounts. Turn them on in Shopify under Settings → Customer accounts, then re-check your store in Settings.', 'unavailable');
             }
@@ -232,14 +230,13 @@ class ExperienceManager
             }
         }
 
-        if ($store->offersSuspended()) {
-            throw new PublishException('Your store has passed its plan\'s sales limit. Upgrade your plan to publish.', 'plan');
-        }
-
         // Only a newly live experience adds to the plan's counts.
         if ($experience->status !== 'published') {
             if (! $this->usage->allows($store, 'active_experiences')) {
-                throw new PublishException('You\'ve reached your current OrderOrbit plan limit.', 'plan');
+                $limit = (int) $store->planLimit('active_experiences');
+                $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
+
+                throw new PublishException("The {$plan} plan includes {$limit} active ".\Illuminate\Support\Str::plural('experience', $limit).'. Pause one that\'s live or upgrade for more.', 'plan');
             }
             if (($meter = $type['meter'] ?? null) && ! $this->usage->allows($store, $meter)) {
                 $limit = (int) $store->planLimit($meter);

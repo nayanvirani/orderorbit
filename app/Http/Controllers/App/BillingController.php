@@ -4,7 +4,6 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Store;
-use App\Services\Billing\SalesMeter;
 use App\Services\Shopify\Billing;
 use App\Services\Usage;
 use Illuminate\Http\Request;
@@ -12,13 +11,13 @@ use App\Support\Spa\Page;
 use Throwable;
 
 /**
- * Settings → Billing. Read-only under Shopify Managed Pricing: shows the plan
- * Shopify reports, usage against its limits, and links to Shopify's own plan
- * picker for changes.
+ * Settings → Billing. Read-only under Shopify Managed Pricing: shows the plan Shopify reports,
+ * usage against every plan limit, the plans and how they compare, and links to Shopify's own
+ * plan picker for changes.
  */
 class BillingController extends Controller
 {
-    public function index(Request $request, Store $store, Billing $billing, SalesMeter $sales, Usage $usage): Page
+    public function index(Request $request, Store $store, Billing $billing, Usage $usage): Page
     {
         $syncError = false;
 
@@ -29,13 +28,14 @@ class BillingController extends Controller
             $syncError = true;
         }
 
-        // Show an up-to-date sales count against the plan's limit.
-        $sales->refreshIfStale($store, 10);
-        $store->refresh();
+        // An "Upgrade" click from a locked feature or a full limit: remember what prompted it.
+        if (($from = (string) $request->query('from', '')) !== '' && preg_match('/^[a-z_]{2,60}$/', $from)
+            && ! \App\Models\UpgradeEvent::where('store_id', $store->id)->where('feature', $from)->where('created_at', '>=', now()->subHour())->exists()) {
+            \App\Models\UpgradeEvent::create(['store_id' => $store->id, 'feature' => $from, 'from_plan' => $store->effectivePlan()]);
+        }
 
         $subscription = $store->activeSubscription()->first();
         $latest = $store->subscriptions()->latest('id')->first();
-        $status = $sales->status($store);
 
         return page('settings/billing', [
             'effective' => $store->effectivePlan(),
@@ -48,19 +48,13 @@ class BillingController extends Controller
                 'current_period_ends_at' => $subscription->current_period_ends_at,
             ] : null,
             'latestStatus' => $latest?->status,
-            'plans' => collect(\App\Support\Plans::public())->map(fn ($p, $key) => ['key' => $key, 'name' => $p['name'], 'price' => (float) $p['price'], 'features' => $p['features']])->values(),
-            'sales' => ['state' => $status['state'], 'sales' => $status['sales'], 'limit' => $status['limit'], 'percent' => $status['percent'],
-                'deadline' => $status['deadline'], 'next' => $status['next'] ? ['name' => $status['next']['name'], 'price' => (float) $status['next']['price']] : null,
-                'orders' => $status['orders'] ?? 0, 'test_orders' => $status['test_orders'] ?? null,
-                'cycle_start' => $status['cycle_start'], 'cycle_end' => $status['cycle_end']],
-            'graceDays' => (int) config('shopify.billing.grace_days'),
-            // Live-offer limits the plan actually caps (Free: one of each revenue feature).
-            'usage' => array_values(array_filter($usage->summary($store), fn ($m) => $m['limit'] !== null && in_array($m['meter'], ['bundles', 'free_gifts', 'cart_upsells', 'preorders'], true))),
-            'cycles' => $store->salesCycles()->latest('starts_at')->limit(6)->get()->map(fn ($c) => [
-                'id' => $c->id, 'starts_at' => $c->starts_at, 'ends_at' => $c->ends_at, 'orders' => (int) $c->orders_count,
-                'sales' => (float) $c->sales_usd, 'plan' => config('shopify.billing.plans.'.$c->plan.'.name', ucfirst((string) $c->plan)),
-                'limit' => $c->sales_limit, 'over' => (bool) $c->over_limit,
-            ]),
+            'plans' => \App\Support\PlanCatalog::cards(),
+            'compare' => \App\Support\PlanCatalog::compare(),
+            'pricingPage' => \App\Support\PricingPage::get(),
+            'from' => $request->query('from'),
+            // Every limit the plan sets, with what's used now (and a warning near the limit).
+            'usage' => array_values(array_filter($usage->summary($store), fn ($m) => $m['limit'] !== null)),
+            'warnAt' => (float) config('shopify.billing.warn_at', 0.8),
             'syncError' => $syncError,
             // Only people who may change the plan get Shopify's plan picker.
             'pricingUrl' => $request->attributes->get('storeUser')?->can('manage_billing') ? $store->pricingUrl() : null,

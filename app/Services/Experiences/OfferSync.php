@@ -122,8 +122,8 @@ class OfferSync
 
         foreach ($experiences as $experience) {
             $live = $experience->status === 'published'
-                && ! $store->offersSuspended()
                 && $experience->publishedVersion !== null
+                && $store->allowsExperience($experience->type, $experience->publishedVersion->config)
                 && Registry::has($experience->type)
                 && ($experience->ends_at === null || $experience->ends_at->isFuture());
             $offers = $live ? self::offersFor($experience, $experience->publishedVersion->config) : [];

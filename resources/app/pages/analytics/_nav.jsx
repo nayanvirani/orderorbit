@@ -1,10 +1,10 @@
-import { ago } from '../../components/ui.jsx';
+import { Upgrade, ago } from '../../components/ui.jsx';
 import { appUrl, route, useUrl, withQuery } from '../../router.jsx';
 
 const RANGES = [[7, 'Last 7 days'], [30, 'Last 30 days'], [90, 'Last 90 days']];
 
 /** Date range (kept when switching reports), data freshness and the plan lock. */
-export default function AnalyticsNav({ days, freshest, docsUrl, locked, error, hideRange, lockedTitle, lockedText }) {
+export default function AnalyticsNav({ days, freshest, docsUrl, locked, lockedFeature, error, hideRange, lockedTitle, lockedText }) {
   const url = useUrl();
   return (
     <>
@@ -18,10 +18,7 @@ export default function AnalyticsNav({ days, freshest, docsUrl, locked, error, h
       </p>
       {error && <s-banner tone="critical">{error}</s-banner>}
       {locked && (
-        <s-banner tone="info" heading={lockedTitle || 'This report is on Growth and Scale'}>
-          <s-paragraph>{lockedText || 'Event Explorer, funnels, revenue attribution and customer journeys come with the Growth and Scale plans. Your store\'s events are already being recorded, so the reports are full from the day you upgrade.'}</s-paragraph>
-          <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'))}>See plans</s-button>
-        </s-banner>
+        <Upgrade feature={lockedFeature || 'advanced_analytics'} heading={lockedTitle}>{lockedText || 'Your store\'s events are already being recorded, so the report is full from the day you upgrade.'}</Upgrade>
       )}
     </>
   );

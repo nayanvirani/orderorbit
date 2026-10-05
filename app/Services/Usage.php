@@ -15,7 +15,7 @@ class Usage
     public const METERS = [
         'active_experiences' => 'Active experiences',
         'bundles' => 'Bundles',
-        'free_gifts' => 'Progressive gift campaigns',
+        'free_gifts' => 'Free-gift campaigns',
         'cart_upsells' => 'Cart upsells',
         'preorders' => 'Pre-orders',
         'shipping_bars' => 'Shipping bars',

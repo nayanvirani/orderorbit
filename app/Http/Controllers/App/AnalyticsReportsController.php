@@ -20,7 +20,7 @@ use App\Support\Spa\Page;
 
 /**
  * Analytics (Phase 8): Event Explorer, Funnels, Revenue & Attribution and Customer Journey.
- * Growth and Scale; other plans see what each report does and how to get it.
+ * plans that include them; other plans see what each report does and how to get it.
  */
 class AnalyticsReportsController extends Controller
 {
@@ -55,7 +55,7 @@ class AnalyticsReportsController extends Controller
 
     public function funnels(Request $request, Store $store): Page
     {
-        return page('analytics/funnels', self::sharedProps($store, $this->range($request)[2]) + self::funnelForm() + [
+        return page('analytics/funnels', self::sharedProps($store, $this->range($request)[2], 'funnels_attribution') + self::funnelForm() + [
             'funnels' => AnalyticsFunnel::where('store_id', $store->id)->orderBy('name')->get()->map(fn ($f) => [
                 'id' => $f->id, 'name' => $f->name, 'window' => Funnels::WINDOWS[$f->within] ?? $f->within,
                 'steps' => collect($f->steps)->map(fn ($s) => Events::label($s['event']))->implode(' → '),
@@ -69,7 +69,7 @@ class AnalyticsReportsController extends Controller
         $funnel = AnalyticsFunnel::where('store_id', $store->id)->findOrFail($funnel);
         [$from, $to, $days] = $this->range($request);
         $compare = in_array($request->query('compare'), ['device', 'source', 'period'], true) ? $request->query('compare') : null;
-        $locked = ! $store->planIncludes('advanced_analytics');
+        $locked = ! $store->planIncludes('funnels_attribution');
         $report = $locked ? null : $funnels->report($store, $funnel->steps, $funnel->within, $from, $to, $compare === 'period' ? null : $compare);
         $previous = ! $locked && $compare === 'period'
             ? $funnels->report($store, $funnel->steps, $funnel->within, $from->copy()->subDays($days), $from)
@@ -79,7 +79,7 @@ class AnalyticsReportsController extends Controller
             $report['steps'] = array_map(fn ($s) => $s + ['median' => Funnels::human($s['median_seconds'] ?? null)], $report['steps']);
         }
 
-        return page('analytics/funnel', self::sharedProps($store, $days) + self::funnelForm() + [
+        return page('analytics/funnel', self::sharedProps($store, $days, 'funnels_attribution') + self::funnelForm() + [
             'funnel' => ['id' => $funnel->id, 'name' => $funnel->name, 'within' => $funnel->within, 'window' => Funnels::WINDOWS[$funnel->within] ?? '', 'steps' => array_values($funnel->steps)],
             'report' => $report, 'previous' => $previous, 'compare' => $compare,
             'compareOptions' => Funnels::COMPARE, 'maxEvents' => Funnels::MAX_EVENTS,
@@ -128,7 +128,7 @@ class AnalyticsReportsController extends Controller
         $model = array_key_exists((string) $request->query('model'), Attribution::MODELS) ? $request->query('model') : 'last';
         $experiences = $store->experiences()->with('publishedVersion')->get()->keyBy('handle');
         $templates = $experiences->map(fn ($e) => $e->publishedVersion?->template_key)->filter()->all();
-        $locked = ! $store->planIncludes('advanced_analytics');
+        $locked = ! $store->planIncludes('funnels_attribution');
 
         $report = $locked ? null : $attribution->report($store, $from, $to, $window, $model, $templates);
         if ($report && $request->query('export') === 'csv') {
@@ -145,7 +145,7 @@ class AnalyticsReportsController extends Controller
             return [$key => Registry::has($e->type) ? (Registry::template($e->type, $key)['name'] ?? $key) : $key];
         });
 
-        return page('analytics/revenue', self::sharedProps($store, $days) + [
+        return page('analytics/revenue', self::sharedProps($store, $days, 'funnels_attribution') + [
             'report' => $report,
             'window' => $window,
             'model' => $model,
@@ -168,7 +168,7 @@ class AnalyticsReportsController extends Controller
     {
         [$from, $to, $days] = $this->range($request);
         $buyers = $request->query('all') !== '1';
-        $locked = ! $store->planIncludes('advanced_analytics');
+        $locked = ! $store->planIncludes('customer_journeys');
 
         $people = $locked ? null : $journeys->list($store, $from, $to, $buyers);
         $people?->setCollection($people->getCollection()->map(fn ($p) => [
@@ -177,16 +177,16 @@ class AnalyticsReportsController extends Controller
             'orders' => (int) $p->orders, 'revenue' => (float) $p->revenue, 'source' => $p->source, 'repeat' => $p->total_orders > 1,
         ]));
 
-        return page('analytics/journeys', self::sharedProps($store, $days) + ['people' => $people, 'buyers' => $buyers]);
+        return page('analytics/journeys', self::sharedProps($store, $days, 'customer_journeys') + ['people' => $people, 'buyers' => $buyers]);
     }
 
     public function journey(Request $request, Store $store, string $visitor, Journeys $journeys): Page
     {
-        abort_unless($store->planIncludes('advanced_analytics'), 404);
+        abort_unless($store->planIncludes('customer_journeys'), 404);
         $journey = $journeys->show($store, $visitor);
         abort_if($journey['sessions'] === [], 404);
 
-        return page('analytics/journey', self::sharedProps($store, 30) + [
+        return page('analytics/journey', self::sharedProps($store, 30, 'customer_journeys') + [
             'visitor' => $visitor,
             'journey' => $journey,
             'pageTypes' => Events::PAGE_TYPES,
@@ -235,12 +235,12 @@ class AnalyticsReportsController extends Controller
     }
 
     /** What every analytics page needs: range, plan lock, data freshness and experience names. */
-    public static function sharedProps(Store $store, int $days): array
+    public static function sharedProps(Store $store, int $days, string $feature = 'advanced_analytics'): array
     {
         $freshest = AnalyticsEvent::where('store_id', $store->id)->max('occurred_at');
 
         return [
-            'days' => $days, 'locked' => ! $store->planIncludes('advanced_analytics'),
+            'days' => $days, 'locked' => ! $store->planIncludes($feature), 'lockedFeature' => $feature,
             'freshest' => $freshest ? Carbon::parse($freshest) : null,
             'docsUrl' => route('site.docs', 'analytics'),
             'experiences' => self::experienceMap($store),

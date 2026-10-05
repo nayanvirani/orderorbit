@@ -30,7 +30,7 @@
 @if ($tab === 'overview')
     <div class="ad-kpis">
         <div><small>Plan</small><b style="font-size:20px">{{ $planKey ? ($plans[$planKey]['name'] ?? $planKey) : 'None' }}</b><span>{{ $store->compPlan() ? 'Complimentary'.(! empty($e['plan_until']) ? ' until '.\Illuminate\Support\Carbon::parse($e['plan_until'])->toFormattedDateString() : '') : ($subscription ? ($subscription->status ?? '').' subscription' : 'No subscription') }}</span></div>
-        <div class="{{ $store->offersSuspended() ? 'alert' : '' }}"><small>Sales this cycle</small><b style="font-size:20px">${{ number_format($sales['sales'] ?? 0) }}</b><span>of {{ $money($sales['limit']) }} · {{ $sales['orders'] ?? 0 }} orders</span></div>
+        <div><small>Features</small><b style="font-size:20px">{{ count(array_filter(array_keys(\App\Support\Modules::ALL), fn ($k) => $store->planIncludes($k))) }} / {{ count(\App\Support\Modules::ALL) }}</b><span>{{ $usageNow->filter(fn ($m) => $m['limit'] !== null && $m['used'] >= $m['limit'])->count() }} limits reached</span></div>
         <div><small>Events · 14 days</small><b style="font-size:20px">{{ number_format($eventsByDay->sum()) }}</b><span>Pixel {{ $store->web_pixel_id ? 'connected' : 'not connected' }}</span></div>
         <div><small>Live experiences</small><b style="font-size:20px">{{ $experiences->where('status', 'published')->sum('n') }}</b><span>{{ $experiences->sum('n') }} in total</span></div>
     </div>
@@ -71,12 +71,9 @@
         <section class="ad-card">
             <header><h2>Support actions</h2><span class="ad-muted">Each one is recorded in the audit log.</span></header>
             <div class="ad-actions">
-                @foreach (['refresh-store' => 'Refresh store details', 'sync-billing' => 'Sync subscription from Shopify', 'recount-sales' => 'Recount sales', 'recheck-placement' => 'Re-check theme placement'] as $action => $label)
+                @foreach (['refresh-store' => 'Refresh store details', 'sync-billing' => 'Sync subscription from Shopify', 'apply-access' => 'Re-apply plan to storefront & checkout', 'recheck-placement' => 'Re-check theme placement'] as $action => $label)
                     <form method="POST" action="{{ route('admin.store.action', ['store' => $store->id, 'action' => $action]) }}">@csrf<button class="ad-btn" type="submit">{{ $label }}</button></form>
                 @endforeach
-                @if ($store->offersSuspended() || $store->over_limit_since)
-                    <form method="POST" action="{{ route('admin.store.action', ['store' => $store->id, 'action' => 'resume-offers']) }}" onsubmit="return confirm('Resume this store\'s offers now?')">@csrf<button class="ad-btn primary" type="submit">Resume offers</button></form>
-                @endif
             </div>
         </section>
     @endif
@@ -115,8 +112,8 @@
 
 @if ($tab === 'access')
     <div class="ad-note">
-        What this store gets: its subscription plan (or a complimentary plan you set here), with modules and limits adjusted below.
-        Changes apply at once: modules switched off disappear from the storefront, and limits lift or start the sales-limit pause.
+        What this store gets: its subscription plan (or a complimentary plan you set here), with features and limits adjusted below.
+        Changes apply at once: features switched off stop on the storefront, at checkout and in Shopify discounts; anything over a lower limit is paused, never deleted.
     </div>
     <form method="POST" action="{{ route('admin.store.access', $store->id) }}" class="ad-form">
         @csrf
@@ -143,13 +140,13 @@
         </section>
 
         <section class="ad-card">
-            <header><h2>Modules</h2><span class="ad-muted">Plan default follows {{ $planKey ? ($plans[$planKey]['name'] ?? $planKey) : 'no plan' }}; On or Off overrides it for this store only.</span></header>
+            <header><h2>Features</h2><span class="ad-muted">Plan default follows {{ $planKey ? ($plans[$planKey]['name'] ?? $planKey) : 'no plan' }}; On or Off overrides it for this store only.</span></header>
             @foreach (\App\Support\Modules::grouped() as $group => $modules)
                 <p class="ad-group-title">{{ $group }}</p>
                 <div class="ad-modules">
-                    @foreach ($modules as $key => [$label, , $help])
+                    @foreach ($modules as $key => [$label, , $help, $parent])
                         @php($state = in_array($key, $e['modules_on'] ?? [], true) ? 'on' : (in_array($key, $e['modules_off'] ?? [], true) ? 'off' : 'default'))
-                        <div class="ad-module">
+                        <div class="ad-module {{ $parent ? 'child' : '' }}">
                             <span><b>{{ $label }}</b><span class="ad-muted">{{ $help }}</span></span>
                             <span>{!! $store->planIncludes($key) ? '<span class="ad-badge ok">Has access</span>' : '<span class="ad-badge">No access</span>' !!}</span>
                             <span class="ad-tri" role="radiogroup" aria-label="{{ $label }}">
@@ -189,22 +186,6 @@
                                 </td>
                             </tr>
                         @endforeach
-                        @php($salesMode = ! array_key_exists('sales_limit', $e) ? 'default' : ($e['sales_limit'] === null ? 'unlimited' : 'value'))
-                        <tr>
-                            <td><b>Monthly store sales (USD)</b><div class="ad-muted">Past this, the store has {{ config('shopify.billing.grace_days') }} days to upgrade before offers stop.</div></td>
-                            <td class="num">${{ number_format($sales['sales'] ?? 0) }}</td>
-                            <td class="num">{{ $money($plans[$planKey]['sales_limit'] ?? null) }}</td>
-                            <td>
-                                <span class="ad-actions">
-                                    <select name="sales_mode">
-                                        <option value="default" @selected($salesMode === 'default')>Plan limit</option>
-                                        <option value="value" @selected($salesMode === 'value')>Custom</option>
-                                        <option value="unlimited" @selected($salesMode === 'unlimited')>Unlimited</option>
-                                    </select>
-                                    <input type="number" name="sales_value" min="0" step="1" style="width:120px" value="{{ $salesMode === 'value' ? $e['sales_limit'] : '' }}" placeholder="Custom">
-                                </span>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>

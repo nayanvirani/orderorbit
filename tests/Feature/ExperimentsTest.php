@@ -118,7 +118,13 @@ class ExperimentsTest extends TestCase
         $experiment = app(ExperimentManager::class)->create($this->store, $countdown, null);
         app(ExperimentManager::class)->save($experiment, $this->setupInput($experiment, ['variants' => ['B' => ['hidden' => '1']]]));
         $this->assertTrue($experiment->fresh()->variants->firstWhere('key', 'B')->hidden);
-        $this->assertContains('A/B tests run on the Growth and Scale plans. Upgrade to launch.', app(ExperimentManager::class)->launchProblems($experiment->fresh()));
+        $this->assertContains('A/B testing isn\'t included in your plan. Upgrade to launch.', app(ExperimentManager::class)->launchProblems($experiment->fresh()));
+
+        // Growth runs A/B tests, but audience targeting is Advanced experimentation (Scale).
+        $this->store->forceFill(['plan' => 'growth'])->save();
+        $experiment->forceFill(['audience' => ['segments' => [1]]])->save();
+        $this->assertContains('Testing a chosen audience is Advanced experimentation, which isn\'t in your plan. Remove the segments or upgrade.', app(ExperimentManager::class)->launchProblems($experiment->fresh()));
+        $this->assertNotContains('A/B testing isn\'t included in your plan. Upgrade to launch.', app(ExperimentManager::class)->launchProblems($experiment->fresh()));
     }
 
     /** Exposures and orders for one variant: $visitors exposed, $buyers of them ordering $value each. */

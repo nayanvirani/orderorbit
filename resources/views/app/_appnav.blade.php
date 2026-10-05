@@ -1,7 +1,7 @@
 {{-- Shopify's app menu (one level; each section has its own sidebar). Without a plan, only Billing. --}}
-@if (! request()->attributes->get('store')?->hasPlanAccess() || request()->attributes->get('store')?->offersSuspended())
+@if (! request()->attributes->get('store')?->hasPlanAccess())
 <s-app-nav>
-    <s-link href="{{ app_route('app.settings.billing') }}" rel="home">{{ request()->attributes->get('store')?->offersSuspended() ? 'Upgrade plan' : 'Choose a plan' }}</s-link>
+    <s-link href="{{ app_route('app.settings.billing') }}" rel="home">Choose a plan</s-link>
 </s-app-nav>
 @else
 <s-app-nav>

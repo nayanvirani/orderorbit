@@ -49,7 +49,7 @@ class Engine
     public function start(Store $store, Workflow $workflow, array $context, string $key, int $depth = 0, bool $test = false): ?WorkflowRun
     {
         if (! $test) {
-            if (! $this->available($store) || ! $this->usage->allows($store, 'automation_executions')) {
+            if ($this->blocked($store, $workflow->publishedVersion?->program ?? []) !== null || ! $this->usage->allows($store, 'automation_executions')) {
                 return null;
             }
         }
@@ -103,6 +103,14 @@ class Engine
     {
         $program = $run->version->program;
         $results = $run->results ?? [];
+
+        // The plan may have changed while the run was waiting: stop rather than run what it no longer includes.
+        if (! $run->test && ($why = $this->blocked($run->store, $program)) !== null) {
+            $run->forceFill(['status' => 'skipped', 'finished_at' => now(), 'resume_at' => null])->save();
+            $this->log($run, $run->step, 'end', 'skipped', $why);
+
+            return $run;
+        }
 
         for ($guard = 0; $guard < 500 && $run->step < count($program); $guard++) {
             $i = $run->step;
@@ -178,7 +186,27 @@ class Engine
     /** Whether the store's plan runs automation right now. */
     public function available(Store $store): bool
     {
-        return $store->hasPlanAccess() && $store->planIncludes('automation') && ! $store->offersSuspended();
+        return $store->hasPlanAccess() && $store->planIncludes('automation');
+    }
+
+    /**
+     * Why the store's plan can't run this workflow program (branching or webhook steps it
+     * doesn't include), or null when it can.
+     */
+    public function blocked(Store $store, array $program): ?string
+    {
+        if (! $this->available($store)) {
+            return 'Automation isn\'t on this store\'s plan.';
+        }
+        $uses = collect($program);
+        if ($uses->contains(fn ($n) => ($n['t'] ?? null) === 'cond') && ! $store->planIncludes('automation_branching')) {
+            return 'This workflow uses if / else branching, which isn\'t on this store\'s plan.';
+        }
+        if ($uses->contains(fn ($n) => ($n['action'] ?? null) === 'webhook') && ! $store->planIncludes('automation_webhooks')) {
+            return 'This workflow calls a webhook, which isn\'t on this store\'s plan.';
+        }
+
+        return null;
     }
 
     private function matches(array $definition, array $context, array $facts): bool

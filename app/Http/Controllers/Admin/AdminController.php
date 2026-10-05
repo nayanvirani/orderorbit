@@ -47,8 +47,8 @@ class AdminController extends Controller
                 'mrr' => $paying->sum(fn ($s) => (float) ($plans[$s->plan]['price'] ?? 0)),
                 'paying' => $paying->count(),
                 'custom' => $installed->filter(fn ($s) => ! empty($s->entitlements))->count(),
-                'over_limit' => $installed->filter(fn ($s) => $s->over_limit_since !== null)->count(),
-                'suspended' => $installed->filter(fn ($s) => $s->offersSuspended())->count(),
+                'upgrade_clicks_30d' => \App\Models\UpgradeEvent::where('created_at', '>=', now()->subDays(30))->count(),
+                'upgrades_30d' => \App\Models\UpgradeEvent::where('converted_at', '>=', now()->subDays(30))->count(),
                 'events_24h' => AnalyticsEvent::where('occurred_at', '>=', now()->subDay())->count(),
                 'failed_runs_24h' => WorkflowRun::where('status', 'failed')->where('test', false)->where('updated_at', '>=', now()->subDay())->count(),
                 'open_tickets' => Ticket::whereIn('status', ['open'])->count(),
@@ -70,7 +70,6 @@ class AdminController extends Controller
             ->when($request->query('status') === 'installed', fn ($q) => $q->whereNotNull('installed_at')->whereNull('uninstalled_at'))
             ->when($request->query('status') === 'uninstalled', fn ($q) => $q->whereNotNull('uninstalled_at'))
             ->when($request->query('status') === 'custom', fn ($q) => $q->whereNotNull('entitlements'))
-            ->when($request->query('status') === 'suspended', fn ($q) => $q->whereNotNull('offers_suspended_at'))
             ->when($request->query('plan'), fn ($q, $plan) => $plan === 'none' ? $q->whereNull('plan') : $q->where('plan', $plan))
             ->latest('installed_at')->paginate(50)->withQueryString();
         $ids = $stores->pluck('id');
@@ -96,7 +95,6 @@ class AdminController extends Controller
             'users' => $store->users()->orderBy('role')->get(),
             'subscription' => \App\Models\Subscription::where('store_id', $store->id)->latest('id')->first(),
             'usage' => \App\Models\UsageRecord::where('store_id', $store->id)->latest('id')->limit(20)->get(),
-            'sales' => app(\App\Services\Billing\SalesMeter::class)->status($store),
             'experiences' => $store->experiences()->selectRaw('type, status, count(*) as n')->groupBy('type', 'status')->get(),
             'eventsByDay' => AnalyticsEvent::where('store_id', $store->id)->where('occurred_at', '>=', now()->subDays(14))->selectRaw('date(occurred_at) as day, count(*) as n')->groupBy('day')->orderBy('day')->pluck('n', 'day'),
             'failedRuns' => WorkflowRun::with('workflow')->where('store_id', $store->id)->where('status', 'failed')->latest('id')->limit(10)->get(),

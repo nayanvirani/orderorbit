@@ -19,30 +19,37 @@ class UsageTest extends TestCase
 
         $this->assertFalse($usage->allows($store, 'bundles'), 'No plan means nothing can be added.');
 
-        // Free caps the revenue features at one live offer each; paid plans are unlimited.
+        // "MVP Pricing & Plan Accessibility (2026)": limits per plan (null = unlimited).
         $usage->register('bundles', fn () => 1);
         $store->plan = 'free';
         $this->assertFalse($usage->allows($store, 'bundles'), 'Free includes one live bundle.');
-        $this->assertTrue($usage->allows($store, 'active_experiences'), 'Countdowns, trust and the rest are not capped.');
-        $this->assertSame([1, 1, 1, 1], array_map(fn ($m) => $store->planLimit($m), ['bundles', 'free_gifts', 'cart_upsells', 'preorders']));
-        foreach (['starter', 'growth', 'scale'] as $plan) {
-            $store->plan = $plan;
-            $this->assertTrue($usage->allows($store, 'bundles'), "{$plan} has unlimited bundles.");
-        }
-        $this->assertSame([1000.0, 8000.0, 20000.0, null], array_map(fn ($plan) => tap($store, fn ($s) => $s->plan = $plan)->salesLimit(), ['free', 'starter', 'growth', 'scale']));
+        $limits = fn (string $plan) => array_map(fn ($m) => tap($store, fn ($s) => $s->plan = $plan)->planLimit($m), ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars', 'workflows', 'automation_executions']);
+        $this->assertSame([1, 1, 1, 1, 1, 30], $limits('free'));
+        $this->assertSame([5, 2, 2, 2, 5, 200], $limits('starter'));
+        $this->assertSame([null, null, null, null, null, 3000], $limits('growth'));
+        $this->assertSame([null, null, null, null, null, 10000], $limits('scale'));
+        $store->plan = 'starter';
+        $this->assertTrue($usage->allows($store, 'bundles'), 'Starter has two bundles.');
 
-        // Higher plans unlock more.
+        // Features per plan.
         $includes = fn (string $plan, string $feature) => tap($store, fn ($s) => $s->plan = $plan)->planIncludes($feature);
-        $this->assertFalse($includes('free', 'offer_analytics'));
-        $this->assertTrue($includes('starter', 'offer_analytics'));
-        $this->assertFalse($includes('starter', 'checkout'));
-        $this->assertTrue($includes('growth', 'checkout') && $includes('growth', 'customer_accounts') && $includes('growth', 'ab_testing'));
-        $this->assertFalse($includes('growth', 'automation'));
-        $this->assertTrue($includes('scale', 'automation') && $includes('scale', 'personalization'));
+        $this->assertTrue($includes('free', 'countdown') && $includes('free', 'sticky_atc') && $includes('free', 'trust') && $includes('free', 'offer_analytics') && $includes('free', 'automation'));
+        $this->assertFalse($includes('free', 'quantity_breaks') || $includes('free', 'cart_upsells') || $includes('free', 'product_upsells'));
+        $this->assertTrue($includes('starter', 'quantity_breaks') && $includes('starter', 'cart_upsells') && $includes('starter', 'product_upsells'));
+        $this->assertFalse($includes('starter', 'ab_testing') || $includes('starter', 'checkout') || $includes('starter', 'automation_branching'));
+        foreach (['checkout', 'thank_you', 'funnels_attribution', 'customer_journeys', 'automation_branching', 'automation_webhooks', 'ab_testing', 'ab_traffic_guardrails', 'personalization'] as $feature) {
+            $this->assertTrue($includes('growth', $feature), "Growth includes {$feature}.");
+        }
+        $this->assertFalse($includes('growth', 'customer_accounts') || $includes('growth', 'personalization_advanced') || $includes('growth', 'ab_testing_advanced'));
+        $this->assertTrue($includes('scale', 'customer_accounts') && $includes('scale', 'personalization_advanced') && $includes('scale', 'ab_testing_advanced'));
+
+        // A child feature needs its parent: Quantity breaks without Bundles is off.
+        $store->entitlements = ['modules_off' => ['bundles']];
+        $this->assertFalse($includes('scale', 'quantity_breaks'));
+        $store->entitlements = null;
 
         $store->plan = 'growth';
-
-        $usage->increment($store, 'automation_executions', 10000);
+        $usage->increment($store, 'automation_executions', 3000);
         $this->assertFalse($usage->allows($store, 'automation_executions'));
     }
 

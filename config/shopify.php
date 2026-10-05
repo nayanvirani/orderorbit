@@ -1,18 +1,17 @@
 <?php
 
-// Storefront modules every plan includes by default (the Internal Admin can change this).
-$storefront = ['bundles', 'progressive_gifts', 'cart_upsells', 'countdown', 'sticky_atc', 'preorder', 'sales_pop', 'trust'];
+// Plan defaults from "MVP Pricing & Plan Accessibility (2026)". Only defaults: the live plans,
+// features and limits are in the plans table and edited in the super admin.
+$free = ['bundles', 'progressive_gifts', 'countdown', 'sticky_atc', 'trust', 'preorder', 'sales_pop', 'offer_analytics', 'automation'];
+$starter = [...$free, 'quantity_breaks', 'product_upsells', 'cart_upsells'];
+$growth = [...$starter, 'checkout', 'thank_you', 'post_purchase', 'advanced_analytics', 'funnels_attribution', 'customer_journeys',
+    'automation_branching', 'automation_webhooks', 'ab_testing', 'ab_traffic_guardrails', 'personalization', 'priority_support'];
+$scale = [...$growth, 'customer_accounts', 'ab_testing_advanced', 'personalization_advanced'];
 
-// Live-offer limits per plan (null = unlimited). Only Free caps the revenue features at one each.
-$limits = fn (array $caps, int $automationRuns) => $caps + [
-    'active_experiences' => null,
-    'bundles' => null,
-    'free_gifts' => null,
-    'cart_upsells' => null,
-    'preorders' => null,
-    'shipping_bars' => null,
-    'workflows' => null,
-    'automation_executions' => $automationRuns,
+// Usage limits per plan (null = unlimited).
+$limits = fn (array $caps) => $caps + [
+    'active_experiences' => null, 'bundles' => null, 'free_gifts' => null, 'shipping_bars' => null,
+    'cart_upsells' => null, 'preorders' => null, 'workflows' => null, 'automation_executions' => null,
 ];
 
 return [
@@ -72,66 +71,38 @@ return [
     'billing' => [
         'currency' => 'USD',
 
-        // Every plan has every feature. Plans differ by the store's total sales in its current
-        // 30-day cycle (USD, all orders except test and cancelled ones; cycles run from the first
-        // install). "sales_limit" null = unlimited. Past the limit the merchant has "grace_days"
-        // to upgrade before every feature stops; a stopped store stays stopped until it upgrades.
-        'grace_days' => 3,
-
-        // Test orders (every order on a development store) never count toward the limit, except
-        // for the shops listed here: our own stores, so the limit flow can be tried end to end.
-        'count_test_orders_for' => array_values(array_filter(array_map('trim', explode(',', (string) env('ORDERORBIT_COUNT_TEST_ORDERS_FOR', ''))))),
+        // Merchants see a warning when any usage limit reaches this share.
         'warn_at' => 0.8,
 
-        // Defaults only: the live plans are in the plans table, edited in the Internal Admin.
-        // "includes" lists the plan's modules (App\Support\Modules).
         'plans' => [
             'free' => [
-                'name' => 'Free',
-                'shopify_name' => env('SHOPIFY_PLAN_NAME_FREE', 'Free'),
-                'price' => 0,
-                'sales_limit' => 1000,
-                'includes' => $storefront,
-                'features' => ['Up to $1,000 in monthly store sales', 'Countdown, sticky add to cart, trust badges and sales pop', '1 bundle, 1 gift campaign, 1 cart upsell and 1 pre-order', 'Every template', 'Store analytics'],
-                'limits' => $limits(['bundles' => 1, 'free_gifts' => 1, 'cart_upsells' => 1, 'preorders' => 1], 1000),
+                'name' => 'Free', 'shopify_name' => env('SHOPIFY_PLAN_NAME_FREE', 'Free'), 'price' => 0,
+                'description' => 'New and testing stores', 'support' => 'Community / standard',
+                'includes' => $free,
+                'features' => ['1 active experience', '1 bundle, 1 free-gift campaign and 1 shipping bar', 'Countdown, sticky add to cart and trust badges', '1 automation workflow, 30 runs a month', 'Basic analytics'],
+                'limits' => $limits(['active_experiences' => 1, 'bundles' => 1, 'free_gifts' => 1, 'shipping_bars' => 1, 'cart_upsells' => 0, 'preorders' => 1, 'workflows' => 1, 'automation_executions' => 30]),
             ],
             'starter' => [
-                'name' => 'Starter',
-                'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
-                'price' => 14.99,
-                'sales_limit' => 8000,
-                'includes' => [...$storefront, 'offer_analytics'],
-                'features' => ['Up to $8,000 in monthly store sales', 'Everything in Free', 'Unlimited bundles, gifts, upsells and pre-orders', 'Analytics with revenue per offer'],
-                'limits' => $limits([], 10000),
+                'name' => 'Starter', 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'), 'price' => 14.99,
+                'description' => 'Growing stores', 'support' => 'Standard',
+                'includes' => $starter,
+                'features' => ['5 active experiences', '2 bundles, 2 free-gift campaigns and 2 shipping bars', 'Quantity breaks, product and cart upsells', '5 workflows, 200 runs a month', 'Basic analytics'],
+                'limits' => $limits(['active_experiences' => 5, 'bundles' => 2, 'free_gifts' => 2, 'shipping_bars' => 2, 'preorders' => 2, 'workflows' => 5, 'automation_executions' => 200]),
             ],
             'growth' => [
-                'name' => 'Growth',
-                'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
-                'price' => 29.99,
-                'sales_limit' => 20000,
-                'includes' => [...$storefront, 'offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
-                'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout, Thank You and Order Status blocks', 'Funnels, attribution, event explorer and customer journeys', 'Customer account blocks', 'A/B and A/B/C testing'],
-                'limits' => $limits([], 10000),
+                'name' => 'Growth', 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'), 'price' => 39.99,
+                'description' => 'Serious growth stores', 'support' => 'Priority', 'badge' => 'Most Popular',
+                'includes' => $growth,
+                'features' => ['Unlimited experiences, bundles, gifts and upsells', 'Unlimited workflows, 3,000 runs a month, branching and webhooks', 'Funnels, attribution and customer journeys', 'Checkout, Thank You and Order Status blocks', 'A/B and A/B/C testing with guardrails', 'Basic personalization rules'],
+                'limits' => $limits(['automation_executions' => 3000]),
             ],
             'scale' => [
-                'name' => 'Scale',
-                'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'),
-                'price' => 59.99,
-                'sales_limit' => null,
-                'includes' => [...$storefront, 'offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
-                'features' => ['Unlimited store sales', 'Everything in Growth', 'Lifecycle automation workflows', 'Audiences and personalization', 'Priority support'],
-                'limits' => $limits([], 50000),
+                'name' => 'Scale', 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'), 'price' => 79.99,
+                'description' => 'Advanced and high-growth stores', 'support' => 'Priority / enhanced',
+                'includes' => $scale,
+                'features' => ['Everything in Growth', '10,000 automation runs a month', 'Advanced personalization (VIP, device, cart value, lifecycle)', 'Customer account blocks', 'Advanced experimentation', 'Priority / enhanced support'],
+                'limits' => $limits(['automation_executions' => 10000]),
             ],
-        ],
-
-        // Approximate USD value of one unit of each currency, used when live rates can't be
-        // fetched. Currencies not listed count 1:1.
-        'usd_rates' => [
-            'USD' => 1, 'EUR' => 1.08, 'GBP' => 1.27, 'CAD' => 0.73, 'AUD' => 0.66, 'NZD' => 0.60, 'INR' => 0.012,
-            'JPY' => 0.0067, 'CHF' => 1.13, 'SEK' => 0.095, 'NOK' => 0.093, 'DKK' => 0.145, 'SGD' => 0.75,
-            'HKD' => 0.128, 'AED' => 0.272, 'SAR' => 0.267, 'ZAR' => 0.055, 'BRL' => 0.18, 'MXN' => 0.055,
-            'PLN' => 0.25, 'CZK' => 0.043, 'ILS' => 0.27, 'MYR' => 0.22, 'THB' => 0.028, 'PHP' => 0.017,
-            'IDR' => 0.000062, 'KRW' => 0.00073, 'CNY' => 0.14, 'TRY' => 0.029, 'HUF' => 0.0028, 'RON' => 0.22,
         ],
     ],
 

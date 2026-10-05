@@ -162,7 +162,7 @@ export default function ExperimentSetup(props) {
             <SchemaField key={key} name={key} field={field} currency={currency} segments={segments} error={err(`audience.${key}`)}
               value={form.audience[key] ?? field.default ?? null} onChange={(val) => set('audience', { ...form.audience, [key]: val })} />
           ))}
-          <p className="oo-muted oo-small">{checkoutBlock ? 'Checkout and Thank You pages only know the cart value and the buyer\'s country.' : 'Segments come from Audiences (Scale plan).'}</p>
+          <p className="oo-muted oo-small">{checkoutBlock ? 'Checkout and Thank You pages only know the cart value and the buyer\'s country.' : 'Segments come from Audiences. Testing a chosen audience is part of Advanced experimentation.'}</p>
         </s-section>
 
         <s-section heading="5. Primary metric" id="step-primary">

@@ -62,6 +62,10 @@ class WorkflowManager
         if ($errors) {
             throw new RuntimeException('Fix the highlighted steps before publishing.');
         }
+        if ($why = $this->engine->blocked($workflow->store, Definition::compile($definition['steps']))) {
+            throw new RuntimeException($why.' Upgrade your plan to publish it.');
+        }
+        $this->assertWithinLimit($workflow);
 
         return DB::transaction(function () use ($workflow, $definition, $user) {
             $version = WorkflowVersion::create([
@@ -88,6 +92,12 @@ class WorkflowManager
     {
         if ($enabled && ! $workflow->published_version_id) {
             throw new RuntimeException('Publish the workflow first.');
+        }
+        if ($enabled) {
+            if ($why = $this->engine->blocked($workflow->store, $workflow->publishedVersion?->program ?? [])) {
+                throw new RuntimeException($why.' Upgrade your plan to switch it on.');
+            }
+            $this->assertWithinLimit($workflow);
         }
         $workflow->forceFill(['status' => $enabled ? 'enabled' : 'disabled'])->save();
         AuditLog::record($enabled ? 'workflow.enabled' : 'workflow.disabled', $workflow->store, [], $workflow);
@@ -120,5 +130,15 @@ class WorkflowManager
     public function restore(Workflow $workflow, WorkflowVersion $version): void
     {
         $workflow->forceFill(['draft' => $version->definition, 'trigger' => $version->definition['trigger'], 'has_unpublished_changes' => true])->save();
+    }
+
+    /** A workflow that isn't on yet needs room under the plan's workflow limit. */
+    private function assertWithinLimit(Workflow $workflow): void
+    {
+        if ($workflow->status !== 'enabled' && ! app(\App\Services\Usage::class)->allows($workflow->store, 'workflows')) {
+            $limit = (int) $workflow->store->planLimit('workflows');
+
+            throw new RuntimeException("Your plan includes {$limit} active ".\Illuminate\Support\Str::plural('workflow', $limit).'. Switch one off or upgrade for more.');
+        }
     }
 }

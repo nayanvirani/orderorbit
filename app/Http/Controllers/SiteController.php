@@ -108,7 +108,10 @@ class SiteController extends Controller
 
     public function pricing(): View
     {
-        return view('site.pricing', ['plans' => \App\Support\Plans::public(), 'pricing' => Content::pricing()]);
+        return view('site.pricing', [
+            'plans' => \App\Support\Plans::public(), 'compare' => \App\Support\PlanCatalog::compare(),
+            'page' => \App\Support\PricingPage::get(), 'pricing' => Content::pricing(),
+        ]);
     }
 
     public function resources(): View

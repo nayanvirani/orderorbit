@@ -221,7 +221,7 @@ class AutomationTest extends TestCase
 
     public function test_test_runs_change_nothing_and_plan_gates_publishing(): void
     {
-        $store = $this->store('growth');
+        $store = $this->store('starter');
         $owner = $this->member($store, 'owner');
         $manager = app(WorkflowManager::class);
         $workflow = $manager->create($store, 'vip-customer', null);
@@ -234,9 +234,9 @@ class AutomationTest extends TestCase
         $this->assertSame(0, InboxItem::count() + AutomationEmail::count());
         $this->assertStringStartsWith('Would ', $run->logs()->where('kind', 'add_customer_tag')->value('message') ?? 'Would (condition not met)');
 
-        // Growth can build and test, but workflows only run on Scale.
+        // Starter can build and test it, but if / else branching needs a higher plan to run.
         $this->send('/app/automation/workflows/'.$workflow->id, ['name' => 'VIP', 'action' => 'publish', 'definition' => $workflow->draft], $owner)
-            ->assertOk()->assertJsonPath('component', 'automation/editor')->assertJsonPath('props.banner', 'Draft saved. Workflows run on the Scale plan: upgrade to publish.');
+            ->assertOk()->assertJsonPath('component', 'automation/editor')->assertJsonPath('props.banner', 'This workflow uses if / else branching, which isn\'t on this store\'s plan. Upgrade your plan to publish it.');
         $this->assertNull($workflow->fresh()->published_version_id);
         $this->assertSame(0, app(Engine::class)->trigger($store, 'order_paid', Context::fromOrder($this->order()), 'x'));
     }

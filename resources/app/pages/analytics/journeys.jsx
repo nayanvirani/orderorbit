@@ -7,7 +7,7 @@ export default function Journeys(props) {
   const url = useUrl();
   return (
     <Page heading="Customer journeys" back={route('app.analytics', { days })} backLabel="Analytics">
-      <AnalyticsNav {...props} lockedTitle="Customer journeys are on Growth and Scale" />
+      <AnalyticsNav {...props} />
       {people && (
         <s-section>
           <nav className="bx-tabs" aria-label="Shoppers">

@@ -20,7 +20,7 @@ export default function FunnelReport(props) {
 
   return (
     <Page heading={funnel.name} back={route('app.analytics.funnels', { days })} backLabel="Funnels">
-      <AnalyticsNav {...props} lockedTitle="Funnels are on Growth and Scale" />
+      <AnalyticsNav {...props} />
 
       {report && (
         <>

@@ -57,7 +57,7 @@ class AdminPlansAndAccessTest extends TestCase
         $admin = $this->admin();
         $plan = Plan::where('key', 'starter')->sole();
         $this->actingAs($admin)->post("/admin/plans/{$plan->id}", [
-            'name' => 'Starter', 'shopify_name' => 'Starter', 'price' => '19.99', 'sales_limit' => '9000', 'trial_days' => 7,
+            'name' => 'Starter', 'shopify_name' => 'Starter', 'price' => '19.99', 'badge' => 'Best value', 'support_label' => 'Standard', 'trial_days' => 7,
             'modules' => ['bundles', 'offer_analytics', 'ab_testing'], 'limits' => ['bundles' => '3'], 'features' => "Line one\nLine two",
             'is_active' => '1', 'is_public' => '1',
         ])->assertRedirect('/admin/plans');
@@ -69,8 +69,8 @@ class AdminPlansAndAccessTest extends TestCase
         $this->assertTrue($store->planIncludes('ab_testing'));
         $this->assertFalse($store->planIncludes('countdown'), 'Unticked storefront modules are off.');
         $this->assertSame(3, $store->planLimit('bundles'));
-        $this->assertSame(9000.0, $store->salesLimit());
-        $this->get('/pricing')->assertOk();
+        $this->assertSame(['Best value', 'Standard'], [config('shopify.billing.plans.starter.badge'), config('shopify.billing.plans.starter.support')]);
+        $this->get('/pricing')->assertOk()->assertSee('$19.99')->assertSee('Best value');
 
         // The module grid: switch countdown on for Starter, A/B testing off.
         $grid = Plan::all()->mapWithKeys(fn ($p) => [$p->key => array_fill_keys($p->modules, '1')])->all();
@@ -84,6 +84,18 @@ class AdminPlansAndAccessTest extends TestCase
         $this->actingAs($admin)->post('/admin/plans', ['key' => 'agency', 'name' => 'Agency', 'shopify_name' => 'Agency', 'price' => 199, 'modules' => ['automation'], 'is_active' => '1'])->assertRedirect('/admin/plans');
         $this->assertSame('Agency', config('shopify.billing.plans.agency.name'));
         $this->assertArrayNotHasKey('agency', \App\Support\Plans::public());
+
+        // Limits in the same grid (empty = unlimited).
+        $limits = ['starter' => ['bundles' => '7', 'workflows' => '']];
+        $this->actingAs($admin)->post('/admin/plans/modules', ['grid' => $grid, 'limits' => $limits])->assertRedirect('/admin/plans');
+        $this->assertSame([7, null], [Plan::where('key', 'starter')->value('limits')['bundles'], Plan::where('key', 'starter')->value('limits')['workflows']]);
+        $this->assertSame(7, $store->fresh()->planLimit('bundles'));
+
+        // Feature names and pricing-page visibility, and the pricing page's own text.
+        $this->actingAs($admin)->post('/admin/plans/catalog', ['catalog' => ['countdown' => ['label' => 'Urgency timers', 'public' => '1'], 'trust' => ['label' => 'Trust & social proof']]])->assertRedirect('/admin/plans');
+        $this->actingAs($admin)->post('/admin/plans/pricing-page', ['headline' => 'Simple plans for every store', 'lead' => 'Start free.', 'billing_note' => 'Billed through Shopify.', 'compare_title' => 'Side by side'])->assertRedirect('/admin/plans');
+        $this->get('/pricing')->assertSee('Simple plans for every store')->assertSee('Side by side')->assertSee('Urgency timers')->assertDontSee('Trust &amp; social proof', false);
+        $this->actingAs($admin)->get('/admin/plans')->assertOk()->assertSee('Urgency timers');
     }
 
     public function test_store_access_overrides_plan_modules_and_limits(): void
@@ -96,14 +108,13 @@ class AdminPlansAndAccessTest extends TestCase
         $this->actingAs($admin)->post("/admin/stores/{$store->id}/access", [
             'plan' => 'scale', 'plan_until' => now()->addMonth()->toDateString(),
             'modules' => ['bundles' => 'off', 'ab_testing' => 'default'],
-            'limits' => ['active_experiences' => ['mode' => 'value', 'value' => 2]], 'sales_mode' => 'unlimited', 'note' => 'Launch partner',
+            'limits' => ['active_experiences' => ['mode' => 'value', 'value' => 2]], 'note' => 'Launch partner',
         ])->assertRedirect();
         $store->refresh();
         $this->assertSame('scale', $store->effectivePlan());
         $this->assertFalse($store->planIncludes('bundles'));
         $this->assertTrue($store->planIncludes('automation'));
         $this->assertSame(2, $store->planLimit('active_experiences'));
-        $this->assertNull($store->salesLimit());
 
         $manager = app(ExperienceManager::class);
         $bundle = $manager->create($store, 'bundles', 'qb-classic', null);
@@ -142,9 +153,8 @@ class AdminPlansAndAccessTest extends TestCase
     {
         $admin = $this->admin();
         $this->actingAs($admin)->post('/admin/settings', [
-            'grace_days' => 5, 'warn_at' => 90, 'test_shops' => "qa.myshopify.com\nnot a domain", 'test_shop_plan' => 'growth', 'count_test_orders_for' => '',
+            'warn_at' => 90, 'test_shops' => "qa.myshopify.com\nnot a domain", 'test_shop_plan' => 'growth',
         ])->assertRedirect();
-        $this->assertSame(5, config('shopify.billing.grace_days'));
         $this->assertSame(0.9, config('shopify.billing.warn_at'));
         $this->assertSame(['qa.myshopify.com'], config('shopify.test_shops'));
         $this->assertSame('growth', $this->installedStore(['shop_domain' => 'qa.myshopify.com', 'plan' => null])->effectivePlan());

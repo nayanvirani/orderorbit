@@ -30,7 +30,7 @@ export default function Revenue(props) {
 
   return (
     <Page heading="Revenue & attribution" back={route('app.analytics', { days })} backLabel="Analytics">
-      <AnalyticsNav {...props} lockedTitle="Revenue attribution is on Growth and Scale" />
+      <AnalyticsNav {...props} />
       {r && (
         <>
           <div className="an-controls">

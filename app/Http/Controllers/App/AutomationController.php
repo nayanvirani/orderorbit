@@ -82,7 +82,7 @@ class AutomationController extends Controller
         try {
             if ($action === 'publish') {
                 if (! $store->planIncludes('automation')) {
-                    return $this->editor($store, $workflow->fresh(), [], 'Draft saved. Workflows run on the Scale plan: upgrade to publish.');
+                    return $this->editor($store, $workflow->fresh(), [], 'Draft saved. Automation isn\'t on your plan: upgrade to publish.');
                 }
                 $version = $this->workflows->publish($workflow->fresh(), $this->user($request));
 

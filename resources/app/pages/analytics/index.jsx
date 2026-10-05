@@ -1,5 +1,5 @@
 import { ActionButton } from '../../components/form.jsx';
-import { date, Hero, Kpi, money, number, Page, plural } from '../../components/ui.jsx';
+import { Hero, Kpi, Page, Upgrade, date, money, number, plural } from '../../components/ui.jsx';
 import { appUrl, route } from '../../router.jsx';
 import AnalyticsNav from './_nav.jsx';
 
@@ -53,10 +53,7 @@ export default function AnalyticsOverview(props) {
 
       <s-section heading="By offer">
         {!offerAnalytics ? (
-          <s-banner tone="info" heading="Revenue per offer is on Starter and above">
-            <s-paragraph>Your plan shows store totals. Upgrade to see views, adds to cart, orders and revenue for each bundle, gift and upsell.</s-paragraph>
-            <s-button slot="secondary-actions" href={appUrl(route('app.settings.billing'))}>See plans</s-button>
-          </s-banner>
+          <Upgrade feature="offer_analytics">Your plan shows store totals. Upgrade to see views, adds to cart, orders and revenue for each bundle, gift and upsell.</Upgrade>
         ) : !offers.length ? (
           <s-paragraph><span className="oo-muted">Views, adds to cart and revenue for each bundle, gift and upsell appear here.</span></s-paragraph>
         ) : (

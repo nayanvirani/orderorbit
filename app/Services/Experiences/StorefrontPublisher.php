@@ -106,14 +106,14 @@ class StorefrontPublisher
 
         return Experience::with('publishedVersion')
             ->where('store_id', $store->id)
-            // Over the plan's sales limit past the grace period: nothing shows until the plan fits again.
-            ->when($store->offersSuspended(), fn ($q) => $q->whereRaw('1 = 0'))
+            // No plan: nothing shows.
+            ->when(! $store->hasPlanAccess(), fn ($q) => $q->whereRaw('1 = 0'))
             ->where('status', 'published')
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->get()
             ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
-            // A module removed from the plan (or from this store) stops showing at once.
-            ->filter(fn (Experience $e) => ! ($module = \App\Support\Modules::forType($e->type)) || $store->planIncludes($module))
+            // A feature removed from the plan (or from this store) stops showing at once.
+            ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion->config))
             ->map(function (Experience $e) use ($store, $tests) {
                 $config = $e->publishedVersion->config;
                 if ($e->type === 'bundles') {
@@ -146,7 +146,7 @@ class StorefrontPublisher
                     'behavior' => $config['behavior'] ?? [],
                     'targeting' => $config['targeting'] ?? [],
                     'analytics' => $config['analytics'] ?? [],
-                ] + (isset($tests[$e->id]) ? ['x' => $this->experiment($e, $tests[$e->id])] : []);
+                ] + (isset($tests[$e->id]) && $store->planIncludes('ab_testing') ? ['x' => $this->experiment($e, $tests[$e->id], $store)] : []);
             })
             ->sortByDesc('priority')
             ->values()
@@ -210,14 +210,24 @@ class StorefrontPublisher
     }
 
     /** A running test in the storefront payload: its audience and each variant's changes. */
-    private function experiment(Experience $experience, Experiment $test): array
+    private function experiment(Experience $experience, Experiment $test, Store $store): array
     {
+        // Audience-targeted tests are Advanced experimentation; without it the test runs for everyone.
+        $audience = $test->audience ?? [];
+        if (! $store->planIncludes('ab_testing_advanced')) {
+            unset($audience['segments']);
+        }
+
+        // Uneven splits are Traffic allocation & guardrails; without it every variant gets an equal share.
+        $even = ! $store->planIncludes('ab_traffic_guardrails');
+        $count = max(1, $test->variants->count());
+
         return [
             'id' => $test->handle,
-            'audience' => (object) ($test->audience ?? []),
-            'variants' => $test->variants->map(fn ($v) => array_filter([
+            'audience' => (object) $audience,
+            'variants' => $test->variants->values()->map(fn ($v, $i) => array_filter([
                 'key' => $v->key,
-                'alloc' => $v->allocation,
+                'alloc' => $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation,
                 'hidden' => $v->hidden ?: null,
                 'template' => $v->key !== 'A' ? $v->template_key : null,
                 'style' => $v->key !== 'A' && $v->template_key ? (Registry::template($experience->type, $v->template_key)['style'] ?? null) : null,

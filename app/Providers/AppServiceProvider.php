@@ -54,11 +54,15 @@ class AppServiceProvider extends ServiceProvider
     private function registerUsageMeters(): void
     {
         $usage = $this->app->make(Usage::class);
-        $live = fn (Store $store) => Experience::where('store_id', $store->id)->where('status', 'published');
+        // Live = published and included in the store's plan (others don't show, so they don't count).
+        $live = fn (Store $store) => Experience::with('publishedVersion')->where('store_id', $store->id)->where('status', 'published')->get()
+            ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion?->config));
 
         $usage->register('active_experiences', fn (Store $store) => $live($store)->count());
-        foreach (Registry::meters() as $type => $meter) {
-            $usage->register($meter, fn (Store $store) => $live($store)->where('type', $type)->count());
+        // Several types can share a meter (bundles and BOGO; both gift types): count them together.
+        foreach (collect(Registry::meters())->groupBy(fn ($meter) => $meter, true) as $meter => $types) {
+            $usage->register($meter, fn (Store $store) => $live($store)->whereIn('type', $types->keys()->all())->count());
         }
+        $usage->register('workflows', fn (Store $store) => \App\Models\Automation\Workflow::where('store_id', $store->id)->where('status', 'enabled')->count());
     }
 }

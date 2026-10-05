@@ -74,6 +74,9 @@ class AudienceController extends Controller
     {
         $segment = $this->segment($store, $segment);
         [$match, $rules, $errors] = Audiences::normalize($request->all());
+        if (Audiences::usesAdvanced($rules) && ! $store->planIncludes('personalization_advanced')) {
+            $errors['rules'] = 'Order history, spend, lifecycle, product and device conditions are part of '.\App\Support\Modules::label('personalization_advanced').', which isn\'t in your plan. You can save them once you upgrade.';
+        }
         $name = mb_substr(trim(strip_tags((string) $request->input('name'))), 0, 80);
         if ($name === '') {
             $errors['name'] = 'Give the segment a name.';
@@ -213,6 +216,9 @@ class AudienceController extends Controller
         if (isset($conditions['cart_min'], $conditions['cart_max']) && $conditions['cart_min'] > $conditions['cart_max']) {
             $errors['conditions'] = 'The maximum cart value must be at least the minimum.';
         }
+        if (array_intersect(array_keys($conditions), Audiences::ADVANCED_CONDITIONS) && ! $store->planIncludes('personalization_advanced')) {
+            $errors['conditions'] = 'Device and cart-value conditions are part of '.\App\Support\Modules::label('personalization_advanced').', which isn\'t in your plan.';
+        }
         $name = mb_substr(trim(strip_tags((string) $request->input('name'))), 0, 80);
 
         $model->fill([
@@ -277,7 +283,7 @@ class AudienceController extends Controller
 
     private function shared(Store $store): array
     {
-        return ['enabled' => $store->planIncludes('personalization'), 'error' => request()->query('error'), 'docsUrl' => route('site.docs', 'personalization')];
+        return ['enabled' => $store->planIncludes('personalization'), 'advanced' => $store->planIncludes('personalization_advanced'), 'advancedFields' => Audiences::ADVANCED_FIELDS, 'advancedConditions' => Audiences::ADVANCED_CONDITIONS, 'error' => request()->query('error'), 'docsUrl' => route('site.docs', 'personalization')];
     }
 
     private function segment(Store $store, int $id): Segment

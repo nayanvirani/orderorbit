@@ -18,14 +18,9 @@ return [
                 ['note', 'If the app later asks for new permissions (for example after an update), open it once and approve them. Settings → Store shows any missing permissions.'],
             ]],
             'plan' => ['Choose a plan', [
-                ['p', 'Every plan includes the core storefront widgets and every template. Plans differ by your store\'s monthly sales and by the advanced modules they include.'],
-                ['table', ['Plan', 'Monthly store sales', 'Adds'], [
-                    ['Free', 'Up to $1,000', 'Core widgets; one live bundle, gift campaign, cart upsell and pre-order'],
-                    ['Starter', 'Up to $8,000', 'Everything unlimited; revenue per offer'],
-                    ['Growth', 'Up to $20,000', 'Checkout, Thank You and account blocks, A/B testing, funnels, attribution and journeys'],
-                    ['Scale', 'Unlimited', 'Lifecycle automation, audiences and personalization, priority support'],
-                ]],
-                ['p', 'Sales are counted per 30-day cycle from the day you install. If your store passes its plan\'s limit you have 3 days to upgrade before offers pause; nothing is deleted.'],
+                ['p', 'Every plan includes the core storefront widgets and every template. Plans differ by the features they include and by how many offers, workflows and automation runs you can have. The Pricing page compares them in full.'],
+                ['table', ['Plan', 'Price', 'Includes'], array_values(array_map(fn ($p) => [$p['name'], $p['price'] > 0 ? '$'.number_format($p['price'], 2).' a month' : 'Free', implode('; ', array_slice($p['features'] ?? [], 0, 4))], \App\Support\Plans::public()))],
+                ['p', 'The app warns you as you get close to a limit. At a limit, everything live keeps working; you just can\'t add more until you upgrade. Changing plan never deletes anything: features a lower plan doesn\'t include stop showing, and items over its limits are paused.'],
             ]],
             'onboarding' => ['Follow the eight onboarding steps', [
                 ['steps', [
@@ -146,7 +141,7 @@ return [
                     ['Thank You and Order Status', 'Cross-sell, reorder, review request, referral, survey, next-order code, message and links, image', 'Every plan'],
                     ['Post-purchase', 'A one-click offer between payment and the Thank You page, with an optional second offer', 'Every plan'],
                 ]],
-                ['p', 'These are on the Growth and Scale plans.'],
+                ['p', 'These are included on the plans shown on the Pricing page.'],
             ]],
             'place' => ['Create and place a block', [
                 ['steps', [
@@ -212,7 +207,7 @@ return [
                     ['Start from a template', 'Automation → Templates: review request, delivery follow-up, welcome, VIP, reorder, win-back, cross-sell, product education, refund and cancellation follow-ups.'],
                     ['Edit on the canvas', 'Change the trigger, add conditions, waits, branches and actions. Placeholders such as {{order_name}} and {{discount_code}} fill in per order.'],
                     ['Test', '"Test with a sample order" walks through every step and changes nothing.'],
-                    ['Publish', 'Workflows run on the Scale plan. Every publish is saved as a version you can restore.'],
+                    ['Publish', 'Every publish is saved as a version you can restore. How many workflows can be on at once, and how many runs a month, depends on your plan.'],
                 ]],
             ]],
             'runs' => ['Runs, retries and logs', [
@@ -267,7 +262,7 @@ return [
             ]],
             'where' => ['Use segments everywhere', [
                 ['list', ['Experience targeting: Only these segments.', 'A/B test audiences.', 'Workflow condition: Customer segment (checks the order\'s customer).']],
-                ['note', 'Segments are worked out in the shopper\'s browser from their own account and visit; nothing about them is sent to OrderOrbit Space. Personalization is on the Scale plan.'],
+                ['note', 'Segments are worked out in the shopper\'s browser from their own account and visit; nothing about them is sent to OrderOrbit Space. Which targeting options you can use depends on your plan.'],
             ]],
         ],
     ],

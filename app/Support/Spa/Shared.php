@@ -5,7 +5,6 @@ namespace App\Support\Spa;
 use App\Experiences\Registry;
 use App\Models\Experience;
 use App\Models\Store;
-use App\Services\Billing\SalesMeter;
 use App\Support\Permissions;
 use Illuminate\Http\Request;
 
@@ -20,7 +19,7 @@ class Shared
         /** @var Store|null $store */
         $store = $request->attributes->get('store');
         $user = $request->attributes->get('storeUser');
-        $access = $store?->hasPlanAccess() && ! $store->offersSuspended();
+        $access = (bool) $store?->hasPlanAccess();
 
         return [
             'shop' => $store?->shop_domain,
@@ -29,7 +28,11 @@ class Shared
             'user' => $user ? ['name' => $user->first_name, 'role' => $user->role] : null,
             'can' => collect(array_keys(Permissions::MATRIX))->mapWithKeys(fn ($p) => [$p => (bool) $user?->can($p)])->all(),
             'plan' => $store?->effectivePlan(),
-            'includes' => $store ? $store->modules() : [],
+            // Features this store can use (a child feature counts only with its parent).
+            'includes' => $store ? array_values(array_filter(array_keys(\App\Support\Modules::ALL), fn ($k) => $store->planIncludes($k))) : [],
+            // For locked features: the first plan that includes each one, for "Upgrade to Growth".
+            'featurePlans' => $store ? \App\Support\Plans::firstWith() : [],
+            'featureLabels' => collect(\App\Support\Modules::all())->map(fn ($m) => $m[0])->all(),
             'access' => (bool) $access,
             'goal' => (bool) $store?->goal,
             'adminUrl' => $store?->adminUrl(),
@@ -143,20 +146,29 @@ class Shared
     }
 
     /** The plan's sales-limit notice when the store is close, over or paused. */
+    /**
+     * The usage warning: the meter closest to (or at) its limit, once it passes the warning share.
+     */
     private static function limit(Store $store): ?array
     {
-        $status = app(SalesMeter::class)->status($store);
-        if ($status['state'] === 'ok') {
+        $warnAt = (float) config('shopify.billing.warn_at', 0.8);
+        $meter = collect(app(\App\Services\Usage::class)->summary($store))
+            ->filter(fn ($m) => $m['limit'] !== null && $m['limit'] > 0 && $m['used'] / $m['limit'] >= $warnAt)
+            ->sortByDesc(fn ($m) => $m['used'] / $m['limit'])->first();
+        if ($meter === null) {
             return null;
         }
-        $money = fn ($v) => '$'.number_format((float) $v);
+        $full = $meter['used'] >= $meter['limit'];
         $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
+        $label = mb_strtolower($meter['label']);
 
-        return ['state' => $status['state']] + match ($status['state']) {
-            'paused' => ['title' => 'All features are stopped.', 'text' => "Your store passed the {$plan} plan's {$money($status['limit'])} sales limit. Upgrade and everything goes live again straight away. Nothing was deleted.", 'action' => 'Upgrade plan'],
-            'over' => ['title' => 'Upgrade required: you\'ve passed your plan\'s sales limit.', 'text' => "{$plan} covers up to {$money($status['limit'])} per cycle. Upgrade by {$status['deadline']->toFormattedDateString()} or every feature stops on your store.", 'action' => 'Upgrade plan'],
-            default => ['title' => 'You\'re close to your plan\'s sales limit.', 'text' => "Your store sold {$money($status['sales'])} of {$money($status['limit'])} this cycle ({$status['percent']}%). Past the limit you'll have ".config('shopify.billing.grace_days').' days to upgrade.', 'action' => 'See plans'],
-        };
+        return [
+            'state' => $full ? 'over' : 'near',
+            'meter' => $meter['meter'],
+            'title' => $full ? "You've reached your plan's limit for {$label}." : "You're close to your plan's limit for {$label}.",
+            'text' => "{$plan} includes {$meter['limit']}; you're using {$meter['used']}. ".($full ? 'Everything live keeps working; upgrade to add more.' : 'Upgrade any time for more.'),
+            'action' => 'See plans',
+        ];
     }
 
     /**
