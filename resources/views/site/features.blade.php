@@ -14,7 +14,7 @@
         <div class="wrap">
             <span class="mn-kicker">Features</span>
             <h1>Everything that raises order value, <em>in one app.</em></h1>
-            <p class="mn-lead">Each feature has ready-made templates, shares your store's design and applies its savings at checkout. Features marked "coming soon" are being built now.</p>
+            <p class="mn-lead">Each feature has ready-made templates, shares your store's design and applies its savings at checkout.</p>
         </div>
     </section>
 
