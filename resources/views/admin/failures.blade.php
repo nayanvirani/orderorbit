@@ -1,11 +1,12 @@
 @extends('admin.layout')
 @section('title', 'Workflow failures')
 @section('content')
-<h1>Workflow failures</h1>
+<div class="ad-head"><div><h1>Workflow failures</h1><p>Automation runs that failed after their retries, across every store.</p></div></div>
 <section class="ad-card">
     <h2>Most common errors, 7 days</h2>
     @forelse ($byError as $e)<p><b>{{ $e->n }}×</b> <span class="ad-bad">{{ \Illuminate\Support\Str::limit($e->error, 200) }}</span></p>@empty<p class="ad-muted">No failures this week.</p>@endforelse
 </section>
+<section class="ad-card flush"><div class="ad-scroll">
 <table class="ad-table">
     <thead><tr><th>Run</th><th>Store</th><th>Workflow</th><th>Error</th><th>Attempts</th><th>Failed</th></tr></thead>
     <tbody>
@@ -14,5 +15,6 @@
         @endforeach
     </tbody>
 </table>
-{{ $runs->links() }}
+</div></section>
+{{ $runs->links('admin._pager') }}
 @endsection

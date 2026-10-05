@@ -21,6 +21,7 @@ class Store extends Model
     protected function casts(): array
     {
         return [
+            'entitlements' => 'array',
             'access_token' => 'encrypted',
             'refresh_token' => 'encrypted',
             'access_token_expires_at' => 'datetime',
@@ -80,11 +81,36 @@ class Store extends Model
      */
     public function effectivePlan(): ?string
     {
+        // A complimentary plan from the Internal Admin wins while it lasts.
+        if ($comp = $this->compPlan()) {
+            return $comp;
+        }
         if ($this->plan !== null && ($this->plan_expires_at === null || $this->plan_expires_at->isFuture())) {
             return $this->plan;
         }
 
         return $this->isTestShop() ? config('shopify.test_shop_plan') : null;
+    }
+
+    /** The complimentary plan granted in the Internal Admin, while it lasts. */
+    public function compPlan(): ?string
+    {
+        $e = $this->entitlements ?? [];
+        $plan = $e['plan'] ?? null;
+        if (! $plan || ! array_key_exists($plan, (array) config('shopify.billing.plans'))) {
+            return null;
+        }
+
+        return empty($e['plan_until']) || \Illuminate\Support\Carbon::parse($e['plan_until'])->endOfDay()->isFuture() ? $plan : null;
+    }
+
+    /** Every module this store can use: its plan's, plus or minus the store's own overrides. */
+    public function modules(): array
+    {
+        $e = $this->entitlements ?? [];
+        $plan = (array) config('shopify.billing.plans.'.$this->effectivePlan().'.includes', []);
+
+        return array_values(array_diff(array_unique(array_merge($plan, $e['modules_on'] ?? [])), $e['modules_off'] ?? []));
     }
 
     public function hasPlanAccess(): bool
@@ -131,7 +157,11 @@ class Store extends Model
      */
     public function salesLimit(): ?float
     {
-        $limit = $this->isTestShop() ? null : config('shopify.billing.plans.'.$this->effectivePlan().'.sales_limit');
+        $limit = match (true) {
+            $this->isTestShop() => null,
+            array_key_exists('sales_limit', $this->entitlements ?? []) => $this->entitlements['sales_limit'],
+            default => config('shopify.billing.plans.'.$this->effectivePlan().'.sales_limit'),
+        };
 
         return $limit === null ? null : (float) $limit;
     }
@@ -153,12 +183,12 @@ class Store extends Model
     }
 
     /**
-     * Whether the plan unlocks a feature beyond the storefront basics every plan has
-     * (config: shopify.billing.plans.*.includes), e.g. offer_analytics, checkout, ab_testing.
+     * Whether the store can use a module (App\Support\Modules): its plan's modules, plus or
+     * minus the overrides set for this store in the Internal Admin.
      */
     public function planIncludes(string $feature): bool
     {
-        return in_array($feature, (array) config('shopify.billing.plans.'.$this->effectivePlan().'.includes', []), true);
+        return in_array($feature, $this->modules(), true);
     }
 
     /**
@@ -166,6 +196,10 @@ class Store extends Model
      */
     public function planLimit(string $meter): ?int
     {
+        // A store-level override (null = unlimited) wins over the plan's limit.
+        if (array_key_exists($meter, $this->entitlements['limits'] ?? [])) {
+            return $this->entitlements['limits'][$meter] === null ? null : (int) $this->entitlements['limits'][$meter];
+        }
         $limits = config('shopify.billing.plans.'.$this->effectivePlan().'.limits');
 
         return is_array($limits) && array_key_exists($meter, $limits) ? $limits[$meter] : 0;

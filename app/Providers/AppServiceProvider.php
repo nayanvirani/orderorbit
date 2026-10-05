@@ -36,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Plans and platform settings edited in the Internal Admin override config.
+        \App\Support\Plans::boot();
+        \App\Support\PlatformSettings::boot();
+
         $this->registerUsageMeters();
 
         View::composer('layouts.site', function ($view) {

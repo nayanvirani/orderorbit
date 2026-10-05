@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'store.can' => EnsureStorePermission::class,
             'store.plan' => RequirePlan::class,
             'spa' => \App\Http\Middleware\SpaResponses::class,
+            'admin.can' => \App\Http\Middleware\AdminCan::class,
         ]);
 
         // Embedded requests authenticate with App Bridge session tokens (third-party

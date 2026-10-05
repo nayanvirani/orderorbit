@@ -1,5 +1,8 @@
 <?php
 
+// Storefront modules every plan includes by default (the Internal Admin can change this).
+$storefront = ['bundles', 'progressive_gifts', 'cart_upsells', 'countdown', 'sticky_atc', 'preorder', 'sales_pop', 'trust'];
+
 // Live-offer limits per plan (null = unlimited). Only Free caps the revenue features at one each.
 $limits = fn (array $caps, int $automationRuns) => $caps + [
     'active_experiences' => null,
@@ -80,17 +83,15 @@ return [
         'count_test_orders_for' => array_values(array_filter(array_map('trim', explode(',', (string) env('ORDERORBIT_COUNT_TEST_ORDERS_FOR', ''))))),
         'warn_at' => 0.8,
 
-        // "includes" lists what a plan unlocks beyond the storefront features every plan has:
-        // offer_analytics (revenue per offer), advanced_analytics (events, funnels, attribution,
-        // journeys) and, as they ship, checkout, customer_accounts,
-        // ab_testing, automation and personalization.
+        // Defaults only: the live plans are in the plans table, edited in the Internal Admin.
+        // "includes" lists the plan's modules (App\Support\Modules).
         'plans' => [
             'free' => [
                 'name' => 'Free',
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_FREE', 'Free'),
                 'price' => 0,
                 'sales_limit' => 1000,
-                'includes' => [],
+                'includes' => $storefront,
                 'features' => ['Up to $1,000 in monthly store sales', 'Countdown, sticky add to cart, trust badges and sales pop', '1 bundle, 1 gift campaign, 1 cart upsell and 1 pre-order', 'Every template', 'Store analytics'],
                 'limits' => $limits(['bundles' => 1, 'free_gifts' => 1, 'cart_upsells' => 1, 'preorders' => 1], 1000),
             ],
@@ -99,7 +100,7 @@ return [
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'),
                 'price' => 14.99,
                 'sales_limit' => 8000,
-                'includes' => ['offer_analytics'],
+                'includes' => [...$storefront, 'offer_analytics'],
                 'features' => ['Up to $8,000 in monthly store sales', 'Everything in Free', 'Unlimited bundles, gifts, upsells and pre-orders', 'Analytics with revenue per offer'],
                 'limits' => $limits([], 10000),
             ],
@@ -108,7 +109,7 @@ return [
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'),
                 'price' => 29.99,
                 'sales_limit' => 20000,
-                'includes' => ['offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
+                'includes' => [...$storefront, 'offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing'],
                 'features' => ['Up to $20,000 in monthly store sales', 'Everything in Starter', 'Checkout, Thank You and Order Status blocks', 'Funnels, attribution, event explorer and customer journeys', 'Customer account blocks', 'A/B and A/B/C testing'],
                 'limits' => $limits([], 10000),
             ],
@@ -117,7 +118,7 @@ return [
                 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'),
                 'price' => 59.99,
                 'sales_limit' => null,
-                'includes' => ['offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
+                'includes' => [...$storefront, 'offer_analytics', 'advanced_analytics', 'checkout', 'customer_accounts', 'ab_testing', 'automation', 'personalization', 'priority_support'],
                 'features' => ['Unlimited store sales', 'Everything in Growth', 'Lifecycle automation workflows', 'Audiences and personalization', 'Priority support'],
                 'limits' => $limits([], 50000),
             ],

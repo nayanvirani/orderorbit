@@ -6,23 +6,52 @@
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title', 'Admin') · OrderOrbit Space Admin</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
 </head>
 <body>
 @auth
-    <header class="ad-top">
-        <a class="ad-brand" href="{{ route('admin.home') }}">OrderOrbit Space <span>Admin</span></a>
-        <nav class="ad-nav" aria-label="Admin">
-            @foreach (['admin.home' => 'Overview', 'admin.stores' => 'Stores', 'admin.tickets' => 'Support', 'admin.failures' => 'Workflow failures', 'admin.analytics' => 'Analytics', 'admin.templates' => 'Templates', 'admin.flags' => 'Feature flags', 'admin.audit' => 'Audit log'] as $route => $label)
-                <a href="{{ route($route) }}" @if (request()->routeIs($route.'*')) aria-current="page" @endif>{{ $label }}</a>
+    @php
+        $me = auth()->user();
+        $openTickets = \App\Support\AdminRoles::can($me, 'support') ? \App\Models\Support\Ticket::where('status', 'open')->count() : 0;
+        $nav = [
+            null => [['admin.home', 'Dashboard', 'home', 'dashboard']],
+            'Customers' => [['admin.stores', 'Stores', 'store', 'stores'], ['admin.tickets', 'Support', 'message', 'support']],
+            'Billing' => [['admin.plans', 'Plans & modules', 'card', 'plans']],
+            'Product' => [['admin.templates', 'Templates', 'palette', 'templates'], ['admin.flags', 'Feature flags', 'flag', 'flags']],
+            'Operations' => [['admin.failures', 'Workflow failures', 'alert', 'failures'], ['admin.analytics', 'Event processing', 'chart', 'analytics'], ['admin.audit', 'Audit log', 'list', 'audit']],
+            'Admin' => [['admin.settings', 'Platform settings', 'settings', 'settings'], ['admin.team', 'Team', 'users', 'team']],
+        ];
+    @endphp
+    <div class="ad-app">
+        <aside class="ad-side">
+            <a class="ad-brand" href="{{ route('admin.home') }}"><i>◎</i><span>OrderOrbit Space<small>Internal admin</small></span></a>
+            @foreach ($nav as $group => $items)
+                @php($items = array_filter($items, fn ($i) => \App\Support\AdminRoles::can($me, $i[3])))
+                @continue(! $items)
+                @if ($group)<h6>{{ $group }}</h6>@endif
+                @foreach ($items as [$route, $label, $icon])
+                    <a class="ad-link" href="{{ route($route) }}" @if (request()->routeIs($route, $route.'.*', rtrim($route, 's'), rtrim($route, 's').'.*')) aria-current="page" @endif>
+                        <x-admin.icon :name="$icon" /><span>{{ $label }}</span>
+                        @if ($route === 'admin.tickets' && $openTickets)<span class="ad-count">{{ $openTickets }}</span>@endif
+                    </a>
+                @endforeach
             @endforeach
-        </nav>
-        <form method="POST" action="{{ route('admin.logout') }}" class="ad-user">@csrf<a href="{{ route('admin.account') }}" style="color:#d4d4d4">{{ auth()->user()->email }}</a><button type="submit">Sign out</button></form>
-    </header>
-@endauth
-<main class="ad-main">
-    @if (session('status'))<div class="ad-flash">{{ session('status') }}</div>@endif
+            <div class="ad-side-foot">
+                <a href="{{ route('admin.account') }}">{{ $me->name ?: $me->email }}</a>
+                <div style="color:#8f91b5">{{ \App\Support\AdminRoles::label($me->admin_role) }}</div>
+                <form method="POST" action="{{ route('admin.logout') }}">@csrf<button type="submit">Sign out</button></form>
+            </div>
+        </aside>
+        <main class="ad-main">
+            @if (session('status'))<div class="ad-flash">✓ {{ session('status') }}</div>@endif
+            @if ($errors->any() && ! request()->routeIs('admin.login'))<div class="ad-flash bad">{{ $errors->first() }}</div>@endif
+            @yield('content')
+        </main>
+    </div>
+@else
     @yield('content')
-</main>
+@endauth
 </body>
 </html>

@@ -112,6 +112,8 @@ class StorefrontPublisher
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->get()
             ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
+            // A module removed from the plan (or from this store) stops showing at once.
+            ->filter(fn (Experience $e) => ! ($module = \App\Support\Modules::forType($e->type)) || $store->planIncludes($module))
             ->map(function (Experience $e) use ($store, $tests) {
                 $config = $e->publishedVersion->config;
                 if ($e->type === 'bundles') {

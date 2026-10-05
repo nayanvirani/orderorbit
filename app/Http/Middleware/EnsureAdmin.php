@@ -14,7 +14,7 @@ class EnsureAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (! $user || ! $user->is_admin) {
+        if (! $user || ! $user->is_admin || $user->disabled_at !== null) {
             return redirect()->route('admin.login');
         }
         $response = $next($request);

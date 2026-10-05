@@ -210,6 +210,10 @@ class ExperienceManager
         if (! $store->hasPlanAccess()) {
             throw new PublishException('Choose a plan to start publishing.', 'plan');
         }
+        $module = \App\Support\Modules::forType($experience->type);
+        if ($module && ! in_array($type['surface'], Schema::CHECKOUT_SURFACES, true) && ! $store->planIncludes($module)) {
+            throw new PublishException(\App\Support\Modules::label($module).' isn\'t included in your plan. Upgrade to publish it.', 'plan');
+        }
 
         // Checkout and post-purchase blocks: Growth and above, and only where Shopify allows them.
         if (in_array($type['surface'], Schema::CHECKOUT_SURFACES, true)) {

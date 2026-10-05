@@ -48,7 +48,7 @@ class BillingController extends Controller
                 'current_period_ends_at' => $subscription->current_period_ends_at,
             ] : null,
             'latestStatus' => $latest?->status,
-            'plans' => collect(config('shopify.billing.plans'))->map(fn ($p, $key) => ['key' => $key, 'name' => $p['name'], 'price' => (float) $p['price'], 'features' => $p['features']])->values(),
+            'plans' => collect(\App\Support\Plans::public())->map(fn ($p, $key) => ['key' => $key, 'name' => $p['name'], 'price' => (float) $p['price'], 'features' => $p['features']])->values(),
             'sales' => ['state' => $status['state'], 'sales' => $status['sales'], 'limit' => $status['limit'], 'percent' => $status['percent'],
                 'deadline' => $status['deadline'], 'next' => $status['next'] ? ['name' => $status['next']['name'], 'price' => (float) $status['next']['price']] : null,
                 'orders' => $status['orders'] ?? 0, 'test_orders' => $status['test_orders'] ?? null,

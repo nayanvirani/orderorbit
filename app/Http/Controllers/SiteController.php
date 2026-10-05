@@ -41,7 +41,7 @@ class SiteController extends Controller
         $templates = collect(Content::templates());
 
         return view('site.home', [
-            'plans' => config('shopify.billing.plans'),
+            'plans' => \App\Support\Plans::public(),
             'groups' => Content::featureGroups(),
             'solutions' => Content::solutions(),
             'templateTeaser' => $templates->unique('type')->take(8)->values()->all(),
@@ -108,7 +108,7 @@ class SiteController extends Controller
 
     public function pricing(): View
     {
-        return view('site.pricing', ['plans' => config('shopify.billing.plans'), 'pricing' => Content::pricing()]);
+        return view('site.pricing', ['plans' => \App\Support\Plans::public(), 'pricing' => Content::pricing()]);
     }
 
     public function resources(): View

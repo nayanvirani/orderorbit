@@ -34,19 +34,30 @@ class AdminController extends Controller
     {
         $stores = Store::all();
         $installed = $stores->filter(fn ($s) => $s->isInstalled());
-        $prices = collect(config('shopify.billing.plans'))->map(fn ($p) => (float) $p['price']);
+        $plans = collect(config('shopify.billing.plans'));
+        // Paying = a real subscription (not a test store or a complimentary plan).
+        $paying = $installed->filter(fn ($s) => $s->plan && ! $s->compPlan() && ! $s->isTestShop());
+        $installsByDay = Store::where('installed_at', '>=', now()->subDays(29)->startOfDay())->selectRaw('date(installed_at) as day, count(*) as n')->groupBy('day')->pluck('n', 'day');
 
         return view('admin.home', [
             'kpis' => [
                 'installed' => $installed->count(),
-                'uninstalled' => $stores->count() - $installed->count(),
-                'by_plan' => $installed->groupBy(fn ($s) => $s->effectivePlan() ?? 'none')->map->count(),
-                'mrr' => $installed->sum(fn ($s) => $prices[$s->effectivePlan()] ?? 0),
+                'new_30d' => $stores->filter(fn ($s) => $s->installed_at?->gte(now()->subDays(30)))->count(),
+                'uninstalled_30d' => $stores->filter(fn ($s) => $s->uninstalled_at?->gte(now()->subDays(30)))->count(),
+                'mrr' => $paying->sum(fn ($s) => (float) ($plans[$s->plan]['price'] ?? 0)),
+                'paying' => $paying->count(),
+                'custom' => $installed->filter(fn ($s) => ! empty($s->entitlements))->count(),
+                'over_limit' => $installed->filter(fn ($s) => $s->over_limit_since !== null)->count(),
+                'suspended' => $installed->filter(fn ($s) => $s->offersSuspended())->count(),
                 'events_24h' => AnalyticsEvent::where('occurred_at', '>=', now()->subDay())->count(),
                 'failed_runs_24h' => WorkflowRun::where('status', 'failed')->where('test', false)->where('updated_at', '>=', now()->subDay())->count(),
                 'open_tickets' => Ticket::whereIn('status', ['open'])->count(),
                 'webhooks_unprocessed' => WebhookReceipt::whereNull('processed_at')->where('created_at', '>=', now()->subDay())->count(),
+                'pixel_off' => $installed->filter(fn ($s) => ! $s->web_pixel_id)->count(),
             ],
+            'planMix' => $plans->map(fn ($p, $key) => ['name' => $p['name'], 'stores' => $installed->filter(fn ($s) => $s->effectivePlan() === $key)->count(), 'mrr' => $paying->filter(fn ($s) => $s->plan === $key)->count() * (float) $p['price']]),
+            'noPlan' => $installed->filter(fn ($s) => ! $s->hasPlanAccess())->count(),
+            'installsByDay' => collect(range(29, 0))->mapWithKeys(fn ($d) => [now()->subDays($d)->toDateString() => (int) ($installsByDay[now()->subDays($d)->toDateString()] ?? 0)]),
             'recentInstalls' => Store::whereNotNull('installed_at')->latest('installed_at')->limit(8)->get(),
             'waiting' => Ticket::with('store')->where('status', 'open')->orderByRaw("case priority when 'urgent' then 0 when 'high' then 1 when 'normal' then 2 else 3 end")->oldest('last_reply_at')->limit(8)->get(),
         ]);
@@ -58,11 +69,15 @@ class AdminController extends Controller
             ->when($request->query('q'), fn ($q, $term) => $q->where(fn ($q) => $q->where('shop_domain', 'like', "%{$term}%")->orWhere('name', 'like', "%{$term}%")))
             ->when($request->query('status') === 'installed', fn ($q) => $q->whereNotNull('installed_at')->whereNull('uninstalled_at'))
             ->when($request->query('status') === 'uninstalled', fn ($q) => $q->whereNotNull('uninstalled_at'))
+            ->when($request->query('status') === 'custom', fn ($q) => $q->whereNotNull('entitlements'))
+            ->when($request->query('status') === 'suspended', fn ($q) => $q->whereNotNull('offers_suspended_at'))
+            ->when($request->query('plan'), fn ($q, $plan) => $plan === 'none' ? $q->whereNull('plan') : $q->where('plan', $plan))
             ->latest('installed_at')->paginate(50)->withQueryString();
         $ids = $stores->pluck('id');
 
         return view('admin.stores', [
             'stores' => $stores,
+            'plans' => collect(config('shopify.billing.plans'))->map(fn ($p) => $p['name']),
             'events' => AnalyticsEvent::whereIn('store_id', $ids)->where('occurred_at', '>=', now()->subDays(7))->selectRaw('store_id, count(*) as n')->groupBy('store_id')->pluck('n', 'store_id'),
             'live' => \App\Models\Experience::whereIn('store_id', $ids)->where('status', 'published')->selectRaw('store_id, count(*) as n')->groupBy('store_id')->pluck('n', 'store_id'),
         ]);
@@ -74,6 +89,11 @@ class AdminController extends Controller
 
         return view('admin.store', [
             'store' => $store,
+            'tab' => in_array(request('tab'), ['overview', 'access', 'activity'], true) ? request('tab') : 'overview',
+            'plans' => collect(config('shopify.billing.plans')),
+            'meters' => \App\Services\Usage::METERS,
+            'usageNow' => collect(app(\App\Services\Usage::class)->summary($store))->keyBy('meter'),
+            'users' => $store->users()->orderBy('role')->get(),
             'subscription' => \App\Models\Subscription::where('store_id', $store->id)->latest('id')->first(),
             'usage' => \App\Models\UsageRecord::where('store_id', $store->id)->latest('id')->limit(20)->get(),
             'sales' => app(\App\Services\Billing\SalesMeter::class)->status($store),

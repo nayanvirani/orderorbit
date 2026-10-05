@@ -1,7 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Analytics processing')
 @section('content')
-<h1>Analytics processing</h1>
+<div class="ad-head"><div><h1>Event processing</h1><p>Pixel events coming in, stored and pruned.</p></div></div>
 <div class="ad-kpis">
     <div><small>Events, last hour</small><b>{{ number_format($lastHour) }}</b><span>Pixel collector</span></div>
     <div><small>Events stored</small><b>{{ number_format($total) }}</b><span>Oldest {{ $oldest ? \Illuminate\Support\Carbon::parse($oldest)->toFormattedDateString() : '—' }}</span></div>

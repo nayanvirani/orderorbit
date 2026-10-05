@@ -29,7 +29,7 @@ class Shared
             'user' => $user ? ['name' => $user->first_name, 'role' => $user->role] : null,
             'can' => collect(array_keys(Permissions::MATRIX))->mapWithKeys(fn ($p) => [$p => (bool) $user?->can($p)])->all(),
             'plan' => $store?->effectivePlan(),
-            'includes' => array_values((array) config('shopify.billing.plans.'.$store?->effectivePlan().'.includes', [])),
+            'includes' => $store ? $store->modules() : [],
             'access' => (bool) $access,
             'goal' => (bool) $store?->goal,
             'adminUrl' => $store?->adminUrl(),

@@ -1,74 +1,245 @@
 @extends('admin.layout')
 @section('title', $store->shop_domain)
 @section('content')
-<p><a href="{{ route('admin.stores') }}">← Stores</a></p>
-<h1>{{ $store->name ?? $store->shop_domain }} <span class="ad-muted">{{ $store->shop_domain }}</span></h1>
-<div class="ad-grid">
-    <section class="ad-card">
-        <h2>Installation and subscription</h2>
-        <dl class="ad-kv">
-            <dt>Status</dt><dd>{!! $store->isInstalled() ? '<span class="ad-ok">Installed</span>' : '<span class="ad-bad">Uninstalled '.e($store->uninstalled_at?->toFormattedDateString()).'</span>' !!}</dd>
-            <dt>Installed</dt><dd>{{ $store->installed_at?->toDayDateTimeString() ?? '—' }}</dd>
-            <dt>OrderOrbit plan</dt><dd>{{ $store->effectivePlan() ?? 'None' }}{{ $store->offersSuspended() ? ' · offers suspended (over sales limit)' : '' }}</dd>
-            <dt>Subscription</dt><dd>{{ $subscription ? ($subscription->status ?? '—').' · '.($subscription->name ?? $subscription->plan ?? '') : '—' }}</dd>
-            <dt>Shopify plan</dt><dd>{{ $store->shopify_plan ?? '—' }}</dd>
-            <dt>Sales this cycle</dt><dd>${{ number_format($sales['sales'] ?? 0, 2) }} of {{ $sales['limit'] ? '$'.number_format($sales['limit']) : 'unlimited' }} · {{ $sales['orders'] ?? 0 }} orders</dd>
-            <dt>Currency / timezone</dt><dd>{{ $store->currency }} · {{ $store->timezone }}</dd>
-            <dt>Theme</dt><dd>{{ $store->theme_name ?? '—' }}</dd>
-        </dl>
-    </section>
-    <section class="ad-card">
-        <h2>Extension health</h2>
-        <dl class="ad-kv">
-            <dt>Web pixel</dt><dd>{!! $store->web_pixel_id ? '<span class="ad-ok">Connected</span>' : '<span class="ad-bad">Not connected</span>' !!}</dd>
-            <dt>Online Store 2.0</dt><dd>{{ var_export($store->capability('online_store_2'), true) }}</dd>
-            <dt>Checkout blocks</dt><dd>{{ var_export($store->capability('checkout_blocks'), true) }}</dd>
-            <dt>New customer accounts</dt><dd>{{ var_export($store->capability('new_customer_accounts'), true) }}</dd>
-            <dt>Missing scopes</dt><dd>{{ implode(', ', $store->missingScopes()) ?: 'None' }}</dd>
-            <dt>Capabilities checked</dt><dd>{{ $store->capabilities_checked_at?->diffForHumans() ?? 'never' }}</dd>
-        </dl>
-    </section>
+@php
+    $canManage = \App\Support\AdminRoles::can(auth()->user(), 'stores.manage');
+    $e = $store->entitlements ?? [];
+    $planKey = $store->effectivePlan();
+    $subscribed = $store->plan;
+    $planModules = (array) ($plans[$planKey]['includes'] ?? []);
+    $money = fn ($v) => $v === null ? 'Unlimited' : '$'.number_format((float) $v);
+@endphp
+<p class="ad-crumbs"><a href="{{ route('admin.stores') }}">Stores</a> / {{ $store->shop_domain }}</p>
+<div class="ad-head">
+    <div>
+        <h1>{{ $store->name ?? $store->shop_domain }}</h1>
+        <p>{{ $store->shop_domain }} · @include('admin._plan') {!! $store->isInstalled() ? '<span class="ad-badge ok"><i class="ad-dot"></i>Installed</span>' : '<span class="ad-badge bad">Uninstalled</span>' !!}</p>
+    </div>
+    <div class="ad-actions">
+        <a class="ad-btn" href="{{ $store->adminUrl() }}" target="_blank" rel="noopener">Open Shopify admin ↗</a>
+        <a class="ad-btn" href="https://{{ $store->shop_domain }}" target="_blank" rel="noopener">Storefront ↗</a>
+    </div>
 </div>
-<div class="ad-grid">
-    <section class="ad-card">
-        <h2>Experiences</h2>
-        <table class="ad-table"><thead><tr><th>Type</th><th>Status</th><th>Count</th></tr></thead><tbody>
-            @forelse ($experiences as $e)<tr><td>{{ $e->type }}</td><td>{{ $e->status }}</td><td>{{ $e->n }}</td></tr>@empty<tr><td colspan="3" class="ad-muted">None</td></tr>@endforelse
+
+<nav class="ad-tabs">
+    @foreach (['overview' => 'Overview', 'access' => 'Plan & access', 'activity' => 'Activity'] as $k => $l)
+        <a href="{{ route('admin.store', ['store' => $store->id, 'tab' => $k]) }}" @if ($tab === $k) aria-current="page" @endif>{{ $l }}</a>
+    @endforeach
+</nav>
+
+@if ($tab === 'overview')
+    <div class="ad-kpis">
+        <div><small>Plan</small><b style="font-size:20px">{{ $planKey ? ($plans[$planKey]['name'] ?? $planKey) : 'None' }}</b><span>{{ $store->compPlan() ? 'Complimentary'.(! empty($e['plan_until']) ? ' until '.\Illuminate\Support\Carbon::parse($e['plan_until'])->toFormattedDateString() : '') : ($subscription ? ($subscription->status ?? '').' subscription' : 'No subscription') }}</span></div>
+        <div class="{{ $store->offersSuspended() ? 'alert' : '' }}"><small>Sales this cycle</small><b style="font-size:20px">${{ number_format($sales['sales'] ?? 0) }}</b><span>of {{ $money($sales['limit']) }} · {{ $sales['orders'] ?? 0 }} orders</span></div>
+        <div><small>Events · 14 days</small><b style="font-size:20px">{{ number_format($eventsByDay->sum()) }}</b><span>Pixel {{ $store->web_pixel_id ? 'connected' : 'not connected' }}</span></div>
+        <div><small>Live experiences</small><b style="font-size:20px">{{ $experiences->where('status', 'published')->sum('n') }}</b><span>{{ $experiences->sum('n') }} in total</span></div>
+    </div>
+    <div class="ad-grid">
+        <section class="ad-card">
+            <h2>Store</h2>
+            <dl class="ad-kv">
+                <dt>Installed</dt><dd>{{ $store->installed_at?->toDayDateTimeString() ?? '—' }}</dd>
+                @if ($store->uninstalled_at)<dt>Uninstalled</dt><dd class="ad-bad">{{ $store->uninstalled_at->toDayDateTimeString() }}</dd>@endif
+                <dt>Shopify plan</dt><dd>{{ $store->shopify_plan ?? '—' }}</dd>
+                <dt>Subscription</dt><dd>{{ $subscription ? ($subscription->name ?? $subscription->plan).' · '.$subscription->status.($subscription->test ? ' · test charge' : '') : '—' }}</dd>
+                <dt>Currency · timezone</dt><dd>{{ $store->currency }} · {{ $store->timezone }}</dd>
+                <dt>Theme</dt><dd>{{ $store->theme_name ?? '—' }}</dd>
+                <dt>Goal</dt><dd>{{ $store->goal ?? '—' }}</dd>
+            </dl>
+        </section>
+        <section class="ad-card">
+            <h2>Health</h2>
+            <dl class="ad-kv">
+                <dt>Web pixel</dt><dd>{!! $store->web_pixel_id ? '<span class="ad-badge ok">Connected</span>' : '<span class="ad-badge warn">Not connected</span>' !!}</dd>
+                <dt>App blocks (OS 2.0)</dt><dd>@include('admin._yesno', ['value' => $store->capability('online_store_2')])</dd>
+                <dt>Checkout blocks</dt><dd>@include('admin._yesno', ['value' => $store->capability('checkout_blocks')])</dd>
+                <dt>New customer accounts</dt><dd>@include('admin._yesno', ['value' => $store->capability('new_customer_accounts')])</dd>
+                <dt>App embed on</dt><dd>@include('admin._yesno', ['value' => $store->capability('app_embed')])</dd>
+                <dt>Missing scopes</dt><dd>{{ implode(', ', $store->missingScopes()) ?: 'None' }}</dd>
+                <dt>Capabilities checked</dt><dd>{{ $store->capabilities_checked_at?->diffForHumans() ?? 'never' }}</dd>
+            </dl>
+        </section>
+    </div>
+    @if ($canManage)
+        <section class="ad-card">
+            <header><h2>Support actions</h2><span class="ad-muted">Each one is recorded in the audit log.</span></header>
+            <div class="ad-actions">
+                @foreach (['refresh-store' => 'Refresh store details', 'sync-billing' => 'Sync subscription from Shopify', 'recount-sales' => 'Recount sales', 'recheck-placement' => 'Re-check theme placement'] as $action => $label)
+                    <form method="POST" action="{{ route('admin.store.action', ['store' => $store->id, 'action' => $action]) }}">@csrf<button class="ad-btn" type="submit">{{ $label }}</button></form>
+                @endforeach
+                @if ($store->offersSuspended() || $store->over_limit_since)
+                    <form method="POST" action="{{ route('admin.store.action', ['store' => $store->id, 'action' => 'resume-offers']) }}" onsubmit="return confirm('Resume this store\'s offers now?')">@csrf<button class="ad-btn primary" type="submit">Resume offers</button></form>
+                @endif
+            </div>
+        </section>
+    @endif
+    <div class="ad-grid">
+        <section class="ad-card flush">
+            <header><h2>Experiences</h2></header>
+            <table class="ad-table"><thead><tr><th>Type</th><th>Status</th><th class="num">Count</th></tr></thead><tbody>
+                @forelse ($experiences as $x)<tr><td>{{ $x->type }}</td><td>{{ $x->status }}</td><td class="num">{{ $x->n }}</td></tr>@empty<tr><td colspan="3" class="ad-empty">None</td></tr>@endforelse
+            </tbody></table>
+        </section>
+        <section class="ad-card">
+            <header><h2>Event volume · 14 days</h2></header>
+            @php($max = max(1, $eventsByDay->max() ?? 1))
+            <div class="ad-bars">@foreach ($eventsByDay as $day => $n)<span title="{{ $day }}: {{ $n }}"><i style="height:{{ $n / $max * 100 }}%"></i></span>@endforeach</div>
+        </section>
+    </div>
+    <div class="ad-grid">
+        <section class="ad-card flush">
+            <header><h2>Staff</h2></header>
+            <table class="ad-table"><thead><tr><th>Person</th><th>Role</th><th>Last active</th></tr></thead><tbody>
+                @forelse ($users as $u)<tr><td>{{ $u->displayName() }}<div class="ad-muted">{{ $u->email }}</div></td><td>{{ ucfirst($u->role) }}{{ $u->disabled_at ? ' · removed' : '' }}</td><td>{{ $u->last_active_at?->diffForHumans() ?? '—' }}</td></tr>@empty<tr><td colspan="3" class="ad-empty">None</td></tr>@endforelse
+            </tbody></table>
+        </section>
+        <section class="ad-card">
+            <h2>Support tickets</h2>
+            <ul class="ad-list">
+                @forelse ($tickets as $t)<li><a href="{{ route('admin.ticket', $t->id) }}">{{ $t->reference() }} · {{ $t->subject }}</a><span class="ad-badge">{{ $t->status }}</span></li>@empty<li class="ad-muted">None.</li>@endforelse
+            </ul>
+            <h2 style="margin-top:16px">Failed workflow runs</h2>
+            <ul class="ad-list">
+                @forelse ($failedRuns as $r)<li><span>#{{ $r->id }} {{ $r->workflow?->name }}<div class="ad-bad ad-small">{{ \Illuminate\Support\Str::limit($r->error, 140) }}</div></span><span class="ad-muted">{{ $r->updated_at->diffForHumans() }}</span></li>@empty<li class="ad-muted">None.</li>@endforelse
+            </ul>
+        </section>
+    </div>
+@endif
+
+@if ($tab === 'access')
+    <div class="ad-note">
+        What this store gets: its subscription plan (or a complimentary plan you set here), with modules and limits adjusted below.
+        Changes apply at once: modules switched off disappear from the storefront, and limits lift or start the sales-limit pause.
+    </div>
+    <form method="POST" action="{{ route('admin.store.access', $store->id) }}" class="ad-form">
+        @csrf
+        <fieldset @disabled(! $canManage) style="border:0;padding:0;margin:0;display:contents">
+        <section class="ad-card">
+            <header><h2>Plan</h2></header>
+            <div class="ad-fields">
+                <div class="ad-field">Subscription (from Shopify)
+                    <div>{{ $subscribed ? ($plans[$subscribed]['name'] ?? $subscribed) : 'None' }}{{ $store->isTestShop() && ! $subscribed ? ' · test store ('.($plans[config('shopify.test_shop_plan')]['name'] ?? '').')' : '' }}</div>
+                    <small>Merchants change this in Shopify. A complimentary plan below overrides it while it lasts.</small>
+                </div>
+                <label>Complimentary plan
+                    <select name="plan">
+                        <option value="">None: use the subscription</option>
+                        @foreach ($plans as $k => $p)<option value="{{ $k }}" @selected(($e['plan'] ?? '') === $k)>{{ $p['name'] }} (${{ number_format($p['price'], 2) }}/mo)</option>@endforeach
+                    </select>
+                    <small>Free access to a plan without charging the store.</small>
+                </label>
+                <label>Until (optional)
+                    <input type="date" name="plan_until" value="{{ $e['plan_until'] ?? '' }}" min="{{ now()->toDateString() }}">
+                    <small>Leave empty to keep it until you remove it.</small>
+                </label>
+            </div>
+        </section>
+
+        <section class="ad-card">
+            <header><h2>Modules</h2><span class="ad-muted">Plan default follows {{ $planKey ? ($plans[$planKey]['name'] ?? $planKey) : 'no plan' }}; On or Off overrides it for this store only.</span></header>
+            @foreach (\App\Support\Modules::grouped() as $group => $modules)
+                <p class="ad-group-title">{{ $group }}</p>
+                <div class="ad-modules">
+                    @foreach ($modules as $key => [$label, , $help])
+                        @php($state = in_array($key, $e['modules_on'] ?? [], true) ? 'on' : (in_array($key, $e['modules_off'] ?? [], true) ? 'off' : 'default'))
+                        <div class="ad-module">
+                            <span><b>{{ $label }}</b><span class="ad-muted">{{ $help }}</span></span>
+                            <span>{!! $store->planIncludes($key) ? '<span class="ad-badge ok">Has access</span>' : '<span class="ad-badge">No access</span>' !!}</span>
+                            <span class="ad-tri" role="radiogroup" aria-label="{{ $label }}">
+                                <label><input type="radio" name="modules[{{ $key }}]" value="default" @checked($state === 'default')><span>Plan default · {{ in_array($key, $planModules, true) ? 'on' : 'off' }}</span></label>
+                                <label><input type="radio" name="modules[{{ $key }}]" value="on" @checked($state === 'on')><span class="on">On</span></label>
+                                <label><input type="radio" name="modules[{{ $key }}]" value="off" @checked($state === 'off')><span class="off">Off</span></label>
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </section>
+
+        <section class="ad-card flush">
+            <header><h2>Limits</h2><span class="ad-muted">Blank plan limit means unlimited.</span></header>
+            <div class="ad-scroll">
+                <table class="ad-table">
+                    <thead><tr><th>Limit</th><th class="num">Using now</th><th class="num">Plan limit</th><th>For this store</th></tr></thead>
+                    <tbody>
+                        @php($planLimits = (array) ($plans[$planKey]['limits'] ?? []))
+                        @foreach ($meters as $meter => $label)
+                            @php($has = array_key_exists($meter, $e['limits'] ?? []))
+                            @php($mode = ! $has ? 'default' : (($e['limits'][$meter] ?? null) === null ? 'unlimited' : 'value'))
+                            <tr>
+                                <td>{{ $label }}</td>
+                                <td class="num">{{ number_format($usageNow[$meter]['used'] ?? 0) }}</td>
+                                <td class="num">{{ array_key_exists($meter, $planLimits) && $planLimits[$meter] !== null ? number_format($planLimits[$meter]) : 'Unlimited' }}</td>
+                                <td>
+                                    <span class="ad-actions">
+                                        <select name="limits[{{ $meter }}][mode]">
+                                            <option value="default" @selected($mode === 'default')>Plan limit</option>
+                                            <option value="value" @selected($mode === 'value')>Custom</option>
+                                            <option value="unlimited" @selected($mode === 'unlimited')>Unlimited</option>
+                                        </select>
+                                        <input type="number" name="limits[{{ $meter }}][value]" min="0" style="width:120px" value="{{ $mode === 'value' ? $e['limits'][$meter] : '' }}" placeholder="Custom">
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                        @php($salesMode = ! array_key_exists('sales_limit', $e) ? 'default' : ($e['sales_limit'] === null ? 'unlimited' : 'value'))
+                        <tr>
+                            <td><b>Monthly store sales (USD)</b><div class="ad-muted">Past this, the store has {{ config('shopify.billing.grace_days') }} days to upgrade before offers stop.</div></td>
+                            <td class="num">${{ number_format($sales['sales'] ?? 0) }}</td>
+                            <td class="num">{{ $money($plans[$planKey]['sales_limit'] ?? null) }}</td>
+                            <td>
+                                <span class="ad-actions">
+                                    <select name="sales_mode">
+                                        <option value="default" @selected($salesMode === 'default')>Plan limit</option>
+                                        <option value="value" @selected($salesMode === 'value')>Custom</option>
+                                        <option value="unlimited" @selected($salesMode === 'unlimited')>Unlimited</option>
+                                    </select>
+                                    <input type="number" name="sales_value" min="0" step="1" style="width:120px" value="{{ $salesMode === 'value' ? $e['sales_limit'] : '' }}" placeholder="Custom">
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="ad-card">
+            <label>Internal note
+                <textarea name="note" rows="3" maxlength="1000" placeholder="Why this store has special access (only the team sees this).">{{ $e['note'] ?? '' }}</textarea>
+            </label>
+        </section>
+        </fieldset>
+        @if ($canManage)
+            <div class="ad-savebar">
+                <a class="ad-btn" href="{{ route('admin.store', ['store' => $store->id, 'tab' => 'access']) }}">Discard</a>
+                <button class="ad-btn primary" type="submit">Save access</button>
+            </div>
+        @else
+            <p class="ad-muted">Your role can view access but not change it.</p>
+        @endif
+    </form>
+@endif
+
+@if ($tab === 'activity')
+    <div class="ad-grid">
+        <section class="ad-card flush">
+            <header><h2>Audit log</h2><a class="ad-small" href="{{ route('admin.audit', ['store' => $store->shop_domain]) }}">Full log</a></header>
+            <table class="ad-table"><thead><tr><th>Action</th><th>When</th></tr></thead><tbody>
+                @forelse ($audit as $a)<tr><td><code>{{ $a->action }}</code></td><td>{{ $a->created_at->diffForHumans() }}</td></tr>@empty<tr><td colspan="2" class="ad-empty">None</td></tr>@endforelse
+            </tbody></table>
+        </section>
+        <section class="ad-card flush">
+            <header><h2>Recent webhooks</h2></header>
+            <table class="ad-table"><thead><tr><th>Topic</th><th>Received</th><th>Processed</th></tr></thead><tbody>
+                @forelse ($webhooks as $w)<tr><td>{{ $w->topic }}</td><td>{{ $w->created_at->diffForHumans() }}</td><td>{!! $w->processed_at ? '<span class="ad-badge ok">Yes</span>' : '<span class="ad-badge bad">No</span>' !!}</td></tr>@empty<tr><td colspan="3" class="ad-empty">None</td></tr>@endforelse
+            </tbody></table>
+        </section>
+    </div>
+    <section class="ad-card flush">
+        <header><h2>Usage records</h2></header>
+        <table class="ad-table"><thead><tr><th>Meter</th><th>Value</th><th>Period</th></tr></thead><tbody>
+            @forelse ($usage as $u)<tr><td>{{ $u->meter ?? $u->metric ?? '—' }}</td><td>{{ $u->quantity ?? $u->count ?? $u->value ?? '—' }}</td><td>{{ $u->period_start ?? $u->created_at }}</td></tr>@empty<tr><td colspan="3" class="ad-empty">None</td></tr>@endforelse
         </tbody></table>
     </section>
-    <section class="ad-card">
-        <h2>Event volume, 14 days</h2>
-        @php($max = max(1, $eventsByDay->max() ?? 1))
-        <div class="ad-bars">@foreach ($eventsByDay as $day => $n)<span title="{{ $day }}: {{ $n }}"><i style="height:{{ $n / $max * 100 }}%"></i></span>@endforeach</div>
-        <p class="ad-muted">{{ number_format($eventsByDay->sum()) }} events</p>
-    </section>
-</div>
-<section class="ad-card">
-    <h2>Usage records</h2>
-    <table class="ad-table"><thead><tr><th>Meter</th><th>Value</th><th>Period</th></tr></thead><tbody>
-        @forelse ($usage as $u)<tr><td>{{ $u->meter ?? $u->metric ?? '—' }}</td><td>{{ $u->quantity ?? $u->count ?? $u->value ?? '—' }}</td><td>{{ $u->period_start ?? $u->created_at }}</td></tr>@empty<tr><td colspan="3" class="ad-muted">None</td></tr>@endforelse
-    </tbody></table>
-</section>
-<div class="ad-grid">
-    <section class="ad-card">
-        <h2>Failed workflow runs</h2>
-        @forelse ($failedRuns as $r)<p>#{{ $r->id }} {{ $r->workflow?->name }} <span class="ad-muted">· {{ $r->updated_at->diffForHumans() }}</span><br><span class="ad-bad">{{ \Illuminate\Support\Str::limit($r->error, 160) }}</span></p>@empty<p class="ad-muted">None.</p>@endforelse
-    </section>
-    <section class="ad-card">
-        <h2>Support tickets</h2>
-        @forelse ($tickets as $t)<p><a href="{{ route('admin.ticket', $t->id) }}">{{ $t->reference() }} · {{ $t->subject }}</a> <span class="ad-muted">· {{ $t->status }}</span></p>@empty<p class="ad-muted">None.</p>@endforelse
-    </section>
-</div>
-<div class="ad-grid">
-    <section class="ad-card">
-        <h2>Recent webhooks</h2>
-        <table class="ad-table"><thead><tr><th>Topic</th><th>Received</th><th>Processed</th></tr></thead><tbody>
-            @forelse ($webhooks as $w)<tr><td>{{ $w->topic }}</td><td>{{ $w->created_at->diffForHumans() }}</td><td>{!! $w->processed_at ? '<span class="ad-ok">Yes</span>' : '<span class="ad-bad">No</span>' !!}</td></tr>@empty<tr><td colspan="3" class="ad-muted">None</td></tr>@endforelse
-        </tbody></table>
-    </section>
-    <section class="ad-card">
-        <h2>Audit log</h2>
-        @forelse ($audit as $a)<p><code>{{ $a->action }}</code> <span class="ad-muted">· {{ $a->created_at->diffForHumans() }}</span></p>@empty<p class="ad-muted">None.</p>@endforelse
-    </section>
-</div>
+@endif
 @endsection

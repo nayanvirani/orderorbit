@@ -18,7 +18,7 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
-        if (! Auth::attempt($credentials + ['is_admin' => true], $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials + ['is_admin' => true, fn ($q) => $q->whereNull('disabled_at')], $request->boolean('remember'))) {
             return back()->withInput($request->only('email'))->withErrors(['email' => 'Those details don\'t match an OrderOrbit team account.']);
         }
         $request->session()->regenerate();

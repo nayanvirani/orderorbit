@@ -274,23 +274,62 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
 
-    Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->controller(\App\Http\Controllers\Admin\AdminController::class)->group(function () {
-        Route::get('/', 'home')->name('home');
-        Route::get('/stores', 'stores')->name('stores');
-        Route::get('/stores/{store}', 'store')->whereNumber('store')->name('store');
-        Route::get('/failures', 'failures')->name('failures');
-        Route::get('/analytics', 'analytics')->name('analytics');
-        Route::get('/templates', 'templates')->name('templates');
-        Route::post('/templates/{template}/toggle', 'toggleTemplate')->whereNumber('template')->name('templates.toggle');
-        Route::get('/flags', 'flags')->name('flags');
-        Route::post('/flags', 'saveFlag')->name('flags.save');
-        Route::post('/flags/{flag}/delete', 'deleteFlag')->whereNumber('flag')->name('flags.delete');
-        Route::get('/tickets', 'tickets')->name('tickets');
-        Route::get('/tickets/{ticket}', 'ticket')->whereNumber('ticket')->name('ticket');
-        Route::post('/tickets/{ticket}/reply', 'replyTicket')->whereNumber('ticket')->name('ticket.reply');
-        Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
-        Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
-        Route::get('/audit', 'audit')->name('audit');
+    Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
+        Route::controller(\App\Http\Controllers\Admin\AdminController::class)->group(function () {
+            Route::get('/', 'home')->middleware('admin.can:dashboard')->name('home');
+            Route::middleware('admin.can:stores')->group(function () {
+                Route::get('/stores', 'stores')->name('stores');
+                Route::get('/stores/{store}', 'store')->whereNumber('store')->name('store');
+            });
+            Route::get('/failures', 'failures')->middleware('admin.can:failures')->name('failures');
+            Route::get('/analytics', 'analytics')->middleware('admin.can:analytics')->name('analytics');
+            Route::middleware('admin.can:templates')->group(function () {
+                Route::get('/templates', 'templates')->name('templates');
+                Route::post('/templates/{template}/toggle', 'toggleTemplate')->whereNumber('template')->name('templates.toggle');
+            });
+            Route::middleware('admin.can:flags')->group(function () {
+                Route::get('/flags', 'flags')->name('flags');
+                Route::post('/flags', 'saveFlag')->name('flags.save');
+                Route::post('/flags/{flag}/delete', 'deleteFlag')->whereNumber('flag')->name('flags.delete');
+            });
+            Route::middleware('admin.can:support')->group(function () {
+                Route::get('/tickets', 'tickets')->name('tickets');
+                Route::get('/tickets/{ticket}', 'ticket')->whereNumber('ticket')->name('ticket');
+                Route::post('/tickets/{ticket}/reply', 'replyTicket')->whereNumber('ticket')->name('ticket.reply');
+                Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
+                Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
+            });
+            Route::get('/audit', 'audit')->middleware('admin.can:audit')->name('audit');
+        });
+
+        // A store's plan, modules and limits, and support actions on it.
+        Route::middleware('admin.can:stores.manage')->controller(\App\Http\Controllers\Admin\StoreAccessController::class)->group(function () {
+            Route::post('/stores/{store}/access', 'save')->whereNumber('store')->name('store.access');
+            Route::post('/stores/{store}/actions/{action}', 'action')->whereNumber('store')->whereIn('action', ['sync-billing', 'recheck-placement', 'recount-sales', 'resume-offers', 'refresh-store'])->name('store.action');
+        });
+
+        Route::controller(\App\Http\Controllers\Admin\PlanController::class)->group(function () {
+            Route::get('/plans', 'index')->middleware('admin.can:plans')->name('plans');
+            Route::middleware('admin.can:plans.manage')->group(function () {
+                Route::get('/plans/new', 'create')->name('plans.create');
+                Route::post('/plans', 'store')->name('plans.store');
+                Route::post('/plans/modules', 'matrix')->name('plans.matrix');
+                Route::get('/plans/{plan}', 'edit')->whereNumber('plan')->name('plans.edit');
+                Route::post('/plans/{plan}', 'update')->whereNumber('plan')->name('plans.update');
+            });
+        });
+
+        Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\SettingsController::class)->group(function () {
+            Route::get('/settings', 'show')->name('settings');
+            Route::post('/settings', 'update')->name('settings.update');
+        });
+
+        Route::middleware('admin.can:team')->controller(\App\Http\Controllers\Admin\TeamController::class)->group(function () {
+            Route::get('/team', 'index')->name('team');
+            Route::post('/team', 'invite')->name('team.invite');
+            Route::post('/team/{user}', 'update')->whereNumber('user')->name('team.update');
+        });
+
         Route::get('/account', [\App\Http\Controllers\Admin\AuthController::class, 'account'])->name('account');
         Route::post('/account/password', [\App\Http\Controllers\Admin\AuthController::class, 'updatePassword'])->middleware('throttle:5,1')->name('account.password');
     });
