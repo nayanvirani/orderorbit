@@ -21,10 +21,12 @@
     $$('[data-dropdown]').forEach((item) => {
         const btn = $('button', item);
         let t;
+        let hoveredAt = 0;
         const open = (v) => { item.classList.toggle('open', v); btn.setAttribute('aria-expanded', v); };
-        item.addEventListener('mouseenter', () => { clearTimeout(t); $$('[data-dropdown].open').forEach((o) => o !== item && o.classList.remove('open')); open(true); });
+        item.addEventListener('mouseenter', () => { clearTimeout(t); $$('[data-dropdown].open').forEach((o) => o !== item && o.classList.remove('open')); if (!item.classList.contains('open')) hoveredAt = Date.now(); open(true); });
         item.addEventListener('mouseleave', () => { t = setTimeout(() => open(false), 160); });
-        btn.addEventListener('click', () => open(!item.classList.contains('open')));
+        // A click that follows the hover (or a tap, which fires both) keeps the menu open instead of closing it.
+        btn.addEventListener('click', () => open(Date.now() - hoveredAt < 600 || !item.classList.contains('open')));
     });
     document.addEventListener('click', (e) => { if (!e.target.closest('[data-dropdown]')) $$('[data-dropdown].open').forEach((i) => i.classList.remove('open')); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $$('[data-dropdown].open').forEach((i) => i.classList.remove('open')); closeModal(); } });

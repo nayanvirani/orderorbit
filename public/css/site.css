@@ -911,3 +911,13 @@ p, li { text-wrap: pretty; }
 .footer-legal a:hover { color: var(--text); }
 .footer-legal + .footer-bottom { margin-top: 20px; padding-top: 0; border-top: 0; }
 @media (max-width: 640px) { .footer-legal { gap: 4px 16px; margin-top: 40px; } .footer-bottom { flex-direction: column; } }
+
+/* Wide tables that scroll sideways show a soft shadow on the side with more content. */
+.table-scroll, .docs-table, .legal-table {
+    background:
+        linear-gradient(to right, var(--bg) 30%, rgba(255, 255, 255, 0)) left / 40px 100% no-repeat local,
+        linear-gradient(to left, var(--bg) 30%, rgba(255, 255, 255, 0)) right / 40px 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, .14), transparent) left / 12px 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, .14), transparent) right / 12px 100% no-repeat scroll;
+}
+.legal-table th, .docs-table th { background-clip: padding-box; }
