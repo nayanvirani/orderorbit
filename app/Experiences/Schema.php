@@ -42,7 +42,7 @@ class Schema
                 'font' => ['type' => 'select', 'label' => 'Font', 'default' => 'theme', 'options' => ['theme' => 'Match my theme', 'system' => 'System font']],
                 'hide_on_mobile' => ['type' => 'toggle', 'label' => 'Hide on mobile', 'default' => false],
                 'hide_on_desktop' => ['type' => 'toggle', 'label' => 'Hide on desktop', 'default' => false],
-                'custom_css' => ['type' => 'textarea', 'label' => 'Custom CSS', 'default' => '', 'max' => 4000, 'help' => 'Scoped to this experience. Advanced.'],
+                'custom_css' => ['type' => 'textarea', 'label' => 'Custom CSS', 'default' => '', 'max' => 4000, 'help' => 'Scoped to this widget. Advanced.'],
             ],
             'behavior' => [
                 'animation' => ['type' => 'select', 'label' => 'Entrance animation', 'default' => 'fade', 'options' => ['none' => 'None', 'fade' => 'Fade in', 'slide' => 'Slide up']],
@@ -50,7 +50,7 @@ class Schema
                 'after_add' => ['type' => 'select', 'label' => 'After adding to cart', 'default' => 'cart', 'types' => self::CART_TYPES,
                     'options' => ['cart' => 'Go to the cart', 'stay' => 'Stay on the page', 'checkout' => 'Go to checkout'],
                     'help' => 'Want to open your cart drawer instead? Your theme can take over with a callback: see Help Center → Developers: callbacks.'],
-                'priority' => ['type' => 'number', 'label' => 'Priority', 'default' => 50, 'min' => 1, 'max' => 100, 'help' => 'When several experiences match the same block, the highest priority shows.'],
+                'priority' => ['type' => 'number', 'label' => 'Priority', 'default' => 50, 'min' => 1, 'max' => 100, 'help' => 'When several widgets match the same block, the highest priority shows.'],
             ],
             'targeting' => [
                 'page_types' => ['type' => 'checkboxes', 'label' => 'Show on', 'default' => [], 'options' => self::PAGE_TYPES, 'help' => 'Leave empty to show wherever the block is placed.'],

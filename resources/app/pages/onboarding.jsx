@@ -44,7 +44,7 @@ export default function Onboarding({ goals, goal, steps, step, done, store, miss
 
       {step === 2 && (
         <s-section heading="What do you want to improve first?">
-          <s-paragraph>We'll recommend experiences and templates for your goal. You can change this any time.</s-paragraph>
+          <s-paragraph>We'll recommend widgets and templates for your goal. You can change this any time.</s-paragraph>
           {Object.entries(goals).map(([key, g]) => (
             <label className="oo-radio" key={key}>
               <input type="radio" name="goal" value={key} checked={choice === key} onChange={() => setChoice(key)} />
@@ -59,12 +59,12 @@ export default function Onboarding({ goals, goal, steps, step, done, store, miss
       )}
 
       {step === 3 && (
-        <s-section heading="3. Choose your first experience">
+        <s-section heading="3. Choose your first widget">
           <p className="oo-muted">Recommended for <strong>{goals[goal]?.label || 'your goal'}</strong>. You can add more later.</p>
           <div className="ob-types">
             {recommended.map((r) => <a className="ob-type" key={r.label} href={appUrl(r.href)}><h4>{r.label}</h4><p>{r.help}</p><div className="ob-row">Start →</div></a>)}
           </div>
-          <p className="oo-small"><a href={appUrl(route('app.cro.experiences.create'))}>See every experience type</a> · <a href={to(2)}>Change goal</a></p>
+          <p className="oo-small"><a href={appUrl(route('app.cro.experiences.create'))}>See every widget type</a> · <a href={to(2)}>Change goal</a></p>
         </s-section>
       )}
 
@@ -72,14 +72,14 @@ export default function Onboarding({ goals, goal, steps, step, done, store, miss
         <s-section heading={`${step}. ${TITLES[step]}`}>
           {!first ? (
             <>
-              <s-paragraph>Start by choosing your first experience.</s-paragraph>
-              <s-button variant="primary" href={to(3)}>Choose an experience</s-button>
+              <s-paragraph>Start by choosing your first widget.</s-paragraph>
+              <s-button variant="primary" href={to(3)}>Choose a widget</s-button>
             </>
           ) : (
             <>
               <s-paragraph>{HELP[step]}</s-paragraph>
               <KeyValue rows={[
-                ['Your first experience', `${first.name} · ${first.type}`],
+                ['Your first widget', `${first.name} · ${first.type}`],
                 ['Status', `${first.status[0].toUpperCase()}${first.status.slice(1)}${first.status === 'published' ? ` · placement: ${first.placement}` : ''}`],
               ]} />
               <div className="oo-inline" style={{ marginTop: 12 }}>

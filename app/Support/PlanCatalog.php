@@ -35,7 +35,10 @@ class PlanCatalog
         foreach (Usage::GROUPS as $group => $meters) {
             $groups[] = ['group' => 'Limits · '.$group, 'rows' => collect($meters)->map(fn ($meter) => [
                 'label' => Usage::METERS[$meter], 'help' => Usage::HELP[$meter] ?? null,
-                'values' => collect($plans)->map(function ($p) use ($meter) {
+                'values' => collect($plans)->map(function ($p) use ($meter, $includes) {
+                    if (($feature = Usage::FEATURE[$meter] ?? null) && ! $includes($p, $feature)) {
+                        return false;
+                    }
                     $limit = ($p['limits'] ?? [])[$meter] ?? null;
 
                     return $limit === null ? 'Unlimited' : ((int) $limit === 0 ? false : number_format((int) $limit));

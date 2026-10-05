@@ -47,29 +47,29 @@
             {{-- 1 --}}
             <section id="overview">
                 <h2>Overview</h2>
-                <p>An A/B test shows different versions of one live experience to different visitors at the same time, then compares what those visitors did. Because both groups shop in the same week, with the same traffic and the same prices, the difference between them comes from the change you made, not from the season or a marketing push.</p>
-                <p>In OrderOrbit Space a test has a <strong>control (A)</strong>, which is your experience exactly as published, and one or two <strong>variants (B, and optionally C)</strong>. Each visitor is placed in one of them and always sees the same one. When the test has enough days, visitors and conversions, the app tells you whether a variant really did better, and you can apply it to everyone in one click.</p>
+                <p>An A/B test shows different versions of one live widget to different visitors at the same time, then compares what those visitors did. Because both groups shop in the same week, with the same traffic and the same prices, the difference between them comes from the change you made, not from the season or a marketing push.</p>
+                <p>In OrderOrbit Space a test has a <strong>control (A)</strong>, which is your widget exactly as published, and one or two <strong>variants (B, and optionally C)</strong>. Each visitor is placed in one of them and always sees the same one. When the test has enough days, visitors and conversions, the app tells you whether a variant really did better, and you can apply it to everyone in one click.</p>
                 <div class="docs-flow" aria-label="The test loop">
-                    <span>Choose an experience</span><span>Create variants</span><span>Split traffic</span><span>Collect data</span><span>Read results</span><span>Apply the winner</span>
+                    <span>Choose a widget</span><span>Create variants</span><span>Split traffic</span><span>Collect data</span><span>Read results</span><span>Apply the winner</span>
                 </div>
             </section>
 
             {{-- 2 --}}
             <section id="what">
                 <h2>What you can test</h2>
-                <p>Tests run on <strong>published</strong> experiences. A variant can change:</p>
+                <p>Tests run on <strong>published</strong> widgets. A variant can change:</p>
                 <ul class="docs-list">
                     <li><strong>Template</strong>: a different layout from the same feature (for example cards instead of a slider).</li>
                     <li><strong>Text</strong>: headlines, messages and button labels.</li>
                     <li><strong>Design</strong>: colours, corners, borders, spacing and the other Design settings. Checkout blocks use Shopify's checkout styles (background, border, corners, width and text tone).</li>
-                    <li><strong>Holdout</strong>: hide the experience from that group, to measure what the experience is worth overall.</li>
+                    <li><strong>Holdout</strong>: hide the widget from that group, to measure what the widget is worth overall.</li>
                 </ul>
                 <p>Products, prices, discounts and thresholds always stay as published. That keeps checkout honest: every shopper gets the price and offer the widget promised, whichever variant they saw.</p>
                 <div class="docs-table">
                     <table>
-                        <thead><tr><th>Experience</th><th>Can be tested</th><th>Notes</th></tr></thead>
+                        <thead><tr><th>Widget</th><th>Can be tested</th><th>Notes</th></tr></thead>
                         <tbody>
-                            <tr><td>Product and cart upsells, countdowns, sticky add to cart, trust badges, sales pop, pre-orders, shipping bar, free gifts and other storefront experiences</td><td class="yes">Yes</td><td>Holdout isn't offered for experiences that apply a discount, so nobody gets a discount for a widget they couldn't see.</td></tr>
+                            <tr><td>Product and cart upsells, countdowns, sticky add to cart, trust badges, sales pop, pre-orders, shipping bar, free gifts and other storefront widgets</td><td class="yes">Yes</td><td>Holdout isn't offered for widgets that apply a discount, so nobody gets a discount for a widget they couldn't see.</td></tr>
                             <tr><td>Checkout blocks (reviews, countdown, shipping progress, free gift, promotion, trust, image)</td><td class="yes">Yes</td><td>Audience: cart value and country. See <a href="#checkout">Checkout and Thank You blocks</a>.</td></tr>
                             <tr><td>Thank You and Order Status blocks</td><td class="yes">Yes</td><td>Judged by click-through rate by default, since the order is already placed.</td></tr>
                             <tr><td>Bundles and Progressive gifts</td><td class="no">Not yet</td><td>Their prices are applied at checkout by Shopify functions.</td></tr>
@@ -85,7 +85,7 @@
                 <h2>Before you start</h2>
                 <ol class="docs-check">
                     <li><strong>Be on Growth or Scale.</strong> You can build a test on any plan, but launching needs Growth or Scale.</li>
-                    <li><strong>Publish the experience</strong> you want to test, and make sure it shows on your store (its block is placed in the Theme Editor, or in Shopify's checkout editor for checkout blocks).</li>
+                    <li><strong>Publish the widget</strong> you want to test, and make sure it shows on your store (its block is placed in the Theme Editor, or in Shopify's checkout editor for checkout blocks).</li>
                     <li><strong>Check that Analytics is connected</strong> (Analytics in the app). Tests are measured with the OrderOrbit Space web pixel.</li>
                     <li><strong>Make sure there's enough traffic.</strong> A winner needs at least 1,000 visitors and 100 conversions in every variant. See the <a href="#practices">sample size table</a> to estimate how long that takes for your store.</li>
                     <li><strong>Write down one idea to test</strong>, and why you think it will help. Testing one change at a time makes the result easy to act on.</li>
@@ -95,12 +95,12 @@
             {{-- 4 --}}
             <section id="setup">
                 <h2>Set up a test, step by step</h2>
-                <p>Open <strong>A/B tests</strong> in the app, choose the experience under <strong>Create a test</strong> and click <strong>Create test</strong>. You can also click <strong>Create A/B test</strong> on any published experience's page. The setup page has nine steps; you can save a draft at any point.</p>
+                <p>Open <strong>A/B tests</strong> in the app, choose the widget under <strong>Create a test</strong> and click <strong>Create test</strong>. You can also click <strong>Create A/B test</strong> on any published widget's page. The setup page has nine steps; you can save a draft at any point.</p>
 
                 <div class="docs-step" id="step-1">
                     <span class="docs-num">1</span>
                     <div>
-                        <h3>Experience and hypothesis</h3>
+                        <h3>Widget and hypothesis</h3>
                         <p>Give the test a name you'll recognise later, such as "Upsell: slider vs cards". The hypothesis is optional but useful: what you're changing, what you expect to happen and why. For example: <em>"Showing the upsell as a slider will raise add-to-cart rate because more products fit on mobile."</em></p>
                     </div>
                 </div>
@@ -109,12 +109,12 @@
                     <span class="docs-num">2</span>
                     <div>
                         <h3>Variants</h3>
-                        <p><strong>A · Control</strong> is the experience exactly as published; it can't be edited here. <strong>Variant B</strong> starts as a copy of the control. Change one or more of:</p>
+                        <p><strong>A · Control</strong> is the widget exactly as published; it can't be edited here. <strong>Variant B</strong> starts as a copy of the control. Change one or more of:</p>
                         <ul class="docs-list">
                             <li><strong>Template</strong>: pick another layout of the same feature.</li>
                             <li><strong>Text</strong>: open the Text panel and rewrite headlines, messages or buttons. Fields you leave as they are keep the control's text.</li>
                             <li><strong>Design</strong>: open the Design panel and change colours, corners, spacing and so on.</li>
-                            <li><strong>Holdout</strong>: tick it to hide the experience from this group instead.</li>
+                            <li><strong>Holdout</strong>: tick it to hide the widget from this group instead.</li>
                         </ul>
                         <p>Tick <strong>Add a third variant</strong> for an A/B/C test. Variants must differ from the control; the app won't launch a test where B is identical to A.</p>
                     </div>
@@ -132,7 +132,7 @@
                     <span class="docs-num">4</span>
                     <div>
                         <h3>Audience</h3>
-                        <p>Choose who takes part. Visitors outside the audience see the experience as published and aren't counted. Leave everything empty to include everyone who sees the experience.</p>
+                        <p>Choose who takes part. Visitors outside the audience see the widget as published and aren't counted. Leave everything empty to include everyone who sees the widget.</p>
                         <div class="docs-table">
                             <table>
                                 <thead><tr><th>Setting</th><th>Storefront</th><th>Checkout and Thank You</th></tr></thead>
@@ -158,10 +158,10 @@
                             <table>
                                 <thead><tr><th>Metric</th><th>What it measures</th><th>Best for</th></tr></thead>
                                 <tbody>
-                                    <tr><td><strong>Conversion rate</strong></td><td>Share of test visitors who placed an order after first seeing the experience.</td><td>Most tests: trust, countdowns, sticky add to cart, checkout blocks.</td></tr>
+                                    <tr><td><strong>Conversion rate</strong></td><td>Share of test visitors who placed an order after first seeing the widget.</td><td>Most tests: trust, countdowns, sticky add to cart, checkout blocks.</td></tr>
                                     <tr><td><strong>Revenue per visitor</strong></td><td>Order revenue divided by visitors, so larger orders count.</td><td>Upsells and offers that change order size as much as conversion.</td></tr>
                                     <tr><td><strong>Revenue</strong></td><td>Total revenue, compared per visitor so an uneven split stays fair.</td><td>When revenue is the goal; it's tested the same way as revenue per visitor.</td></tr>
-                                    <tr><td><strong>Click-through rate</strong></td><td>Share of test visitors who clicked the experience (a button, link or accepting its offer).</td><td>Thank You and Order Status blocks, where the order is already placed.</td></tr>
+                                    <tr><td><strong>Click-through rate</strong></td><td>Share of test visitors who clicked the widget (a button, link or accepting its offer).</td><td>Thank You and Order Status blocks, where the order is already placed.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -202,7 +202,7 @@
                     <span class="docs-num">9</span>
                     <div>
                         <h3>Preview and launch</h3>
-                        <p>See every variant side by side as shoppers will see it (previews use your last saved setup). If anything blocks launching, it's listed here: allocation not adding up to 100%, an unpublished experience, another running test on the same experience, a variant identical to the control, or a plan without A/B testing. Click <strong>Launch test</strong>. The split starts on your store within a minute.</p>
+                        <p>See every variant side by side as shoppers will see it (previews use your last saved setup). If anything blocks launching, it's listed here: allocation not adding up to 100%, an unpublished widget, another running test on the same widget, a variant identical to the control, or a plan without A/B testing. Click <strong>Launch test</strong>. The split starts on your store within a minute.</p>
                     </div>
                 </div>
             </section>
@@ -224,10 +224,10 @@
                 <h2>How visitors are split</h2>
                 <ul class="docs-list">
                     <li><strong>Stable assignment.</strong> Each visitor gets a random id stored in their browser (in checkout, in the extension's storage). The variant comes from a hash of the test and that id, so the same visitor always lands in the same variant, on every page and every visit.</li>
-                    <li><strong>Audience first.</strong> Visitors outside the audience see the experience as published and aren't counted in the results.</li>
-                    <li><strong>Exposure.</strong> A visitor joins the test the first time they see the experience; that's recorded once. They belong to that variant from then on.</li>
+                    <li><strong>Audience first.</strong> Visitors outside the audience see the widget as published and aren't counted in the results.</li>
+                    <li><strong>Exposure.</strong> A visitor joins the test the first time they see the widget; that's recorded once. They belong to that variant from then on.</li>
                     <li><strong>What counts.</strong> Orders, adds to cart, checkouts and clicks after a visitor's first exposure, until the test ends. Orders placed before the visitor saw the test never count.</li>
-                    <li><strong>Holdout.</strong> Visitors in a holdout group are counted as exposed, but the experience isn't shown to them.</li>
+                    <li><strong>Holdout.</strong> Visitors in a holdout group are counted as exposed, but the widget isn't shown to them.</li>
                     <li><strong>Consent.</strong> Results only include shoppers who allow analytics in your cookie banner. The split itself still applies to everyone.</li>
                 </ul>
             </section>
@@ -239,7 +239,7 @@
                 <div class="docs-states">
                     <div class="s-collecting"><strong>Collecting data</strong><span>The test hasn't reached its minimum days, visitors or conversions in every variant yet. It shows what's missing and a progress bar. No winner is shown, however good a variant looks.</span></div>
                     <div class="s-winner"><strong>Winner declared</strong><span>A variant is significantly better than the control on the primary metric, all minimums are met and no guardrail is broken. You can apply it.</span></div>
-                    <div class="s-control"><strong>The control wins</strong><span>Every variant did significantly worse than the control. Keep the experience as it is.</span></div>
+                    <div class="s-control"><strong>The control wins</strong><span>Every variant did significantly worse than the control. Keep the widget as it is.</span></div>
                     <div class="s-none"><strong>No clear winner</strong><span>The minimums are met but the difference isn't statistically significant. The change probably doesn't matter much; keep whichever you prefer, or test a bolder idea.</span></div>
                     <div class="s-guard"><strong>Guardrail breached</strong><span>A variant improved the primary metric but broke a guardrail, so it isn't declared the winner.</span></div>
                 </div>
@@ -312,15 +312,15 @@ Lift:        (B − A) / A,  shown with its confidence interval</code></pre>
                         <tbody>
                             <tr><td><strong>Pause</strong></td><td>Everyone sees the control until you resume. Visitors keep their variant. While paused you can edit the setup.</td></tr>
                             <tr><td><strong>Resume</strong></td><td>The split starts again with the same assignments.</td></tr>
-                            <tr><td><strong>Stop test</strong></td><td>Ends the test early. Everyone sees the experience as published, and the result at that moment is saved.</td></tr>
-                            <tr><td><strong>Apply winner</strong></td><td>Publishes the winning variant's template, text and design to the experience for everyone, and completes the test.</td></tr>
+                            <tr><td><strong>Stop test</strong></td><td>Ends the test early. Everyone sees the widget as published, and the result at that moment is saved.</td></tr>
+                            <tr><td><strong>Apply winner</strong></td><td>Publishes the winning variant's template, text and design to the widget for everyone, and completes the test.</td></tr>
                             <tr><td><strong>End date</strong></td><td>A test with an end date completes on its own that day.</td></tr>
                             <tr><td><strong>Duplicate as new test</strong></td><td>Copies the setup into a new draft, for a follow-up test.</td></tr>
                             <tr><td><strong>Delete</strong></td><td>Removes a draft or a finished test. Running tests must be stopped first.</td></tr>
                         </tbody>
                     </table>
                 </div>
-                <p>Only one test can run on an experience at a time. Editing the experience itself while a test runs changes what every variant inherits, so avoid it until the test ends.</p>
+                <p>Only one test can run on a widget at a time. Editing the widget itself while a test runs changes what every variant inherits, so avoid it until the test ends.</p>
             </section>
 
             {{-- 10 --}}
@@ -347,7 +347,7 @@ Lift:        (B − A) / A,  shown with its confidence interval</code></pre>
                         </tbody>
                     </table>
                 </div>
-                <p>Example: a store converting at 2% that wants to detect a 20% lift (2% → 2.4%) needs about 21,200 visitors per variant, so about 42,400 for an A/B test. With 3,000 visitors a day seeing the experience, that's about two weeks. Find your conversion rate in Analytics. Click-through tests use the same table with click-through rate.</p>
+                <p>Example: a store converting at 2% that wants to detect a 20% lift (2% → 2.4%) needs about 21,200 visitors per variant, so about 42,400 for an A/B test. With 3,000 visitors a day seeing the widget, that's about two weeks. Find your conversion rate in Analytics. Click-through tests use the same table with click-through rate.</p>
             </section>
 
             {{-- 11 --}}
@@ -367,12 +367,12 @@ Lift:        (B − A) / A,  shown with its confidence interval</code></pre>
             <section id="faq">
                 <h2>Troubleshooting and FAQ</h2>
                 @include('site.partials.faq', ['openFirst' => false, 'faqs' => [
-                    ['The test shows 0 visitors.', 'Check that the experience shows on your store (its block is placed, and its page and targeting match), that Analytics is connected, and that you browse with analytics cookies allowed. Visitors appear within a few minutes of seeing the experience.'],
+                    ['The test shows 0 visitors.', 'Check that the widget shows on your store (its block is placed, and its page and targeting match), that Analytics is connected, and that you browse with analytics cookies allowed. Visitors appear within a few minutes of seeing the widget.'],
                     ['I always see the same variant. How do I check the others?', 'That\'s stable assignment working. Use the previews on the setup page, or open your store in a private window: each new private window is a new visitor.'],
                     ['Why is there no winner even though B looks better?', 'Either the minimums aren\'t met yet (the banner lists what\'s missing) or the difference isn\'t statistically significant. Small differences often disappear with more data.'],
                     ['Can I change the test while it runs?', 'Pause it first; then you can edit the setup and resume. Changing variants mid-test mixes two experiments, so prefer stopping and duplicating for a new idea.'],
-                    ['What happens to visitors when the test ends?', 'Everyone sees the experience as published, or the winner if you applied it.'],
-                    ['Does testing slow down my store?', 'No. The test script is under 1 KB and only loads on pages with an experience under test.'],
+                    ['What happens to visitors when the test ends?', 'Everyone sees the widget as published, or the winner if you applied it.'],
+                    ['Does testing slow down my store?', 'No. The test script is under 1 KB and only loads on pages with a widget under test.'],
                     ['Is the visitor id personal data?', 'It\'s a random id with no name, email or address, stored in the shopper\'s browser to keep their variant stable.'],
                     ['Which plan do I need?', 'Growth or Scale to launch tests. You can set tests up on any plan.'],
                 ]])

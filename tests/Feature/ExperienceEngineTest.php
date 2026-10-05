@@ -149,7 +149,7 @@ class ExperienceEngineTest extends TestCase
         $this->assertSame(6, app(\App\Services\Usage::class)->current($store->fresh(), 'active_experiences'));
         // The total cap counts every live offer.
         $store->forceFill(['entitlements' => ['limits' => ['active_experiences' => 6]]])->save();
-        $refused($manager->create($store->fresh(), 'trust', 'rating-strip', null), 'The Starter plan includes 6 live offers in total. Pause or archive one that\'s live, or upgrade for more.');
+        $refused($manager->create($store->fresh(), 'trust', 'rating-strip', null), 'The Starter plan includes 6 live widgets in total. Pause or archive one that\'s live, or upgrade for more.');
         $store->forceFill(['entitlements' => null])->save();
 
         // Back to Free: cart upsells and the older trust block are paused (marked, not deleted);
@@ -296,7 +296,7 @@ class ExperienceEngineTest extends TestCase
         $nav = $this->page('/app/cro', $owner)->assertOk()->assertJsonPath('shared.nav.section', 'cro')->json('shared.nav.groups');
         $items = collect($nav)->flatMap(fn ($g) => $g['items']);
         $this->assertContains('/app/cro/progressive-gifts', $items->pluck('href')->all());
-        $this->assertContains('All offers', $items->pluck('label')->all());
+        $this->assertContains('All widgets', $items->pluck('label')->all());
         $this->assertContains('Templates', $items->pluck('label')->all());
         foreach (['cart-upsells', 'countdown', 'sticky-atc', 'trust'] as $feature) {
             $this->page("/app/cro/features/{$feature}", $owner)->assertOk()->assertJsonPath('component', 'cro/feature');

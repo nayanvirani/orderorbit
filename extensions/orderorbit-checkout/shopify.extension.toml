@@ -45,5 +45,5 @@ key = "checkout"
   [[extensions.settings.fields]]
   key = "experience_id"
   type = "single_line_text_field"
-  name = "Experience ID (optional)"
+  name = "Widget ID (optional)"
   description = "Show one specific block. Copy its ID from the block's page in OrderOrbit Space."

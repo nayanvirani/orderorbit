@@ -15,7 +15,7 @@ class Permissions
 
     public const MATRIX = [
         'view_dashboard' => ['label' => 'View dashboard and reports', 'roles' => ['owner', 'admin', 'staff']],
-        'manage_experiences' => ['label' => 'Create and publish experiences, workflows and tests', 'roles' => ['owner', 'admin', 'staff']],
+        'manage_experiences' => ['label' => 'Create and publish widgets, workflows and tests', 'roles' => ['owner', 'admin', 'staff']],
         'manage_settings' => ['label' => 'Change store settings', 'roles' => ['owner', 'admin']],
         'manage_users' => ['label' => 'Invite staff and change roles', 'roles' => ['owner', 'admin']],
         'view_activity' => ['label' => 'View the activity log', 'roles' => ['owner', 'admin']],

@@ -43,7 +43,7 @@
     <div class="orbit" aria-hidden="true"><span></span><span></span><b></b><i></i></div>
     <span class="eyebrow">Shopify CRO · checkout · customer experience</span>
     <h1>OrderOrbit Space is <em>coming soon.</em></h1>
-    <p>Bundles, progressive gifts and checkout experiences for Shopify stores, all in one app. We're putting on the finishing touches.</p>
+    <p>Bundles, progressive gifts and checkout widgets for Shopify stores, all in one app. We're putting on the finishing touches.</p>
 
     <details @if ($failed) open @endif>
         <summary>Owner access</summary>

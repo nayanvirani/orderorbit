@@ -61,7 +61,7 @@ export default function Support({ tickets, categories, priorities, statuses, hel
             <input type="text" maxLength={160} value={data.subject} onChange={set('subject')} placeholder="The bundle doesn't show on my product page" aria-invalid={errors.subject ? true : undefined} />
           </Field>
           <Field label="What's happening?" error={errors.body}>
-            <textarea rows={6} maxLength={10000} value={data.body} onChange={set('body')} placeholder="What did you expect, what happened instead, and which page or experience is it on?" aria-invalid={errors.body ? true : undefined} />
+            <textarea rows={6} maxLength={10000} value={data.body} onChange={set('body')} placeholder="What did you expect, what happened instead, and which page or widget is it on?" aria-invalid={errors.body ? true : undefined} />
           </Field>
           <Field label="Attachments (optional, up to 3 files, 4 MB each)" error={attachmentError}>
             <input ref={files} type="file" multiple accept="image/*,application/pdf,text/plain,text/csv" />

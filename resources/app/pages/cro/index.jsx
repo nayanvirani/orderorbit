@@ -13,7 +13,7 @@ export default function Offers({ type, typeDef, filters, types, experiences }) {
   const [selected, setSelected] = useState([]);
   const [bulk, setBulk] = useState('');
   const createHref = appUrl(route('app.cro.experiences.create', { type }));
-  const createLabel = typeDef ? `Create ${typeDef.singular}` : 'Create experience';
+  const createLabel = typeDef ? `Create ${typeDef.singular}` : 'Create widget';
   const filter = (k, v) => visit(withQuery(url, { [k]: v || null, page: null }));
   const all = experiences.data.length > 0 && selected.length === experiences.data.length;
 
@@ -27,7 +27,7 @@ export default function Offers({ type, typeDef, filters, types, experiences }) {
   };
 
   return (
-    <Page heading={typeDef?.label || 'All offers'}
+    <Page heading={typeDef?.label || 'All widgets'}
       primary={<s-button slot="primary-action" variant="primary" href={createHref}>{createLabel}</s-button>}
       secondary={<s-button slot="secondary-actions" onClick={download}>Export CSV</s-button>}>
       <s-section>
@@ -53,8 +53,8 @@ export default function Offers({ type, typeDef, filters, types, experiences }) {
 
       <s-section>
         {!experiences.data.length ? (
-          filters.q || filters.status || (!type && filters.type) ? <s-paragraph>No experiences match those filters.</s-paragraph> : (
-            <EmptyState title={typeDef ? `No ${typeDef.plural} yet` : 'No experiences yet'} text={typeDef?.empty || 'Create your first experience. Pick a template, customise it and publish it from the Theme Editor.'}>
+          filters.q || filters.status || (!type && filters.type) ? <s-paragraph>No widgets match those filters.</s-paragraph> : (
+            <EmptyState title={typeDef ? `No ${typeDef.plural} yet` : 'No widgets yet'} text={typeDef?.empty || 'Create your first widget. Pick a template, customise it and publish it from the Theme Editor.'}>
               <s-button variant="primary" href={createHref}>{createLabel}</s-button>
             </EmptyState>
           )
@@ -65,7 +65,7 @@ export default function Offers({ type, typeDef, filters, types, experiences }) {
                 <option value="">Bulk actions</option><option value="pause">Pause</option><option value="archive">Archive</option>
               </select>
               <s-button disabled={!bulk || !selected.length || undefined} onClick={async () => {
-                const r = await submit(route('app.cro.experiences.bulk'), { ids: selected, bulk_action: bulk }, { confirm: 'Apply this action to the selected experiences?' });
+                const r = await submit(route('app.cro.experiences.bulk'), { ids: selected, bulk_action: bulk }, { confirm: 'Apply this action to the selected widgets?' });
                 if (r.ok) setSelected([]);
               }}>Apply</s-button>
             </div>

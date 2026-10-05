@@ -10,7 +10,7 @@ export default function Privacy({ privacy, events, oldest, policies = [] }) {
   return (
     <Page heading="Settings">
       <s-section heading="Consent">
-        <s-paragraph>OrderOrbit Space analytics run in a Shopify web pixel, which follows your store's cookie banner and Shopify's Customer Privacy settings: events are only recorded for shoppers who allow analytics. Storefront experiences still show to everyone.</s-paragraph>
+        <s-paragraph>OrderOrbit Space analytics run in a Shopify web pixel, which follows your store's cookie banner and Shopify's Customer Privacy settings: events are only recorded for shoppers who allow analytics. Storefront widgets still show to everyone.</s-paragraph>
         <s-paragraph>No names, emails or addresses are stored. Shoppers are an anonymous visitor id and, when signed in or after buying, a customer number. Shopify's customer data requests and deletion requests are handled automatically.</s-paragraph>
       </s-section>
 

@@ -33,7 +33,7 @@ class Audiences
         'product_purchased' => ['label' => 'Bought a product', 'type' => 'products', 'ops' => ['any' => 'bought any of', 'not' => 'never bought']],
         'country' => ['label' => 'Market country', 'type' => 'text', 'ops' => ['in' => 'is one of', 'not' => 'isn\'t one of'], 'help' => 'Two-letter codes separated by commas, e.g. US, CA.'],
         'device' => ['label' => 'Device', 'type' => 'select', 'ops' => ['is' => 'is'], 'options' => ['mobile' => 'Mobile', 'desktop' => 'Desktop']],
-        'experience' => ['label' => 'Used an experience', 'type' => 'experience', 'ops' => ['viewed' => 'viewed', 'clicked' => 'clicked', 'added' => 'added to cart from']],
+        'experience' => ['label' => 'Used a widget', 'type' => 'experience', 'ops' => ['viewed' => 'viewed', 'clicked' => 'clicked', 'added' => 'added to cart from']],
     ];
 
     /** Prebuilt segments merchants start from. */
@@ -44,13 +44,13 @@ class Audiences
         'high-aov' => ['name' => 'High-AOV customers', 'description' => 'Customers whose average order is $100 or more.', 'match' => 'all', 'rules' => [['field' => 'aov', 'op' => 'gte', 'value' => 100]]],
         'vip' => ['name' => 'VIP customers', 'description' => '3 or more orders, or $500 or more spent.', 'match' => 'any', 'rules' => [['field' => 'orders_count', 'op' => 'gte', 'value' => 3], ['field' => 'ltv', 'op' => 'gte', 'value' => 500]]],
         'product-purchasers' => ['name' => 'Product purchasers', 'description' => 'Customers who bought specific products. Choose the products.', 'match' => 'all', 'rules' => [['field' => 'product_purchased', 'op' => 'any', 'value' => []]]],
-        'interactors' => ['name' => 'Experience interactors', 'description' => 'Shoppers who clicked an experience on this device. Choose the experience.', 'match' => 'all', 'rules' => [['field' => 'experience', 'op' => 'clicked', 'value' => '']]],
+        'interactors' => ['name' => 'Widget interactors', 'description' => 'Shoppers who clicked a widget on this device. Choose the widget.', 'match' => 'all', 'rules' => [['field' => 'experience', 'op' => 'clicked', 'value' => '']]],
         'at-risk' => ['name' => 'At-risk customers', 'description' => 'Last order 60 to 180 days ago.', 'match' => 'all', 'rules' => [['field' => 'days_since_order', 'op' => 'gte', 'value' => 60], ['field' => 'days_since_order', 'op' => 'lte', 'value' => 180]]],
         'lapsed' => ['name' => 'Lapsed customers', 'description' => 'No order in the last 180 days.', 'match' => 'all', 'rules' => [['field' => 'days_since_order', 'op' => 'gte', 'value' => 180]]],
         'mobile' => ['name' => 'Mobile shoppers', 'description' => 'Browsing on a phone.', 'match' => 'all', 'rules' => [['field' => 'device', 'op' => 'is', 'value' => 'mobile']]],
     ];
 
-    public const OUTCOMES = ['show' => 'Show the experience only to this audience', 'swap' => 'Show it in another template', 'hide' => 'Hide the experience'];
+    public const OUTCOMES = ['show' => 'Show the widget only to this audience', 'swap' => 'Show it in another template', 'hide' => 'Hide the widget'];
 
     /** Live-context conditions a rule can add to its segments. */
     public const CONDITIONS = ['device', 'cart_min', 'cart_max', 'utm_source', 'utm_campaign'];

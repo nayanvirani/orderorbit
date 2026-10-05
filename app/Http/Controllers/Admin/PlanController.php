@@ -83,7 +83,13 @@ class PlanController extends Controller
             if ($limitsIn !== null) {
                 $limits = [];
                 foreach (array_keys(Usage::METERS) as $meter) {
-                    $value = $limitsIn[$plan->key][$meter] ?? null;
+                    // Limits of modules that are off aren't sent (the field is disabled): keep them.
+                    if (! array_key_exists($meter, (array) ($limitsIn[$plan->key] ?? []))) {
+                        $limits[$meter] = ($plan->limits ?? [])[$meter] ?? null;
+
+                        continue;
+                    }
+                    $value = $limitsIn[$plan->key][$meter];
                     $limits[$meter] = $value === null || $value === '' ? null : (int) $value;
                 }
                 if ($limits != ($plan->limits ?? [])) {

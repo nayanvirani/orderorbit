@@ -32,7 +32,7 @@
         <div><small>Plan</small><b style="font-size:20px">{{ $planKey ? ($plans[$planKey]['name'] ?? $planKey) : 'None' }}</b><span>{{ $store->compPlan() ? 'Complimentary'.(! empty($e['plan_until']) ? ' until '.\Illuminate\Support\Carbon::parse($e['plan_until'])->toFormattedDateString() : '') : ($subscription ? ($subscription->status ?? '').' subscription' : 'No subscription') }}</span></div>
         <div><small>Features</small><b style="font-size:20px">{{ count(array_filter(array_keys(\App\Support\Modules::ALL), fn ($k) => $store->planIncludes($k))) }} / {{ count(\App\Support\Modules::ALL) }}</b><span>{{ $usageNow->filter(fn ($m) => $m['limit'] !== null && $m['used'] >= $m['limit'])->count() }} limits reached</span></div>
         <div><small>Events · 14 days</small><b style="font-size:20px">{{ number_format($eventsByDay->sum()) }}</b><span>Pixel {{ $store->web_pixel_id ? 'connected' : 'not connected' }}</span></div>
-        <div><small>Live experiences</small><b style="font-size:20px">{{ $experiences->where('status', 'published')->sum('n') }}</b><span>{{ $experiences->sum('n') }} in total</span></div>
+        <div><small>Live widgets</small><b style="font-size:20px">{{ $experiences->where('status', 'published')->sum('n') }}</b><span>{{ $experiences->sum('n') }} in total</span></div>
     </div>
     <div class="ad-grid">
         <section class="ad-card">
@@ -79,7 +79,7 @@
     @endif
     <div class="ad-grid">
         <section class="ad-card flush">
-            <header><h2>Experiences</h2></header>
+            <header><h2>Widgets</h2></header>
             <table class="ad-table"><thead><tr><th>Type</th><th>Status</th><th class="num">Count</th></tr></thead><tbody>
                 @forelse ($experiences as $x)<tr><td>{{ $x->type }}</td><td>{{ $x->status }}</td><td class="num">{{ $x->n }}</td></tr>@empty<tr><td colspan="3" class="ad-empty">None</td></tr>@endforelse
             </tbody></table>

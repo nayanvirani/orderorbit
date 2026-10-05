@@ -135,7 +135,7 @@ class AnalyticsReportsController extends Controller
             return $this->csv('revenue', ['Group', 'Name', 'Orders', 'Revenue'], array_merge(
                 array_map(fn ($k, $r) => ['Traffic source ('.Attribution::MODELS[$model].')', $k, $r['orders'], round($r['revenue'], 2)], array_keys($report['by_source']), $report['by_source']),
                 array_map(fn ($k, $r) => ['UTM campaign', $k, $r['orders'], round($r['revenue'], 2)], array_keys($report['by_campaign']), $report['by_campaign']),
-                array_map(fn ($k, $r) => ['Experience (direct)', $experiences[$k]->name ?? $k, $r['direct_orders'], round($r['direct_revenue'], 2)], array_keys($report['by_experience']), $report['by_experience']),
+                array_map(fn ($k, $r) => ['Widget (direct)', $experiences[$k]->name ?? $k, $r['direct_orders'], round($r['direct_revenue'], 2)], array_keys($report['by_experience']), $report['by_experience']),
             ));
         }
 

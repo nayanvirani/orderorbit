@@ -9,7 +9,7 @@ class SyncTemplates extends Command
 {
     protected $signature = 'orderorbit:sync-templates';
 
-    protected $description = 'Sync the CRO template library from the experience type registry';
+    protected $description = 'Sync the CRO template library from the widget type registry';
 
     public function handle(TemplateLibrary $library): int
     {

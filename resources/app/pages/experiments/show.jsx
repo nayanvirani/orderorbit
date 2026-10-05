@@ -35,7 +35,7 @@ export default function ExperimentResults({ experiment: x, results: r, primary, 
       <s-section heading="Summary">
         <KeyValue rows={[
           ['Status', <TestStatus status={x.status} />],
-          ['Experience', <s-link href={appUrl(route('app.cro.experiences.show', { experience: x.experience_id }))}>{x.experience}</s-link>],
+          ['Widget', <s-link href={appUrl(route('app.cro.experiences.show', { experience: x.experience_id }))}>{x.experience}</s-link>],
           x.hypothesis && ['Hypothesis', x.hypothesis],
           ['Primary metric', x.primary_label],
           ['Duration', `${x.started_at ? `${Math.floor(r.days)} of at least ${x.min_days} days · since ${date(x.started_at)}` : 'Not started'}${x.ends_at ? ` · ends ${date(x.ends_at)}` : ''}`],
@@ -52,9 +52,9 @@ export default function ExperimentResults({ experiment: x, results: r, primary, 
                 <s-button href={appUrl(route('app.experiments.edit', { experiment: x.id }))}>Edit setup</s-button>
               </>
             )}
-            {active && <ActionButton tone="critical" url={act('stop')} confirm="Stop this test? Everyone will see the experience as published.">Stop test</ActionButton>}
+            {active && <ActionButton tone="critical" url={act('stop')} confirm="Stop this test? Everyone will see the widget as published.">Stop test</ActionButton>}
             {d.winner && d.winner !== 'A' && ['running', 'paused', 'completed', 'stopped'].includes(x.status) && (
-              <ActionButton variant="primary" url={act('apply')} data={{ variant: d.winner }} confirm={`Publish variant ${d.winner} to the experience for everyone?`}>Apply winner ({d.winner})</ActionButton>
+              <ActionButton variant="primary" url={act('apply')} data={{ variant: d.winner }} confirm={`Publish variant ${d.winner} to the widget for everyone?`}>Apply winner ({d.winner})</ActionButton>
             )}
             <s-button href={appUrl(route('app.experiments.export', { experiment: x.id }))} target="_blank">Export CSV</s-button>
             <s-button href={`${docsUrl}#results`} target="_blank" variant="tertiary">How to read results</s-button>

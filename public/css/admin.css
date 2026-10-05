@@ -247,3 +247,4 @@ textarea.ad-code { display: block; width: 100%; padding: 12px 14px; border-radiu
 .ad-collapse > form { padding: 0 18px 18px; }
 .ad-collapse .ad-table input { width: 100%; }
 .ad-module.child { padding-left: 26px; }
+.ad-limit:disabled { background: var(--soft); color: var(--muted); }

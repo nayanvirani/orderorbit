@@ -100,7 +100,7 @@ class ExperimentsTest extends TestCase
         // One running test per experience; pausing removes the split from the storefront.
         $second = $manager->create($this->store, $experience, null);
         $manager->save($second, $this->setupInput($second));
-        $this->assertContains('This experience is already in a running test. Stop that one first.', $manager->launchProblems($second->fresh()));
+        $this->assertContains('This widget is already in a running test. Stop that one first.', $manager->launchProblems($second->fresh()));
         $manager->pause($experiment->fresh(), null);
         $this->assertArrayNotHasKey('x', collect(app(StorefrontPublisher::class)->payload($this->store)['experiences'])->firstWhere('id', $experience->handle));
     }

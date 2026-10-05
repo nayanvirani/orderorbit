@@ -13,7 +13,7 @@ export default function Rules(props) {
     <Page heading="Audiences" back={route('app.audiences.segments')} backLabel="Audiences">
       <AudienceNotes {...props} />
       <s-section heading="Personalization rules">
-        <p className="oo-muted">If a shopper matches a rule, it shows an experience only to them, shows it in another template, or hides it. Rules run top to bottom: for each experience, the first rule that matches wins.</p>
+        <p className="oo-muted">If a shopper matches a rule, it shows a widget only to them, shows it in another template, or hides it. Rules run top to bottom: for each widget, the first rule that matches wins.</p>
         {conflicts.map((names, i) => <s-banner key={i} tone="warning">“{names.join('”, “')}” target the same experience. When a shopper matches more than one, the one higher in the list wins.</s-banner>)}
         {can.manage_experiences && <div style={{ margin: '12px 0' }}><s-button href={appUrl(route('app.audiences.rules.create'))} variant="primary">Create rule</s-button></div>}
         {!rules.length ? (

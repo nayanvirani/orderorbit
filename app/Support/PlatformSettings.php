@@ -16,7 +16,7 @@ class PlatformSettings
 
     /** key => [config path, label, type, help] */
     public const FIELDS = [
-        'warn_at' => ['shopify.billing.warn_at', 'Warn merchants when a usage limit reaches', 'percent', 'Shown in the app as "You\'re close to your plan\'s limit for …", for every limit (experiences, bundles, workflows, automation runs…).'],
+        'warn_at' => ['shopify.billing.warn_at', 'Warn merchants when a usage limit reaches', 'percent', 'Shown in the app as "You\'re close to your plan\'s limit for …", for every limit (widgets, bundles, workflows, automation runs…).'],
         'test_shops' => ['shopify.test_shops', 'Test stores (full access without a subscription)', 'list', 'One myshopify.com domain per line. They get the test plan below for free.'],
         'test_shop_plan' => ['shopify.test_shop_plan', 'Plan for test stores', 'plan', null],
     ];

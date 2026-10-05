@@ -65,7 +65,7 @@ class ExperimentManager
     public static function unsupported(Experience $experience): ?string
     {
         if (! Registry::has($experience->type)) {
-            return 'This experience type no longer exists.';
+            return 'This widget type no longer exists.';
         }
         if (in_array($experience->type, ['bundles', 'progressive-gifts'], true)) {
             return 'Bundles and Progressive gifts set prices at checkout, so they can\'t be split-tested yet.';
@@ -257,10 +257,10 @@ class ExperimentManager
             }
         }
         if ($experience->status !== 'published') {
-            $problems[] = 'Publish the experience first: tests split the traffic of a live experience.';
+            $problems[] = 'Publish the widget first: tests split the traffic of a live widget.';
         }
         if (Experiment::where('experience_id', $experience->id)->whereKeyNot($experiment->id)->whereIn('status', ['running', 'paused'])->exists()) {
-            $problems[] = 'This experience is already in a running test. Stop that one first.';
+            $problems[] = 'This widget is already in a running test. Stop that one first.';
         }
         $variants = $experiment->variants;
         if ($variants->count() < 2 || $variants->sum('allocation') !== 100) {
@@ -333,9 +333,9 @@ class ExperimentManager
             $this->experiences->publish($experience->fresh(), $user, 'Applied variant '.$key.' from A/B test “'.$experiment->name.'”');
         }
         if (in_array($experiment->status, ['running', 'paused'], true)) {
-            $this->stop($experiment->fresh(), $user, 'completed', 'Completed. Variant '.$key.' ('.$variant->name.') applied to the experience.');
+            $this->stop($experiment->fresh(), $user, 'completed', 'Completed. Variant '.$key.' ('.$variant->name.') applied to the widget.');
         } else {
-            $experiment->log('Variant '.$key.' ('.$variant->name.') applied to the experience.', $user);
+            $experiment->log('Variant '.$key.' ('.$variant->name.') applied to the widget.', $user);
         }
     }
 

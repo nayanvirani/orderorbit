@@ -5,7 +5,7 @@ import AudienceNotes from './_nav.jsx';
 
 const HELP = {
   show: 'Everyone else doesn\'t see it. Example: show the VIP offer only to VIP customers.',
-  swap: 'Matching shoppers see the same experience in a different layout. Example: the compact bundle template on mobile.',
+  swap: 'Matching shoppers see the same widget in a different layout. Example: the compact bundle template on mobile.',
   hide: 'Matching shoppers don\'t see it. Example: hide the first-order discount from returning customers.',
 };
 
@@ -33,11 +33,11 @@ export default function Rule(props) {
       <AudienceNotes {...props} />
       {Object.keys(errors).length > 0 && <s-banner tone="warning">Fix the highlighted fields.</s-banner>}
 
-      <s-section heading="1. Which experience">
+      <s-section heading="1. Which widget">
         <div className={`b-field ${errors.experience_id ? 'b-has-error' : ''}`}>
-          <label htmlFor="ru-exp">Experience</label>
+          <label htmlFor="ru-exp">Widget</label>
           <select id="ru-exp" value={data.experience_id} onChange={(e) => set('experience_id', e.target.value)}>
-            <option value="">Choose an experience</option>
+            <option value="">Choose a widget</option>
             {experiences.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
           </select>
           {errors.experience_id && <p className="b-error">{errors.experience_id}</p>}

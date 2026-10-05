@@ -116,7 +116,7 @@ class AudienceController extends Controller
         }
         $usage = Audiences::usage($store, $segment->id);
         if (array_filter($usage)) {
-            return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $segment->id, 'error' => 'This segment is in use. Remove it from the experiences, rules, tests and workflows listed below first.']));
+            return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $segment->id, 'error' => 'This segment is in use. Remove it from the widgets, rules, tests and workflows listed below first.']));
         }
         $segment->forceFill(['archived_at' => now()])->save();
 
@@ -178,7 +178,7 @@ class AudienceController extends Controller
             'rules' => $rules->map(fn ($r) => [
                 'id' => $r->id, 'name' => $r->name, 'enabled' => (bool) $r->enabled, 'who' => $who($r), 'outcome' => $r->outcome,
                 'template' => $r->outcome === 'swap' && $r->experience ? (Registry::template($r->experience->type, (string) $r->template_key)['name'] ?? $r->template_key) : null,
-                'experience' => $r->experience->name ?? 'a removed experience',
+                'experience' => $r->experience->name ?? 'a removed widget',
             ]),
             'conflicts' => Audiences::conflicts($rules),
         ]);
@@ -200,7 +200,7 @@ class AudienceController extends Controller
         $errors = [];
         $experience = Experience::where('store_id', $store->id)->find((int) $request->input('experience_id'));
         if (! $experience || ! Audiences::personalizable($experience)) {
-            $errors['experience_id'] = 'Choose a storefront experience (Bundles, Progressive gifts and checkout blocks can\'t be personalized).';
+            $errors['experience_id'] = 'Choose a storefront widget (Bundles, Progressive gifts and checkout blocks can\'t be personalized).';
         }
         $outcome = array_key_exists($request->input('outcome'), Audiences::OUTCOMES) ? $request->input('outcome') : 'show';
         $template = $request->input('template_key');

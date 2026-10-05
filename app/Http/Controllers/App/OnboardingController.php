@@ -21,7 +21,7 @@ class OnboardingController extends Controller
 
     /** Section 41 / D1: the eight onboarding steps. */
     public const STEPS = [
-        'Store connection', 'Goal', 'First experience', 'Template', 'Configure', 'Preview', 'Publish and place', 'Verify analytics',
+        'Store connection', 'Goal', 'First widget', 'Template', 'Configure', 'Preview', 'Publish and place', 'Verify analytics',
     ];
 
     /** Recommended first experiences for each goal: [label, help, route, params]. */

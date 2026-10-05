@@ -22,7 +22,7 @@ export default function Experiments({ tab, q, experiments, testable, abTesting, 
 
   return (
     <Page heading="A/B tests">
-      <Hero eyebrow="A/B testing" icon="target" tone="analytics" title="Test before you <em>commit.</em>" lead="Split visitors between versions of a live experience and see which earns more. A winner is only named once the test has enough days, visitors and conversions to be sure.">
+      <Hero eyebrow="A/B testing" icon="target" tone="analytics" title="Test before you <em>commit.</em>" lead="Split visitors between versions of a live widget and see which earns more. A winner is only named once the test has enough days, visitors and conversions to be sure.">
         <s-button href={docsUrl} target="_blank">View documentation</s-button>
       </Hero>
       {error && <s-banner tone="critical">{error}</s-banner>}
@@ -33,18 +33,18 @@ export default function Experiments({ tab, q, experiments, testable, abTesting, 
       {can.manage_experiences && (
         <s-section heading="Create a test">
           {!testable.length ? (
-            <s-paragraph>Publish an experience first, such as an upsell, countdown, sticky add to cart, trust or checkout block. Tests split the traffic of a live experience.</s-paragraph>
+            <s-paragraph>Publish a widget first, such as an upsell, countdown, sticky add to cart, trust or checkout block. Tests split the traffic of a live widget.</s-paragraph>
           ) : (
             <>
               <Form className="oo-form-row" onSubmit={create}>
-                <Field label="Experience to test" className="grow">
+                <Field label="Widget to test" className="grow">
                   <select value={experience} onChange={(e) => setExperience(e.target.value)} style={{ minWidth: 260 }}>
                     {testable.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
                   </select>
                 </Field>
                 <s-button type="submit" variant="primary" loading={busy || undefined}>Create test</s-button>
               </Form>
-              <p className="oo-muted oo-small">Storefront experiences and checkout, Thank You and Order Status blocks can be tested. Bundles, Progressive gifts, the post-purchase offer and customer account blocks can't yet.</p>
+              <p className="oo-muted oo-small">Storefront widgets and checkout, Thank You and Order Status blocks can be tested. Bundles, Progressive gifts, the post-purchase offer and customer account blocks can't yet.</p>
             </>
           )}
         </s-section>
@@ -58,7 +58,7 @@ export default function Experiments({ tab, q, experiments, testable, abTesting, 
         {!experiments.length ? <s-paragraph><span className="oo-muted">{EMPTY[tab]}</span></s-paragraph> : (
           <div className="oo-scroll">
             <table className="oo-table stack">
-              <thead><tr><th>Test</th><th>Experience</th><th>Variants</th><th>Primary metric</th><th>Visitors per variant</th><th>Progress</th><th>Days</th><th>Status</th><th>Result</th></tr></thead>
+              <thead><tr><th>Test</th><th>Widget</th><th>Variants</th><th>Primary metric</th><th>Visitors per variant</th><th>Progress</th><th>Days</th><th>Status</th><th>Result</th></tr></thead>
               <tbody>
                 {experiments.map((x) => (
                   <tr key={x.id}>

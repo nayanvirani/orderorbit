@@ -37,7 +37,7 @@ function RuleRow({ rule, fields, experiences, error, onChange, onRemove }) {
       {type === 'experience' && (
         <span>
           <select value={value} onChange={(e) => onChange({ ...rule, value: e.target.value })} aria-label="Experience">
-            <option value="">Choose an experience</option>
+            <option value="">Choose a widget</option>
             {experiences.map((e) => <option key={e.handle} value={e.handle}>{e.name}</option>)}
           </select>
         </span>
@@ -91,7 +91,7 @@ export default function Segment(props) {
         <s-button onClick={() => setRules([...rules, { field: 'orders_count', op: 'gte', value: '' }])}>Add rule</s-button>
         <details className="au-help">
           <summary>Where the data comes from</summary>
-          <p className="oo-small">Orders, total spent, average order, days since last order, tags and purchased products come from the signed-in customer's account (guests have 0 orders). Market and device come from the visit. "Used an experience" is remembered on the shopper's device. Everything is worked out on your store; nothing about the shopper is sent to OrderOrbit Space.</p>
+          <p className="oo-small">Orders, total spent, average order, days since last order, tags and purchased products come from the signed-in customer's account (guests have 0 orders). Market and device come from the visit. "Used a widget" is remembered on the shopper's device. Everything is worked out on your store; nothing about the shopper is sent to OrderOrbit Space.</p>
         </details>
       </s-section>
 
@@ -107,7 +107,7 @@ export default function Segment(props) {
 
       <s-section heading="Used by">
         {!usage.length ? (
-          <s-paragraph><span className="oo-muted">Not used yet. Target an experience with it (Targeting → Only these segments), add a personalization rule, use it as an A/B test audience, or check it in a workflow condition.</span></s-paragraph>
+          <s-paragraph><span className="oo-muted">Not used yet. Target a widget with it (Targeting → Only these segments), add a personalization rule, use it as an A/B test audience, or check it in a workflow condition.</span></s-paragraph>
         ) : (
           <ul className="au-usage">{usage.map((u) => <li key={u.kind + u.href}>{u.kind} · <s-link href={appUrl(u.href)}>{u.name}</s-link></li>)}</ul>
         )}

@@ -84,7 +84,9 @@
                                 <td><b>{{ $label }}</b>@if (isset(\App\Services\Usage::HELP[$meter]))<small>{{ \App\Services\Usage::HELP[$meter] }}</small>@endif</td>
                                 @foreach ($plans as $plan)
                                     @php($value = ($plan->limits ?? [])[$meter] ?? null)
-                                    <td><input class="ad-limit" type="number" min="0" name="limits[{{ $plan->key }}][{{ $meter }}]" value="{{ $value }}" placeholder="∞" @disabled(! $canManage) aria-label="{{ $label }} on {{ $plan->name }}"></td>
+                                    @php($feature = \App\Services\Usage::FEATURE[$meter] ?? null)
+                                    @php($off = $feature && ! in_array($feature, $plan->modules ?? [], true))
+                                    <td><input class="ad-limit" type="number" min="0" name="limits[{{ $plan->key }}][{{ $meter }}]" value="{{ $value }}" placeholder="{{ $off ? 'Off' : '∞' }}" data-plan="{{ $plan->key }}" data-feature="{{ $feature }}" @disabled(! $canManage || $off) title="{{ $off ? 'Not included: tick '.\App\Support\Modules::label($feature).' for '.$plan->name.' above' : '' }}" aria-label="{{ $label }} on {{ $plan->name }}"></td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -93,6 +95,18 @@
             </table>
         </div>
     </section>
+    <script>
+        // A limit only applies while its module is ticked for that plan.
+        document.addEventListener('change', (e) => {
+            const box = e.target.closest('input[type=checkbox][name^="grid["]');
+            if (!box) return;
+            const [, plan, feature] = box.name.match(/^grid\[([^\]]+)\]\[([^\]]+)\]$/) || [];
+            document.querySelectorAll(`input.ad-limit[data-plan="${plan}"][data-feature="${feature}"]`).forEach((input) => {
+                input.disabled = !box.checked;
+                input.placeholder = box.checked ? '∞' : 'Off';
+            });
+        });
+    </script>
     @if ($canManage)<div class="ad-savebar"><span class="ad-muted">Saving updates every store on these plans.</span><button class="ad-btn primary" type="submit">Save access</button></div>@endif
 </form>
 

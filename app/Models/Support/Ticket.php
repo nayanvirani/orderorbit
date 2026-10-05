@@ -15,7 +15,7 @@ class Ticket extends Model
 
     protected $fillable = ['store_id', 'store_user_id', 'subject', 'category', 'priority', 'status', 'assigned_to', 'diagnostics', 'resolution', 'resolved_at', 'last_reply_at', 'last_reply_by'];
 
-    public const CATEGORIES = ['setup' => 'Setup', 'publishing' => 'Publishing an experience', 'analytics' => 'Analytics', 'workflow' => 'Automation workflow', 'extension' => 'Theme or checkout extension', 'billing' => 'Billing', 'technical' => 'Something else technical'];
+    public const CATEGORIES = ['setup' => 'Setup', 'publishing' => 'Publishing a widget', 'analytics' => 'Analytics', 'workflow' => 'Automation workflow', 'extension' => 'Theme or checkout extension', 'billing' => 'Billing', 'technical' => 'Something else technical'];
 
     public const PRIORITIES = ['low' => 'Low', 'normal' => 'Normal', 'high' => 'High', 'urgent' => 'Urgent: my store is affected'];
 

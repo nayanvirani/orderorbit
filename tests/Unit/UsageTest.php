@@ -46,6 +46,13 @@ class UsageTest extends TestCase
         $this->assertFalse($includes('growth', 'customer_accounts') || $includes('growth', 'personalization_advanced') || $includes('growth', 'ab_testing_advanced'));
         $this->assertTrue($includes('scale', 'customer_accounts') && $includes('scale', 'personalization_advanced') && $includes('scale', 'ab_testing_advanced'));
 
+        // A module that's off has a limit of 0, whatever the number says.
+        $store->plan = 'growth';
+        $this->assertNull($store->planLimit('countdowns'));
+        $store->entitlements = ['modules_off' => ['countdown']];
+        $this->assertSame(0, $store->planLimit('countdowns'));
+        $store->entitlements = null;
+
         // A child feature needs its parent: Quantity breaks without Bundles is off.
         $store->entitlements = ['modules_off' => ['bundles']];
         $this->assertFalse($includes('scale', 'quantity_breaks'));

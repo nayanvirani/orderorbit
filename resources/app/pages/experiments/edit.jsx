@@ -7,7 +7,7 @@ import { route, useRouter } from '../../router.jsx';
 
 const STEPS = [['experience', 'Experience'], ['variants', 'Variants'], ['traffic', 'Traffic'], ['audience', 'Audience'], ['primary', 'Primary metric'], ['secondary', 'Secondary metrics'], ['guardrails', 'Guardrails'], ['duration', 'Duration'], ['launch', 'Preview & launch']];
 const PRIMARY_HELP = {
-  conversion_rate: 'Share of visitors who place an order after seeing the experience. Two-proportion z-test.',
+  conversion_rate: 'Share of visitors who place an order after seeing the widget. Two-proportion z-test.',
   revenue_per_visitor: 'Order revenue divided by visitors, so bigger orders count. Welch\'s t-test.',
   revenue: 'Total revenue, compared per visitor so unequal splits stay fair. Welch\'s t-test.',
   click_rate: 'Share of visitors who click the block (a button, link or accepting its offer). Best for Thank You and Order Status blocks, where the order is already placed. Two-proportion z-test.',
@@ -73,9 +73,9 @@ export default function ExperimentSetup(props) {
       </nav>
 
       <div className="xp-form">
-        <s-section heading="1. Experience" id="step-experience">
+        <s-section heading="1. Widget" id="step-experience">
           <p className="oo-muted">Testing <strong>{experience.name}</strong> ({experience.type}). Variants can change its template, design and text; products, prices and discounts stay as published, so checkout always matches what shoppers saw.{checkoutBlock && ' The split happens in Shopify\'s checkout, so it shows wherever the OrderOrbit Space block for this type is placed.'}</p>
-          {!experience.published && <s-banner tone="warning">This experience isn't published. Publish it before launching the test.</s-banner>}
+          {!experience.published && <s-banner tone="warning">This widget isn't published. Publish it before launching the test.</s-banner>}
           <div className="b-field"><label htmlFor="xp-name">Test name</label><input id="xp-name" type="text" value={form.name} onChange={(e) => set('name', e.target.value)} maxLength={120} /></div>
           <div className="b-field"><label htmlFor="xp-hypothesis">Hypothesis (optional)</label><textarea id="xp-hypothesis" rows={2} maxLength={1000} value={form.hypothesis} onChange={(e) => set('hypothesis', e.target.value)} placeholder="Showing the upsell as a slider instead of cards will raise add to cart, because…" /></div>
         </s-section>
@@ -98,7 +98,7 @@ export default function ExperimentSetup(props) {
                         <p className="oo-muted oo-small">The experience exactly as published ({templates.find((t) => t.key === control)?.name || control}).</p>
                       ) : (
                         <>
-                          {canHoldout && <label className="xp-toggle"><input type="checkbox" checked={!!v.hidden} onChange={(e) => setVariant(key, 'hidden', e.target.checked)} /> Holdout: don't show the experience to this group (measures its overall effect)</label>}
+                          {canHoldout && <label className="xp-toggle"><input type="checkbox" checked={!!v.hidden} onChange={(e) => setVariant(key, 'hidden', e.target.checked)} /> Holdout: don't show the widget to this group (measures its overall effect)</label>}
                           <div className="b-field">
                             <label>Template</label>
                             <select value={v.template_key || control} onChange={(e) => setVariant(key, 'template_key', e.target.value)}>
@@ -157,7 +157,7 @@ export default function ExperimentSetup(props) {
         </s-section>
 
         <s-section heading="4. Audience" id="step-audience">
-          <p className="oo-muted">Who takes part. Visitors outside the audience see the experience as published and aren't counted. Leave empty for everyone who sees the experience.</p>
+          <p className="oo-muted">Who takes part. Visitors outside the audience see the widget as published and aren't counted. Leave empty for everyone who sees the widget.</p>
           {Object.entries(audienceFields).map(([key, field]) => (
             <SchemaField key={key} name={key} field={field} currency={currency} segments={segments} error={err(`audience.${key}`)}
               value={form.audience[key] ?? field.default ?? null} onChange={(val) => set('audience', { ...form.audience, [key]: val })} />
@@ -212,7 +212,7 @@ export default function ExperimentSetup(props) {
                 <strong>{key} · {x.variants[key].name}</strong>
                 {previews[key]
                   ? <Preview ready={ready} experience={previews[key]} context={{ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' }} />
-                  : <p className="oo-muted xp-holdout">Holdout: this group doesn't see the experience.</p>}
+                  : <p className="oo-muted xp-holdout">Holdout: this group doesn't see the widget.</p>}
               </div>
             ))}
           </div>

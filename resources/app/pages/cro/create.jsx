@@ -14,8 +14,8 @@ export default function CreateExperience({ type, typeDef, creatable, previews, s
   const context = { currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' };
 
   return (
-    <Page heading="Create experience">
-      <Hero eyebrow="New experience" title={typeDef ? `Choose a <em>${typeDef.lower.replace(/</g, '&lt;')}</em> template.` : 'What do you want to <em>build?</em>'}
+    <Page heading="Create widget">
+      <Hero eyebrow="New widget" title={typeDef ? `Choose a <em>${typeDef.lower.replace(/</g, '&lt;')}</em> template.` : 'What do you want to <em>build?</em>'}
         lead={typeDef ? typeDef.lead : 'Pick a feature. Every one goes live on your storefront, and savings apply automatically at checkout.'} />
       <div className="b-steps" aria-label="Steps">
         <span className="b-step" aria-current={type ? 'false' : 'step'}><span>1</span>Type</span>

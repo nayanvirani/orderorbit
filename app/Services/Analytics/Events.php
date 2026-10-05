@@ -25,9 +25,9 @@ class Events
     ];
 
     public const ORDERORBIT = [
-        'orderorbit:experience_viewed' => 'Experience viewed',
-        'orderorbit:experience_clicked' => 'Experience clicked',
-        'orderorbit:experience_closed' => 'Experience closed',
+        'orderorbit:experience_viewed' => 'Widget viewed',
+        'orderorbit:experience_clicked' => 'Widget clicked',
+        'orderorbit:experience_closed' => 'Widget closed',
         'orderorbit:bundle_viewed' => 'Bundle viewed',
         'orderorbit:bundle_completed' => 'Bundle added to cart',
         'orderorbit:shipping_progress_viewed' => 'Shipping progress viewed',
@@ -125,7 +125,7 @@ class Events
 
     /** Breakdown dimensions for the Event Explorer: column => label. */
     public const DIMENSIONS = [
-        'experience_handle' => 'Experience', 'template' => 'Template', 'experience_type' => 'Experience type',
+        'experience_handle' => 'Experience', 'template' => 'Template', 'experience_type' => 'Widget type',
         'product_id' => 'Product', 'page_type' => 'Page type', 'device' => 'Device', 'country' => 'Market',
         'source' => 'Traffic source', 'medium' => 'Medium', 'campaign' => 'UTM campaign',
         'experiment_handle' => 'A/B test', 'variant' => 'Variant',

@@ -1,7 +1,7 @@
 <x-browser url="admin.shopify.com · OrderOrbit Space › Analytics" :flush="true" aria-label="Analytics dashboard">
     <div class="dash">
         <div class="side">
-            <div><x-icon name="layout"/>Dashboard</div><div class="on"><x-icon name="chart"/>Analytics</div><div><x-icon name="sparkle"/>Experiences</div><div><x-icon name="split"/>Experiments</div><div><x-icon name="flow"/>Automation</div><div><x-icon name="target"/>Audiences</div>
+            <div><x-icon name="layout"/>Dashboard</div><div class="on"><x-icon name="chart"/>Analytics</div><div><x-icon name="sparkle"/>Widgets</div><div><x-icon name="split"/>Experiments</div><div><x-icon name="flow"/>Automation</div><div><x-icon name="target"/>Audiences</div>
         </div>
         <div class="main">
             <div class="kpis">
@@ -11,7 +11,7 @@
                 <div class="kpi"><small>CRO revenue</small><b>$58.2k</b><em>▲ 11%</em></div>
             </div>
             <div class="chart-box">
-                <div class="t">Revenue by experience <span>Last 30 days</span></div>
+                <div class="t">Revenue by widget <span>Last 30 days</span></div>
                 <svg viewBox="0 0 300 80" preserveAspectRatio="none" style="width:100%;height:80px">
                     <defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8f5cff" stop-opacity=".35"/><stop offset="1" stop-color="#8f5cff" stop-opacity="0"/></linearGradient></defs>
                     <path d="M0 62 C 25 58, 40 50, 60 52 S 100 38, 120 40 S 160 26, 180 30 S 220 18, 240 20 S 280 8, 300 10 L300 80 L0 80 Z" fill="url(#area)"/>

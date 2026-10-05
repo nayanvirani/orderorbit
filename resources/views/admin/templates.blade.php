@@ -1,7 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Templates')
 @section('content')
-<div class="ad-head"><div><h1>Templates</h1><p>Unpublished templates aren't offered for new experiences. Experiences already using them keep working.</p></div></div>
+<div class="ad-head"><div><h1>Templates</h1><p>Unpublished templates aren't offered for new widgets. Widgets already using them keep working.</p></div></div>
 @foreach ($templates as $type => $list)
     <section class="ad-card">
         <h2>{{ \App\Experiences\Registry::type($type)['label'] }} <span class="ad-muted">{{ $type }}</span></h2>

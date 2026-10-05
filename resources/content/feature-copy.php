@@ -187,7 +187,7 @@ return [
         'overview' => [
             'OrderOrbit Space measures what matters with a Shopify web pixel that respects your customers\' consent choices. You see store revenue, orders, average order value and conversion rate, and exactly how much revenue came from lines your bundles, gifts and upsells added.',
             'Every offer has its own numbers — views, adds to cart, orders and revenue — so you can keep what works and change what doesn\'t.',
-            'Go deeper with the Event Explorer, funnels with drop-off at every step, revenue by traffic source under first-touch, last-touch and experience-assisted models, and a journey for each customer from first visit to repeat purchase.',
+            'Go deeper with the Event Explorer, funnels with drop-off at every step, revenue by traffic source under first-touch, last-touch and widget-assisted models, and a journey for each customer from first visit to repeat purchase.',
         ],
         'benefits' => [
             ['Revenue from offers', 'Order lines are credited to the offer that added them.'],
@@ -200,9 +200,9 @@ return [
 
     'ab-testing' => [
         'status' => 'live',
-        'summary' => 'A/B and A/B/C tests on live experiences, with honest statistics.',
+        'summary' => 'A/B and A/B/C tests on live widgets, with honest statistics.',
         'overview' => [
-            'A/B testing splits shoppers between versions of a live experience, such as an upsell, countdown, sticky add to cart, trust block or a checkout or Thank You block, and reports which one earns more. Variants can change the template, design and text, or hide the experience as a holdout; prices and discounts stay as published, so checkout always matches what shoppers saw.',
+            'A/B testing splits shoppers between versions of a live widget, such as an upsell, countdown, sticky add to cart, trust block or a checkout or Thank You block, and reports which one earns more. Variants can change the template, design and text, or hide the widget as a holdout; prices and discounts stay as published, so checkout always matches what shoppers saw.',
             'Results show visitors, conversion, revenue, revenue per visitor and AOV per variant, with lift, confidence intervals and p-values. A winner is only named after at least 7 days and 1,000 visitors and 100 conversions per variant, when the primary metric is significant and no guardrail is breached. Then apply the winner in one click.',
         ],
         'benefits' => [
@@ -215,15 +215,15 @@ return [
 
     'personalization' => [
         'status' => 'live',
-        'summary' => 'Segments and rules that show the right experience to each shopper.',
+        'summary' => 'Segments and rules that show the right widget to each shopper.',
         'overview' => [
-            'A first-time visitor and a five-order customer need different nudges. Segments group shoppers by orders, total spent, average order, last order, tags, products bought, market, device and the experiences they used, starting from ten ready-made segments such as new, returning, VIP, high-AOV, at-risk and lapsed.',
-            'Rules then show an experience only to an audience, show it in another template, or hide it, with extra conditions for device, cart value and UTM. Segments are shared: target experiences with them, use them as A/B test audiences and check them in workflows. Everything is worked out on your store, without sending shopper data anywhere.',
+            'A first-time visitor and a five-order customer need different nudges. Segments group shoppers by orders, total spent, average order, last order, tags, products bought, market, device and the widgets they used, starting from ten ready-made segments such as new, returning, VIP, high-AOV, at-risk and lapsed.',
+            'Rules then show a widget only to an audience, show it in another template, or hide it, with extra conditions for device, cart value and UTM. Segments are shared: target widgets with them, use them as A/B test audiences and check them in workflows. Everything is worked out on your store, without sending shopper data anywhere.',
         ],
         'benefits' => [
             ['Ready-made segments', 'New, returning, first-time, VIP, high-AOV, at-risk, lapsed, mobile and more.'],
             ['Show, swap or hide', 'Rules run in priority order, with conflict warnings.'],
-            ['One segment, everywhere', 'Experiences, A/B tests and workflows share the same segments.'],
+            ['One segment, everywhere', 'Widgets, A/B tests and workflows share the same segments.'],
             ['Member counts', 'Shopify counts customer-based segments for you.'],
         ],
     ],

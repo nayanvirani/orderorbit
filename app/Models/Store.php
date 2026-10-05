@@ -158,6 +158,10 @@ class Store extends Model
      */
     public function planLimit(string $meter): ?int
     {
+        // A module that's off (for the plan or this store) has nothing to count: its limit is 0.
+        if (($feature = \App\Services\Usage::FEATURE[$meter] ?? null) && ! $this->planIncludes($feature)) {
+            return 0;
+        }
         // A store-level override (null = unlimited) wins over the plan's limit.
         if (array_key_exists($meter, $this->entitlements['limits'] ?? [])) {
             return $this->entitlements['limits'][$meter] === null ? null : (int) $this->entitlements['limits'][$meter];

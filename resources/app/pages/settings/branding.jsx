@@ -29,7 +29,7 @@ export default function Branding({ branding, currency }) {
     <Page heading="Settings">
       <Form onSubmit={() => form.post(route('app.settings.branding.update'))}>
         <s-section heading="Branding">
-          <s-paragraph>New experiences start from these colours and styles. Existing experiences keep their own design.</s-paragraph>
+          <s-paragraph>New widgets start from these colours and styles. Existing widgets keep their own design.</s-paragraph>
           <div className="ui-grid" style={{ marginTop: 12 }}>
             {COLORS.map(([key, label]) => (
               <Field key={key} label={label}>

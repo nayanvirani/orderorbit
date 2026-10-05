@@ -14,7 +14,7 @@ class Usage
 {
     /** Every plan limit, set per plan (and per store) in the super admin. */
     public const METERS = [
-        'active_experiences' => 'Live offers in total',
+        'active_experiences' => 'Live widgets (all types)',
         'bundles' => 'Bundles',
         'free_gifts' => 'Free-gift campaigns',
         'shipping_bars' => 'Shipping bars',
@@ -38,15 +38,25 @@ class Usage
 
     /** Group headings for the limits, in order. */
     public const GROUPS = [
-        'Live offers' => ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars', 'product_upsells', 'cart_upsells', 'countdowns', 'sticky_atc', 'trust', 'preorders', 'sales_pop'],
-        'Checkout' => ['checkout_blocks', 'thank_you_blocks', 'post_purchase', 'account_blocks'],
+        'Storefront widgets' => ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars', 'product_upsells', 'cart_upsells', 'countdowns', 'sticky_atc', 'trust', 'preorders', 'sales_pop'],
+        'Checkout & account blocks' => ['checkout_blocks', 'thank_you_blocks', 'post_purchase', 'account_blocks'],
         'Testing & personalization' => ['running_tests', 'personalization_rules', 'segments'],
         'Automation' => ['workflows', 'automation_executions'],
     ];
 
+    /** The module (App\Support\Modules) each limit belongs to: with the module off, the limit is 0. */
+    public const FEATURE = [
+        'bundles' => 'bundles', 'free_gifts' => 'progressive_gifts', 'shipping_bars' => 'progressive_gifts',
+        'product_upsells' => 'product_upsells', 'cart_upsells' => 'cart_upsells', 'countdowns' => 'countdown',
+        'sticky_atc' => 'sticky_atc', 'trust' => 'trust', 'preorders' => 'preorder', 'sales_pop' => 'sales_pop',
+        'checkout_blocks' => 'checkout', 'thank_you_blocks' => 'thank_you', 'post_purchase' => 'post_purchase',
+        'account_blocks' => 'customer_accounts', 'running_tests' => 'ab_testing', 'personalization_rules' => 'personalization',
+        'segments' => 'personalization', 'workflows' => 'automation', 'automation_executions' => 'automation',
+    ];
+
     /** What each limit counts, where it isn't obvious from the name. */
     public const HELP = [
-        'active_experiences' => 'Every live offer of any type together. Empty: only the limits per type apply.',
+        'active_experiences' => 'How many widgets can be live at the same time, of any type (bundles, countdowns, checkout blocks…). Leave empty to rely only on the limits per type below.',
         'free_gifts' => 'Progressive gift and free-gift campaigns.',
         'bundles' => 'All bundle types, including BOGO and quantity breaks.',
         'segments' => 'Saved audience segments (not archived).',

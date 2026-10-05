@@ -74,7 +74,7 @@ export default function Builder(props) {
             <section className="b-card">
               <h2>Type</h2>
               <p><strong>{type.label}</strong> — {type.description}</p>
-              <p className="b-muted">The type is set when an experience is created. Duplicate from another type to switch.</p>
+              <p className="b-muted">The type is set when a widget is created. Duplicate from another type to switch.</p>
             </section>
           )}
 

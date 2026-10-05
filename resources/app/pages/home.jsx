@@ -112,8 +112,8 @@ function TopExperiences({ days }) {
     <s-section heading="What's working">
       {error ? <LoadError error={error} onRetry={reload} /> : loading && !data ? <Skeleton lines={4} /> : !data.items.length ? (
         <div className="empty">
-          <p>Your best experiences show up here once shoppers see them.</p>
-          <s-button href={appUrl('/app/cro')}>Create an experience</s-button>
+          <p>Your best widgets show up here once shoppers see them.</p>
+          <s-button href={appUrl('/app/cro')}>Create a widget</s-button>
         </div>
       ) : (
         <ul className="top-list">

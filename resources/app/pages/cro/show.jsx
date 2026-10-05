@@ -23,7 +23,7 @@ export default function ExperiencePage(props) {
       primary={canEdit && e.status !== 'archived' ? <s-button slot="primary-action" variant="primary" href={editHref}>Edit</s-button> : null}>
       {e.discountUrl && (
         <s-banner tone="success" heading="Saving applies automatically at checkout">
-          <s-paragraph>OrderOrbit Space created a Shopify automatic discount for this {e.singular}. It stays in step with this experience: pausing or archiving removes it.</s-paragraph>
+          <s-paragraph>OrderOrbit Space created a Shopify automatic discount for this {e.singular}. It stays in step with this widget: pausing or archiving removes it.</s-paragraph>
           <s-button slot="secondary-actions" href={e.discountUrl} target="_top">View in Shopify</s-button>
         </s-banner>
       )}
@@ -44,7 +44,7 @@ export default function ExperiencePage(props) {
           <s-button slot="secondary-actions" href={editor.url} target="_top">{editor.label}</s-button>
         </s-banner>
       )}
-      {e.live && e.unpublished && <s-banner tone="info">This experience has changes that aren't live yet. Publish from the editor to update your store.</s-banner>}
+      {e.live && e.unpublished && <s-banner tone="info">This widget has changes that aren't live yet. Publish from the editor to update your store.</s-banner>}
 
       <Tabs items={tabs.map(([k, l]) => [l, show(k), tab === k])} />
 
@@ -55,7 +55,7 @@ export default function ExperiencePage(props) {
               ['Status', <ExperienceStatus experience={e} />],
               ['Type', e.type_label],
               ['Template', <>{e.template} {e.template_version && <span className="oo-muted">· v{e.template_version}</span>}</>],
-              ['Experience ID', <><span className="oo-code">{e.handle}</span> <span className="oo-muted oo-small">Pin it in the block's “Experience ID” setting.</span></>],
+              ['Widget ID', <><span className="oo-code">{e.handle}</span> <span className="oo-muted oo-small">Pin it in the block's “Widget ID” setting.</span></>],
               ['Live version', e.live ? `v${e.live.version} · ${ago(e.live.at)}` : 'Not published'],
               e.schedule && ['Schedule', e.schedule],
               ['Placement', <><s-badge tone={ptone}>{plabel}</s-badge> <span className="oo-muted oo-small">{e.placement_checked_at ? `Checked ${ago(e.placement_checked_at)}` : ''}</span></>],
@@ -88,7 +88,7 @@ export default function ExperiencePage(props) {
             <s-section heading="Actions">
               <div className="oo-inline">
                 {['draft', 'paused'].includes(e.status) && !e.live && <s-button href={editHref}>Open editor to publish</s-button>}
-                {e.status === 'published' && <ActionButton url={life('pause')} confirm="Pause this experience? Shoppers stop seeing it right away.">Pause</ActionButton>}
+                {e.status === 'published' && <ActionButton url={life('pause')} confirm="Pause this widget? Shoppers stop seeing it right away.">Pause</ActionButton>}
                 {e.status === 'paused' && e.live && <ActionButton url={life('resume')}>Resume</ActionButton>}
                 <s-button href={editor.url} target="_top">{editor.label}</s-button>
                 <ActionButton url={route('app.cro.experiences.placement', { experience: e.id })}>Re-check placement</ActionButton>
@@ -97,7 +97,7 @@ export default function ExperiencePage(props) {
                 <ActionButton url={route('app.cro.experiences.duplicate', { experience: e.id })}>Duplicate</ActionButton>
                 {e.status === 'archived'
                   ? <ActionButton url={life('unarchive')}>Restore from archive</ActionButton>
-                  : <ActionButton tone="critical" url={life('archive')} confirm="Archive this experience? It stops showing on your store.">Archive</ActionButton>}
+                  : <ActionButton tone="critical" url={life('archive')} confirm="Archive this widget? It stops showing on your store.">Archive</ActionButton>}
               </div>
             </s-section>
           )}
@@ -128,9 +128,9 @@ export default function ExperiencePage(props) {
 
       {!module && tab === 'experiment' && (
         <s-section heading="Experiment">
-          {test ? <s-paragraph><s-link href={appUrl(test.href)}>{test.draft ? 'Continue the A/B test setup' : 'View the A/B test on this experience'}</s-link></s-paragraph> : (
+          {test ? <s-paragraph><s-link href={appUrl(test.href)}>{test.draft ? 'Continue the A/B test setup' : 'View the A/B test on this widget'}</s-link></s-paragraph> : (
             <>
-              <s-paragraph>No test is running on this experience.</s-paragraph>
+              <s-paragraph>No test is running on this widget.</s-paragraph>
               {canEdit && testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: e.id }}>Create A/B test</ActionButton>}
             </>
           )}

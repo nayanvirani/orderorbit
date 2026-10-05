@@ -121,7 +121,7 @@ class ExperienceManager
     public function resume(Experience $experience): void
     {
         if ($experience->published_version_id === null) {
-            throw new PublishException('Publish this experience first.');
+            throw new PublishException('Publish this widget first.');
         }
         $this->assertPublishable($experience);
         $this->transition($experience, 'published', 'experience.resumed');
@@ -246,7 +246,7 @@ class ExperienceManager
             if (! $this->usage->allows($store, 'active_experiences')) {
                 $limit = (int) $store->planLimit('active_experiences');
 
-                throw new PublishException("The {$plan} plan includes {$limit} live ".\Illuminate\Support\Str::plural('offer', $limit).' in total. Pause or archive one that\'s live, or upgrade for more.', 'plan');
+                throw new PublishException("The {$plan} plan includes {$limit} live ".\Illuminate\Support\Str::plural('widget', $limit).' in total. Pause or archive one that\'s live, or upgrade for more.', 'plan');
             }
         }
 

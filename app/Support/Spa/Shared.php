@@ -139,7 +139,7 @@ class Shared
             ['heading' => 'Conversion', 'items' => array_map($link, array_values(array_filter(array_keys($features), fn ($k) => ! in_array($k, array_merge($order, $checkout), true))))],
             ['heading' => 'Checkout', 'items' => array_map($link, array_values(array_filter($checkout, fn ($k) => isset($features[$k]))))],
             ['heading' => 'Manage', 'items' => [
-                ['label' => 'All offers', 'icon' => 'list', 'tone' => 'default', 'href' => self::path('app.cro.experiences.index'), 'active' => $request->routeIs('app.cro.experiences.*') && ! $experienceFeature],
+                ['label' => 'All widgets', 'icon' => 'list', 'tone' => 'default', 'href' => self::path('app.cro.experiences.index'), 'active' => $request->routeIs('app.cro.experiences.*') && ! $experienceFeature],
                 ['label' => 'Templates', 'icon' => 'palette', 'tone' => 'default', 'href' => self::path('app.cro.templates'), 'active' => $request->routeIs('app.cro.templates')],
             ]],
         ];

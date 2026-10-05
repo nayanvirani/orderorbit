@@ -60,12 +60,12 @@ export default function Revenue(props) {
             <s-section heading={`By UTM campaign · ${models[model]}`}><RevenueTable rows={r.by_campaign} label="Campaign" total={r.revenue} m={m} /></s-section>
           )}
 
-          <s-section heading="By experience">
-            <p className="oo-muted oo-small"><b>Direct</b>: the order lines an experience added (bundles, gifts, upsells). <b>Assisted</b>: orders from shoppers who saw or used it within {windows[win]} before buying; each experience gets the whole order, so assisted totals overlap.</p>
-            {!Object.keys(r.by_experience || {}).length ? <s-paragraph><span className="oo-muted">No orders with an experience in this period.</span></s-paragraph> : (
+          <s-section heading="By widget">
+            <p className="oo-muted oo-small"><b>Direct</b>: the order lines a widget added (bundles, gifts, upsells). <b>Assisted</b>: orders from shoppers who saw or used it within {windows[win]} before buying; each experience gets the whole order, so assisted totals overlap.</p>
+            {!Object.keys(r.by_experience || {}).length ? <s-paragraph><span className="oo-muted">No orders with a widget in this period.</span></s-paragraph> : (
               <div className="oo-scroll">
                 <table className="oo-table stack">
-                  <thead><tr><th>Experience</th><th>Direct orders</th><th>Direct revenue</th><th>Assisted orders</th><th>Assisted revenue</th></tr></thead>
+                  <thead><tr><th>Widget</th><th>Direct orders</th><th>Direct revenue</th><th>Assisted orders</th><th>Assisted revenue</th></tr></thead>
                   <tbody>
                     {Object.entries(r.by_experience).map(([handle, row]) => (
                       <tr key={handle}>
@@ -85,7 +85,7 @@ export default function Revenue(props) {
           {Object.keys(r.by_template || {}).length > 0 && (
             <s-section heading="By template">
               <table className="oo-table stack">
-                <thead><tr><th>Template</th><th>Experiences</th><th>Direct revenue</th><th>Assisted revenue</th></tr></thead>
+                <thead><tr><th>Template</th><th>Widgets</th><th>Direct revenue</th><th>Assisted revenue</th></tr></thead>
                 <tbody>
                   {Object.entries(r.by_template).map(([key, row]) => (
                     <tr key={key}>

@@ -20,7 +20,7 @@
 <section class="ad-card flush">
     <div class="ad-scroll">
         <table class="ad-table">
-            <thead><tr><th>Store</th><th>Plan & access</th><th>Status</th><th class="num">Live offers</th><th class="num">Events · 7 d</th><th>Pixel</th><th>Installed</th></tr></thead>
+            <thead><tr><th>Store</th><th>Plan & access</th><th>Status</th><th class="num">Live widgets</th><th class="num">Events · 7 d</th><th>Pixel</th><th>Installed</th></tr></thead>
             <tbody>
                 @forelse ($stores as $s)
                     <tr>

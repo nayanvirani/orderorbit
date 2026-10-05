@@ -13,7 +13,7 @@
         <div class="wrap">
             <span class="mn-kicker">Docs</span>
             <h1>Everything you need to <em>get results.</em></h1>
-            <p class="mn-lead">Step-by-step guides for every part of OrderOrbit Space, from your first experience to A/B tests and automation.</p>
+            <p class="mn-lead">Step-by-step guides for every part of OrderOrbit Space, from your first widget to A/B tests and automation.</p>
         </div>
     </section>
     <div class="wrap docs-hub">

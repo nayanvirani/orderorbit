@@ -10,7 +10,7 @@
 return [
     'getting-started' => [
         'title' => 'Getting started',
-        'summary' => 'Install the app, choose a plan and goal, publish your first experience and check that analytics work.',
+        'summary' => 'Install the app, choose a plan and goal, publish your first widget and check that analytics work.',
         'icon' => 'rocket',
         'sections' => [
             'install' => ['Install and connect', [
@@ -26,7 +26,7 @@ return [
                 ['steps', [
                     ['Store connection', 'Confirm the connection and permissions.'],
                     ['Goal', 'Choose what to improve first: conversion, order value, repeat purchases or checkout.'],
-                    ['First experience', 'Pick one of the experiences recommended for your goal.'],
+                    ['First widget', 'Pick one of the widgets recommended for your goal.'],
                     ['Template', 'Choose a layout. You can switch later without losing content.'],
                     ['Configure', 'Add products, text and the offer; match your brand in Design.'],
                     ['Preview', 'Check it on desktop and mobile in the builder.'],
@@ -35,11 +35,11 @@ return [
                 ]],
             ]],
             'embed' => ['Turn on the app embed', [
-                ['p', 'In Shopify go to **Online Store → Themes → Customize → App embeds** and turn on **OrderOrbit Space**. The embed loads the small storefront runtime, places experiences set to appear above or below the add-to-cart button, and shows site-wide widgets such as Sales pop and sticky add to cart.'],
+                ['p', 'In Shopify go to **Online Store → Themes → Customize → App embeds** and turn on **OrderOrbit Space**. The embed loads the small storefront runtime, places widgets set to appear above or below the add-to-cart button, and shows site-wide widgets such as Sales pop and sticky add to cart.'],
                 ['note', 'Theme blocks need an Online Store 2.0 theme. The dashboard warns you if your theme doesn\'t support app blocks.'],
             ]],
             'next' => ['Where to go next', [
-                ['list', ['**Home** shows revenue from offers, health alerts, top experiences and recommended next steps.', '**CRO** holds every storefront and checkout experience.', '**Analytics** measures everything; **A/B tests** prove what works; **Audiences** personalize; **Automation** follows up.', '**Support** opens a ticket with your store\'s details attached.']],
+                ['list', ['**Home** shows revenue from offers, health alerts, top widgets and recommended next steps.', '**CRO** holds every storefront and checkout widget.', '**Analytics** measures everything; **A/B tests** prove what works; **Audiences** personalize; **Automation** follows up.', '**Support** opens a ticket with your store\'s details attached.']],
             ]],
         ],
     ],
@@ -148,7 +148,7 @@ return [
                     ['Create', 'CRO → Checkout blocks (or Thank You & Order Status) → create a block and pick a layout.'],
                     ['Style it', 'Width, height, background, border, corners and text tone. Shopify doesn\'t allow custom colours in checkout, so colours come from your checkout branding.'],
                     ['Publish', 'The app publishes the block for the checkout extension.'],
-                    ['Place it', 'In Shopify open **Settings → Checkout → Customize**, choose the page (Checkout, Thank You or Order Status), add the **OrderOrbit Space** block and set its type. To show one specific block, paste its Experience ID.'],
+                    ['Place it', 'In Shopify open **Settings → Checkout → Customize**, choose the page (Checkout, Thank You or Order Status), add the **OrderOrbit Space** block and set its type. To show one specific block, paste its Widget ID.'],
                 ]],
             ]],
             'postpurchase' => ['Post-purchase offer', [
@@ -228,12 +228,12 @@ return [
             'reports' => ['Reports', [
                 ['table', ['Report', 'Answers', 'Plan'], [
                     ['Overview', 'Revenue, orders, AOV, conversion, revenue from offers, per-offer results', 'All (revenue per offer from Starter)'],
-                    ['Event Explorer', 'Every event with counts, visitors, sessions, trend; break down by experience, template, product, device, market, UTM, A/B test', 'Growth and Scale'],
+                    ['Event Explorer', 'Every event with counts, visitors, sessions, trend; break down by widget, template, product, device, market, UTM, A/B test', 'Growth and Scale'],
                     ['Funnels', 'Step conversion, drop-off, time between steps; compare by device, source or period', 'Growth and Scale'],
-                    ['Revenue & attribution', 'Revenue by source and campaign (first or last touch), by experience (direct and assisted), by template and A/B variant', 'Growth and Scale'],
+                    ['Revenue & attribution', 'Revenue by source and campaign (first or last touch), by widget (direct and assisted), by template and A/B variant', 'Growth and Scale'],
                     ['Customer journeys', 'Each shopper\'s visits, offers, cart steps, purchases and automations', 'Growth and Scale'],
                 ]],
-                ['p', 'Filter reports by device, market, UTM and experience, and export them as CSV.'],
+                ['p', 'Filter reports by device, market, UTM and widget, and export them as CSV.'],
             ]],
             'privacy' => ['Privacy controls', [
                 ['p', 'Settings → Privacy lets you keep events for 3, 6 or 13 months, turn off browsing events or customer journeys, export all analytics and delete everything. Shopify\'s customer deletion requests are handled automatically.'],
@@ -244,24 +244,24 @@ return [
 
     'personalization' => [
         'title' => 'Audiences & personalization',
-        'summary' => 'Segments and rules that show the right experience to each shopper.',
+        'summary' => 'Segments and rules that show the right widget to each shopper.',
         'icon' => 'target',
         'sections' => [
             'segments' => ['Segments', [
-                ['p', 'Audiences → Segments. Start from ten ready-made segments (new, returning, first-time, high-AOV, VIP, product purchasers, experience interactors, at-risk, lapsed, mobile) or build your own with all/any rules on orders, total spent, average order value, days since last order, signed in, customer tag, products bought, market, device and experiences used.'],
+                ['p', 'Audiences → Segments. Start from ten ready-made segments (new, returning, first-time, high-AOV, VIP, product purchasers, widget interactors, at-risk, lapsed, mobile) or build your own with all/any rules on orders, total spent, average order value, days since last order, signed in, customer tag, products bought, market, device and widgets used.'],
                 ['p', 'Segments made only of customer fields show a member count from Shopify. Each segment lists where it\'s used, and can\'t be archived while in use.'],
             ]],
             'rules' => ['Personalization rules', [
                 ['steps', [
-                    ['Pick the experience', 'Any storefront experience except Bundles and Progressive gifts.'],
+                    ['Pick the widget', 'Any storefront widget except Bundles and Progressive gifts.'],
                     ['Choose the audience', 'One or more segments, plus optional device, cart value or UTM conditions.'],
                     ['Choose the outcome', 'Show it only to them, show it in another template, or hide it.'],
-                    ['Order the rules', 'For each experience, the first matching rule wins. Conflicts are flagged.'],
+                    ['Order the rules', 'For each widget, the first matching rule wins. Conflicts are flagged.'],
                 ]],
                 ['p', 'Examples: returning + cart over $75 → show the premium upsell; mobile → compact template; 3+ orders → VIP offer.'],
             ]],
             'where' => ['Use segments everywhere', [
-                ['list', ['Experience targeting: Only these segments.', 'A/B test audiences.', 'Workflow condition: Customer segment (checks the order\'s customer).']],
+                ['list', ['Widget targeting: Only these segments.', 'A/B test audiences.', 'Workflow condition: Customer segment (checks the order\'s customer).']],
                 ['note', 'Segments are worked out in the shopper\'s browser from their own account and visit; nothing about them is sent to OrderOrbit Space. Which targeting options you can use depends on your plan.'],
             ]],
         ],

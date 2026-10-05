@@ -13,7 +13,7 @@ class PricingPage
 
     public const FIELDS = [
         'headline' => ['Headline', 'Plans that grow with your store.'],
-        'lead' => ['Supporting message', 'Start free, upgrade when you need more experiences, testing, automation and personalization.'],
+        'lead' => ['Supporting message', 'Start free, upgrade when you need more widgets, testing, automation and personalization.'],
         'billing_note' => ['Billing note', 'Billed through Shopify. Change or cancel anytime.'],
         'trial_note' => ['Trial note (optional)', ''],
         'compare_title' => ['Comparison table title', 'Compare plans'],

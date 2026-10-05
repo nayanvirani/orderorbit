@@ -8,7 +8,7 @@ export default function Segments(props) {
   const { can } = useShared();
   return (
     <Page heading="Audiences">
-      <Hero eyebrow="Audiences & Personalization" icon="users" tone="analytics" title="The right offer for <em>each shopper.</em>" lead="Segments group shoppers by what they've bought, spent and done. Use them to target experiences, run rules that show, swap or hide experiences, and in A/B tests and workflows.">
+      <Hero eyebrow="Audiences & Personalization" icon="users" tone="analytics" title="The right offer for <em>each shopper.</em>" lead="Segments group shoppers by what they've bought, spent and done. Use them to target widgets, run rules that show, swap or hide widgets, and in A/B tests and workflows.">
         <s-button href={docsUrl} target="_blank" variant="tertiary">View documentation</s-button>
       </Hero>
       <AudienceNotes {...props} />
@@ -25,7 +25,7 @@ export default function Segments(props) {
             ))}
             <div className="au-template au-blank">
               <strong>Custom segment</strong>
-              <span className="oo-muted oo-small">Combine orders, spend, tags, products, market, device and experiences.</span>
+              <span className="oo-muted oo-small">Combine orders, spend, tags, products, market, device and widgets.</span>
               <ActionButton variant="primary" url={route('app.audiences.segments.store')}>Create</ActionButton>
             </div>
           </div>
@@ -52,7 +52,7 @@ export default function Segments(props) {
                 </tbody>
               </table>
             </div>
-            <p className="oo-muted oo-small">Member counts come from Shopify when every rule is a customer field (orders, total spent, tags). Segments with browsing rules (device, experiences, products, market) are worked out live on your store, so there's no count.</p>
+            <p className="oo-muted oo-small">Member counts come from Shopify when every rule is a customer field (orders, total spent, tags). Segments with browsing rules (device, widgets, products, market) are worked out live on your store, so there's no count.</p>
           </>
         )}
       </s-section>

@@ -34,7 +34,7 @@ class Registry
 
     public static function type(string $type): array
     {
-        return self::types()[$type] ?? throw new InvalidArgumentException("Unknown experience type [{$type}].");
+        return self::types()[$type] ?? throw new InvalidArgumentException("Unknown widget type [{$type}].");
     }
 
     public static function templates(string $type): array

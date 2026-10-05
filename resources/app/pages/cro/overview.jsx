@@ -17,13 +17,13 @@ export default function CroOverview({ counts, notPlaced, recent, activeLimit, ac
       {notPlaced > 0 && (
         <s-banner tone="warning">
           <s-paragraph>{notPlaced} published {plural('experience', notPlaced)} {notPlaced === 1 ? 'isn\'t' : 'aren\'t'} placed in your theme yet. Add the OrderOrbit Space block in the Theme Editor.</s-paragraph>
-          <s-button slot="secondary-actions" href={appUrl(route('app.cro.experiences.index', { status: 'not_placed' }))}>View experiences</s-button>
+          <s-button slot="secondary-actions" href={appUrl(route('app.cro.experiences.index', { status: 'not_placed' }))}>View widgets</s-button>
         </s-banner>
       )}
 
       <s-section>
         <div className="ob-kpis">
-          <div className="ob-kpi"><small>Active experiences</small><b>{activeUsed}<span style={{ display: 'inline', font: '400 18px var(--ob-serif)', color: 'var(--ob-muted)' }}> / {activeLimit === null ? '∞' : activeLimit}</span></b><span>On your current plan</span></div>
+          <div className="ob-kpi"><small>Active widgets</small><b>{activeUsed}<span style={{ display: 'inline', font: '400 18px var(--ob-serif)', color: 'var(--ob-muted)' }}> / {activeLimit === null ? '∞' : activeLimit}</span></b><span>On your current plan</span></div>
           <div className="ob-kpi"><small>Drafts</small><b>{counts.draft}</b><span>Not live yet</span></div>
           <div className="ob-kpi"><small>Paused</small><b>{counts.paused}</b><span>Hidden from shoppers</span></div>
           <div className="ob-kpi"><small>Revenue from offers · 30 days</small><b style={{ fontSize: 26 }}>{money(revenue.amount, revenue.currency)}</b><span>{number(revenue.orders)} orders with an offer</span></div>
@@ -47,8 +47,8 @@ export default function CroOverview({ counts, notPlaced, recent, activeLimit, ac
 
       <s-section heading="Recently updated">
         {!recent.length ? (
-          <EmptyState title="Create your first experience" text="Pick a template, customise it and publish it from the Theme Editor.">
-            <s-button variant="primary" href={appUrl(route('app.cro.experiences.create'))}>Create experience</s-button>
+          <EmptyState title="Create your first widget" text="Pick a template, customise it and publish it from the Theme Editor.">
+            <s-button variant="primary" href={appUrl(route('app.cro.experiences.create'))}>Create widget</s-button>
           </EmptyState>
         ) : recent.map((e) => (
           <div key={e.id} className="ui-row" style={{ padding: '6px 0', borderBottom: '1px solid #f1f1f1' }}>
