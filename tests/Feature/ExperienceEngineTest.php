@@ -133,13 +133,14 @@ class ExperienceEngineTest extends TestCase
             }
         };
 
-        // Free: one live offer of each kind it includes; cart upsells aren't included.
+        // Free (trust pinned to 1 for this store): one live of each kind; cart upsells aren't included.
+        $store->forceFill(['entitlements' => ['limits' => ['trust' => 1]]])->save();
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
         $refused($manager->create($store, 'trust', 'review-card', null), 'The Free plan includes 1 live trust block. Pause or archive one that\'s live, or upgrade for more.');
         $refused($ready('cart-upsells', 'grid'), 'Cart upsells & cross-sell isn\'t included in your plan. Upgrade to publish it.');
 
         // Starter: more of each, plus cart upsells.
-        $store->forceFill(['plan' => 'starter'])->save();
+        $store->forceFill(['plan' => 'starter', 'entitlements' => null])->save();
         $manager->publish($store->experiences()->where('type', 'cart-upsells')->first()->fresh(), null);
         $manager->publish($ready('cart-upsells', 'carousel'), null);
         $manager->publish($ready('preorder', 'classic-card'), null);
@@ -154,7 +155,7 @@ class ExperienceEngineTest extends TestCase
 
         // Back to Free: cart upsells and the older trust block are paused (marked, not deleted);
         // one of each kind Free includes stays live.
-        $store->forceFill(['plan' => 'free'])->save();
+        $store->forceFill(['plan' => 'free', 'entitlements' => ['limits' => ['trust' => 1]]])->save();
         $this->assertSame(3, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
         $status = fn (string $type) => $store->experiences()->where('type', $type)->orderBy('id')->pluck('status')->all();
         $this->assertSame(['paused', 'paused'], $status('cart-upsells'));
@@ -166,7 +167,7 @@ class ExperienceEngineTest extends TestCase
         $this->assertSame(0, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()), 'Already within the plan.');
 
         // Upgrading again brings back what the plan change paused.
-        $store->forceFill(['plan' => 'starter'])->save();
+        $store->forceFill(['plan' => 'starter', 'entitlements' => null])->save();
         $this->assertSame(3, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
         $this->assertSame(['published', 'published'], $status('cart-upsells'));
         $this->assertSame(['published', 'published', 'draft'], $status('trust'));

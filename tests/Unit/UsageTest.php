@@ -24,10 +24,10 @@ class UsageTest extends TestCase
         $store->plan = 'free';
         $this->assertFalse($usage->allows($store, 'bundles'), 'Free includes one live bundle.');
         $limits = fn (string $plan) => array_map(fn ($m) => tap($store, fn ($s) => $s->plan = $plan)->planLimit($m), ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars', 'workflows', 'automation_executions']);
-        $this->assertSame([4, 1, 1, 1, 1, 30], $limits('free'));
-        $this->assertSame([11, 2, 2, 2, 5, 200], $limits('starter'));
+        $this->assertSame([4, 1, 1, 1, 1, 50], $limits('free'));
+        $this->assertSame([15, 3, 2, 2, 5, 500], $limits('starter'));
         $store->plan = 'free';
-        $this->assertSame([1, 1, 1, 0, 0, 0], array_map(fn ($m) => $store->planLimit($m), ['countdowns', 'sticky_atc', 'trust', 'cart_upsells', 'checkout_blocks', 'running_tests']));
+        $this->assertSame([1, 1, 2, 0, 0, 0], array_map(fn ($m) => $store->planLimit($m), ['countdowns', 'sticky_atc', 'trust', 'cart_upsells', 'checkout_blocks', 'running_tests']));
         $this->assertSame(['bundles', 'bundles', 'free_gifts', 'shipping_bars', 'checkout_blocks', 'thank_you_blocks', 'account_blocks', 'post_purchase'], array_map(fn ($t) => Usage::meterFor($t), ['bundles', 'bogo', 'progressive-gifts', 'shipping-bar', 'checkout-image', 'ty-survey', 'account-reorder', 'post-purchase']));
         $this->assertSame([null, null, null, null, null, 3000], $limits('growth'));
         $this->assertSame([null, null, null, null, null, 10000], $limits('scale'));
