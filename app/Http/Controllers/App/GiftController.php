@@ -23,6 +23,7 @@ class GiftController extends Controller
 
     public function index(Store $store): Page
     {
+        app(\App\Services\Experiences\PlacementDetector::class)->refreshIfStale($store);
         $items = $store->experiences()->where('type', 'progressive-gifts')->where('status', '!=', 'archived')->latest('updated_at')->get();
         $stats = app(\App\Services\Analytics\Analytics::class)->forExperiences($store, $items->pluck('handle')->all());
 

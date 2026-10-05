@@ -25,6 +25,7 @@ class BundleController extends Controller
 
     public function index(Request $request, Store $store): Page
     {
+        app(\App\Services\Experiences\PlacementDetector::class)->refreshIfStale($store);
         $tab = in_array($request->query('tab'), ['active', 'scheduled', 'draft', 'paused', 'archived'], true) ? $request->query('tab') : 'all';
         $all = $store->experiences()->where('type', 'bundles')->with('publishedVersion')->latest('updated_at')->get();
 

@@ -90,6 +90,26 @@ class PlacementDetector
         return $found;
     }
 
+    /**
+     * Re-scans the theme when something published still looks unplaced (merchants add blocks
+     * in the Theme Editor, which tells the app nothing). At most once a minute per store; a
+     * failed scan never blocks the page.
+     */
+    public function refreshIfStale(Store $store, int $seconds = 60): void
+    {
+        $unplaced = Experience::where('store_id', $store->id)->where('status', 'published')
+            ->where(fn ($q) => $q->where('placement_status', 'not_placed')->orWhereNull('placement_status'))->exists();
+        if (! $unplaced || ! \Illuminate\Support\Facades\Cache::add('placement-scan:'.$store->id, true, $seconds)) {
+            return;
+        }
+
+        try {
+            $this->refresh($store);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
     private static function walk(array $node, array &$found): void
     {
         if (isset($node['type']) && is_string($node['type']) && str_contains($node['type'], '/blocks/experience/') && ! ($node['disabled'] ?? false)) {

@@ -37,6 +37,7 @@ class DashboardApiController extends Controller
         // The analytics pixel connects on install; this covers stores installed before it existed.
         $pixel = app(PixelConnector::class);
         $pixel->ensure($store);
+        app(\App\Services\Experiences\PlacementDetector::class)->refreshIfStale($store);
 
         $alerts = [];
         if ($store->missingScopes() !== []) {

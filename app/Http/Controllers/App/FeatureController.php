@@ -24,6 +24,7 @@ class FeatureController extends Controller
             return redirect()->to(app_route($definition['module']));
         }
         $types = $definition['types'];
+        app(\App\Services\Experiences\PlacementDetector::class)->refreshIfStale($store);
 
         $experiences = $store->experiences()
             ->whereIn('type', $types)

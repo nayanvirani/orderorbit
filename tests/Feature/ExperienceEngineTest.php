@@ -348,4 +348,34 @@ class ExperienceEngineTest extends TestCase
         $this->get('/storefront/oo-nope.js')->assertNotFound();
         $this->get('/storefront/../.env')->assertNotFound();
     }
+
+    public function test_placement_is_rechecked_when_a_block_is_added_in_the_theme_editor(): void
+    {
+        $scans = 0;
+        $store = $this->installedStore(['plan' => 'growth']);
+        $owner = $this->member($store, 'owner');
+        $experience = app(ExperienceManager::class)->create($store, 'trust', 'trust-row', null, 'Trust');
+        $experience->forceFill(['status' => 'published', 'placement_status' => 'not_placed', 'placement_checked_at' => now()->subHour()])->save();
+        $template = json_encode(['sections' => ['apps' => ['blocks' => ['b1' => ['type' => 'shopify://apps/orderorbit-space/blocks/experience/x', 'settings' => ['experience_type' => 'trust', 'experience_id' => $experience->handle]]]]]]);
+        Http::fake(function (Request $request) use (&$scans, $template) {
+            $query = $request['query'] ?? '';
+            if (str_contains($query, 'themes(first: 1')) {
+                $scans++;
+
+                return Http::response(['data' => ['themes' => ['nodes' => [['id' => 'gid://shopify/OnlineStoreTheme/1']]]]]);
+            }
+
+            return str_contains($query, 'files(filenames')
+                ? Http::response(['data' => ['theme' => ['files' => ['nodes' => [['filename' => 'templates/product.json', 'body' => ['content' => $template]]]]]]])
+                : Http::response(['data' => []]);
+        });
+
+        // The merchant added the block in the Theme Editor; opening the experience finds it.
+        $this->page('/app/cro/experiences/'.$experience->id, $owner)->assertOk()->assertJsonPath('props.experience.not_placed', false);
+        $this->assertSame('placed', $experience->fresh()->placement_status);
+
+        // Once everything is placed, pages don't scan the theme again.
+        $this->page('/app/cro/experiences/'.$experience->id, $owner)->assertOk();
+        $this->assertSame(1, $scans);
+    }
 }

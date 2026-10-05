@@ -27,8 +27,9 @@ class ExperienceController extends Controller
 {
     public function __construct(private readonly ExperienceManager $manager) {}
 
-    public function overview(Store $store, Usage $usage): Page
+    public function overview(Store $store, Usage $usage, PlacementDetector $placement): Page
     {
+        $placement->refreshIfStale($store);
         $counts = $store->experiences()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
         $byType = $store->experiences()->notArchived()->selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type');
         $summary = app(\App\Services\Analytics\Analytics::class)->summary($store, 30);
@@ -60,9 +61,10 @@ class ExperienceController extends Controller
         ]);
     }
 
-    public function index(Request $request, Store $store, ?string $type = null): Page
+    public function index(Request $request, Store $store, PlacementDetector $placement, ?string $type = null): Page
     {
         abort_if($type !== null && ! Registry::has($type), 404);
+        $placement->refreshIfStale($store);
 
         $filters = [
             'q' => trim((string) $request->query('q', '')),
@@ -131,8 +133,9 @@ class ExperienceController extends Controller
         return redirect()->to(app_route('app.cro.experiences.edit', ['experience' => $experience->id, 'notice' => 'created']));
     }
 
-    public function show(Request $request, Store $store, int $experience): Page
+    public function show(Request $request, Store $store, int $experience, PlacementDetector $placement): Page
     {
+        $placement->refreshIfStale($store);
         $experience = $this->find($store, $experience);
         $tab = in_array($request->query('tab'), ['overview', 'configuration', 'targeting', 'analytics', 'experiment', 'history'], true) ? $request->query('tab') : 'overview';
         $type = Registry::type($experience->type);
