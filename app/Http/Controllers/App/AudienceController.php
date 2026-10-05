@@ -12,7 +12,7 @@ use App\Services\Audiences\Audiences;
 use App\Services\Experiences\StorefrontPublisher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 use Throwable;
 
 /**
@@ -24,14 +24,25 @@ class AudienceController extends Controller
 
     // ------------------------------------------------------------------ segments
 
-    public function segments(Request $request, Store $store): View
+    public function segments(Request $request, Store $store): Page
     {
         $archived = $request->query('archived') === '1';
         $segments = Segment::where('store_id', $store->id)->when($archived, fn ($q) => $q->whereNotNull('archived_at'), fn ($q) => $q->whereNull('archived_at'))->orderBy('name')->get();
+        $fields = Audiences::FIELDS;
+        $describe = fn ($s) => collect($s->rules)->map(fn ($r) => ($fields[$r['field']]['label'] ?? $r['field']).' '.($fields[$r['field']]['ops'][$r['op']] ?? $r['op']).' '.(is_array($r['value']) ? (collect($r['value'])->pluck('title')->filter()->implode(', ') ?: count($r['value']).' products') : ($fields[$r['field']]['options'][$r['value']] ?? $r['value'])))->implode($s->match === 'any' ? ' or ' : ' and ');
 
-        return view('app.audiences.segments', $this->shared($store) + [
-            'segments' => $segments,
-            'usage' => $segments->mapWithKeys(fn ($s) => [$s->id => Audiences::usage($store, $s->id)]),
+        return page('audiences/segments', $this->shared($store) + [
+            'segments' => $segments->map(function ($s) use ($store, $describe) {
+                $u = Audiences::usage($store, $s->id);
+
+                return [
+                    'id' => $s->id, 'name' => $s->name, 'definition' => $describe($s), 'updated_at' => $s->updated_at,
+                    'members' => $s->member_count !== null ? number_format($s->member_count).' customers' : (Audiences::countable($s) ? 'Not counted yet' : 'Unavailable'),
+                    'used_by' => collect(['experiences' => 'experience', 'rules' => 'rule', 'experiments' => 'A/B test', 'workflows' => 'workflow'])
+                        ->map(fn ($label, $k) => count($u[$k]) ? count($u[$k]).' '.\Illuminate\Support\Str::plural($label, count($u[$k])) : null)->filter()->implode(', ') ?: null,
+                ];
+            }),
+            'templates' => collect(Audiences::TEMPLATES)->map(fn ($t, $key) => ['key' => $key, 'name' => $t['name'], 'description' => $t['description']])->values(),
             'archived' => $archived,
         ]);
     }
@@ -54,12 +65,12 @@ class AudienceController extends Controller
         return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $segment->id, 'notice' => 'segment_created']));
     }
 
-    public function editSegment(Request $request, Store $store, int $segment): View
+    public function editSegment(Request $request, Store $store, int $segment): Page
     {
         return $this->segmentEditor($store, $this->segment($store, $segment), []);
     }
 
-    public function updateSegment(Request $request, Store $store, int $segment): View|RedirectResponse
+    public function updateSegment(Request $request, Store $store, int $segment): Page|RedirectResponse
     {
         $segment = $this->segment($store, $segment);
         [$match, $rules, $errors] = Audiences::normalize($request->all());
@@ -111,40 +122,70 @@ class AudienceController extends Controller
         return redirect()->to(app_route('app.audiences.segments.edit', ['segment' => $segment->id]));
     }
 
-    private function segmentEditor(Store $store, Segment $segment, array $errors): View
+    private function segmentEditor(Store $store, Segment $segment, array $errors): Page
     {
-        return view('app.audiences.segment', $this->shared($store) + [
-            'segment' => $segment,
-            'fieldErrors' => $errors,
-            'usage' => Audiences::usage($store, $segment->id),
+        $usage = Audiences::usage($store, $segment->id);
+        $link = fn ($name, $route, $param, $model) => ['name' => $model->name, 'kind' => $name, 'href' => route($route, [$param => $model->id], false)];
+
+        return page('audiences/segment', $this->shared($store) + [
+            'segment' => [
+                'id' => $segment->id, 'name' => $segment->name, 'description' => $segment->description, 'match' => $segment->match,
+                'rules' => array_values($segment->rules ?? []), 'archived' => $segment->archived_at !== null,
+                'countable' => Audiences::countable($segment), 'member_count' => $segment->member_count, 'counted_at' => $segment->counted_at,
+            ],
+            'fieldErrors' => (object) $errors,
+            'usage' => array_merge(
+                array_map(fn ($e) => $link('Experience', 'app.cro.experiences.show', 'experience', $e), $usage['experiences']),
+                array_map(fn ($r) => $link('Rule', 'app.audiences.rules.edit', 'rule', $r), $usage['rules']),
+                array_map(fn ($x) => $link('A/B test', 'app.experiments.show', 'experiment', $x), $usage['experiments']),
+                array_map(fn ($w) => $link('Workflow', 'app.automation.edit', 'workflow', $w), $usage['workflows']),
+            ),
+            'fields' => Audiences::FIELDS,
             'experiences' => Experience::where('store_id', $store->id)->where('status', '!=', 'archived')->orderBy('name')->get(['handle', 'name']),
-        ]);
+        ], $errors ? 422 : 200);
     }
 
     // ------------------------------------------------------------------ rules
 
-    public function rules(Request $request, Store $store): View
+    public function rules(Request $request, Store $store): Page
     {
         $rules = PersonalizationRule::with('experience')->where('store_id', $store->id)->orderBy('position')->orderBy('id')->get();
+        $segmentNames = Segment::where('store_id', $store->id)->pluck('name', 'id');
+        $who = function ($r) use ($segmentNames) {
+            $parts = collect($r->segments ?? [])->map(fn ($id) => $segmentNames[$id] ?? 'Archived segment')->implode(' or ');
+            $c = $r->conditions ?? [];
+            $live = array_filter([
+                isset($c['device']) ? ucfirst($c['device']) : null,
+                isset($c['cart_min']) ? 'cart ≥ '.$c['cart_min'] : null,
+                isset($c['cart_max']) ? 'cart ≤ '.$c['cart_max'] : null,
+                isset($c['utm_source']) ? 'UTM source '.$c['utm_source'] : null,
+                isset($c['utm_campaign']) ? 'campaign '.$c['utm_campaign'] : null,
+            ]);
 
-        return view('app.audiences.rules', $this->shared($store) + [
-            'rules' => $rules,
+            return trim(($parts ?: '').($parts && $live ? ' + ' : '').implode(', ', $live)) ?: 'Everyone';
+        };
+
+        return page('audiences/rules', $this->shared($store) + [
+            'rules' => $rules->map(fn ($r) => [
+                'id' => $r->id, 'name' => $r->name, 'enabled' => (bool) $r->enabled, 'who' => $who($r), 'outcome' => $r->outcome,
+                'template' => $r->outcome === 'swap' && $r->experience ? (Registry::template($r->experience->type, (string) $r->template_key)['name'] ?? $r->template_key) : null,
+                'experience' => $r->experience->name ?? 'a removed experience',
+            ]),
             'conflicts' => Audiences::conflicts($rules),
-            'segmentNames' => Segment::where('store_id', $store->id)->pluck('name', 'id'),
         ]);
     }
 
-    public function createRule(Request $request, Store $store): View|RedirectResponse
+    public function createRule(Request $request, Store $store): Page|RedirectResponse
     {
         return $this->ruleEditor($store, new PersonalizationRule(['enabled' => true, 'outcome' => 'show', 'segments' => [], 'conditions' => []]), []);
     }
 
-    public function editRule(Request $request, Store $store, int $rule): View
+    public function editRule(Request $request, Store $store, int $rule): Page
     {
         return $this->ruleEditor($store, $this->rule($store, $rule), []);
     }
 
-    public function saveRule(Request $request, Store $store, ?int $rule = null): View|RedirectResponse
+    public function saveRule(Request $request, Store $store, ?int $rule = null): Page|RedirectResponse
     {
         $model = $rule ? $this->rule($store, $rule) : new PersonalizationRule(['store_id' => $store->id, 'position' => (int) PersonalizationRule::where('store_id', $store->id)->max('position') + 1]);
         $errors = [];
@@ -214,22 +255,29 @@ class AudienceController extends Controller
         return redirect()->to(app_route('app.audiences.rules', ['notice' => $action === 'delete' ? 'deleted' : 'saved']));
     }
 
-    private function ruleEditor(Store $store, PersonalizationRule $rule, array $errors): View
+    private function ruleEditor(Store $store, PersonalizationRule $rule, array $errors): Page
     {
         $experiences = Experience::where('store_id', $store->id)->where('status', '!=', 'archived')->orderBy('name')->get()->filter(fn ($e) => Audiences::personalizable($e))->values();
 
-        return view('app.audiences.rule', $this->shared($store) + [
-            'rule' => $rule,
-            'fieldErrors' => $errors,
-            'experiences' => $experiences,
-            'templates' => $experiences->mapWithKeys(fn ($e) => [$e->id => collect(Registry::type($e->type)['templates'] ?? [])->map(fn ($t) => $t['name'])->all()]),
-            'segments' => Segment::where('store_id', $store->id)->active()->orderBy('name')->get(),
-        ]);
+        return page('audiences/rule', $this->shared($store) + [
+            'rule' => [
+                'id' => $rule->exists ? $rule->id : null, 'name' => $rule->name, 'experience_id' => $rule->experience_id, 'outcome' => $rule->outcome ?? 'show',
+                'template_key' => $rule->template_key, 'segments' => array_map('intval', $rule->segments ?? []), 'conditions' => (object) ($rule->conditions ?? []), 'enabled' => (bool) ($rule->enabled ?? true),
+            ],
+            'fieldErrors' => (object) $errors,
+            'experiences' => $experiences->map(fn ($e) => [
+                'id' => $e->id, 'label' => $e->name.' · '.Registry::type($e->type)['label'].($e->status === 'published' ? '' : ' (not published)'),
+                'templates' => collect(Registry::type($e->type)['templates'] ?? [])->map(fn ($t) => $t['name'])->all(),
+            ]),
+            'segments' => Segment::where('store_id', $store->id)->active()->orderBy('name')->get(['id', 'name']),
+            'outcomes' => Audiences::OUTCOMES,
+            'currency' => $store->currency ?? 'USD',
+        ], $errors ? 422 : 200);
     }
 
     private function shared(Store $store): array
     {
-        return ['store' => $store, 'enabled' => $store->planIncludes('personalization')];
+        return ['enabled' => $store->planIncludes('personalization'), 'error' => request()->query('error'), 'docsUrl' => route('site.docs', 'personalization')];
     }
 
     private function segment(Store $store, int $id): Segment

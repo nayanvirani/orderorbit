@@ -12,7 +12,7 @@ use App\Services\Experiments\ExperimentManager;
 use App\Services\Experiments\Results;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use App\Support\Spa\Page;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,7 +23,7 @@ class ExperimentController extends Controller
 {
     public function __construct(private readonly ExperimentManager $manager) {}
 
-    public function index(Request $request, Store $store, Results $results): View
+    public function index(Request $request, Store $store, Results $results): Page
     {
         $tab = in_array($request->query('tab'), ['active', 'drafts', 'completed'], true) ? $request->query('tab') : 'active';
         $statuses = ['active' => ['running', 'paused'], 'drafts' => ['draft'], 'completed' => ['completed', 'stopped']][$tab];
@@ -31,13 +31,29 @@ class ExperimentController extends Controller
             ->when($request->query('q'), fn ($q, $term) => $q->where('name', 'like', '%'.$term.'%'))
             ->latest('updated_at')->get();
 
-        return view('app.experiments.index', [
-            'store' => $store,
+        return page('experiments/index', [
             'tab' => $tab,
-            'experiments' => $experiments,
-            'summaries' => $experiments->mapWithKeys(fn ($e) => [$e->id => $e->started_at ? $results->for($e) : null]),
-            'counts' => Experiment::where('store_id', $store->id)->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
-            'testable' => $this->testable($store),
+            'q' => (string) $request->query('q', ''),
+            'experiments' => $experiments->map(function (Experiment $x) use ($results) {
+                $s = $x->started_at ? $results->for($x) : null;
+
+                return [
+                    'id' => $x->id, 'name' => $x->name, 'status' => $x->status, 'experience' => $x->experience->name,
+                    'variants' => $x->variants->map(fn ($v) => $v->key.' '.$v->allocation.'%')->implode(' · '),
+                    'metric' => ExperimentManager::PRIMARY[$x->primary_metric] ?? $x->primary_metric,
+                    'visitors' => $s ? collect($s['variants'])->map(fn ($m) => number_format($m['visitors']))->implode(' / ') : null,
+                    'progress' => $s ? round($s['decision']['progress'] * 100) : null,
+                    'days' => $x->started_at ? (int) floor($x->daysRunning()) : null,
+                    'result' => $s ? match ($s['decision']['state'] ?? null) {
+                        'winner' => 'Winner: '.$s['decision']['winner'], 'control' => 'Control wins', 'no_winner' => 'No clear winner', 'guardrail' => 'Guardrail breached', default => 'Running',
+                    } : null,
+                ];
+            }),
+            'counts' => (object) Experiment::where('store_id', $store->id)->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status')->all(),
+            'testable' => $this->testable($store)->map(fn ($e) => ['id' => $e->id, 'label' => $e->name.' · '.Registry::type($e->type)['label']])->values(),
+            'abTesting' => $store->planIncludes('ab_testing'),
+            'docsUrl' => route('site.docs', 'ab-testing'),
+            'error' => $request->query('error'),
         ]);
     }
 
@@ -53,7 +69,7 @@ class ExperimentController extends Controller
         return redirect()->to(app_route('app.experiments.edit', ['experiment' => $experiment->id, 'notice' => 'created']));
     }
 
-    public function edit(Request $request, Store $store, int $experiment): View|RedirectResponse
+    public function edit(Request $request, Store $store, int $experiment): Page|RedirectResponse
     {
         $experiment = $this->find($store, $experiment);
         if (in_array($experiment->status, ['running', 'completed', 'stopped'], true)) {
@@ -63,7 +79,7 @@ class ExperimentController extends Controller
         return $this->setup($store, $experiment, []);
     }
 
-    public function update(Request $request, Store $store, int $experiment): View|RedirectResponse
+    public function update(Request $request, Store $store, int $experiment): Page|RedirectResponse
     {
         $experiment = $this->find($store, $experiment);
         $errors = $this->manager->save($experiment, $request->all());
@@ -85,18 +101,42 @@ class ExperimentController extends Controller
         return redirect()->to(app_route('app.experiments.edit', ['experiment' => $experiment->id, 'notice' => 'saved']));
     }
 
-    public function show(Request $request, Store $store, int $experiment, Results $results): View|RedirectResponse
+    public function show(Request $request, Store $store, int $experiment, Results $results): Page|RedirectResponse
     {
         $experiment = $this->find($store, $experiment);
         if ($experiment->status === 'draft') {
             return redirect()->to(app_route('app.experiments.edit', ['experiment' => $experiment->id]));
         }
 
-        return view('app.experiments.show', [
-            'store' => $store,
-            'experiment' => $experiment,
-            'results' => $results->for($experiment),
-            'logs' => $experiment->logs()->with('user')->limit(50)->get(),
+        $r = $results->for($experiment);
+        // p-values formatted like the export (Results::p), next to the raw numbers.
+        foreach ($r['comparisons'] as $key => $metrics) {
+            foreach ($metrics as $metric => $c) {
+                if (is_array($c) && array_key_exists('p', $c)) {
+                    $r['comparisons'][$key][$metric]['p_label'] = Results::p($c['p']);
+                }
+            }
+        }
+
+        return page('experiments/show', [
+            'experiment' => [
+                'id' => $experiment->id, 'name' => $experiment->name, 'status' => $experiment->status, 'hypothesis' => $experiment->hypothesis,
+                'experience_id' => $experiment->experience_id, 'experience' => $experiment->experience->name,
+                'primary_metric' => $experiment->primary_metric, 'primary_label' => ExperimentManager::PRIMARY[$experiment->primary_metric] ?? $experiment->primary_metric,
+                'started_at' => $experiment->started_at, 'ends_at' => $experiment->ends_at,
+                'min_days' => $experiment->min_days, 'min_visitors' => $experiment->min_visitors, 'min_conversions' => $experiment->min_conversions,
+                'audience' => $experiment->audience ? collect($experiment->audience)->map(fn ($v, $k) => ucfirst(str_replace('_', ' ', $k)).': '.(is_array($v) ? collect($v)->map(fn ($x) => is_array($x) ? ($x['title'] ?? '') : $x)->implode(', ') : $v))->implode(' · ') : null,
+                'secondary_metrics' => array_values($experiment->secondary_metrics ?? []),
+                'guardrails' => array_values($experiment->guardrails ?? []),
+                'variants' => $experiment->variants->map(fn ($v) => ['key' => $v->key, 'name' => $v->name, 'allocation' => $v->allocation, 'hidden' => (bool) $v->hidden]),
+            ],
+            'results' => $r,
+            'primary' => Results::primaryKey($experiment),
+            'labels' => ['secondary' => ExperimentManager::SECONDARY, 'guardrails' => ExperimentManager::GUARDRAILS],
+            'logs' => $experiment->logs()->with('user')->limit(50)->get()->map(fn ($l) => ['id' => $l->id, 'created_at' => $l->created_at, 'message' => $l->message, 'user' => $l->user ? ($l->user->name ?? $l->user->email) : null]),
+            'currency' => $store->currency ?? 'USD',
+            'docsUrl' => route('site.docs', 'ab-testing'),
+            'error' => $request->query('error'),
         ]);
     }
 
@@ -154,27 +194,39 @@ class ExperimentController extends Controller
         }, 'ab-test-'.$experiment->handle.'.csv', ['Content-Type' => 'text/csv']);
     }
 
-    private function setup(Store $store, Experiment $experiment, array $errors, ?string $banner = null): View
+    private function setup(Store $store, Experiment $experiment, array $errors, ?string $banner = null): Page
     {
         $experience = $experiment->experience;
         $type = Registry::has($experience->type) ? Registry::type($experience->type) : null;
+        $config = $experience->publishedVersion?->config ?? $experience->draft_config ?? [];
 
-        return view('app.experiments.edit', [
-            'store' => $store,
-            'experiment' => $experiment,
-            'experience' => $experience,
-            'type' => $type,
-            'templates' => $type['templates'] ?? [],
+        return page('experiments/edit', [
+            'experiment' => [
+                'id' => $experiment->id, 'name' => $experiment->name, 'hypothesis' => $experiment->hypothesis, 'status' => $experiment->status,
+                'audience' => (object) ($experiment->audience ?? []), 'primary_metric' => $experiment->primary_metric,
+                'secondary_metrics' => array_values($experiment->secondary_metrics ?? []), 'guardrails' => array_values($experiment->guardrails ?? []),
+                'min_days' => $experiment->min_days, 'min_visitors' => $experiment->min_visitors, 'min_conversions' => $experiment->min_conversions,
+                'ends_at' => $experiment->ends_at?->toDateString(),
+                'variants' => $experiment->variants->map(fn ($v) => ['key' => $v->key, 'name' => $v->name, 'allocation' => $v->allocation, 'hidden' => (bool) $v->hidden,
+                    'template_key' => $v->template_key, 'content' => (object) ($v->content ?? []), 'design' => (object) ($v->design ?? [])])->keyBy('key'),
+            ],
+            'experience' => ['name' => $experience->name, 'type' => $type['label'] ?? $experience->type, 'published' => $experience->status === 'published', 'template_key' => $experience->template_key],
+            'config' => ['content' => (object) ($config['content'] ?? []), 'design' => (object) ($config['design'] ?? [])],
+            'templates' => collect($type['templates'] ?? [])->map(fn ($t, $k) => ['key' => $k, 'name' => $t['name']])->values(),
             'textFields' => Registry::has($experience->type) ? ExperimentManager::textFields($experience->type) : [],
             'designFields' => Registry::has($experience->type) ? (Schema::fields($experience->type)['design'] ?? []) : [],
             'audienceFields' => array_intersect_key(Schema::shared()['targeting'], array_flip(ExperimentManager::audienceFor($experience))),
             'checkoutBlock' => in_array($type['surface'] ?? '', ['checkout', 'thank-you'], true),
             'canHoldout' => ExperimentManager::canHoldout($experience),
             'problems' => $this->manager->launchProblems($experiment),
-            'fieldErrors' => $errors,
+            'fieldErrors' => (object) $errors,
             'banner' => $banner,
-            'previews' => $this->previews($experiment),
-        ]);
+            'previews' => (object) $this->previews($experiment),
+            'labels' => ['primary' => ExperimentManager::PRIMARY, 'secondary' => ExperimentManager::SECONDARY, 'guardrails' => ExperimentManager::GUARDRAILS],
+            'segments' => \App\Models\Audiences\Segment::where('store_id', $store->id)->active()->orderBy('name')->get(['id', 'name']),
+            'currency' => $store->currency ?? 'USD',
+            'docsUrl' => route('site.docs', 'ab-testing'),
+        ], $errors ? 422 : 200);
     }
 
     /** Each variant as the storefront renders it, for side-by-side previews. */

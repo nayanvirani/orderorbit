@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Field, Form, useForm } from '../../components/form.jsx';
-import { useRuntime } from '../../components/runtime.js';
+import { useRuntime } from '../../components/runtime.jsx';
 import { Page } from '../../components/ui.jsx';
 import { route, useShared } from '../../router.jsx';
 

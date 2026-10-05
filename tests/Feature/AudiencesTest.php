@@ -103,8 +103,8 @@ class AudiencesTest extends TestCase
         $mobile = Segment::create(['store_id' => $this->store->id, 'name' => 'Mobile', 'match' => 'all', 'rules' => [['field' => 'device', 'op' => 'is', 'value' => 'mobile']]]);
 
         // A rule needs a segment or a condition; swap needs a template.
-        $this->post('/app/audiences/rules', ['experience_id' => $experience->id, 'outcome' => 'show'], $this->as($owner))->assertOk()->assertSee('who is this rule for?');
-        $this->post('/app/audiences/rules', ['experience_id' => $experience->id, 'outcome' => 'swap', 'segments' => [$mobile->id]], $this->as($owner))->assertOk()->assertSee('Choose the template to show.');
+        $this->send('/app/audiences/rules', ['experience_id' => $experience->id, 'outcome' => 'show'], $owner)->assertStatus(422)->assertJsonPath('props.fieldErrors.segments', 'Choose at least one segment or condition: who is this rule for?');
+        $this->send('/app/audiences/rules', ['experience_id' => $experience->id, 'outcome' => 'swap', 'segments' => [$mobile->id]], $owner)->assertStatus(422)->assertJsonPath('props.fieldErrors.template_key', 'Choose the template to show.');
 
         $this->post('/app/audiences/rules', ['experience_id' => $experience->id, 'outcome' => 'swap', 'template_key' => 'banner', 'segments' => [$mobile->id], 'name' => 'Mobile banner'], $this->as($owner))->assertRedirectContains('notice=saved');
         $this->post('/app/audiences/rules', ['experience_id' => $experience->id, 'outcome' => 'show', 'segments' => [$returning->id], 'conditions' => ['cart_min' => '75', 'device' => 'tablet']], $this->as($owner))->assertRedirectContains('notice=saved');
@@ -116,7 +116,7 @@ class AudiencesTest extends TestCase
         $this->assertSame(['experience' => $experience->handle, 'segments' => [(string) $mobile->id], 'outcome' => 'swap', 'template' => 'banner', 'style' => 'banner'], $rules[0]);
         $this->assertSame(['experience' => $experience->handle, 'segments' => [(string) $returning->id], 'when' => ['cart_min' => 75], 'outcome' => 'show'], $rules[1]);
 
-        $this->get('/app/audiences/rules', $this->as($owner))->assertOk()->assertSee('target the same experience')->assertSee('Mobile banner');
+        $this->page('/app/audiences/rules', $owner)->assertOk()->assertJsonCount(1, 'props.conflicts')->assertJsonPath('props.rules.0.name', 'Mobile banner');
         // Reorder: the second rule moves up.
         $second = PersonalizationRule::latest('id')->first();
         $this->post('/app/audiences/rules/'.$second->id.'/up', [], $this->as($owner))->assertRedirect();
@@ -139,12 +139,14 @@ class AudiencesTest extends TestCase
     public function test_screens_and_segment_builder(): void
     {
         $owner = $this->member($this->store, 'owner');
-        $this->get('/app/audiences/segments', $this->as($owner))->assertOk()->assertSee('VIP customers')->assertSee('Lapsed customers')->assertSee('Custom segment');
+        $names = array_column($this->page('/app/audiences/segments', $owner)->assertOk()->json('props.templates'), 'name');
+        $this->assertContains('VIP customers', $names);
+        $this->assertContains('Lapsed customers', $names);
         $this->post('/app/audiences/segments', ['template' => 'vip'], $this->as($owner))->assertRedirectContains('/app/audiences/segments/');
         $segment = Segment::sole();
         $this->assertSame([42, 'VIP customers'], [$segment->member_count, $segment->name]);
 
-        $this->get('/app/audiences/segments/'.$segment->id, $this->as($owner))->assertOk()->assertSee('42 customers in Shopify match')->assertSee('Used by');
+        $this->page('/app/audiences/segments/'.$segment->id, $owner)->assertOk()->assertJsonPath('props.segment.member_count', 42)->assertJsonPath('props.usage', []);
         $this->post('/app/audiences/segments/'.$segment->id, ['name' => 'Big spenders', 'match' => 'all', 'rules' => [['field' => 'ltv', 'op' => 'gte', 'value' => '1000'], ['field' => 'device', 'op' => 'is', 'value' => 'mobile']]], $this->as($owner))->assertRedirectContains('notice=saved');
         $segment->refresh();
         $this->assertSame(['Big spenders', null], [$segment->name, $segment->member_count], 'Browsing rules can\'t be counted.');
@@ -152,9 +154,9 @@ class AudiencesTest extends TestCase
         $this->post('/app/audiences/segments/'.$segment->id.'/duplicate', [], $this->as($owner))->assertRedirect();
         $this->assertSame(2, Segment::count());
         $this->post('/app/audiences/segments/'.$segment->id.'/archive', [], $this->as($owner))->assertRedirectContains('segment_archived');
-        $this->get('/app/audiences/segments?archived=1', $this->as($owner))->assertOk()->assertSee('Big spenders');
+        $this->page('/app/audiences/segments?archived=1', $owner)->assertOk()->assertJsonPath('props.segments.0.name', 'Big spenders');
 
-        $this->get('/app/audiences/rules/new', $this->as($owner))->assertOk()->assertSee('Which experience')->assertSee('Show it in another template');
+        $this->page('/app/audiences/rules/new', $owner)->assertOk()->assertJsonPath('component', 'audiences/rule')->assertJsonPath('props.outcomes.swap', 'Show it in another template');
     }
 
     public function test_workflows_can_check_a_segment(): void

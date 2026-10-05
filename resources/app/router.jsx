@@ -122,7 +122,8 @@ export function RouterProvider({ initial, children }) {
   const handle = useCallback(async (res, data, url, opts) => {
     if (data.component) {
       // A form that answers with a page (e.g. validation shown in place) replaces the entry.
-      await show(data, opts.method ? { replace: true, preserveScroll: true } : opts);
+      // It keeps the current URL: the POST address may be a different page on GET.
+      await show(opts.method ? { ...data, url: pageRef.current.url } : data, opts.method ? { replace: true, preserveScroll: true } : opts);
       return { ok: res.ok, data };
     }
     if (data.redirect) {

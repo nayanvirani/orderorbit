@@ -196,14 +196,15 @@ class ExperimentsTest extends TestCase
         $owner = $this->member($this->store, 'owner');
         $experience = $this->published();
 
-        $this->get('/app/experiments', $this->as($owner))->assertOk()->assertSee('Test before you')->assertSee('Sale countdown');
+        $this->page('/app/experiments', $owner)->assertOk()->assertJsonPath('component', 'experiments/index')->assertSee('Sale countdown');
         $this->post('/app/experiments', ['experience_id' => $experience->id], $this->as($owner))->assertRedirectContains('/edit');
         $experiment = Experiment::sole();
-        $this->get('/app/experiments/'.$experiment->id.'/edit', $this->as($owner))->assertOk()->assertSee('2. Variants')->assertSee('Holdout')->assertSee('9. Preview and launch')->assertSee('data-render', false);
+        $this->page('/app/experiments/'.$experiment->id.'/edit', $owner)->assertOk()->assertJsonPath('component', 'experiments/edit')
+            ->assertJsonPath('props.canHoldout', true)->assertJsonPath('props.previews.A.type', 'countdown')->assertJsonPath('props.experiment.variants.B.key', 'B');
 
         $input = $this->setupInput($experiment) + ['action' => 'launch'];
         $this->post('/app/experiments/'.$experiment->id, $input, $this->as($owner))->assertRedirectContains('notice=experiment_launched');
-        $this->get('/app/experiments/'.$experiment->id, $this->as($owner))->assertOk()->assertSee('Collecting data')->assertSee('Statistical method')->assertSee('Launched with A 50%, B 50%.');
+        $this->page('/app/experiments/'.$experiment->id, $owner)->assertOk()->assertJsonPath('props.results.decision.state', 'collecting')->assertSee('Launched with A 50%, B 50%.');
         $this->get('/app/experiments/'.$experiment->id.'/export', $this->as($owner))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
 
         $this->post('/app/experiments/'.$experiment->id.'/pause', [], $this->as($owner))->assertRedirectContains('experiment_pause');
@@ -215,7 +216,7 @@ class ExperimentsTest extends TestCase
         $experiment->refresh();
         $this->assertSame('completed', $experiment->status);
         $this->assertSame('Last chance: sale ends in', $experience->fresh('publishedVersion')->publishedVersion->config['content']['headline']);
-        $this->get('/app/experiments?tab=completed', $this->as($owner))->assertOk()->assertSee('Countdown headline test');
+        $this->page('/app/experiments?tab=completed', $owner)->assertOk()->assertJsonPath('props.experiments.0.name', 'Countdown headline test');
 
         // Pixel events carry the test and variant.
         $this->call('POST', '/api/pixel', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode(['t' => str_repeat('a', 40), 's' => $this->store->shop_domain, 'k' => 'e', 'e' => 'experiment_exposed', 'x' => $experience->handle, 'ty' => 'countdown', 'xp' => $experiment->handle, 'xv' => 'B', 'vid' => 'v1']));
@@ -280,6 +281,6 @@ class ExperimentsTest extends TestCase
         $this->get('/docs/unknown')->assertNotFound();
 
         $owner = $this->member($this->store, 'owner');
-        $this->get('/app/experiments', $this->as($owner))->assertOk()->assertSee('View documentation')->assertSee('/docs/ab-testing', false);
+        $this->page('/app/experiments', $owner)->assertOk()->assertJsonPath('props.docsUrl', url('/docs/ab-testing'));
     }
 }

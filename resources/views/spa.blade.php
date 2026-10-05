@@ -15,9 +15,18 @@
         <link rel="stylesheet" href="{{ asset($css) }}?v={{ @filemtime(public_path($css)) }}">
     @endforeach
     @vite('main.jsx', 'spa')
+    @php
+        // Versioned so a new deploy is picked up: the storefront runtime and the checkout block likenesses.
+        $assets = [
+            'runtime' => route('storefront.asset', 'orderorbit.js', false).'?v='.@filemtime(base_path('extensions/orderorbit-theme/assets/orderorbit.js')),
+            'runtimeCss' => route('storefront.asset', 'orderorbit.css', false).'?v='.@filemtime(base_path('extensions/orderorbit-theme/assets/orderorbit.css')),
+            'checkoutPreview' => '/js/checkout-preview.js?v='.@filemtime(public_path('js/checkout-preview.js')),
+        ];
+    @endphp
     <script>
         window.OO_PAGE = @json($page);
         window.OO_ROUTES = @json(\App\Support\Spa\Shared::routes());
+        window.OO_ASSETS = @json($assets);
         window.OO_SAMPLE_IMAGE = @json(\App\Services\Experiences\TemplateLibrary::samples()[0]['image']);
     </script>
 </head>
