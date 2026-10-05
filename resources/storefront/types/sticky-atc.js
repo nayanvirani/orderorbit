@@ -29,6 +29,15 @@
       root.style.setProperty('--sa-offset', (c.offset != null ? c.offset : 12) + 'px');
       root.classList.add('oo-sa-dev-' + (c.devices || 'all'));
       if (ctx.preview) return;
+      // Themes put the product column in its own stacking context (Dawn's sticky info column),
+      // which traps a fixed bar under later sections like the footer. Move the bar's mount to
+      // <body>; a section re-render (variant change) replaces the copy moved before.
+      var mount = root.parentNode;
+      if (mount && mount.parentNode !== document.body) {
+        [].forEach.call(document.querySelectorAll('body > [data-oo-sa-portal]'), function (old) { if (old !== mount) old.remove(); });
+        mount.setAttribute('data-oo-sa-portal', '');
+        document.body.appendChild(mount);
+      }
       var target = themeButton();
       if (target && 'IntersectionObserver' in window) {
         root.classList.add('oo-sticky-away');

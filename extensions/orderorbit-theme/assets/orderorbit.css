@@ -132,7 +132,7 @@
 .oo-style-row .oo-cards { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 
 /* Sticky placement */
-.oo-sticky-bottom, .oo-sticky-top { position: fixed; left: 12px; right: 12px; z-index: 30; margin: 0; box-shadow: 0 -6px 30px rgba(0, 0, 0, .18); }
+.oo-sticky-bottom, .oo-sticky-top { position: fixed; left: 12px; right: 12px; z-index: 2147482000; margin: 0; box-shadow: 0 -6px 30px rgba(0, 0, 0, .18); }
 .oo-sticky-bottom { bottom: var(--sa-offset, 12px); }
 .oo-sticky-top { top: var(--sa-offset, 12px); }
 .oo-sticky-bottom, .oo-sticky-top { transition: transform .25s ease, opacity .25s ease; }
