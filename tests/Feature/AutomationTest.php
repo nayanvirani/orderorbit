@@ -79,7 +79,7 @@ class AutomationTest extends TestCase
             'id' => 5001, 'name' => '#1052', 'current_total_price' => '180.00', 'currency' => 'USD', 'created_at' => now()->toIso8601String(),
             'line_items' => [['product_id' => 7, 'variant_id' => 70, 'sku' => 'SERUM', 'title' => 'Glow Serum', 'quantity' => 2]],
             'shipping_address' => ['country_code' => 'US'], 'payment_gateway_names' => ['shopify_payments'], 'tags' => '',
-            'customer' => ['id' => 900, 'tags' => 'newsletter', 'orders_count' => 1, 'total_spent' => '180.00'],
+            'customer' => ['id' => 900, 'email' => 'ana@example.com', 'tags' => 'newsletter', 'orders_count' => 1, 'total_spent' => '180.00'],
         ], $over);
     }
 
@@ -147,7 +147,7 @@ class AutomationTest extends TestCase
         $run->refresh();
         $this->assertSame('completed', $run->status);
         $email = AutomationEmail::sole();
-        $this->assertSame(['Thanks for #1052', 'waiting_for_provider', '900'], [$email->subject, $email->status, $email->customer_id]);
+        $this->assertSame(['Thanks for #1052', 'queued', '900'], [$email->subject, $email->status, $email->customer_id]);
         $this->assertStringContainsString($code, $email->body);
         $this->assertSame('webhook', end($this->calls)[0]);
         $this->assertArrayNotHasKey('email', end($this->calls)[1]['customer'], 'Webhooks never carry the customer\'s email.');

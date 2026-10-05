@@ -339,6 +339,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/settings', 'update')->name('settings.update');
         });
 
+        Route::middleware('admin.can:email')->controller(\App\Http\Controllers\Admin\EmailController::class)->group(function () {
+            Route::get('/email', 'index')->name('email');
+            Route::post('/email/settings', 'saveSettings')->name('email.settings');
+            Route::get('/email/log', 'log')->name('email.log');
+            Route::get('/email/providers/new', 'create')->name('email.create');
+            Route::post('/email/providers', 'store')->name('email.store');
+            Route::get('/email/providers/{provider}', 'edit')->whereNumber('provider')->name('email.edit');
+            Route::post('/email/providers/{provider}', 'update')->whereNumber('provider')->name('email.update');
+            Route::post('/email/providers/{provider}/test', 'test')->whereNumber('provider')->middleware('throttle:10,1')->name('email.test');
+            Route::post('/email/providers/{provider}/{action}', 'action')->whereNumber('provider')->whereIn('action', ['resume', 'toggle', 'up', 'down', 'delete'])->name('email.action');
+        });
+
         Route::middleware('admin.can:legal')->controller(\App\Http\Controllers\Admin\LegalController::class)->group(function () {
             Route::get('/legal', 'index')->name('legal');
             Route::post('/legal/details', 'saveDetails')->name('legal.details');

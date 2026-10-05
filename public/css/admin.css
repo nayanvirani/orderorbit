@@ -206,3 +206,28 @@ textarea.ad-code { display: block; width: 100%; padding: 12px 14px; border-radiu
 .ad-prose p, .ad-prose ul { margin: 0 0 10px; }
 .ad-prose table { border-collapse: collapse; width: 100%; font-size: 13px; }
 .ad-prose th, .ad-prose td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+
+/* Email providers */
+.ad-meter { width: 120px; height: 6px; border-radius: 999px; background: var(--soft); overflow: hidden; margin-bottom: 4px; }
+.ad-meter i { display: block; height: 100%; border-radius: inherit; background: var(--ok, #16794a); }
+.ad-meter.high i { background: #d08a00; }
+.ad-meter.full i { background: var(--bad); }
+.ad-usage small { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.ad-order { white-space: nowrap; width: 1%; }
+.ad-order form { display: inline; }
+.ad-icon-btn { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; }
+.ad-icon-btn:disabled { opacity: .35; cursor: default; }
+.ad-row-actions { white-space: nowrap; text-align: right; }
+.ad-row-actions > form, .ad-row-actions > details { display: inline-block; vertical-align: top; margin-left: 4px; }
+.ad-menu summary { list-style: none; }
+.ad-menu summary::-webkit-details-marker { display: none; }
+.ad-pop { display: grid; gap: 8px; width: 240px; margin-top: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-align: left; white-space: normal; }
+.ad-pop label { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
+.ad-clip { max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
+.ad-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.ad-pick-card { display: grid; gap: 6px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color .15s, box-shadow .15s; }
+.ad-pick-card:hover { border-color: var(--accent); box-shadow: 0 6px 20px -12px rgba(60, 50, 160, .45); }
+.ad-pick-card b { font-size: 15.5px; }
+.ad-pick-card span { color: var(--muted); font-size: 13px; }
+.ad-choice { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
+.ad-choice:has(input:checked) { border-color: var(--accent); background: #f7f6ff; }

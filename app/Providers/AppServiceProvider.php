@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Plans and platform settings edited in the Internal Admin override config.
+        \Illuminate\Support\Facades\Mail::extend('orderorbit', fn () => new \App\Services\Mail\ProviderTransport(app(\App\Services\Mail\EmailSender::class)));
         \App\Support\Plans::boot();
         \App\Support\PlatformSettings::boot();
 

@@ -17,7 +17,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Automation (Phase 7): workflows, templates, runs and logs, the team inbox and prepared emails.
+ * Automation (Phase 7): workflows, templates, runs and logs, the team inbox and workflow emails.
  */
 class AutomationController extends Controller
 {
@@ -189,9 +189,15 @@ class AutomationController extends Controller
     public function emails(Request $request, Store $store): Page
     {
         $emails = AutomationEmail::where('store_id', $store->id)->latest('id')->paginate(50);
-        $emails->setCollection($emails->getCollection()->map(fn ($e) => ['id' => $e->id, 'subject' => $e->subject, 'body' => $e->body, 'customer_id' => $e->customer_id, 'status' => $e->status, 'created_at' => $e->created_at]));
+        $emails->setCollection($emails->getCollection()->map(fn ($e) => [
+            'id' => $e->id, 'subject' => $e->subject, 'body' => $e->body, 'customer_id' => $e->customer_id, 'to' => $e->to_email,
+            'status' => $e->status, 'created_at' => $e->created_at, 'sent_at' => $e->sent_at,
+            // Provider errors are for us; merchants see a plain reason.
+            'reason' => in_array($e->status, ['failed', 'expired'], true) ? $e->error : null,
+        ]));
+        $sending = \App\Support\EmailSettings::get()['enabled'] && \App\Models\Mail\EmailProvider::where('is_active', true)->exists();
 
-        return page('automation/emails', $this->shared($store) + ['emails' => $emails]);
+        return page('automation/emails', $this->shared($store) + ['emails' => $emails, 'sending' => $sending]);
     }
 
     private function editor(Store $store, Workflow $workflow, array $errors, ?string $banner = null): Page

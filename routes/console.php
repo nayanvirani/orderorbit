@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schedule;
 // Workflows: resume runs whose wait or retry delay is over.
 Schedule::call(fn () => app(\App\Services\Experiments\ExperimentManager::class)->completeDue())->name('experiments-complete-due')->hourly()->withoutOverlapping();
 Schedule::command('orderorbit:automation-tick')->everyMinute()->withoutOverlapping(10);
+// Workflow emails: send through the super admin's email providers, with failover and retries.
+Schedule::command('orderorbit:send-emails')->everyMinute()->withoutOverlapping(10);
 
 // Analytics, order totals and Sales pop purchases past their retention window.
 Schedule::command('orderorbit:prune-analytics')->dailyAt('03:15');

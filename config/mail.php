@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'orderorbit'),
 
     /*
     |--------------------------------------------------------------------------
@@ -36,6 +36,11 @@ return [
     */
 
     'mailers' => [
+
+        // The email providers set up in the super admin (Email providers), with failover.
+        'orderorbit' => [
+            'transport' => 'orderorbit',
+        ],
 
         'smtp' => [
             'transport' => 'smtp',

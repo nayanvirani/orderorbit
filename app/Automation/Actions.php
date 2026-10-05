@@ -30,14 +30,17 @@ class Actions
 
         switch ($node['action']) {
             case 'send_email':
-                // Prepared now; sending starts once an email provider is connected in super admin.
+                if (empty($customer['email'])) {
+                    return ['skipped', 'This customer has no email address.', []];
+                }
+                // Queued here; orderorbit:send-emails sends it within a minute through the email providers.
                 $email = AutomationEmail::create([
                     'store_id' => $run->store_id, 'run_id' => $run->id, 'customer_id' => $customer['id'] ?? null,
-                    'to_email' => $customer['email'] ?? null, 'subject' => $text('subject'), 'body' => $text('body'),
-                    'status' => 'waiting_for_provider',
+                    'to_email' => $customer['email'], 'subject' => $text('subject'), 'body' => $text('body'),
+                    'status' => 'queued',
                 ]);
 
-                return ['ok', 'Email prepared: “'.Str::limit($email->subject, 80).'”. Sending starts once an email provider is connected.', ['email_id' => $email->id]];
+                return ['ok', 'Email queued to send: “'.Str::limit($email->subject, 80).'”.', ['email_id' => $email->id]];
 
             case 'notify':
             case 'create_task':
@@ -128,7 +131,7 @@ class Actions
         $p = $node['params'];
 
         return 'Would '.match ($node['action']) {
-            'send_email' => 'prepare the email “'.Context::fill((string) $p['subject'], $vars).'”',
+            'send_email' => 'send the email “'.Context::fill((string) $p['subject'], $vars).'”',
             'notify' => 'notify your team: '.Context::fill((string) $p['title'], $vars),
             'create_task' => 'create the task: '.Context::fill((string) $p['title'], $vars),
             'add_order_tag' => 'add order tags '.$p['tags'],
