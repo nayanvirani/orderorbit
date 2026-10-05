@@ -135,7 +135,7 @@
 .oo-sticky-bottom, .oo-sticky-top { position: fixed; left: 12px; right: 12px; z-index: 2147482000; margin: 0; box-shadow: 0 -6px 30px rgba(0, 0, 0, .18); }
 .oo-sticky-bottom { bottom: var(--sa-offset, 12px); }
 .oo-sticky-top { top: var(--sa-offset, 12px); }
-.oo-sticky-bottom, .oo-sticky-top { transition: transform .25s ease, opacity .25s ease; }
+.oo-sticky-bottom, .oo-sticky-top { transition: transform .25s ease, opacity .25s ease; animation: none !important; }
 .oo-sticky-bottom.oo-sticky-away { transform: translateY(160%); opacity: 0; pointer-events: none; }
 .oo-sticky-top.oo-sticky-away { transform: translateY(-160%); opacity: 0; pointer-events: none; }
 .oo-preview .oo-sticky-bottom, .oo-preview .oo-sticky-top { position: relative; left: auto; right: auto; top: auto; bottom: auto; }

@@ -5,11 +5,20 @@
   var S = OrderOrbit.shop;
   var h = OrderOrbit.h;
 
-  function themeForm() { return document.querySelector('form[action*="/cart/add"]:not([data-oo-form])'); }
+  // The theme's product form: the one with a buy button (Dawn also has a button-less form for
+  // Shop Pay installments in the price block).
   function themeButton() {
-    var form = themeForm();
-    return form && form.querySelector('[type="submit"], button[name="add"]');
+    var forms = document.querySelectorAll('form[action*="/cart/add"]:not([data-oo-form])');
+    for (var i = 0; i < forms.length; i++) {
+      var b = forms[i].querySelector('[name="add"], [type="submit"]');
+      if (b && !b.closest('.oo-root')) return b;
+    }
+    return null;
   }
+  function themeForm() { var b = themeButton(); return b && b.form; }
+  // A bundle on the page replaces the theme's buy button, so the bar follows the bundle's.
+  function bundleButton() { return document.querySelector('.oo-type-bundles .oo-badd'); }
+  function shown(el) { var r = el && el.getBoundingClientRect(); return r && (r.width || r.height) ? r : null; }
 
   OrderOrbit.define('sticky-atc', function (exp, ctx) {
     if (!ctx.product && !ctx.preview) return null;
@@ -38,23 +47,37 @@
         mount.setAttribute('data-oo-sa-portal', '');
         document.body.appendChild(mount);
       }
-      var target = themeButton();
-      if (target && 'IntersectionObserver' in window) {
-        root.classList.add('oo-sticky-away');
-        new IntersectionObserver(function (entries) {
-          root.classList.toggle('oo-sticky-away', entries[0].isIntersecting || entries[0].boundingClientRect.top > 0);
-        }).observe(target);
-      } else if (!target) {
-        // No theme buy button found: nothing to follow, so stay hidden.
-        root.classList.add('oo-sticky-away');
-        return;
-      }
+      // Hidden while the buy button is on screen or still below it; shown once it scrolls past.
+      // If there is no visible buy button to follow, the bar just shows.
+      var follow = function () {
+        var r = shown(bundleButton()) || shown(themeButton());
+        root.classList.toggle('oo-sticky-away', !!r && r.bottom > 0);
+      };
+      var queued = false;
+      var schedule = function () { if (!queued) { queued = true; requestAnimationFrame(function () { queued = false; follow(); }); } };
+      // A re-render replaces the previous bar: drop its listeners first.
+      if (window.__ooSaFollow) { window.removeEventListener('scroll', window.__ooSaFollow); window.removeEventListener('resize', window.__ooSaFollow); }
+      window.__ooSaFollow = schedule;
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule);
+      root.classList.add('oo-sticky-away');
+      follow();
+      // Bundles and theme sections render after this; look again once they have.
+      setTimeout(follow, 600);
+      setTimeout(follow, 2000);
       var btn = root.querySelector('[data-oo-add]');
       btn.addEventListener('click', function () {
+        var bundle = bundleButton();
+        if (shown(bundle)) {
+          // Add the bundle's selected offer, or take shoppers to it to choose.
+          if (c.on_click === 'add' && !bundle.disabled) bundle.click();
+          else bundle.closest('.oo-root').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
         var theme = themeButton();
-        if (c.on_click === 'add' && theme && !theme.disabled) { theme.click(); return; }
+        if (c.on_click === 'add' && shown(theme) && !theme.disabled) { theme.click(); return; }
         var form = themeForm();
-        if (form) {
+        if (form && shown(theme)) {
           form.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
