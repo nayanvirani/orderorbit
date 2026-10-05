@@ -56,7 +56,7 @@
         <div class="ad-fields">
             <label>Tagline (who it's for)<input name="description" maxlength="300" value="{{ old('description', $plan->description) }}"></label>
         </div>
-        <label style="margin-top:14px">What's included (one line each)<textarea name="features" rows="6">{{ old('features', implode("\n", $plan->features ?? [])) }}</textarea><small>Shown on the in-app billing page and the public pricing page.</small></label>
+        <label style="margin-top:14px">What's included (one line each)<textarea name="features" rows="6">{{ old('features', implode("\n", $plan->features ?? [])) }}</textarea><small>Shown on the in-app billing page and the public pricing page. Put a limit in a line so it always matches: <code>{bundles|bundle}</code> shows "1 bundle", "3 bundles" or "Unlimited bundles"; <code>{automation_executions}</code> shows just the number. A line with a limit of 0 is hidden. Limits: {{ implode(', ', array_keys(\App\Services\Usage::METERS)) }}.</small></label>
     </section>
 
     <div class="ad-savebar">

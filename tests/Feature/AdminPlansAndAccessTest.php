@@ -90,6 +90,11 @@ class AdminPlansAndAccessTest extends TestCase
         $this->actingAs($admin)->post('/admin/plans/modules', ['grid' => $grid, 'limits' => $limits])->assertRedirect('/admin/plans');
         $this->assertSame([7, null], [Plan::where('key', 'starter')->value('limits')['bundles'], Plan::where('key', 'starter')->value('limits')['workflows']]);
         $this->assertSame(7, $store->fresh()->planLimit('bundles'));
+        // Plan lines quoting a limit follow it.
+        Plan::where('key', 'starter')->update(['features' => json_encode(['{bundles|bundle} with quantity breaks', '{cart_upsells|cart upsell}', 'Everything in Free'])]);
+        \App\Support\Plans::forget();
+        $this->assertSame(['7 bundles with quantity breaks', 'Everything in Free'], \App\Support\Plans::lines(config('shopify.billing.plans.starter')), 'Cart upsells are 0 on this plan, so that line is hidden.');
+        $this->get('/pricing')->assertSee('7 bundles with quantity breaks');
 
         // Feature names and pricing-page visibility, and the pricing page's own text.
         $this->actingAs($admin)->post('/admin/plans/catalog', ['catalog' => ['countdown' => ['label' => 'Urgency timers', 'public' => '1'], 'trust' => ['label' => 'Shopper trust signals']]])->assertRedirect('/admin/plans');

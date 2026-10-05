@@ -8,7 +8,7 @@
             <div class="price">@if ($plan['price'] > 0)${{ number_format($plan['price'], 2) }}<small>/mo</small>@else Free @endif</div>
             <div class="muted" style="font-size:14px">{{ $plan['price'] > 0 ? 'Billed through Shopify' : 'Free forever' }}</div>
             <ul>
-                @foreach ($plan['features'] ?? [] as $feature)
+                @foreach (\App\Support\Plans::lines($plan) as $feature)
                     <li @class(['limit' => $loop->first])><x-icon name="check"/>{{ $feature }}</li>
                 @endforeach
             </ul>

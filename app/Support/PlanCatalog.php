@@ -16,7 +16,7 @@ class PlanCatalog
     {
         return collect(Plans::public())->map(fn ($p, $key) => [
             'key' => $key, 'name' => $p['name'], 'price' => (float) $p['price'], 'description' => $p['description'] ?? null,
-            'badge' => $p['badge'] ?? null, 'support' => $p['support'] ?? null, 'features' => array_values($p['features'] ?? []),
+            'badge' => $p['badge'] ?? null, 'support' => $p['support'] ?? null, 'features' => Plans::lines($p),
         ])->values()->all();
     }
 

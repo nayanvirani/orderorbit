@@ -65,4 +65,41 @@ class Plans
 
         return $first;
     }
+
+    /**
+     * A plan's "What's included" lines with its limits filled in. {bundles} becomes the number (or
+     * "Unlimited"); {bundles|bundle} becomes "1 bundle", "3 bundles" or "Unlimited bundles". A line
+     * whose limit is 0 (not included) is left out. Keys are App\Services\Usage::METERS.
+     *
+     * @return list<string>
+     */
+    public static function lines(array $plan): array
+    {
+        $limits = (array) ($plan['limits'] ?? []);
+        // A module the plan doesn't include counts as 0 (as everywhere else).
+        foreach (\App\Services\Usage::FEATURE as $meter => $feature) {
+            if (! collect(Modules::chain($feature))->every(fn ($k) => in_array($k, $plan['includes'] ?? [], true))) {
+                $limits[$meter] = 0;
+            }
+        }
+
+        return array_values(array_filter(array_map(function (string $line) use ($limits) {
+            $zero = false;
+            $text = preg_replace_callback('/\{([a-z_]+)(?:\|([^}]+))?\}/', function ($m) use ($limits, &$zero) {
+                if (! array_key_exists($m[1], \App\Services\Usage::METERS)) {
+                    return $m[0];
+                }
+                $limit = $limits[$m[1]] ?? null;
+                if ($limit !== null && (int) $limit === 0) {
+                    $zero = true;
+                }
+                $count = $limit === null ? 'Unlimited' : number_format((int) $limit);
+                $noun = $m[2] ?? null;
+
+                return $noun === null ? $count : $count.' '.($limit !== null && (int) $limit === 1 ? $noun : \Illuminate\Support\Str::plural($noun));
+            }, $line);
+
+            return $zero ? null : $text;
+        }, (array) ($plan['features'] ?? []))));
+    }
 }

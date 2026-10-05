@@ -19,7 +19,7 @@ return [
             ]],
             'plan' => ['Choose a plan', [
                 ['p', 'Every plan includes the core storefront widgets and every template. Plans differ by the features they include and by how many offers, workflows and automation runs you can have. The Pricing page compares them in full.'],
-                ['table', ['Plan', 'Price', 'Includes'], array_values(array_map(fn ($p) => [$p['name'], $p['price'] > 0 ? '$'.number_format($p['price'], 2).' a month' : 'Free', implode('; ', array_slice($p['features'] ?? [], 0, 4))], \App\Support\Plans::public()))],
+                ['table', ['Plan', 'Price', 'Includes'], array_values(array_map(fn ($p) => [$p['name'], $p['price'] > 0 ? '$'.number_format($p['price'], 2).' a month' : 'Free', implode('; ', array_slice(\App\Support\Plans::lines($p), 0, 4))], \App\Support\Plans::public()))],
                 ['p', 'The app warns you as you get close to a limit. At a limit, everything live keeps working; you just can\'t add more until you upgrade. Changing plan never deletes anything: features a lower plan doesn\'t include stop showing, and items over its limits are paused.'],
             ]],
             'onboarding' => ['Follow the eight onboarding steps', [
