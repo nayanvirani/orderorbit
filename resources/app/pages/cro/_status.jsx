@@ -6,6 +6,7 @@ export default function ExperienceStatus({ experience: e }) {
   return (
     <>
       <s-badge tone={tone}>{label}</s-badge>
+      {e.paused_by_plan && <> <s-badge tone="attention">Over plan limit</s-badge></>}
       {e.not_placed && <> <s-badge tone="critical">Not placed</s-badge></>}
       {e.unpublished && <> <s-badge tone="attention">Unpublished changes</s-badge></>}
     </>

@@ -32,14 +32,16 @@ class PlanCatalog
         $includes = fn (array $plan, string $key) => collect(Modules::chain($key))->every(fn ($k) => in_array($k, $plan['includes'] ?? [], true));
         $groups = [];
 
-        $groups[] = ['group' => 'Usage', 'rows' => collect(Usage::METERS)->map(fn ($label, $meter) => [
-            'label' => $label, 'help' => null,
-            'values' => collect($plans)->map(function ($p) use ($meter) {
-                $limit = ($p['limits'] ?? [])[$meter] ?? null;
+        foreach (Usage::GROUPS as $group => $meters) {
+            $groups[] = ['group' => 'Limits · '.$group, 'rows' => collect($meters)->map(fn ($meter) => [
+                'label' => Usage::METERS[$meter], 'help' => Usage::HELP[$meter] ?? null,
+                'values' => collect($plans)->map(function ($p) use ($meter) {
+                    $limit = ($p['limits'] ?? [])[$meter] ?? null;
 
-                return $limit === null ? 'Unlimited' : ((int) $limit === 0 ? false : number_format((int) $limit));
-            })->all(),
-        ])->values()->all()];
+                    return $limit === null ? 'Unlimited' : ((int) $limit === 0 ? false : number_format((int) $limit));
+                })->all(),
+            ])->all()];
+        }
 
         $support = collect($plans)->map(fn ($p) => $p['support'] ?? null);
         foreach (Modules::grouped() as $group => $features) {

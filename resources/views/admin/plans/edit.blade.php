@@ -40,12 +40,15 @@
 
     <section class="ad-card">
         <h2>Usage limits</h2>
-        <p class="ad-muted">Empty = unlimited. Live-offer limits count published experiences of that kind.</p>
-        <div class="ad-fields">
-            @foreach (\App\Services\Usage::METERS as $meter => $label)
-                <label>{{ $label }}<input type="number" min="0" name="limits[{{ $meter }}]" value="{{ old('limits.'.$meter, ($plan->limits ?? [])[$meter] ?? '') }}" placeholder="Unlimited"></label>
-            @endforeach
-        </div>
+        <p class="ad-muted">Empty = unlimited, 0 = none. Live-offer limits count published offers of that kind; when one is reached, merchants can't publish another until they pause one or upgrade.</p>
+        @foreach (\App\Services\Usage::GROUPS as $limitGroup => $meters)
+            <p class="ad-group-title">{{ $limitGroup }}</p>
+            <div class="ad-fields">
+                @foreach ($meters as $meter)
+                    <label>{{ \App\Services\Usage::METERS[$meter] }}<input type="number" min="0" name="limits[{{ $meter }}]" value="{{ old('limits.'.$meter, ($plan->limits ?? [])[$meter] ?? '') }}" placeholder="Unlimited">@if (isset(\App\Services\Usage::HELP[$meter]))<small>{{ \App\Services\Usage::HELP[$meter] }}</small>@endif</label>
+                @endforeach
+            </div>
+        @endforeach
     </section>
 
     <section class="ad-card">

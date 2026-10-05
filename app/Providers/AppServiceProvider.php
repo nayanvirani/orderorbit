@@ -54,16 +54,10 @@ class AppServiceProvider extends ServiceProvider
     private function registerUsageMeters(): void
     {
         $usage = $this->app->make(Usage::class);
-        // Live = published and included in the store's plan (others don't show, so they don't count).
-        $live = fn (Store $store) => Experience::with('publishedVersion')->where('store_id', $store->id)->where('status', 'published')->get()
-            ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion?->config));
-
-        // Types with their own limit (bundles, gifts, shipping bars, cart upsells, pre-orders) don't count here.
-        $usage->register('active_experiences', fn (Store $store) => $live($store)->filter(fn (Experience $e) => Usage::countsAsActive($e->type))->count());
-        // Several types can share a meter (bundles and BOGO; both gift types): count them together.
-        foreach (collect(Registry::meters())->groupBy(fn ($meter) => $meter, true) as $meter => $types) {
-            $usage->register($meter, fn (Store $store) => $live($store)->whereIn('type', $types->keys()->all())->count());
-        }
+        // Live offers (per type and in total) are counted by Usage itself; these count the rest.
         $usage->register('workflows', fn (Store $store) => \App\Models\Automation\Workflow::where('store_id', $store->id)->where('status', 'enabled')->count());
+        $usage->register('running_tests', fn (Store $store) => \App\Models\Experiments\Experiment::where('store_id', $store->id)->where('status', 'running')->count());
+        $usage->register('personalization_rules', fn (Store $store) => \App\Models\Audiences\PersonalizationRule::where('store_id', $store->id)->where('enabled', true)->count());
+        $usage->register('segments', fn (Store $store) => \App\Models\Audiences\Segment::where('store_id', $store->id)->active()->count());
     }
 }

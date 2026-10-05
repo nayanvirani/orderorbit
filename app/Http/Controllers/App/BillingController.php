@@ -53,7 +53,7 @@ class BillingController extends Controller
             'pricingPage' => \App\Support\PricingPage::get(),
             'from' => $request->query('from'),
             // Every limit the plan sets, with what's used now (and a warning near the limit).
-            'usage' => array_values(array_filter($usage->summary($store), fn ($m) => $m['limit'] !== null)),
+            'usage' => array_values(array_filter($usage->summary($store), fn ($m) => $m['limit'] !== null && ($m['limit'] > 0 || $m['used'] > 0))),
             'warnAt' => (float) config('shopify.billing.warn_at', 0.8),
             'syncError' => $syncError,
             // Only people who may change the plan get Shopify's plan picker.

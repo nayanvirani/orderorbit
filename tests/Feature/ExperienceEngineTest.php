@@ -133,13 +133,12 @@ class ExperienceEngineTest extends TestCase
             }
         };
 
-        // Free: one active experience; cart upsells aren't included.
+        // Free: one live offer of each kind it includes; cart upsells aren't included.
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
-        $refused($manager->create($store, 'trust', 'review-card', null), 'The Free plan includes 1 active experience. Pause one that\'s live or upgrade for more.');
+        $refused($manager->create($store, 'trust', 'review-card', null), 'The Free plan includes 1 live trust block. Pause or archive one that\'s live, or upgrade for more.');
         $refused($ready('cart-upsells', 'grid'), 'Cart upsells & cross-sell isn\'t included in your plan. Upgrade to publish it.');
 
-        // Starter: cart upsells included; they, pre-orders, bundles, gifts and shipping bars have their
-        // own limits and don't count as "active experiences" (countdowns, trust, sales pop, …).
+        // Starter: more of each, plus cart upsells.
         $store->forceFill(['plan' => 'starter'])->save();
         $manager->publish($store->experiences()->where('type', 'cart-upsells')->first()->fresh(), null);
         $manager->publish($ready('cart-upsells', 'carousel'), null);
@@ -147,22 +146,31 @@ class ExperienceEngineTest extends TestCase
         $manager->publish($manager->create($store, 'sales-pop', 'classic-card', null), null);
         $this->travel(1)->minutes();
         $manager->publish($store->experiences()->where('type', 'trust')->where('status', 'draft')->first()->fresh(), null);
-        $this->assertSame(3, app(\App\Services\Usage::class)->current($store->fresh(), 'active_experiences'));
-        $store->forceFill(['entitlements' => ['limits' => ['active_experiences' => 3]]])->save();
-        $refused($manager->create($store->fresh(), 'trust', 'rating-strip', null), 'The Starter plan includes 3 active experiences. Pause one that\'s live or upgrade for more.');
+        $this->assertSame(6, app(\App\Services\Usage::class)->current($store->fresh(), 'active_experiences'));
+        // The total cap counts every live offer.
+        $store->forceFill(['entitlements' => ['limits' => ['active_experiences' => 6]]])->save();
+        $refused($manager->create($store->fresh(), 'trust', 'rating-strip', null), 'The Starter plan includes 6 live offers in total. Pause or archive one that\'s live, or upgrade for more.');
         $store->forceFill(['entitlements' => null])->save();
 
-        // Back to Free: cart upsells stop showing (not paused: they come back on upgrade); of the
-        // widgets only the newest stays live; the one pre-order Free allows stays. Nothing is deleted.
+        // Back to Free: cart upsells and the older trust block are paused (marked, not deleted);
+        // one of each kind Free includes stays live.
         $store->forceFill(['plan' => 'free'])->save();
-        $this->assertSame(2, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
+        $this->assertSame(3, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
         $status = fn (string $type) => $store->experiences()->where('type', $type)->orderBy('id')->pluck('status')->all();
-        $this->assertSame(['published', 'published'], $status('cart-upsells'));
-        $this->assertSame(['paused'], $status('sales-pop'));
+        $this->assertSame(['paused', 'paused'], $status('cart-upsells'));
+        $this->assertSame(['published'], $status('sales-pop'));
         $this->assertSame(['published'], $status('preorder'));
         $this->assertSame(['paused', 'published', 'draft'], $status('trust'));
-        $this->assertSame(['preorder', 'trust'], collect(app(StorefrontPublisher::class)->payload($store->fresh())['experiences'])->pluck('type')->sort()->values()->all());
+        $this->assertSame(3, $store->experiences()->where('paused_by_plan', true)->count());
+        $this->assertSame(['preorder', 'sales-pop', 'trust'], collect(app(StorefrontPublisher::class)->payload($store->fresh())['experiences'])->pluck('type')->sort()->values()->all());
         $this->assertSame(0, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()), 'Already within the plan.');
+
+        // Upgrading again brings back what the plan change paused.
+        $store->forceFill(['plan' => 'starter'])->save();
+        $this->assertSame(3, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
+        $this->assertSame(['published', 'published'], $status('cart-upsells'));
+        $this->assertSame(['published', 'published', 'draft'], $status('trust'));
+        $this->assertSame(0, $store->experiences()->where('paused_by_plan', true)->count());
     }
 
     public function test_free_runs_one_bundle_gift_campaign_shipping_bar_and_widget_together(): void
@@ -177,7 +185,7 @@ class ExperienceEngineTest extends TestCase
             $experience->forceFill(['status' => 'published', 'published_at' => now(), 'published_version_id' => $experience->versions()->create(['version' => 1, 'config' => $experience->draft_config, 'template_key' => $template])->id])->save();
         }
         $usage = app(\App\Services\Usage::class);
-        $this->assertSame([1, 1, 1, 1], array_map(fn ($m) => $usage->current($store->fresh(), $m), ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars']));
+        $this->assertSame([4, 1, 1, 1, 1], array_map(fn ($m) => $usage->current($store->fresh(), $m), ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars', 'trust']));
         $this->assertSame(0, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()), 'All within Free.');
 
         // A second shipping bar is over Free's one.

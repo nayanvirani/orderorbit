@@ -27,7 +27,7 @@ class Experience extends Model
 
     protected function casts(): array
     {
-        return [
+        return ['paused_by_plan' => 'boolean', 
             'draft_config' => 'array',
             'has_unpublished_changes' => 'boolean',
             'published_at' => 'datetime',

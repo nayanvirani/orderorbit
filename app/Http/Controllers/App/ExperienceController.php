@@ -489,6 +489,8 @@ class ExperienceController extends Controller
             'type_label' => Registry::has($e->type) ? Registry::type($e->type)['label'] : $e->type,
             'template' => $e->templateName(), 'status' => $e->status, 'display_status' => $e->displayStatus(),
             'not_placed' => $e->status === 'published' && $e->placement_status === 'not_placed',
+            // Paused by a plan change (not included or over a limit): comes back when the plan allows it.
+            'paused_by_plan' => $e->status === 'paused' && $e->paused_by_plan,
             'unpublished' => $e->published_version_id && $e->has_unpublished_changes && $e->status !== 'archived',
             'updated_at' => $e->updated_at,
         ];

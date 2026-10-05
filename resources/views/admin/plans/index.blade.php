@@ -76,15 +76,18 @@
                             </tr>
                         @endforeach
                     @endforeach
-                    <tr class="group"><td colspan="{{ count($plans) + 1 }}">Usage limits <span class="ad-muted" style="text-transform:none;letter-spacing:0;font-weight:500">· empty = unlimited, 0 = none</span></td></tr>
-                    @foreach (\App\Services\Usage::METERS as $meter => $label)
-                        <tr>
-                            <td><b>{{ $label }}</b>@if (isset(\App\Services\Usage::HELP[$meter]))<small>{{ \App\Services\Usage::HELP[$meter] }}</small>@endif</td>
-                            @foreach ($plans as $plan)
-                                @php($value = ($plan->limits ?? [])[$meter] ?? null)
-                                <td><input class="ad-limit" type="number" min="0" name="limits[{{ $plan->key }}][{{ $meter }}]" value="{{ $value }}" placeholder="∞" @disabled(! $canManage) aria-label="{{ $label }} on {{ $plan->name }}"></td>
-                            @endforeach
-                        </tr>
+                    @foreach (\App\Services\Usage::GROUPS as $limitGroup => $meters)
+                        <tr class="group"><td colspan="{{ count($plans) + 1 }}">Limits · {{ $limitGroup }} <span class="ad-muted" style="text-transform:none;letter-spacing:0;font-weight:500">· empty = unlimited, 0 = none</span></td></tr>
+                        @foreach ($meters as $meter)
+                            @php($label = \App\Services\Usage::METERS[$meter])
+                            <tr>
+                                <td><b>{{ $label }}</b>@if (isset(\App\Services\Usage::HELP[$meter]))<small>{{ \App\Services\Usage::HELP[$meter] }}</small>@endif</td>
+                                @foreach ($plans as $plan)
+                                    @php($value = ($plan->limits ?? [])[$meter] ?? null)
+                                    <td><input class="ad-limit" type="number" min="0" name="limits[{{ $plan->key }}][{{ $meter }}]" value="{{ $value }}" placeholder="∞" @disabled(! $canManage) aria-label="{{ $label }} on {{ $plan->name }}"></td>
+                                @endforeach
+                            </tr>
+                        @endforeach
                     @endforeach
                 </tbody>
             </table>

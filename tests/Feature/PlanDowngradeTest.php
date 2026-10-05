@@ -95,8 +95,9 @@ class PlanDowngradeTest extends TestCase
         $this->assertStringContainsString('branching', app(Engine::class)->blocked($store, $program));
         $this->assertSame('published', $trust->fresh()->status);
         foreach ([$survey, $block, $reorder] as $experience) {
-            $this->assertSame('published', $experience->fresh()->status, 'Not deleted or unpublished: it just stops showing.');
+            $this->assertSame(['paused', true], [$experience->fresh()->status, $experience->fresh()->paused_by_plan], 'Paused and marked, not deleted.');
         }
+        $this->assertSame(['paused', true], [$bundle->fresh()->status, $bundle->fresh()->paused_by_plan]);
 
         // Nothing changed since: applying again does nothing.
         $this->assertFalse(app(Entitlements::class)->apply($store->fresh()));
@@ -106,6 +107,7 @@ class PlanDowngradeTest extends TestCase
         $this->assertTrue(app(Entitlements::class)->apply($store->fresh()));
         $this->assertSame(['checkout-image', 'ty-survey'], $types($publisher->checkoutPayload($store->fresh())));
         $this->assertSame(['account-reorder'], $types($publisher->accountPayload($store->fresh())));
+        $this->assertSame(['published', false], [$survey->fresh()->status, $survey->fresh()->paused_by_plan]);
         $this->assertSame('gid://shopify/DiscountAutomaticNode/78', $bundle->fresh()->shopify_discount_id, 'The bundle\'s discount is back.');
     }
 
@@ -124,6 +126,6 @@ class PlanDowngradeTest extends TestCase
         $this->assertSame('free', $store->fresh()->effectivePlan());
         $this->artisan('orderorbit:apply-entitlements')->expectsOutputToContain('Applied to 1 store')->assertSuccessful();
         $this->assertSame([], app(StorefrontPublisher::class)->checkoutPayload($store->fresh())['experiences']);
-        $this->assertSame(Experience::where('type', 'ty-survey')->value('status'), 'published');
+        $this->assertSame('paused', Experience::where('type', 'ty-survey')->value('status'));
     }
 }

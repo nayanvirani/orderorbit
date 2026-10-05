@@ -49,6 +49,9 @@ class AudienceController extends Controller
 
     public function createSegment(Request $request, Store $store): RedirectResponse
     {
+        if (! app(\App\Services\Usage::class)->allows($store, 'segments')) {
+            return redirect()->to(app_route('app.audiences.segments', ['error' => \App\Services\Usage::limitMessage($store, 'segments')]));
+        }
         $template = Audiences::TEMPLATES[$request->input('template')] ?? null;
         $segment = Segment::create([
             'store_id' => $store->id,
@@ -93,6 +96,9 @@ class AudienceController extends Controller
 
     public function duplicateSegment(Request $request, Store $store, int $segment): RedirectResponse
     {
+        if (! app(\App\Services\Usage::class)->allows($store, 'segments')) {
+            return redirect()->to(app_route('app.audiences.segments', ['error' => \App\Services\Usage::limitMessage($store, 'segments')]));
+        }
         $copy = $this->segment($store, $segment)->replicate(['member_count', 'counted_at', 'archived_at']);
         $copy->name = mb_substr($copy->name.' (copy)', 0, 80);
         $copy->save();
@@ -228,6 +234,10 @@ class AudienceController extends Controller
             'segments' => $segmentIds, 'conditions' => $conditions ?: null,
             'enabled' => $request->boolean('enabled', true),
         ]);
+        // Switching a rule on (or adding one that's on) needs room under the plan's rule limit.
+        if ($model->enabled && ! ($model->exists && $model->getOriginal('enabled')) && ! app(\App\Services\Usage::class)->allows($store, 'personalization_rules')) {
+            $errors['enabled'] = \App\Services\Usage::limitMessage($store, 'personalization_rules');
+        }
         if ($errors) {
             return $this->ruleEditor($store, $model, $errors);
         }
@@ -244,6 +254,9 @@ class AudienceController extends Controller
         if ($action === 'delete') {
             $rule->delete();
         } elseif ($action === 'toggle') {
+            if (! $rule->enabled && ! app(\App\Services\Usage::class)->allows($store, 'personalization_rules')) {
+                return redirect()->to(app_route('app.audiences.rules', ['error' => \App\Services\Usage::limitMessage($store, 'personalization_rules')]));
+            }
             $rule->forceFill(['enabled' => ! $rule->enabled])->save();
         } else {
             // Move up or down: swap positions with the neighbour.

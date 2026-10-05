@@ -92,9 +92,9 @@ class AdminPlansAndAccessTest extends TestCase
         $this->assertSame(7, $store->fresh()->planLimit('bundles'));
 
         // Feature names and pricing-page visibility, and the pricing page's own text.
-        $this->actingAs($admin)->post('/admin/plans/catalog', ['catalog' => ['countdown' => ['label' => 'Urgency timers', 'public' => '1'], 'trust' => ['label' => 'Trust & social proof']]])->assertRedirect('/admin/plans');
+        $this->actingAs($admin)->post('/admin/plans/catalog', ['catalog' => ['countdown' => ['label' => 'Urgency timers', 'public' => '1'], 'trust' => ['label' => 'Shopper trust signals']]])->assertRedirect('/admin/plans');
         $this->actingAs($admin)->post('/admin/plans/pricing-page', ['headline' => 'Simple plans for every store', 'lead' => 'Start free.', 'billing_note' => 'Billed through Shopify.', 'compare_title' => 'Side by side'])->assertRedirect('/admin/plans');
-        $this->get('/pricing')->assertSee('Simple plans for every store')->assertSee('Side by side')->assertSee('Urgency timers')->assertDontSee('Trust &amp; social proof', false);
+        $this->get('/pricing')->assertSee('Simple plans for every store')->assertSee('Side by side')->assertSee('Urgency timers')->assertDontSee('Shopper trust signals');
         $this->actingAs($admin)->get('/admin/plans')->assertOk()->assertSee('Urgency timers');
     }
 

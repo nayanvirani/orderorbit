@@ -96,6 +96,7 @@ class ExperienceManager
             $schedule = $experience->draft_config['schedule'] ?? [];
             $experience->forceFill([
                 'status' => 'published',
+                'paused_by_plan' => false,
                 'published_version_id' => $version->id,
                 'published_at' => now(),
                 'starts_at' => ! empty($schedule['starts_at']) ? Carbon::parse($schedule['starts_at']) : null,
@@ -192,7 +193,8 @@ class ExperienceManager
     {
         DB::transaction(function () use ($experience, $status, $action, $extra) {
             $wasLive = $experience->status === 'published';
-            $experience->forceFill(['status' => $status] + $extra)->save();
+            // Any change made by the team (resume, pause, archive) ends a pause made by a plan change.
+            $experience->forceFill(['status' => $status, 'paused_by_plan' => false] + $extra)->save();
 
             if ($wasLive || $status === 'published') {
                 $this->publisher->sync($experience->store);
@@ -230,19 +232,21 @@ class ExperienceManager
             }
         }
 
-        // Only a newly live experience adds to the plan's counts.
+        // Only a newly live experience adds to the plan's counts: its type's limit, then the total.
         if ($experience->status !== 'published') {
-            if (\App\Services\Usage::countsAsActive($experience->type) && ! $this->usage->allows($store, 'active_experiences')) {
-                $limit = (int) $store->planLimit('active_experiences');
-                $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
-
-                throw new PublishException("The {$plan} plan includes {$limit} active ".\Illuminate\Support\Str::plural('experience', $limit).'. Pause one that\'s live or upgrade for more.', 'plan');
-            }
-            if (($meter = $type['meter'] ?? null) && ! $this->usage->allows($store, $meter)) {
+            $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
+            if (($meter = \App\Services\Usage::meterFor($experience->type)) && ! $this->usage->allows($store, $meter)) {
                 $limit = (int) $store->planLimit($meter);
-                $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name');
+                $what = mb_strtolower(\App\Services\Usage::METERS[$meter]);
 
-                throw new PublishException("The {$plan} plan includes {$limit} live ".lower_label(\Illuminate\Support\Str::plural($type['singular'], $limit)).'. Pause the one that\'s live or upgrade for unlimited.', 'plan');
+                throw new PublishException($limit === 0
+                    ? "{$what} aren't included in the {$plan} plan. Upgrade to publish."
+                    : "The {$plan} plan includes {$limit} live ".($limit === 1 ? lower_label($type['singular']) : $what).'. Pause or archive one that\'s live, or upgrade for more.', 'plan');
+            }
+            if (! $this->usage->allows($store, 'active_experiences')) {
+                $limit = (int) $store->planLimit('active_experiences');
+
+                throw new PublishException("The {$plan} plan includes {$limit} live ".\Illuminate\Support\Str::plural('offer', $limit).' in total. Pause or archive one that\'s live, or upgrade for more.', 'plan');
             }
         }
 
