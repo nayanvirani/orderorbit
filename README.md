@@ -57,5 +57,6 @@ Logo files live in `public/brand/` (served at `/brand/...`):
 | `orderorbit-mark.svg` / `-white.svg` / `-512.png` | The mark alone, no background |
 | `orderorbit-feature-1600x900.png` | Shopify App Store listing feature image |
 | `orderorbit-widgets-1080p.mp4` | 55-second animated tour of every widget (for YouTube / feature media) |
+| `listing/screenshot-*.png` | Shopify App Store desktop screenshots (1600x900) |
 
 The website draws the mark from the `#i-orbit` symbol (`resources/views/site/partials/icons.blade.php`), so it takes the text colour. Brand violet: `#6d5dfc` → `#3b1fb8`. Wordmark: Instrument Serif, converted to outlines.
