@@ -76,6 +76,7 @@ class GiftModuleTest extends TestCase
             $offer = json_decode($discount['metafields'][0]['value'], true)['offers'][0];
 
             return $discount['discountClasses'] === ['PRODUCT', 'ORDER', 'SHIPPING']
+                && is_string($discount['title']) && $discount['title'] === $offer['n']
                 && $offer['k'] === 'pg' && $offer['by'] === 'value'
                 && $offer['m'] === [['t' => 50, 'r' => 'gift', 'q' => 1], ['t' => 75, 'r' => 'shipping'], ['t' => 120, 'r' => 'percent', 'v' => 10]];
         });

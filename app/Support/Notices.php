@@ -66,4 +66,18 @@ class Notices
     {
         return $key !== null ? (self::MESSAGES[$key] ?? null) : null;
     }
+
+    /**
+     * A Shopify failure as merchants should see it: Shopify's own explanation when it gave one
+     * (e.g. a userErrors message), never the raw API response (that is reported to us instead).
+     */
+    public static function shopifyError(string $lead, \Throwable $e): string
+    {
+        $message = $e->getMessage();
+        if (str_starts_with($message, 'Admin API errors') || str_contains($message, '{') || mb_strlen($message) > 200) {
+            return $lead.'. Please try again in a moment; if it keeps happening, contact support from the Support page.';
+        }
+
+        return $lead.': '.$message;
+    }
 }

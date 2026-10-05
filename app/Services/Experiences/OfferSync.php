@@ -149,7 +149,9 @@ class OfferSync
             ]));
         }
         $input = [
-            'title' => $offers[0]['m'] ?? $offers[0]['n'] ?? $experience->name,
+            // The discount's name in Shopify (and at checkout): the offer's label. For Progressive gifts
+            // "m" is the list of milestones and the label is "n".
+            'title' => \Illuminate\Support\Str::limit(collect([$offers[0]['m'] ?? null, $offers[0]['n'] ?? null, $experience->name])->first(fn ($v) => is_string($v) && trim($v) !== '') ?? 'OrderOrbit offer', 250, ''),
             'startsAt' => ($experience->starts_at ?? $experience->published_at ?? now())->toIso8601String(),
             'endsAt' => $experience->ends_at?->toIso8601String(),
             'discountClasses' => $classes,

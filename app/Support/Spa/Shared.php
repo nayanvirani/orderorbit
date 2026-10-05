@@ -163,7 +163,8 @@ class Shared
         $label = mb_strtolower($meter['label']);
 
         return [
-            'state' => $full ? 'over' : 'near',
+            // At the limit is normal (nothing breaks), so it's a notice, not an error.
+            'state' => 'near',
             'meter' => $meter['meter'],
             'title' => $full ? "You've reached your plan's limit for {$label}." : "You're close to your plan's limit for {$label}.",
             'text' => "{$plan} includes {$meter['limit']}; you're using {$meter['used']}. ".($full ? 'Everything live keeps working; upgrade to add more.' : 'Upgrade any time for more.'),

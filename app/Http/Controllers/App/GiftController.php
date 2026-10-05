@@ -90,7 +90,7 @@ class GiftController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return $this->editor($store, $experience->fresh(), $config, [], 'Shopify didn’t accept the rewards: '.$e->getMessage());
+            return $this->editor($store, $experience->fresh(), $config, [], \App\Support\Notices::shopifyError('Shopify didn’t accept the rewards', $e));
         }
 
         return redirect()->to(app_route('app.gifts.edit', ['gift' => $experience->id, 'notice' => 'published']));

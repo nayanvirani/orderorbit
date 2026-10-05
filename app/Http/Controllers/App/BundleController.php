@@ -142,7 +142,7 @@ class BundleController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return $this->editor($store, $experience->fresh(), $config, [], 'Shopify didn’t accept the bundle: '.$e->getMessage());
+            return $this->editor($store, $experience->fresh(), $config, [], \App\Support\Notices::shopifyError('Shopify didn’t accept the bundle', $e));
         }
 
         return redirect()->to(app_route('app.bundles.edit', ['bundle' => $experience->id, 'notice' => 'published']));
