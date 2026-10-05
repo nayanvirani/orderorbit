@@ -8,6 +8,8 @@
   var TRUCK = '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>';
   var TAG = '<path d="M3 12V4h8l10 10-8 8L3 12Z"/><circle cx="7.5" cy="7.5" r="1.5"/>';
 
+  var tried = {};
+
   function isGift(l, exp) { return l.offer === exp.id && l.gift != null; }
 
   // Progress in the unlock unit (money or items), gifts excluded.
@@ -146,29 +148,23 @@
       });
 
       var gifts = (ctx.cartLines || []).filter(function (l) { return isGift(l, exp); });
-      // Gifts whose milestone is no longer reached would be charged, so take them out.
-      var lost = gifts.filter(function (l) {
-        var m = c.milestones.filter(function (x) { return String(x.index) === String(l.gift); })[0];
-        return !m || st.progress < m.threshold;
-      })[0];
-      if (lost) { S.change(lost.key, 0).then(OrderOrbit.refreshCart); return; }
-      // A gift's quantity is what its reward gives, whatever was typed in the cart.
-      var off = gifts.filter(function (l) {
-        var m = c.milestones.filter(function (x) { return String(x.index) === String(l.gift); })[0];
-        return l.qty !== ((m && m.quantity) || 1);
-      })[0];
-      if (off) {
-        var om = c.milestones.filter(function (x) { return String(x.index) === String(off.gift); })[0];
-        S.change(off.key, (om && om.quantity) || 1).then(OrderOrbit.refreshCart);
-        return;
-      }
-      // Auto mode adds each reached single gift once per session.
+      // oo-gift-lock.js (loaded by the core while the cart holds a gift) takes out gifts whose milestone
+      // is no longer reached and trims extra units; wait for it before adding more.
+      var settled = c.milestones.every(function (m) {
+        var units = gifts.filter(function (l) { return String(l.gift) === String(m.index); }).reduce(function (n, l) { return n + l.qty; }, 0);
+        return units <= (st.progress >= m.threshold ? (m.quantity || 1) : 0);
+      });
+      if (!settled) return;
+      // Auto mode adds each reached gift that isn't in the cart. Shoppers can't remove gifts (oo-gift-lock.js),
+      // so a missing one was taken out when the cart dropped below its milestone: add it again once it's
+      // reached. One try per gift per page load, so an unavailable gift doesn't loop.
       if (c.settings.claim === 'auto') {
         c.milestones.forEach(function (m) {
           if (m.reward !== 'gift' || st.progress < m.threshold || !m.products.length) return;
           if (gifts.some(function (l) { return String(l.gift) === String(m.index); })) return;
-          var key = 'oo_pg_' + exp.id + '_' + m.index;
-          try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (err) { /* private mode */ }
+          var key = exp.id + '_' + m.index;
+          if (tried[key]) return;
+          tried[key] = true;
           addGift(m, 0, null);
         });
       }

@@ -90,6 +90,41 @@
   }
 
   /**
+   * Shows the current cart in the theme after the app changed it (adds, gift fixes): Dawn-style
+   * themes re-render their cart drawer and cart count from Shopify's section rendering, the cart
+   * page list redraws itself, and other themes get the cart events they listen to.
+   */
+  function themeCart() {
+    var drawer = document.querySelector('cart-drawer');
+    var ids = ['cart-icon-bubble'].concat(document.getElementById('CartDrawer') ? ['cart-drawer'] : []);
+    var inner = function (html, sel) {
+      var el = new DOMParser().parseFromString(html || '', 'text/html').querySelector(sel);
+      return el ? el.innerHTML : null;
+    };
+    document.querySelectorAll('cart-items:not(cart-drawer-items)').forEach(function (el) { if (el.onCartUpdate) el.onCartUpdate(); });
+    ['cart:refresh', 'cart:build', 'cart:updated'].forEach(function (name) { document.dispatchEvent(new CustomEvent(name, { bubbles: true })); });
+    return Promise.all([
+      fetch(root() + '?sections=' + ids.join(','), { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
+      cart()
+    ]).then(function (res) {
+      var sections = res[0] || {};
+      var html = inner(sections['cart-icon-bubble'], '.shopify-section');
+      var bubble = document.getElementById('cart-icon-bubble');
+      if (bubble && html != null) bubble.innerHTML = html;
+      html = inner(sections['cart-drawer'], '#CartDrawer');
+      var box = document.getElementById('CartDrawer');
+      if (box && html != null) {
+        box.innerHTML = html;
+        if (drawer) {
+          drawer.classList.toggle('is-empty', !res[1].item_count);
+          var overlay = drawer.querySelector('#CartDrawer-Overlay');
+          if (overlay && drawer.close) overlay.addEventListener('click', drawer.close.bind(drawer));
+        }
+      }
+    }).catch(function () { /* the theme shows the new cart on its next load */ });
+  }
+
+  /**
    * Adds items ({ id: variant, quantity }) tagged with the experience, then follows the "after add"
    * setting, unless the theme's afterAddToCart callback takes over.
    */
@@ -130,6 +165,7 @@
         status(rootEl, 'Added to your cart.');
         document.dispatchEvent(new CustomEvent('orderorbit:cart-updated', { detail: { experience_id: exp.id } }));
         reset();
+        themeCart();
         return OrderOrbit.refreshCart().then(function () { return true; });
       });
     }).catch(function (err) {
@@ -166,5 +202,5 @@
     return total;
   }
 
-  OrderOrbit.shop = { cart: cart, load: load, hydrate: hydrate, variantSelect: variantSelect, chosenVariant: chosenVariant, pageVariant: pageVariant, add: add, change: change, status: status, linesFor: linesFor, inCart: inCart, saving: saving };
+  OrderOrbit.shop = { cart: cart, load: load, hydrate: hydrate, variantSelect: variantSelect, chosenVariant: chosenVariant, pageVariant: pageVariant, add: add, change: change, themeCart: themeCart, status: status, linesFor: linesFor, inCart: inCart, saving: saving };
 })();
