@@ -157,6 +157,13 @@ class EmailController extends Controller
         foreach ($fields as $key => [$label, $secret]) {
             // Saved secrets are never shown; leaving the field empty keeps the saved value.
             $rules["credentials.{$key}"] = [$creating && $secret ? 'required' : 'nullable', 'string', 'max:500'];
+            if ($format = Drivers::KEY_FORMATS["{$provider->driver}.{$key}"] ?? null) {
+                $rules["credentials.{$key}"][] = function ($attribute, $value, $fail) use ($format, $label) {
+                    if (trim((string) $value) !== '' && ! preg_match($format[0], trim((string) $value))) {
+                        $fail("That {$label} doesn't look right (".strlen(trim((string) $value)).' characters). '.$format[1]);
+                    }
+                };
+            }
         }
         $data = $request->validate($rules, [], collect($fields)->mapWithKeys(fn ($f, $k) => ["credentials.{$k}" => strtolower($f[0])])->all());
 

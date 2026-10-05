@@ -31,6 +31,21 @@ class Drivers
         'smtp' => ['label' => 'SMTP (Gmail, Zoho, Amazon SES, any)', 'fields' => ['host' => ['Host', false, 'e.g. smtp.gmail.com, smtp.zoho.com, email-smtp.us-east-1.amazonaws.com'], 'port' => ['Port', false, '587 (TLS) or 465 (SSL)'], 'username' => ['Username', false, null], 'password' => ['Password / app password', true, 'For Gmail, create an app password.'], 'encryption' => ['Encryption', false, 'tls, ssl or none']], 'limits' => [null, null], 'note' => 'Set limits to your account\'s, e.g. Gmail 500 a day.', 'url' => null],
     ];
 
+    /**
+     * What each key looks like, so a shortened or wrong value is caught when it's saved rather
+     * than when the first email fails. driver.field => [regex, hint]
+     */
+    public const KEY_FORMATS = [
+        'resend.api_key' => ['/^re_[A-Za-z0-9_]{25,}$/', 'A Resend key starts with re_ and is about 36 characters. The API Keys list only shows the first few: copy the full key when you create it (it\'s shown once).'],
+        'brevo.api_key' => ['/^xkeysib-[A-Za-z0-9-]{40,}$/', 'A Brevo API key starts with xkeysib- (not the SMTP key, which starts with xsmtpsib-).'],
+        'sendgrid.api_key' => ['/^SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}$/', 'A SendGrid key starts with SG. and has two parts separated by a dot.'],
+        'mailgun.api_key' => ['/^[A-Za-z0-9-]{30,}$/', 'Copy the full Mailgun API key.'],
+        'mailjet.api_key' => ['/^[a-f0-9]{32}$/i', 'A Mailjet API key is 32 letters and numbers.'],
+        'mailjet.secret_key' => ['/^[a-f0-9]{32}$/i', 'A Mailjet secret key is 32 letters and numbers.'],
+        'postmark.server_token' => ['/^[a-f0-9-]{36}$/i', 'A Postmark server token looks like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.'],
+        'smtp2go.api_key' => ['/^api-[A-Za-z0-9]{20,}$/', 'An SMTP2GO key starts with api-.'],
+    ];
+
     public static function defaults(string $driver): array
     {
         return ['mailgun' => ['region' => 'us'], 'postmark' => ['stream' => 'outbound'], 'smtp' => ['port' => '587', 'encryption' => 'tls']][$driver] ?? [];
@@ -149,7 +164,10 @@ class Drivers
     public static function classify(int $status, string $body, ?string $retryAfter = null, bool $smtp = false): ProviderError
     {
         $text = strtolower($body);
-        $message = Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags($body))), 300) ?: "HTTP {$status}";
+        // Providers answer in JSON: keep their human message rather than the raw payload.
+        $json = json_decode($body, true);
+        $readable = is_array($json) ? (data_get($json, 'message') ?? data_get($json, 'Message') ?? data_get($json, 'error.message') ?? data_get($json, 'errors.0.message') ?? data_get($json, 'ErrorMessage') ?? (is_string($json['error'] ?? null) ? $json['error'] : null)) : null;
+        $message = Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags(is_string($readable) ? $readable : $body))), 300) ?: "HTTP {$status}";
         $has = fn (array $words) => Str::contains($text, $words);
         $quotaWords = ['quota', 'limit exceeded', 'limit reached', 'daily limit', 'monthly limit', 'credits', 'not_enough_credits', 'sending limit', 'exceeded your', 'plan limit', 'too many emails'];
         $recipientWords = ['recipient', 'invalid email', 'inactive', 'suppress', 'unsubscribed', 'bounced', 'blocked address', 'mailbox', 'user unknown', 'does not exist', 'blacklist'];

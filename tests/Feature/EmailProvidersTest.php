@@ -113,6 +113,8 @@ class EmailProvidersTest extends TestCase
         EmailSettings::save(['enabled' => false] + EmailSettings::get());
         $this->assertStringContainsString('switched off', app(EmailSender::class)->send($this->email())->error);
 
+        $this->assertSame('The provided authorization grant is invalid', $sendgrid->fresh()->last_error === null ? null : \Illuminate\Support\Str::after($sendgrid->fresh()->last_error, '[auth] '));
+
         // How refusals are read.
         $this->assertSame('rate', Drivers::classify(429, '{"name":"rate_limit_exceeded"}', '5')->kind);
         $this->assertSame('quota', Drivers::classify(429, '{"name":"daily_quota_exceeded"}')->kind);
@@ -179,17 +181,23 @@ class EmailProvidersTest extends TestCase
         $this->actingAs($admin)->get('/admin/email/providers/new')->assertOk()->assertSee('SMTP2GO')->assertSee('Mailjet');
         $this->actingAs($admin)->get('/admin/email/providers/new?driver=brevo')->assertOk()->assertSee('300');
 
-        $this->actingAs($admin)->post('/admin/email/providers', ['driver' => 'brevo', 'name' => 'Brevo main', 'credentials' => ['api_key' => 'xkeysib-secret-1234'], 'daily_limit' => 300, 'is_active' => '1'])->assertRedirect('/admin/email');
+        // A shortened key (what the provider's key list shows) is caught before it's saved.
+        $this->actingAs($admin)->post('/admin/email/providers', ['driver' => 'resend', 'name' => 'Resend', 'credentials' => ['api_key' => 're_AbCd1234'], 'is_active' => '1'])
+            ->assertSessionHasErrors(['credentials.api_key' => 'That API key doesn\'t look right (11 characters). A Resend key starts with re_ and is about 36 characters. The API Keys list only shows the first few: copy the full key when you create it (it\'s shown once).']);
+        $this->assertSame(0, EmailProvider::count());
+
+        $key = 'xkeysib-'.str_repeat('a1', 32).'-AbCdEf1234561234';
+        $this->actingAs($admin)->post('/admin/email/providers', ['driver' => 'brevo', 'name' => 'Brevo main', 'credentials' => ['api_key' => $key], 'daily_limit' => 300, 'is_active' => '1'])->assertRedirect('/admin/email');
         $brevo = EmailProvider::sole();
-        $this->assertSame('xkeysib-secret-1234', $brevo->credentials['api_key']);
+        $this->assertSame($key, $brevo->credentials['api_key']);
         $this->assertStringNotContainsString('xkeysib', DB::table('email_providers')->value('credentials'), 'Stored encrypted.');
-        $this->actingAs($admin)->get("/admin/email/providers/{$brevo->id}")->assertOk()->assertDontSee('xkeysib-secret-1234')->assertSee('ends in 1234');
+        $this->actingAs($admin)->get("/admin/email/providers/{$brevo->id}")->assertOk()->assertDontSee($key)->assertSee('ends in 1234');
 
         // Saving without a key keeps it; saving also clears a pause.
         $brevo->forceFill(['status' => 'failing', 'paused_until' => now()->addHour()])->save();
         $this->actingAs($admin)->post("/admin/email/providers/{$brevo->id}", ['name' => 'Brevo', 'credentials' => ['api_key' => ''], 'daily_limit' => 250, 'is_active' => '1'])->assertRedirect('/admin/email');
         $brevo->refresh();
-        $this->assertSame(['xkeysib-secret-1234', 250, 'ok', null], [$brevo->credentials['api_key'], $brevo->daily_limit, $brevo->state(), $brevo->paused_until]);
+        $this->assertSame([$key, 250, 'ok', null], [$brevo->credentials['api_key'], $brevo->daily_limit, $brevo->state(), $brevo->paused_until]);
 
         // Test email through that provider only.
         Http::fake(['api.brevo.com/*' => Http::response(['messageId' => 'x'], 201)]);
