@@ -35,6 +35,7 @@ class Shared
             'adminUrl' => $store?->adminUrl(),
             'nav' => $access ? self::nav($request, $store) : null,
             'limit' => $access && ! $request->routeIs('app.settings.billing') ? self::limit($store) : null,
+            'legal' => $user ? \App\Support\Legal::noticeFor($store) : null,
         ];
     }
 

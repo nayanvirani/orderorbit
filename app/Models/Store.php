@@ -21,7 +21,7 @@ class Store extends Model
     protected function casts(): array
     {
         return [
-            'entitlements' => 'array',
+            'entitlements' => 'array', 'legal_acks' => 'array',
             'access_token' => 'encrypted',
             'refresh_token' => 'encrypted',
             'access_token_expires_at' => 'datetime',

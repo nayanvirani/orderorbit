@@ -61,6 +61,10 @@ class IntegrationsController extends Controller
             'privacy' => collect(array_keys(Store::PRIVACY_DEFAULTS))->mapWithKeys(fn ($k) => [$k => $store->privacy($k)])->all(),
             'events' => AnalyticsEvent::where('store_id', $store->id)->count(),
             'oldest' => $oldest ? Carbon::parse($oldest) : null,
+            'policies' => collect(\App\Support\Legal::pages())->map(fn ($p) => [
+                'title' => $p['title'], 'url' => \App\Support\Legal::url($p['slug']), 'version' => $p['version'],
+                'accepted' => $store->legal_acks[$p['slug']] ?? null,
+            ])->values()->all(),
         ]);
     }
 

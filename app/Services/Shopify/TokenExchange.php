@@ -41,6 +41,10 @@ class TokenExchange
         ])->save();
 
         AuditLog::record($firstInstall ? 'store.installed' : 'store.token_refreshed', $store, ['scopes' => $store->scopes]);
+        if ($firstInstall) {
+            // Installing is agreeing to the Terms and policies in force today: keep which versions.
+            \App\Support\Legal::acknowledge($store, 'install');
+        }
 
         return $store;
     }

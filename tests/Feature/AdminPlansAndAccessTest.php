@@ -47,7 +47,7 @@ class AdminPlansAndAccessTest extends TestCase
         $plan = Plan::where('key', 'growth')->sole();
         foreach (['/admin', '/admin/stores', '/admin/stores?status=custom&plan=growth', "/admin/stores/{$store->id}", "/admin/stores/{$store->id}?tab=access", "/admin/stores/{$store->id}?tab=activity",
             '/admin/plans', '/admin/plans/new', "/admin/plans/{$plan->id}", '/admin/settings', '/admin/team', '/admin/tickets', '/admin/failures',
-            '/admin/analytics', '/admin/templates', '/admin/flags', '/admin/audit', '/admin/account'] as $url) {
+            '/admin/analytics', '/admin/templates', '/admin/flags', '/admin/audit', '/admin/account', '/admin/legal', '/admin/legal/new', '/admin/legal/1', '/admin/legal/1/versions/1'] as $url) {
             $this->actingAs($admin)->get($url)->assertOk();
         }
     }

@@ -45,6 +45,13 @@
                 <dt>Currency · timezone</dt><dd>{{ $store->currency }} · {{ $store->timezone }}</dd>
                 <dt>Theme</dt><dd>{{ $store->theme_name ?? '—' }}</dd>
                 <dt>Goal</dt><dd>{{ $store->goal ?? '—' }}</dd>
+                <dt>Terms & policies</dt><dd>
+                    @php($acks = (array) ($store->legal_acks ?? []))
+                    @if (isset($acks['terms']))
+                        Terms v{{ $acks['terms']['version'] }}, Privacy v{{ $acks['privacy']['version'] ?? '—' }}
+                        <div class="ad-muted">{{ ($acks['terms']['via'] ?? '') === 'install' ? 'Accepted at install' : 'Last reviewed in the app' }} {{ \Illuminate\Support\Carbon::parse($acks['terms']['at'])->toFormattedDateString() }}{{ ! empty($acks['terms']['by']) ? ' by '.$acks['terms']['by'] : '' }}</div>
+                    @else <span class="ad-muted">Installed before versions were recorded</span> @endif
+                </dd>
             </dl>
         </section>
         <section class="ad-card">

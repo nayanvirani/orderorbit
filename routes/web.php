@@ -55,11 +55,26 @@ Route::controller(SiteController::class)->name('site.')->middleware(\App\Http\Mi
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/terms', 'terms')->name('terms');
     Route::get('/dpa', 'dpa')->name('dpa');
+    Route::get('/legal', 'legalIndex')->name('legal.index');
+    Route::get('/legal/{slug}', 'legal')->where('slug', '[a-z0-9-]+')->name('legal');
     Route::get('/sitemap.xml', 'sitemap')->name('sitemap');
 });
 
 // Merchant embedded app (Part B)
 Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(function () {
+    // Updated Terms/policies: the merchant confirms they've reviewed them (recorded per store).
+    Route::post('/legal/acknowledge', function (\Illuminate\Http\Request $request) {
+        $store = $request->attributes->get('store');
+        $user = $request->attributes->get('storeUser');
+        $slugs = array_column(\App\Support\Legal::noticeFor($store)['pages'] ?? [], 'slug');
+        if ($slugs) {
+            \App\Support\Legal::acknowledge($store, 'in_app', trim(($user?->first_name ?? '').' '.($user?->last_name ?? '')).($user?->email ? " <{$user->email}>" : ''), $slugs);
+            \App\Models\AuditLog::record('store.legal_acknowledged', $store, ['pages' => $slugs, 'by' => $user?->email]);
+        }
+
+        return back();
+    })->name('legal.acknowledge');
+
     // Billing stays reachable without a plan: it's where plans are chosen.
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
 
@@ -322,6 +337,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\SettingsController::class)->group(function () {
             Route::get('/settings', 'show')->name('settings');
             Route::post('/settings', 'update')->name('settings.update');
+        });
+
+        Route::middleware('admin.can:legal')->controller(\App\Http\Controllers\Admin\LegalController::class)->group(function () {
+            Route::get('/legal', 'index')->name('legal');
+            Route::post('/legal/details', 'saveDetails')->name('legal.details');
+            Route::get('/legal/new', 'create')->name('legal.create');
+            Route::post('/legal', 'store')->name('legal.store');
+            Route::get('/legal/{page}', 'edit')->whereNumber('page')->name('legal.edit');
+            Route::post('/legal/{page}', 'update')->whereNumber('page')->name('legal.update');
+            Route::post('/legal/{page}/preview', 'preview')->whereNumber('page')->name('legal.preview');
+            Route::get('/legal/{page}/versions/{version}', 'version')->whereNumber(['page', 'version'])->name('legal.version');
+            Route::post('/legal/{page}/versions/{version}/restore', 'restore')->whereNumber(['page', 'version'])->name('legal.restore');
         });
 
         Route::middleware('admin.can:team')->controller(\App\Http\Controllers\Admin\TeamController::class)->group(function () {

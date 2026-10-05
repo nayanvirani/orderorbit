@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AnalyticsEvent;
+use App\Models\ContactSubmission;
 use App\Models\RecentPurchase;
 use App\Models\Store;
 use App\Models\StoreOrder;
@@ -37,6 +38,10 @@ class PruneAnalytics extends Command
 
         $purchases = RecentPurchase::where('purchased_at', '<', now()->subDays(RecentPurchase::MAX_DAYS))->delete();
         $this->info("Pruned {$purchases} Sales pop purchases older than ".RecentPurchase::MAX_DAYS.' days.');
+
+        // Website contact-form messages: kept 24 months (Privacy Policy, Retention).
+        $messages = ContactSubmission::where('created_at', '<', now()->subMonths(24))->delete();
+        $this->info("Pruned {$messages} contact-form messages older than 24 months.");
 
         return self::SUCCESS;
     }

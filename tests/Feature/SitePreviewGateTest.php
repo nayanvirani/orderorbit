@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\SitePreviewGate;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SitePreviewGateTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

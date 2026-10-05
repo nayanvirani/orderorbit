@@ -187,3 +187,22 @@ input[type="checkbox"], input[type="radio"] { width: 16px; height: 16px; accent-
 /* ---------------------------------------------------------------- login */
 .ad-login { max-width: 400px; margin: 12vh auto; display: grid; gap: 14px; padding: 30px; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 50px rgba(20, 21, 31, .08); }
 .ad-login label { display: grid; gap: 5px; font-weight: 550; }
+
+/* Legal & policies */
+.ad-legal { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.ad-legal aside { display: grid; gap: 16px; position: sticky; top: 16px; }
+.ad-legal aside .ad-card { margin: 0; }
+@media (max-width: 1100px) { .ad-legal { grid-template-columns: 1fr; } .ad-legal aside { position: static; } }
+textarea.ad-code { display: block; width: 100%; padding: 12px 14px; border-radius: 9px; font-size: 13px; line-height: 1.6; background: #fbfbfd; resize: vertical; tab-size: 2; }
+.ad-stack { display: grid; gap: 8px; }
+.ad-stack .ad-btn { justify-content: center; }
+.ad-req { color: var(--bad, #c0262d); margin-left: 3px; }
+.ad-placeholders { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; margin: 8px 0 0; font-size: 12.5px; }
+.ad-placeholders dt { margin: 0; }
+.ad-placeholders dd { margin: 0; color: var(--muted); }
+.ad-prose { max-width: 860px; line-height: 1.65; }
+.ad-prose h2 { margin: 28px 0 10px; font-size: 18px; }
+.ad-prose h2:first-child { margin-top: 0; }
+.ad-prose p, .ad-prose ul { margin: 0 0 10px; }
+.ad-prose table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.ad-prose th, .ad-prose td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }

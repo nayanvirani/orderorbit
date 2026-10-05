@@ -62,3 +62,24 @@
 .docs-pager { display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; }
 .docs-pager a { color: var(--text); font-weight: 600; text-decoration: none; }
 .mn-kicker a { color: inherit; }
+
+/* Legal & policy pages. */
+.legal-body { padding-bottom: 40px; }
+.legal-body h2 { font: 400 clamp(26px, 3vw, 34px)/1.15 var(--serif); margin: 48px 0 14px; scroll-margin-top: 96px; }
+.legal-body > p:first-child, .legal-body > h2:first-child { margin-top: 0; }
+.legal-body p, .legal-body li { font-size: 16px; line-height: 1.7; color: #262626; }
+.legal-body p + p, .legal-body ul + p, .legal-body p + ul { margin-top: 12px; }
+.legal-body ul, .legal-body ol { padding-left: 22px; display: grid; gap: 6px; }
+.legal-body li > ul { margin-top: 6px; }
+.legal-body strong { color: var(--text); }
+.legal-table { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 14px; }
+.legal-table table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
+.legal-table th, .legal-table td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); line-height: 1.5; }
+.legal-table th { background: var(--surface-2); font-weight: 600; font-size: 13px; }
+.legal-table tr:last-child td { border-bottom: 0; }
+.legal-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding-bottom: 80px; }
+.legal-card { display: grid; gap: 8px; align-content: start; padding: 22px; border: 1px solid var(--line); border-radius: 18px; color: var(--text); text-decoration: none; transition: border-color .15s; }
+.legal-card:hover { border-color: var(--text); }
+.legal-card b { font: 400 24px/1.15 var(--serif); }
+.legal-card span { color: var(--muted); font-size: 15px; line-height: 1.5; }
+.legal-card small { color: var(--dim); font-size: 13px; }

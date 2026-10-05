@@ -3,13 +3,16 @@
 namespace Tests\Feature;
 
 use App\Support\Content;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PublicSiteTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_public_pages_render(): void
     {
-        $paths = ['/', '/how-it-works', '/features', '/solutions', '/templates', '/pricing', '/resources', '/blog', '/help', '/contact', '/about', '/security', '/privacy', '/terms', '/dpa', '/sitemap.xml'];
+        $paths = ['/', '/how-it-works', '/features', '/solutions', '/templates', '/pricing', '/resources', '/blog', '/help', '/contact', '/about', '/security', '/privacy', '/terms', '/dpa', '/legal', '/legal/billing', '/sitemap.xml'];
         $paths = array_merge(
             $paths,
             array_map(fn ($slug) => "/features/{$slug}", array_keys(Content::features())),

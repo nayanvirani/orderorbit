@@ -21,7 +21,7 @@
             'Billing' => [['admin.plans', 'Plans & modules', 'card', 'plans']],
             'Product' => [['admin.templates', 'Templates', 'palette', 'templates'], ['admin.flags', 'Feature flags', 'flag', 'flags']],
             'Operations' => [['admin.failures', 'Workflow failures', 'alert', 'failures'], ['admin.analytics', 'Event processing', 'chart', 'analytics'], ['admin.audit', 'Audit log', 'list', 'audit']],
-            'Admin' => [['admin.settings', 'Platform settings', 'settings', 'settings'], ['admin.team', 'Team', 'users', 'team']],
+            'Admin' => [['admin.legal', 'Legal & policies', 'doc', 'legal'], ['admin.settings', 'Platform settings', 'settings', 'settings'], ['admin.team', 'Team', 'users', 'team']],
         ];
     @endphp
     <div class="ad-app">

@@ -196,17 +196,31 @@ class SiteController extends Controller
 
     public function privacy(): View
     {
-        return view('site.privacy');
+        return $this->legal('privacy');
     }
 
     public function terms(): View
     {
-        return view('site.terms');
+        return $this->legal('terms');
     }
 
     public function dpa(): View
     {
-        return view('site.dpa');
+        return $this->legal('dpa');
+    }
+
+    /** Legal & policy pages, edited in the Internal Admin. */
+    public function legalIndex(): View
+    {
+        return view('site.legal-index', ['pages' => \App\Support\Legal::pages()]);
+    }
+
+    public function legal(string $slug): View
+    {
+        $page = \App\Models\LegalPage::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $effective = $page->effective_at?->toFormattedDateString();
+
+        return view('site.legal', ['page' => $page, 'effective' => $effective, 'pages' => \App\Support\Legal::pages()] + \App\Support\Legal::render($page->body, $effective));
     }
 
     public function sitemap(): Response
@@ -214,8 +228,11 @@ class SiteController extends Controller
         $urls = [
             route('site.home'), route('site.how'), route('site.features'), route('site.templates'), route('site.solutions'),
             route('site.pricing'), route('site.resources'), route('site.blog'), route('site.help'), route('site.contact'),
-            route('site.about'), route('site.security'), route('site.privacy'), route('site.terms'), route('site.dpa'),
+            route('site.about'), route('site.security'), route('site.legal.index'),
         ];
+        foreach (\App\Support\Legal::pages() as $page) {
+            $urls[] = \App\Support\Legal::url($page['slug']);
+        }
         foreach (array_keys(Content::features()) as $slug) {
             $urls[] = route('site.feature', $slug);
         }

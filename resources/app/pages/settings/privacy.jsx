@@ -2,7 +2,7 @@ import { ActionButton, Field, Form, useForm } from '../../components/form.jsx';
 import { date, KeyValue, number, Page } from '../../components/ui.jsx';
 import { appUrl, route, useShared } from '../../router.jsx';
 
-export default function Privacy({ privacy, events, oldest }) {
+export default function Privacy({ privacy, events, oldest, policies = [] }) {
   const { can } = useShared();
   const form = useForm(privacy);
   const disabled = !can.manage_settings;
@@ -39,6 +39,18 @@ export default function Privacy({ privacy, events, oldest }) {
         )}
         <p className="oo-muted oo-small">When you uninstall, Shopify asks apps to delete store data 48 hours later; OrderOrbit Space deletes it then.</p>
       </s-section>
+
+      {policies.length > 0 && (
+        <s-section heading="Terms and policies">
+          <KeyValue rows={policies.map((p) => [
+            p.title,
+            <span key={p.url}>
+              {p.accepted ? `Version ${p.accepted.version}, ${p.accepted.via === 'install' ? 'accepted at install' : 'reviewed'} ${date(p.accepted.at)}` : `Version ${p.version}`}
+              {' · '}<a href={p.url} target="_blank" rel="noopener noreferrer">Read</a>
+            </span>,
+          ])} />
+        </s-section>
+      )}
     </Page>
   );
 }

@@ -181,9 +181,12 @@
                     </div>
                     <div>
                         <h4>Legal</h4>
-                        <a href="{{ route('site.privacy') }}">Privacy Policy</a>
-                        <a href="{{ route('site.terms') }}">Terms</a>
-                        <a href="{{ route('site.dpa') }}">Data Processing</a>
+                        @forelse (array_filter(\App\Support\Legal::pages(), fn ($p) => $p['footer']) as $legal)
+                            <a href="{{ \App\Support\Legal::url($legal['slug']) }}">{{ $legal['title'] }}</a>
+                        @empty
+                            <a href="{{ route('site.privacy') }}">Privacy Policy</a>
+                            <a href="{{ route('site.terms') }}">Terms of Service</a>
+                        @endforelse
                     </div>
                 </div>
             </div>
