@@ -13,17 +13,19 @@ export default function Templates({ type, templates, types }) {
     <Page heading="Templates">
       <Hero icon="grid" eyebrow="Template library" title="Start from a <em>proven template.</em>" lead="Every template shares your brand colours and fonts. Pick one, customise it in the builder, and publish it from the Theme Editor." />
       <Tabs items={[['All', route('app.cro.templates'), !type], ...Object.entries(types).map(([k, l]) => [l, route('app.cro.templates', { type: k }), type === k])]} />
-      <div className="b-templates" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))' }}>
+      <div className="b-templates">
         {templates.map((t) => (
           <div className="b-template" style={{ cursor: 'default' }} key={`${t.type}:${t.key}`}>
-            <Preview ready={ready} experience={t.preview} context={context} className="b-template-preview oo-preview" />
-            <span className="b-template-name">{t.name}</span>
-            <span className="oo-inline oo-small">
-              <s-badge>{t.type_label}</s-badge>
-              <span className="oo-muted">v{t.version} · {SURFACE[t.surface] || t.surface}</span>
-              {t.used_by > 0 && <span className="oo-muted">· used by {t.used_by}</span>}
-            </span>
-            {can.manage_experiences && <ActionButton url={route('app.cro.experiences.store')} data={{ type: t.type, template: t.key }}>Use template</ActionButton>}
+            <div className="tpl-stage"><Preview ready={ready} experience={t.preview} context={context} className="b-template-preview oo-preview" /></div>
+            <div className="tpl-body">
+              <span className="b-template-name">{t.name}</span>
+              <span className="oo-inline oo-small">
+                <s-badge>{t.type_label}</s-badge>
+                <span className="oo-muted">v{t.version} · {SURFACE[t.surface] || t.surface}</span>
+                {t.used_by > 0 && <span className="oo-muted">· used by {t.used_by}</span>}
+              </span>
+              {can.manage_experiences && <div className="tpl-action"><ActionButton inlineSize="fill" url={route('app.cro.experiences.store')} data={{ type: t.type, template: t.key }}>Use template</ActionButton></div>}
+            </div>
           </div>
         ))}
       </div>

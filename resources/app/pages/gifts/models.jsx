@@ -16,14 +16,12 @@ export default function GiftModels({ groups }) {
           <div className="bx-models">
             {models.map((m) => (
               <div className="bx-model" key={m.key}>
-                <div className="bx-model-shot bx-pdp">
-                  <span className="bx-pdp-line" /><span className="bx-pdp-line short" />
-                  <span className="bx-fake-atc">Add to cart</span>
-                  <Preview ready={ready} experience={m.preview} context={context} />
+                <div className="tpl-stage"><Preview ready={ready} experience={m.preview} context={context} /></div>
+                <div className="tpl-body">
+                  <strong className="b-template-name">{m.name}</strong>
+                  <p className="bx-muted">{m.description}</p>
+                  <div className="tpl-action"><ActionButton variant="primary" inlineSize="fill" url={route('app.gifts.store')} data={{ model: m.key }}>Use this template</ActionButton></div>
                 </div>
-                <div className="bx-model-head"><strong>{m.name}</strong></div>
-                <p className="bx-muted">{m.description}</p>
-                <ActionButton url={route('app.gifts.store')} data={{ model: m.key }}>Use this template</ActionButton>
               </div>
             ))}
           </div>

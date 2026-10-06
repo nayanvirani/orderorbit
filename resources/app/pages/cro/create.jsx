@@ -36,12 +36,12 @@ export default function CreateExperience({ type, typeDef, creatable, previews, s
       ) : (
         <s-section>
           <Form onSubmit={async () => { setBusy(true); await submit(route('app.cro.experiences.store'), { type, template, name }); setBusy(false); }}>
-            <div className="b-templates" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))' }}>
+            <div className="b-templates">
               {previews.map((p) => (
                 <label className="b-template" key={p.key}>
                   <input type="radio" name="template" checked={template === p.key} onChange={() => setTemplate(p.key)} />
-                  <Preview ready={ready} experience={p.preview} context={context} className="b-template-preview oo-preview b-zoom" />
-                  <span className="b-template-name">{p.name}</span>
+                  <div className="tpl-stage"><Preview ready={ready} experience={p.preview} context={context} className="b-template-preview oo-preview" /></div>
+                  <div className="tpl-body"><span className="b-template-name">{p.name}</span></div>
                 </label>
               ))}
             </div>

@@ -47,10 +47,12 @@ export default function BundleModels({ type, models, presets }) {
       <div className="bx-models">
         {models.filter((m) => layout === 'all' || m.layout === layout).map((m) => (
           <div className="bx-model" key={m.key}>
-            <div className="bx-model-head"><strong>{m.name}</strong></div>
-            <p className="bx-muted">{m.description}</p>
-            <div className="bx-model-shot"><Preview ready={ready} experience={m.previews[preset]} context={context} /></div>
-            <ActionButton variant="primary" url={route('app.bundles.store')} data={{ model: m.key, preset }}>Use this template</ActionButton>
+            <div className="tpl-stage tpl-tall"><Preview ready={ready} experience={m.previews[preset]} context={context} /></div>
+            <div className="tpl-body">
+              <strong className="b-template-name">{m.name}</strong>
+              <p className="bx-muted">{m.description}</p>
+              <div className="tpl-action"><ActionButton variant="primary" inlineSize="fill" url={route('app.bundles.store')} data={{ model: m.key, preset }}>Use this template</ActionButton></div>
+            </div>
           </div>
         ))}
       </div>

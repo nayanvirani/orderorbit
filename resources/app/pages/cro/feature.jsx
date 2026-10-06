@@ -73,11 +73,15 @@ export default function Feature({ feature, types, experiences, counts, discounts
       </s-section>
 
       <s-section heading="Start from a template">
-        <div className="b-templates" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))' }}>
+        <div className="b-templates">
           {templates.map((t) => (
-            <a key={`${t.type}:${t.key}`} className="b-template" style={{ textDecoration: 'none', color: 'inherit' }} href={can.manage_experiences ? create(t.type, t.key) : undefined}>
-              <Preview ready={ready} experience={t.preview} context={context} className="b-template-preview oo-preview b-zoom" />
-              <span className="b-template-name">{t.name}{types.length > 1 && <span className="oo-muted"> · {t.type_label}</span>}</span>
+            <a key={`${t.type}:${t.key}`} className="b-template" href={can.manage_experiences ? create(t.type, t.key) : undefined}>
+              <div className="tpl-stage"><Preview ready={ready} experience={t.preview} context={context} className="b-template-preview oo-preview" /></div>
+              <div className="tpl-body">
+                <span className="b-template-name">{t.name}</span>
+                {types.length > 1 && <span className="oo-muted oo-small">{t.type_label}</span>}
+                {can.manage_experiences && <span className="tpl-cta">Use this template →</span>}
+              </div>
             </a>
           ))}
         </div>
