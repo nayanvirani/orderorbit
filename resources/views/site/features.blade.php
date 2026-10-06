@@ -6,7 +6,7 @@
 @section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<section class="page-hero">
+<section class="page-hero glow-hero">
     <div class="wrap">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">{{ $c['detail']['breadcrumb_home'] }}</a><span aria-hidden="true">/</span><span>{{ $c['breadcrumb'] }}</span></nav>
         <h1>{{ site_md($c['title']) }}</h1>

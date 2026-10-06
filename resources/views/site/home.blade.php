@@ -18,12 +18,14 @@
 
 @php($hero = $c['hero'])
 @php($mock = $hero['mockup'])
-@php($cards = array_slice($groups['convert'], 0, 8, true))
+@php($features = \App\Support\Content::features())
+@php($cards = $groups['convert'])
+@php($others = $groups['checkout'] + $groups['grow'])
 
 @section('content')
-<section class="home-hero">
+<section class="home-hero glow-hero">
     <div class="wrap split">
-        <div class="stack lg">
+        <div class="stack lg" style="flex:1 1 460px">
             <span class="eyebrow dot">{{ site_md($hero['eyebrow']) }}</span>
             <h1>{{ site_md($hero['title']) }}</h1>
             <p class="lead">{{ site_md($hero['lead']) }}</p>
@@ -33,8 +35,8 @@
             </div>
             <ul class="checks">@foreach ($hero['checks'] as $check)<li><x-icon name="check"/>{{ $check }}</li>@endforeach</ul>
         </div>
-        <div class="mock" aria-hidden="true">
-            <div class="browser">
+        <div class="collage" style="flex:1.25 1 560px" aria-hidden="true">
+            <div class="browser c-main">
                 <div class="browser-bar"><i></i><i></i><i></i><span>{{ $mock['url'] }}</span></div>
                 <div class="browser-body">
                     <div class="product-art"><svg viewBox="0 0 90 150"><rect x="30" y="4" width="30" height="26" rx="4" fill="var(--c-heading)"/><rect x="8" y="30" width="74" height="116" rx="16" fill="var(--c-surface)" stroke="var(--c-line-strong)"/><rect x="22" y="70" width="46" height="40" rx="6" fill="currentColor"/></svg></div>
@@ -54,16 +56,43 @@
                     </div>
                 </div>
             </div>
-            <div class="mini-cards">
-                <div class="mini"><strong>{{ $mock['gift_text'] }}</strong><span class="meter"><span style="width:68%"></span></span><span class="ends"><span>{{ $mock['gift_left'] }}</span><span>{{ $mock['gift_right'] }}</span></span></div>
-                <div class="mini timer"><strong>{{ $mock['timer_label'] }}</strong><span class="timer-tiles" data-countdown><b>02</b><b>14</b><b>09</b></span></div>
-            </div>
+            <div class="w-card ink c-timer"><span class="w-tag">{{ $mock['timer_label'] }}</span><span class="timer-tiles" data-countdown><b>02</b><b>14</b><b>09</b><b>41</b></span></div>
+            <div class="w-card c-pop"><div class="w-row"><span class="w-thumb"><x-icon name="bag"/></span><span><b>{{ $mock['pop_title'] }}</b><br><span class="dim">{{ $mock['pop_text'] }}</span></span></div></div>
+            <div class="w-card c-test"><span class="w-tag">{{ $mock['test_label'] }}</span><div class="w-row"><span class="w-thumb"><x-icon name="split"/></span><span class="w-up">{{ $mock['test_result'] }}</span></div></div>
+            <div class="w-card c-gift"><strong>{{ $mock['gift_text'] }}</strong><span class="meter"><span style="width:68%"></span></span><span class="ends" style="display:flex;justify-content:space-between;color:var(--c-dim);font-size:12px"><span>{{ $mock['gift_left'] }}</span><span>{{ $mock['gift_right'] }}</span></span></div>
+            <div class="w-card c-upsell"><span class="w-tag">{{ $mock['upsell_title'] }}</span><div class="w-row"><span class="w-thumb"><x-icon name="sparkle"/></span><span><b>{{ $mock['upsell_item'] }}</b><br><span class="w-up">{{ $mock['upsell_offer'] }}</span></span><span class="w-btn">{{ $mock['upsell_button'] }}</span></div></div>
+            <div class="w-card c-trust"><div class="w-trust">@foreach ($mock['trust'] as $t)<span><x-icon :name="['truck', 'repeat', 'lock'][$loop->index % 3]"/>{{ $t }}</span>@endforeach</div></div>
+            <div class="w-card accent c-revenue"><span class="w-tag">{{ $mock['revenue_label'] }}</span><div class="w-row" style="align-items:flex-end"><span class="w-big">{{ $mock['revenue_value'] }}</span><span class="w-up">{{ $mock['revenue_change'] }}</span><span class="w-bars" style="flex:1">@foreach ([40, 55, 48, 70, 62, 85, 100] as $h)<i style="height:{{ $h }}%"></i>@endforeach</span></div></div>
         </div>
     </div>
 </section>
 
-<section class="surfaces">
-    <div class="wrap"><b>{{ $c['surfaces']['title'] }}</b>@foreach ($c['surfaces']['items'] as $item)<span>{{ $item }}</span>@endforeach</div>
+<div class="numbers">@foreach ($c['numbers'] as $n)<div class="reveal"><b>{{ site_md($n[0] ?? '') }}</b><span>{{ site_md($n[1] ?? '') }}</span></div>@endforeach</div>
+
+@php($j = $c['journey'])
+<section class="section">
+    <div class="wrap stack xl" data-tabs>
+        <div class="stack measure"><span class="kicker">{{ $j['eyebrow'] }}</span><h2>{{ site_md($j['title']) }}</h2><p class="lead" style="font-size:18px">{{ site_md($j['text']) }}</p></div>
+        <div class="journey-tabs" role="tablist">
+            @foreach ($j['stages'] as $stage)<button type="button" role="tab" id="stage-tab-{{ $loop->index }}" aria-controls="stage-{{ $loop->index }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}"><span>{{ $loop->iteration }}</span>{{ $stage['title'] }}</button>@endforeach
+        </div>
+        @foreach ($j['stages'] as $stage)
+            <div class="journey-panel" role="tabpanel" id="stage-{{ $loop->index }}" aria-labelledby="stage-tab-{{ $loop->index }}" @unless ($loop->first) hidden @endunless>
+                <div class="stack lg">
+                    <h3 style="font-size:28px">{{ $stage['title'] }}</h3>
+                    <p class="muted" style="font-size:17px">{{ site_md($stage['text']) }}</p>
+                    <div class="tool-list">
+                        @foreach ($stage['features'] as $slug)
+                            @continue(! isset($features[$slug]))
+                            <a class="tool" href="{{ route('site.feature', $slug) }}"><span class="icon-tile" style="width:40px;height:40px"><x-icon :name="$features[$slug]['icon']"/></span><span><b>{{ $features[$slug]['name'] }}</b><span>{{ $features[$slug]['summary'] ?? $features[$slug]['menu'] }}</span></span><span class="arrow" aria-hidden="true">→</span></a>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="visual-wrap">@if (view()->exists('site.visuals.'.$stage['visual']))@include('site.visuals.'.$stage['visual'])@endif</div>
+            </div>
+        @endforeach
+        <div class="row" style="gap:10px 28px;color:var(--c-muted);font-size:15px"><b style="color:var(--c-heading)">{{ $c['surfaces']['title'] }}</b>@foreach ($c['surfaces']['items'] as $item)<span>{{ $item }}</span>@endforeach</div>
+    </div>
 </section>
 
 @php($s = $c['stack'])
@@ -92,12 +121,15 @@
 <section class="section white">
     <div class="wrap stack xl">
         <div class="stack measure"><span class="kicker">{{ $f['eyebrow'] }}</span><h2>{{ site_md($f['title']) }}</h2><p class="lead" style="font-size:18px">{{ site_md($f['text']) }}</p></div>
-        <div class="grid">
+        <div class="grid" style="--min:270px">
             @foreach ($cards as $slug => $feature)
                 <a class="card feature-card reveal" href="{{ route('site.feature', $slug) }}">
                     @include('site.partials.peek', ['slug' => $slug])
                     <div class="body"><span class="card-title">{{ $feature['name'] }}</span><span class="card-text">{{ $feature['summary'] ?? $feature['menu'] }}</span></div>
                 </a>
+            @endforeach
+            @foreach ($others as $slug => $feature)
+                <a class="card reveal" href="{{ route('site.feature', $slug) }}"><span class="icon-tile"><x-icon :name="$feature['icon']"/></span><span class="card-title">{{ $feature['name'] }}</span><span class="card-text">{{ $feature['summary'] ?? $feature['menu'] }}</span></a>
             @endforeach
             <a class="card dashed wide-row reveal" href="{{ site_url($f['more_link']['href']) }}">
                 <span class="card-title">{{ site_md($f['more_title']) }}</span>

@@ -72,18 +72,18 @@ class SiteContent
         'resources_menu' => 'Resources menu', 'cta_primary' => 'Main button', 'cta_secondary' => 'Second button', 'primary' => 'Main button',
         'secondary' => 'Second button', 'link' => 'Link', 'button' => 'Button', 'install' => 'Install button', 'tiers' => 'Bundle tiers', 'columns' => 'Columns',
         'links' => 'Links', 'topics' => 'Topic choices', 'cards' => 'Cards', 'principles' => 'Principles', 'paragraphs' => 'Paragraphs', 'example' => 'Example',
-        'checks' => 'Ticks under the buttons', 'apps' => 'Apps', 'stats' => 'Numbers', 'steps' => 'Steps', 'plan' => 'Plan cards', 'items' => 'Items',
+        'checks' => 'Ticks under the buttons', 'numbers' => 'Number strip', 'journey' => 'Buying journey', 'stages' => 'Stages', 'trust' => 'Trust badges', 'metrics' => 'Example results', 'apps' => 'Apps', 'stats' => 'Numbers', 'steps' => 'Steps', 'plan' => 'Plan cards', 'items' => 'Items',
     ];
 
     /** Names of the parts of [a, b, …] rows, by the list they're in. */
     public const ROWS = [
         'faqs' => ['Question', 'Answer', 'Code sample (optional)'], 'articles' => ['Question', 'Answer', 'Code sample (optional)'],
-        'benefits' => ['Title', 'Text'], 'setup' => ['Title', 'Text'], 'metrics' => ['Label', 'Value'], 'stack' => ['Job', 'Typical price'],
-        'promises' => ['Title', 'Text'], 'steps' => ['Title', 'Text'], 'cards' => ['Title', 'Text'], 'stats' => ['Label', 'Value'],
+        'benefits' => ['Title', 'Text'], 'setup' => ['Title', 'Text'], 'metrics' => ['Label', 'Value'], 'problem' => ['Overview heading', 'Overview intro (optional)'], 'stack' => ['Job', 'Typical price'],
+        'promises' => ['Title', 'Text'], 'numbers' => ['Number', 'Label'], 'steps' => ['Title', 'Text'], 'cards' => ['Title', 'Text'], 'stats' => ['Label', 'Value'],
     ];
 
     /** Fields used by the code, not shown as copy (icons, groups, links between items). */
-    public const HIDDEN = ['icon', 'group', 'visual', 'features', 'feature', 'type', 'surface', 'status', 'problem', 'grid', 'metrics', 'keyword', 'steps_heading', 'templates', 'secondary_cta', 'later'];
+    public const HIDDEN = ['icon', 'group', 'visual', 'features', 'feature', 'type', 'surface', 'status', 'grid', 'keyword', 'steps_heading', 'templates', 'secondary_cta', 'later'];
 
     // ------------------------------------------------------------------ reading
 
@@ -274,11 +274,12 @@ class SiteContent
         try {
             $prices = array_filter(array_map(fn ($p) => (float) $p['price'], Plans::public()));
             $templates = count(Content::templates());
+            $tools = count(Content::features());
         } catch (Throwable) {
             $prices = [];
             $templates = 0;
         }
-        $globals = ['{year}' => date('Y'), '{templates}' => (string) $templates,
+        $globals = ['{year}' => date('Y'), '{templates}' => (string) $templates, '{tools}' => (string) count(Content::features()),
             '{from_price}' => $prices ? number_format(min($prices), 2) : '0', '{max_price}' => $prices ? number_format(max($prices), 2) : '0'];
 
         return strtr($text, $globals + collect($vars)->mapWithKeys(fn ($v, $k) => ['{'.$k.'}' => (string) $v])->all());

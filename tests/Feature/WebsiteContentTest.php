@@ -57,7 +57,7 @@ class WebsiteContentTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['action' => 'admin.website_content_saved']);
 
         $this->actingAs($this->admin('operations'))->post('/admin/content/page.home/reset')->assertRedirect();
-        $this->get('/')->assertSee('Sell more to every shopper,')->assertSee('Free plan, no card')->assertDontSee('A brand-new question?');
+        $this->get('/')->assertSee('Convert more shoppers and')->assertSee('Free plan, no card')->assertDontSee('A brand-new question?');
     }
 
     public function test_feature_guide_and_list_edits_reach_every_page_that_uses_them(): void
@@ -115,7 +115,7 @@ class WebsiteContentTest extends TestCase
         $support = $this->admin('support');
         $this->actingAs($support)->get('/admin/content')->assertForbidden();
         $this->save('page.home', ['hero' => ['title' => 'Hacked']], $support)->assertForbidden();
-        $this->assertSame('Sell more to every shopper, *without fighting your theme.*', SiteContent::page('home')['hero']['title']);
+        $this->assertSame('Convert more shoppers and *raise every order.*', SiteContent::page('home')['hero']['title']);
     }
 
     public function test_error_pages_use_the_edited_text(): void

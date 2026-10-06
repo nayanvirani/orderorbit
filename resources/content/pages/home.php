@@ -3,18 +3,18 @@
 /*
 | Home page. Text may use *highlight* (accent colour), **bold** and [link text](/path).
 | Links: a path, a full URL, or {install} / {signin}. {from_price} is the cheapest paid plan,
-| {max_price} the most expensive, from Plans & features.
+| {max_price} the most expensive, from Plans & features; {tools} the number of features; {templates} of templates.
 */
 
 return [
     'seo_title' => 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App',
     'seo_description' => 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
     'hero' => [
-        'eyebrow' => 'A Shopify app for higher order value',
-        'title' => 'Sell more to every shopper, *without fighting your theme.*',
-        'lead' => 'Bundles, progressive gifts, upsells, countdowns, pre-orders, sales pops and trust blocks that look like part of your store, apply their savings at checkout, and show you exactly what they earn.',
+        'eyebrow' => '{tools} sales tools · one Shopify app',
+        'title' => 'Convert more shoppers and *raise every order.*',
+        'lead' => 'Bundles, gifts, upsells, countdowns, social proof, checkout blocks, post-purchase offers, A/B tests and automation — designed to look like your store, applied at checkout, and measured to the last order line.',
         'cta_primary' => ['label' => 'Install on Shopify', 'href' => '{install}'],
-        'cta_secondary' => ['label' => 'See how it works', 'href' => '/how-it-works'],
+        'cta_secondary' => ['label' => 'Explore all features', 'href' => '/features'],
         'checks' => ['Free plan, no card', 'Billed through Shopify', 'No theme code edits'],
         'mockup' => [
             'url' => 'glowlab.com/products/vitamin-c-serum',
@@ -32,6 +32,37 @@ return [
             'gift_left' => 'Free shipping ✓',
             'gift_right' => 'Free gift',
             'timer_label' => 'Summer sale ends in',
+            'upsell_title' => 'Complete your routine',
+            'upsell_item' => 'Night Cream',
+            'upsell_offer' => 'Save 10%',
+            'upsell_button' => '+ Add',
+            'pop_title' => 'Someone in Toronto',
+            'pop_text' => 'bought Glow Serum · 4 min ago',
+            'trust' => ['Free shipping', '30-day returns', 'Secure checkout'],
+            'test_label' => 'A/B test · Bundle layout',
+            'test_result' => 'Variant B +14.2%',
+            'revenue_label' => 'Revenue from offers',
+            'revenue_value' => '$4,280',
+            'revenue_change' => '▲ 18%',
+        ],
+    ],
+    'numbers' => [
+        ['{tools}', 'sales tools in one app'],
+        ['{templates}', 'ready-made templates'],
+        ['0', 'lines of theme code'],
+        ['1', 'bill on your Shopify invoice'],
+    ],
+    'journey' => [
+        'eyebrow' => 'The whole buying journey',
+        'title' => 'A sales tool for *every step* a shopper takes.',
+        'text' => 'From the first product view to the order after next: each tool sits where it helps most, shares one design and reports to one set of numbers.',
+        'learn_more' => 'Learn more →',
+        'stages' => [
+            ['title' => 'Product page', 'text' => 'Turn a product view into a bigger first order.', 'features' => ['bundles', 'countdown-timer', 'sticky-add-to-cart', 'trust-social-proof', 'preorder'], 'visual' => 'bundles'],
+            ['title' => 'Cart', 'text' => 'Give shoppers a reason to add one more item.', 'features' => ['progressive-gifts', 'cart-upsells'], 'visual' => 'progressive-gifts'],
+            ['title' => 'Across your store', 'text' => 'Social proof and the right offer for each shopper.', 'features' => ['sales-pop', 'personalization'], 'visual' => 'sales-pop'],
+            ['title' => 'Checkout & after', 'text' => 'Keep selling inside checkout, on Thank You and in accounts.', 'features' => ['checkout', 'customer-accounts', 'automation'], 'visual' => 'checkout'],
+            ['title' => 'Measure & improve', 'text' => 'See what each offer earns and test what works better.', 'features' => ['analytics', 'ab-testing'], 'visual' => 'analytics'],
         ],
     ],
     'surfaces' => [
@@ -56,10 +87,10 @@ return [
     ],
     'features' => [
         'eyebrow' => 'Features',
-        'title' => 'Everything that raises order value.',
+        'title' => 'Every tool you need to *sell more*, in one place.',
         'text' => 'Each feature has ready-made templates, shares your store\'s design and applies its savings at checkout.',
-        'more_title' => 'And everything after the Buy button',
-        'more_text' => 'Checkout & Thank You blocks, customer accounts, analytics, A/B testing, personalization and automation.',
+        'more_title' => 'See every feature in detail',
+        'more_text' => 'What each tool does, where it shows and how it works — with templates and examples.',
         'more_link' => ['label' => 'Browse all features →', 'href' => '/features'],
     ],
     'day_one' => [

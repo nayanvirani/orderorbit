@@ -7,7 +7,7 @@
 @section('description', \App\Support\SiteContent::plain($solution['seo_description']))
 
 @section('content')
-<section class="page-hero">
+<section class="glow-hero feature-hero">
     <div class="wrap">
         <div class="stack lg measure" style="max-width:860px">
             <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">{{ $d['breadcrumb_home'] }}</a><span aria-hidden="true">/</span><a href="{{ route('site.solutions') }}">{{ $page['eyebrow'] }}</a><span aria-hidden="true">/</span><span>{{ $solution['name'] }}</span></nav>
@@ -19,10 +19,9 @@
                 <a class="btn secondary" href="{{ site_url($d['pricing']['href']) }}">{{ $d['pricing']['label'] }}</a>
             </div>
         </div>
+        <div class="stage">@include('site.visuals.'.$solution['visual'])</div>
     </div>
 </section>
-
-<div class="visual-band"><div class="shot">@include('site.visuals.'.$solution['visual'])</div></div>
 
 <section class="section">
     <div class="wrap split top">
