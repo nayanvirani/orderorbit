@@ -1,7 +1,7 @@
 /* Product-screen mockups (storefront, admin and checkout screens drawn in HTML/CSS).
    These are "screens", so they stay light on the dark site; the OrderOrbit block
    highlight inside them uses the brand gradient. */
-.visual, .tpl, .bento-screen, .sat { --ink: #0e0b2b; --indigo: #ff6a2e; --mint: #12b886; --font-head: "Roboto", system-ui, sans-serif; --font-body: "Roboto", system-ui, sans-serif; --shadow-lg: 0 40px 90px -30px rgba(0, 0, 0, .8), 0 12px 30px rgba(0, 0, 0, .35); }
+.visual, .tpl, .bento-screen, .sat { --ink: #0e0b2b; --indigo: #ff6a2e; --mint: #12b886; --font-head: var(--f-body), system-ui, sans-serif; --font-body: var(--f-body), system-ui, sans-serif; --shadow-lg: 0 40px 90px -30px rgba(0, 0, 0, .8), 0 12px 30px rgba(0, 0, 0, .35); }
 .visual .float-chip { border-color: #ececf3; }
 /* ---------------------------------------------------------------- Mockups */
 .visual { position: relative; }

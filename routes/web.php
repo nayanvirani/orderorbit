@@ -353,6 +353,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/settings', 'update')->name('settings.update');
         });
 
+        Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\WebsiteController::class)->group(function () {
+            Route::get('/website', 'show')->name('website');
+            Route::post('/website', 'update')->name('website.update');
+            Route::post('/website/reset', 'reset')->name('website.reset');
+        });
+
         Route::middleware('admin.can:email')->controller(\App\Http\Controllers\Admin\EmailController::class)->group(function () {
             Route::get('/email', 'index')->name('email');
             Route::post('/email/settings', 'saveSettings')->name('email.settings');
