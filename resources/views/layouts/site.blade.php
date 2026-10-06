@@ -7,8 +7,8 @@
     <title>@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')</title>
     <meta name="description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <link rel="canonical" href="{{ url()->current() }}">
-    {{-- AI crawlers and training never; search engines only while SITE_SEARCH_ENGINES is on (with /robots.txt). --}}
-    <meta name="robots" content="{{ config('site.search_engines') ? 'index, follow' : 'noindex, nofollow' }}, noai, noimageai">
+    {{-- Crawler rules from the Internal Admin (Crawlers & SEO), with /robots.txt. --}}
+    <meta name="robots" content="{{ \App\Support\Crawlers::robotsTag() }}">
     <meta property="og:site_name" content="OrderOrbit Space">
     <meta property="og:type" content="website">
     <meta property="og:title" content="@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')">

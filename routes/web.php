@@ -364,6 +364,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/content/{key}/reset', 'reset')->where('key', '[a-z_]+\.[a-z0-9_-]+')->name('content.reset');
         });
 
+        Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\CrawlersController::class)->group(function () {
+            Route::get('/crawlers', 'show')->name('crawlers');
+            Route::post('/crawlers', 'update')->name('crawlers.update');
+            Route::post('/crawlers/reset', 'reset')->name('crawlers.reset');
+        });
+
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\WebsiteController::class)->group(function () {
             Route::get('/website', 'show')->name('website');
             Route::post('/website', 'update')->name('website.update');

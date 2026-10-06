@@ -23,7 +23,7 @@
             'Billing' => [['admin.plans', 'Plans & features', 'card', 'plans']],
             'Product' => [['admin.templates', 'Templates', 'palette', 'templates'], ['admin.flags', 'Feature flags', 'flag', 'flags']],
             'Operations' => [['admin.failures', 'Workflow failures', 'alert', 'failures'], ['admin.analytics', 'Event processing', 'chart', 'analytics'], ['admin.audit', 'Audit log', 'list', 'audit']],
-            'Admin' => [['admin.email', 'Email providers', 'mail', 'email'], ['admin.legal', 'Legal & policies', 'doc', 'legal'], ['admin.content', 'Website content', 'doc', 'content'], ['admin.website', 'Website design', 'palette', 'settings'], ['admin.settings', 'Platform settings', 'settings', 'settings'], ['admin.team', 'Team', 'users', 'team']],
+            'Admin' => [['admin.email', 'Email providers', 'mail', 'email'], ['admin.legal', 'Legal & policies', 'doc', 'legal'], ['admin.content', 'Website content', 'doc', 'content'], ['admin.website', 'Website design', 'palette', 'settings'], ['admin.crawlers', 'Crawlers & SEO', 'key', 'settings'], ['admin.settings', 'Platform settings', 'settings', 'settings'], ['admin.team', 'Team', 'users', 'team']],
         ];
     @endphp
     <div class="ad-app">

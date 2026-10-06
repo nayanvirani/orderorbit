@@ -117,11 +117,10 @@ class SiteController extends Controller
         return response()->json($previews)->header('Cache-Control', 'public, max-age=600');
     }
 
-    /** /robots.txt: crawler rules for the public website (config site.search_engines). */
+    /** /robots.txt: crawler rules for the public website, from the Internal Admin (Crawlers & SEO). */
     public function robots(): \Illuminate\Http\Response
     {
-        return response()->view('site.robots', ['search' => (bool) config('site.search_engines')])
-            ->header('Content-Type', 'text/plain; charset=UTF-8')->header('Cache-Control', 'public, max-age=3600');
+        return response(\App\Support\Crawlers::robotsTxt(route('site.sitemap')), 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=300']);
     }
 
     public function pricing(): View
