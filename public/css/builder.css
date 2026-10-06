@@ -109,8 +109,10 @@ a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover, a.b-template *, a.
 .b-template.is-busy { opacity: .6; pointer-events: none; }
 /* Every template is drawn whole at one size (the same scale on every card); the preview area takes
    the row's spare height so cards in a row stay aligned. */
-.tpl-stage { position: relative; display: flex; flex-direction: column; justify-content: flex-start; flex: 1 0 auto; min-height: 220px; padding: 18px; background: #f6f6f7; border-bottom: 1px solid #ececec; pointer-events: none; }
-.tpl-stage > .oo-preview { width: 100%; flex: none; zoom: .7; }
+.tpl-stage { position: relative; display: flex; flex-direction: column; justify-content: flex-start; flex: 1 0 auto; min-height: 220px; padding: 16px; background: #f6f6f7; border-bottom: 1px solid #ececec; pointer-events: none; }
+/* Each template sits on a white panel, like a section of a product page, with room on every side
+   so it reads as the complete widget, not a crop. */
+.tpl-stage > .oo-preview { width: 100%; flex: none; zoom: .7; box-sizing: border-box; padding: 22px 20px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(26, 26, 26, .07), 0 6px 18px -12px rgba(26, 26, 26, .35); }
 .tpl-body { flex: 0 0 auto !important; }
 .tpl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; padding: 14px 16px 16px; }
 .tpl-body p { margin: 0; font-size: 13px; }
@@ -119,3 +121,5 @@ a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover, a.b-template *, a.
 .b-template.is-clickable:hover .tpl-cta { background: var(--ob-accent, #4f46e5); border-color: var(--ob-accent, #4f46e5); color: #fff; }
 .bx-type-body { flex: 0 0 auto; }
 .bx-type-link { justify-content: center; background: linear-gradient(160deg, #f4fbf7, #fff 70%); border-style: dashed; }
+/* Side-by-side bundle layouts need a wider canvas to keep every tier on one row. */
+.tpl-stage > .oo-preview:has(.oo-bl-horizontal) { zoom: .58; }
