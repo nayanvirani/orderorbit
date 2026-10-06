@@ -353,6 +353,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/settings', 'update')->name('settings.update');
         });
 
+        Route::middleware('admin.can:content')->controller(\App\Http\Controllers\Admin\ContentController::class)->group(function () {
+            Route::get('/content', 'index')->name('content');
+            Route::get('/content/{key}', 'edit')->where('key', '[a-z_]+\.[a-z0-9_-]+')->name('content.edit');
+            Route::post('/content/{key}', 'update')->where('key', '[a-z_]+\.[a-z0-9_-]+')->name('content.update');
+            Route::post('/content/{key}/reset', 'reset')->where('key', '[a-z_]+\.[a-z0-9_-]+')->name('content.reset');
+        });
+
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\WebsiteController::class)->group(function () {
             Route::get('/website', 'show')->name('website');
             Route::post('/website', 'update')->name('website.update');

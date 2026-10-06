@@ -24,7 +24,7 @@
         @media (prefers-reduced-motion: reduce) { .orbit i { animation: none; } }
         .eyebrow { font: 500 11px/1 var(--f-label), system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
         h1 { margin: 14px 0 12px; color: var(--c-heading); font: var(--fw-heading) clamp(40px, 9vw, 64px)/1 var(--f-heading), system-ui, sans-serif; letter-spacing: -.01em; }
-        h1 em { font-style: normal; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
+        h1 .hl, h1 em { color: var(--c-accent); font-style: normal; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
         p { margin: 0 auto; max-width: 440px; color: var(--muted); }
         details { margin-top: 40px; }
         summary { display: inline-block; cursor: pointer; font: 500 12px/1 var(--f-label), system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); list-style: none; }
@@ -41,19 +41,20 @@
 <body>
 <main>
     <div class="orbit" aria-hidden="true"><span></span><span></span><b></b><i></i></div>
-    <span class="eyebrow">Shopify CRO · checkout · customer experience</span>
-    <h1>OrderOrbit Space is <em>coming soon.</em></h1>
-    <p>Bundles, progressive gifts and checkout widgets for Shopify stores, all in one app. We're putting on the finishing touches.</p>
+    @php($cs = \App\Support\SiteContent::page('coming_soon'))
+    <span class="eyebrow">{{ site_md($cs['eyebrow']) }}</span>
+    <h1>{{ site_md($cs['title']) }}</h1>
+    <p>{{ site_md($cs['text']) }}</p>
 
     <details @if ($failed) open @endif>
-        <summary>Owner access</summary>
+        <summary>{{ $cs['owner'] }}</summary>
         <form method="POST" action="{{ route('site.unlock') }}">
             @csrf
-            <label for="password" style="position:absolute;left:-9999px">Password</label>
-            <input id="password" type="password" name="password" placeholder="Password" autocomplete="current-password" required @if ($failed) autofocus @endif>
-            <button type="submit">Enter</button>
+            <label for="password" style="position:absolute;left:-9999px">{{ $cs['password'] }}</label>
+            <input id="password" type="password" name="password" placeholder="{{ $cs['password'] }}" autocomplete="current-password" required @if ($failed) autofocus @endif>
+            <button type="submit">{{ $cs['enter'] }}</button>
         </form>
-        @if ($failed)<p class="error" role="alert">That password isn't right.</p>@endif
+        @if ($failed)<p class="error" role="alert">{{ $cs['wrong'] }}</p>@endif
     </details>
 
     <footer>&copy; {{ date('Y') }} OrderOrbit Space · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a> · <a href="{{ route('site.legal.index') }}">All policies</a></footer>

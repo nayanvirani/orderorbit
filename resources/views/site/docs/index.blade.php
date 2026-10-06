@@ -1,36 +1,19 @@
 @extends('layouts.site')
+@php($c = \App\Support\SiteContent::page('docs'))
 
-@section('title', 'Documentation | OrderOrbit Space')
-@section('description', 'Guides for every part of OrderOrbit Space: getting started, bundles, gifts, widgets, checkout, customer accounts, automation, analytics, personalization, A/B testing and developer callbacks.')
-
-@push('head')
-    <link rel="stylesheet" href="{{ asset('css/docs.css') }}?v={{ filemtime(public_path('css/docs.css')) }}">
-@endpush
+@section('title', \App\Support\SiteContent::plain($c['seo_title']))
+@section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<div class="mn docs">
-    <section class="mn-hero">
-        <div class="wrap">
-            <span class="mn-kicker">Docs</span>
-            <h1>Everything you need to <em>get results.</em></h1>
-            <p class="mn-lead">Step-by-step guides for every part of OrderOrbit Space, from your first widget to A/B tests and automation.</p>
-        </div>
-    </section>
-    <div class="wrap docs-hub">
+@include('site.partials.page-hero', ['c' => $c])
+
+<section class="section" style="padding-top:72px">
+    <div class="wrap grid">
         @foreach ($guides as $slug => $g)
-            <a class="docs-card" href="{{ route('site.docs', $slug) }}">
-                <span class="docs-card-ico"><x-icon :name="$g['icon']" /></span>
-                <strong>{{ $g['title'] }}</strong>
-                <span>{{ $g['summary'] }}</span>
-                <em>Read the guide →</em>
-            </a>
+            <a class="card reveal" href="{{ route('site.docs', $slug) }}"><span class="icon-tile"><x-icon :name="$g['icon'] ?? 'book'"/></span><span class="card-title" style="font-size:19px">{{ $g['title'] }}</span><span class="card-text">{{ site_md($g['summary']) }}</span><span class="card-link">{{ $c['read'] }}</span></a>
         @endforeach
     </div>
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Can't find it?</h2>
-            <p>Search the <a href="{{ route('site.help') }}">help center</a>, or open Support inside the app: it includes your store details automatically.</p>
-        </div>
-    </section>
-</div>
+</section>
+
+@include('site.partials.cta', ['cta' => $c['cta']])
 @endsection

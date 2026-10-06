@@ -1,122 +1,96 @@
 @extends('layouts.site')
+@php($page = \App\Support\SiteContent::page('features'))
+@php($d = $page['detail'])
+@php($names = collect($templates)->pluck('name')->unique()->values())
+@php($vars = ['name' => $feature['name'], 'count' => $names->count()])
 
-@section('title', $feature['seo_title'])
-@section('description', $feature['seo_description'])
-
-@php
-    $soon = ($feature['status'] ?? 'live') === 'soon';
-    $names = collect($templates)->pluck('name')->unique()->values();
-@endphp
+@section('title', \App\Support\SiteContent::plain($feature['seo_title']))
+@section('description', \App\Support\SiteContent::plain($feature['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <nav class="mn-crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">Home</a><span>/</span><a href="{{ route('site.features') }}">Features</a><span>/</span><span>{{ $feature['name'] }}</span></nav>
-            <span class="mn-kicker">{{ $feature['name'] }}@if ($soon)<span class="soon">Coming soon</span>@endif</span>
-            <h1>{{ $feature['h1'] }}</h1>
-            <p class="mn-lead">{{ $feature['hero'] }}</p>
-            <div class="ctas">
-                @if ($soon)
-                    <a class="btn primary lg" href="{{ route('site.contact') }}">Ask about early access</a>
-                @else
-                    <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
-                @endif
-                <a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a>
-                @if (in_array($feature['slug'], \App\Http\Controllers\SiteController::DOCS, true))
-                    <a class="btn lg" href="{{ route('site.docs', $feature['slug']) }}">Read the guide</a>
-                @endif
+<section class="page-hero">
+    <div class="wrap">
+        <div class="stack lg measure" style="max-width:860px">
+            <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">{{ $d['breadcrumb_home'] }}</a><span aria-hidden="true">/</span><a href="{{ route('site.features') }}">{{ $page['breadcrumb'] }}</a><span aria-hidden="true">/</span><span>{{ $feature['name'] }}</span></nav>
+            <span class="eyebrow">{{ $feature['name'] }}</span>
+            <h1 style="font-size:clamp(38px,4.6vw,60px)">{{ site_md($feature['h1']) }}</h1>
+            <p class="lead" style="font-size:19px">{{ site_md($feature['hero']) }}</p>
+            <div class="row">
+                <a class="btn primary" href="{{ site_url($d['install']['href']) }}" data-event="cta_install_clicked">{{ $d['install']['label'] }}</a>
+                @if ($names->isNotEmpty())<a class="btn secondary" href="{{ route('site.templates') }}#{{ $feature['slug'] }}">{{ site_md($d['templates_button'], $vars) }}</a>@endif
+                @if (isset(\App\Support\Content::docs()[$feature['slug']]))<a class="btn secondary" href="{{ route('site.docs', $feature['slug']) }}">{{ $d['guide_button'] }}</a>@endif
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <div class="mn-shot">@include('site.visuals.'.$feature['slug'])</div>
+<div class="visual-band"><div class="shot">@include('site.visuals.'.$feature['slug'])</div></div>
 
-    @if (! empty($feature['overview']))
-        <section class="mn-section" style="margin-top:clamp(48px,7vw,88px)">
-            <div class="mn-narrow">
-                <h2>Overview</h2>
-                <div class="mn-prose">
-                    @foreach ($feature['overview'] as $paragraph)<p>{{ $paragraph }}</p>@endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-
-    @if (! empty($feature['benefits']))
-        <section class="mn-section">
-            <div class="mn-wide">
-                <h2>What it gives you</h2>
-                <ul class="mn-list">
-                    @foreach ($feature['benefits'] as [$title, $text])<li><b>{{ $title }}</b><span>{{ $text }}</span></li>@endforeach
-                </ul>
-            </div>
-        </section>
-    @endif
-
-    <section class="mn-section">
-        <div class="mn-narrow">
-            <h2>How it works</h2>
-            <ol class="mn-steps">
-                @foreach ($feature['steps'] as $step)<li><div>{{ $step }}</div></li>@endforeach
-            </ol>
+@if (! empty($feature['overview']) || ! empty($feature['benefits']))
+<section class="section">
+    <div class="wrap split top">
+        <div class="narrow stack">
+            <span class="kicker">{{ $d['overview_eyebrow'] }}</span>
+            <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['overview_title'], $vars) }}</h2>
+            <div class="prose" style="font-size:17px">@foreach ($feature['overview'] ?? [] as $paragraph)<p>{{ site_md($paragraph) }}</p>@endforeach</div>
         </div>
-    </section>
-
-    @if (! empty($feature['example']))
-        <section class="mn-section">
-            <div class="mn-narrow">
-                <div class="mn-note">
-                    <h3>Example: {{ rtrim($feature['example']['title'], '.') }}</h3>
-                    <p>{{ $feature['example']['text'] }}</p>
-                </div>
-            </div>
-        </section>
-    @endif
-
-    @if ($names->isNotEmpty() && ! $soon)
-        <section class="mn-section">
-            <div class="mn-narrow">
-                <h2>Templates</h2>
-                <p class="mn-intro">{{ $names->count() }} ready-made {{ \Illuminate\Support\Str::plural('layout', $names->count()) }}. Pick one in the app, then change the text, colours, sizes and spacing to match your store.</p>
-                <ul class="mn-chips">@foreach ($names as $name)<li>{{ $name }}</li>@endforeach</ul>
-                <a class="btn" href="{{ route('site.templates') }}">See the template gallery</a>
-            </div>
-        </section>
-    @endif
-
-    @if (! empty($feature['faqs']))
-        <section class="mn-section">
-            <div class="mn-narrow">
-                <h2>Questions</h2>
-                @include('site.partials.faq', ['faqs' => $feature['faqs']])
-            </div>
-        </section>
-    @endif
-
-    <section class="mn-section">
-        <div class="mn-wide">
-            <h2>Works well with</h2>
-            <ul class="mn-rows">
-                @foreach ($related as $slug => $r)
-                    <li><a href="{{ route('site.feature', $slug) }}"><b>{{ $r['name'] }}@if (($r['status'] ?? 'live') === 'soon')<span class="soon">Soon</span>@endif</b><span>{{ $r['summary'] ?? $r['menu'] }}</span><i>Learn more →</i></a></li>
-                @endforeach
-            </ul>
+        <div class="wide grid" style="--min:280px">
+            @foreach ($feature['benefits'] ?? [] as $benefit)
+                <div class="card reveal"><b class="card-title" style="font-size:19px">{{ $benefit[0] ?? '' }}</b><span class="card-text">{{ site_md($benefit[1] ?? '') }}</span></div>
+            @endforeach
         </div>
-    </section>
+    </div>
+</section>
+@endif
 
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>{{ $soon ? 'Want it first?' : 'Try '.$feature['name'].' on your store' }}</h2>
-            <p>{{ $soon ? 'Tell us about your store and we\'ll let you know when it\'s ready.' : 'Install OrderOrbit Space, pick a template and publish in a few minutes.' }}</p>
-            <div class="ctas">
-                @if ($soon)
-                    <a class="btn primary lg" href="{{ route('site.contact') }}">Contact us</a>
-                @else
-                    <a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a>
-                @endif
+<section class="section white">
+    <div class="wrap stack xl">
+        <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['how_title'], $vars) }}</h2>
+        <ol class="grid" style="--min:260px;margin:0;padding:0;list-style:none">
+            @foreach ($feature['steps'] as $step)
+                <li class="card soft reveal"><span class="num">{{ $d['step'] }} {{ $loop->iteration }}</span><span style="font-size:17px;line-height:1.5">{{ site_md($step) }}</span></li>
+            @endforeach
+        </ol>
+        @if (! empty($feature['example']['text']))
+            <div class="card lavender" style="flex-direction:row;flex-wrap:wrap;gap:12px 32px;align-items:center">
+                <b style="font-size:18px;color:var(--c-heading)">{{ $d['example'] }} {{ rtrim($feature['example']['title'], '.') }}</b>
+                <span class="card-text" style="flex:1 1 520px;font-size:16px">{{ site_md($feature['example']['text']) }}</span>
             </div>
+        @endif
+    </div>
+</section>
+
+@if ($names->isNotEmpty())
+<section class="section">
+    <div class="wrap stack lg">
+        <div class="row between">
+            <div class="stack" style="gap:10px"><h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['templates_title'], $vars) }}</h2><span class="muted" style="font-size:17px">{{ site_md($d['templates_text'], $vars) }}</span></div>
+            <a class="link" href="{{ route('site.templates') }}">{{ $d['templates_link'] }}</a>
         </div>
-    </section>
-</div>
+        <div class="chips">@foreach ($names as $name)<span class="chip static">{{ $name }}</span>@endforeach</div>
+    </div>
+</section>
+@endif
+
+@if (! empty($feature['faqs']))
+<section class="section white">
+    <div class="wrap split top">
+        <div class="narrow"><h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['faq_title'], $vars) }}</h2></div>
+        <div class="wide">@include('site.partials.faq', ['faqs' => $feature['faqs']])</div>
+    </div>
+</section>
+@endif
+
+<section class="section">
+    <div class="wrap stack lg">
+        <h2 style="font-size:32px">{{ site_md($d['related_title'], $vars) }}</h2>
+        <div class="grid">
+            @foreach ($related as $slug => $r)
+                <a class="card reveal" href="{{ route('site.feature', $slug) }}"><span class="card-title" style="font-size:18px">{{ $r['name'] }}</span><span class="card-text">{{ $r['summary'] ?? $r['menu'] }}</span></a>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+@include('site.partials.cta', ['cta' => ['title' => $d['cta_title'], 'text' => '', 'primary' => $d['cta_button']], 'vars' => $vars])
 @endsection

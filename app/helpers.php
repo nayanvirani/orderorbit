@@ -51,3 +51,22 @@ if (! function_exists('page')) {
         return new App\Support\Spa\Page($component, $props, $status);
     }
 }
+
+if (! function_exists('site_md')) {
+    /**
+     * Website copy with its small markup, safely escaped: *highlight* (accent colour), **bold**
+     * and [link text](/path or https://…), plus placeholders like {year}. Everything else is plain text.
+     */
+    function site_md(?string $text, array $vars = []): \Illuminate\Support\HtmlString
+    {
+        return \App\Support\SiteContent::md($text, $vars);
+    }
+}
+
+if (! function_exists('site_url')) {
+    /** A link from the website copy: a path, a full URL, or {install} / {signin} for the Shopify links. */
+    function site_url(?string $href): string
+    {
+        return \App\Support\SiteContent::url($href);
+    }
+}

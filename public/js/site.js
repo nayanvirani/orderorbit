@@ -146,5 +146,22 @@
         Object.keys(byId).forEach((id) => { const el = document.getElementById(id); if (el) spy.observe(el); });
     }
 
+    // Chip filters (templates, blog): buttons [data-chip] in [data-chips] show the [data-chip-item]s whose
+    // data-tags include the chip; "all" shows everything. A #hash matching a chip selects it on load.
+    $$('[data-chips]').forEach((group) => {
+        const scope = document.getElementById(group.dataset.chips) || document;
+        const items = $$('[data-chip-item]', scope);
+        const count = $('[data-chip-count]', scope.parentNode || document);
+        const pick = (value) => {
+            let shown = 0;
+            items.forEach((el) => { const ok = value === 'all' || (el.dataset.tags || '').split(' ').includes(value); el.hidden = !ok; shown += ok; });
+            $$('[data-chip]', group).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.chip === value)));
+            if (count) count.textContent = count.dataset.template.replace('{count}', shown);
+        };
+        $$('[data-chip]', group).forEach((b) => b.addEventListener('click', () => pick(b.dataset.chip)));
+        const hash = location.hash.slice(1);
+        pick($$('[data-chip]', group).some((b) => b.dataset.chip === hash) ? hash : 'all');
+    });
+
     if (location.pathname === '/pricing') track('pricing_viewed');
 })();

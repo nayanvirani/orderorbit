@@ -13,7 +13,7 @@
         @foreach ($groups as $group => $fields)
             <section class="ad-card">
                 <h2>{{ $group }}</h2>
-                @if ($group === 'Dark sections')<p class="ad-muted ad-small">Footer, call-to-action banner, featured plan, code blocks and the black “planet” on the home page.</p>@endif
+                @if ($group === 'Dark sections')<p class="ad-muted ad-small">Footer, the analytics section on Home, the featured plan, the Help Center header and code blocks.</p>@endif
                 <div class="ws-fields">
                     @foreach ($fields as $key => [$label, $type, $default, $var, $help])
                         @php($value = old('theme.'.$key, $values[$key]))

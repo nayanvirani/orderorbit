@@ -1,45 +1,37 @@
 @extends('layouts.site')
+@php($c = \App\Support\SiteContent::page('blog'))
+@php($categories = collect($posts)->pluck('category')->filter()->unique()->values())
+@php($featured = $posts[0] ?? null)
 
-@section('title', 'Blog | Shopify Conversion, Explained | OrderOrbit Space')
-@section('description', 'Practical guides on bundles, gifts, upsells, checkout and retention for Shopify stores.')
-
-@php($groups = collect($posts)->groupBy('category'))
+@section('title', \App\Support\SiteContent::plain($c['seo_title']))
+@section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <span class="mn-kicker">Blog</span>
-            <h1>Shopify conversion, <em>explained.</em></h1>
-            <p class="mn-lead">Practical, plain-English guides on raising order value and conversion. We're writing the first articles now — here's what's coming.</p>
+<section class="page-hero">
+    <div class="wrap">
+        <span class="eyebrow">{{ $c['eyebrow'] }}</span>
+        <h1>{{ site_md($c['title']) }}</h1>
+        <p class="lead">{{ site_md($c['lead']) }}</p>
+        <div class="chips" role="group" aria-label="{{ $c['filter_label'] }}" data-chips="post-grid">
+            <button type="button" class="chip" data-chip="all" aria-pressed="true">{{ $c['all'] }}</button>
+            @foreach ($categories as $cat)<button type="button" class="chip" data-chip="{{ \Illuminate\Support\Str::slug($cat) }}" aria-pressed="false">{{ $cat }}</button>@endforeach
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="mn-section plain">
-        <div class="mn-wide">
-            @foreach ($groups as $category => $list)
-                <p class="mn-group">{{ $category }}</p>
-                <ul class="mn-rows">
-                    @foreach ($list as $post)
-                        <li>
-                            @if ($post['feature'])
-                                <a href="{{ route('site.feature', $post['feature']) }}"><b>{{ $post['title'] }}<span class="soon">Soon</span></b><span>{{ $post['excerpt'] }}</span><i>Related feature →</i></a>
-                            @else
-                                <a href="{{ route('site.features') }}"><b>{{ $post['title'] }}<span class="soon">Soon</span></b><span>{{ $post['excerpt'] }}</span><i>All features →</i></a>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            @endforeach
-        </div>
-    </section>
+<section class="section" style="padding-top:64px">
+    <div class="wrap grid" id="post-grid" style="--min:380px">
+        @foreach ($posts as $post)
+            @php($href = ! empty($post['feature']) ? route('site.feature', $post['feature']) : route('site.features'))
+            <a class="card reveal" href="{{ $href }}" data-chip-item data-tags="{{ \Illuminate\Support\Str::slug($post['category'] ?? '') }}" @if ($loop->first) style="grid-column:1/-1;padding:40px" @endif>
+                <span class="tags"><span class="badge soft">{{ $post['category'] ?? '' }}</span>@if (! empty($post['badge']))<span class="badge warn">{{ $post['badge'] }}</span>@endif</span>
+                <span class="card-title" style="font-size:{{ $loop->first ? '32px' : '20px' }};line-height:1.2">{{ $post['title'] }}</span>
+                <span class="card-text" style="font-size:{{ $loop->first ? '17px' : '15.5px' }}">{{ site_md($post['excerpt'] ?? '') }}</span>
+                @if (! empty($post['feature']))<span class="card-link">{{ $c['related_feature'] }}</span>@endif
+            </a>
+        @endforeach
+    </div>
+</section>
 
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Want a topic covered?</h2>
-            <p>Tell us what you'd like to read about and we'll add it to the list.</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ route('site.contact') }}">Suggest a topic</a><a class="btn lg" href="{{ route('site.help') }}">Help Center</a></div>
-        </div>
-    </section>
-</div>
+@include('site.partials.cta', ['cta' => $c['cta']])
 @endsection

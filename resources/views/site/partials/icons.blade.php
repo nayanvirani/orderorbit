@@ -13,6 +13,7 @@
     <symbol id="i-clock" viewBox="0 0 24 24" {!! $s !!}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
     <symbol id="i-cursor" viewBox="0 0 24 24" {!! $s !!}><path d="M4 4l7.07 17 2.51-7.39L21 11.07z"/></symbol>
     <symbol id="i-shield" viewBox="0 0 24 24" {!! $s !!}><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.7 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.5 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24" {!! $s !!}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 21v-3h4v3"/></symbol>
     <symbol id="i-card" viewBox="0 0 24 24" {!! $s !!}><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24" {!! $s !!}><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
     <symbol id="i-flow" viewBox="0 0 24 24" {!! $s !!}><rect x="3" y="3" width="8" height="8" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect x="13" y="13" width="8" height="8" rx="2"/></symbol>

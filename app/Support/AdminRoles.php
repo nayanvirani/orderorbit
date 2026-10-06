@@ -10,8 +10,8 @@ use App\Models\User;
 class AdminRoles
 {
     public const ROLES = [
-        'super_admin' => ['Super Admin', 'Everything, including plans, email providers, legal pages, platform settings and the team.'],
-        'operations' => ['Operations Admin', 'Stores and their access, templates, flags, failures, support and audit.'],
+        'super_admin' => ['Super Admin', 'Everything, including plans, email providers, legal pages, website content and design, platform settings and the team.'],
+        'operations' => ['Operations Admin', 'Stores and their access, templates, flags, failures, support, audit and website content.'],
         'support' => ['Support Agent', 'Support tickets, and read-only store details.'],
     ];
 
@@ -29,6 +29,7 @@ class AdminRoles
         'analytics' => ['super_admin', 'operations'],
         'audit' => ['super_admin', 'operations'],
         'settings' => ['super_admin'],
+        'content' => ['super_admin', 'operations'],
         'legal' => ['super_admin'],
         'email' => ['super_admin'],
         'team' => ['super_admin'],

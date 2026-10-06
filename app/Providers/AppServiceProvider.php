@@ -44,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerUsageMeters();
 
         View::composer('layouts.site', function ($view) {
-            $view->with('navGroups', Content::featureGroups())->with('navSolutions', Content::solutions());
+            $view->with('navGroups', Content::featureGroups())->with('navSolutions', Content::solutions())->with('site', \App\Support\SiteContent::page('site'));
         });
     }
 

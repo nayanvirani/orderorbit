@@ -40,8 +40,8 @@ class WebsiteDesignTest extends TestCase
     public function test_the_built_in_look_is_the_default(): void
     {
         $this->get('/')->assertOk()
-            ->assertSee('--c-bg: #ffffff', false)
-            ->assertSee('--c-accent: #0a0a0a', false)
+            ->assertSee('--c-bg: #faf9fe', false)
+            ->assertSee('--c-accent: #5b45f0', false)
             ->assertSee('--f-heading: "Roboto"', false)
             ->assertSee('family=Roboto:ital,wght@0,300', false);
     }
@@ -68,7 +68,7 @@ class WebsiteDesignTest extends TestCase
                 ->assertSee('family=Inter:ital,wght@', false);
         }
         // Untouched settings keep their defaults.
-        $this->assertSame('#0a0a0a', SiteTheme::get()['text']);
+        $this->assertSame('#15123b', SiteTheme::get()['text']);
         $this->assertDatabaseHas('audit_logs', ['action' => 'admin.website_design_saved']);
     }
 
@@ -81,7 +81,7 @@ class WebsiteDesignTest extends TestCase
             && str_contains($s, 'Fonts → Body text and buttons') && str_contains($s, 'Fonts → Body text size') && str_contains($s, 'Fonts → Heading weight'));
 
         $theme = SiteTheme::get();
-        $this->assertSame(['#ffffff', '#0a0a0a', 'Roboto', '16', '400'], [$theme['bg'], $theme['text'], $theme['font_body'], $theme['body_size'], $theme['heading_weight']]);
+        $this->assertSame(['#faf9fe', '#15123b', 'Roboto', '16', '700'], [$theme['bg'], $theme['text'], $theme['font_body'], $theme['body_size'], $theme['heading_weight']]);
         $this->assertSame(['12', 'Bitcount'], [$theme['radius'], $theme['font_label']], 'Valid values in the same save are kept.');
         // A family without the extra weights is requested the way Google Fonts offers it.
         $this->get('/')->assertSee('family=Bitcount&', false);
@@ -94,7 +94,7 @@ class WebsiteDesignTest extends TestCase
         $this->get('/')->assertSee('--c-accent: #e4572e', false);
 
         $this->actingAs($admin)->post('/admin/website/reset')->assertRedirect();
-        $this->get('/')->assertSee('--c-accent: #0a0a0a', false);
+        $this->get('/')->assertSee('--c-accent: #5b45f0', false);
     }
 
     public function test_only_super_admins_can_change_the_design(): void
@@ -102,6 +102,6 @@ class WebsiteDesignTest extends TestCase
         $support = $this->admin('support');
         $this->actingAs($support)->get('/admin/website')->assertForbidden();
         $this->actingAs($support)->post('/admin/website', ['theme' => ['accent' => '#e4572e']])->assertForbidden();
-        $this->assertSame('#0a0a0a', SiteTheme::get()['accent']);
+        $this->assertSame('#5b45f0', SiteTheme::get()['accent']);
     }
 }

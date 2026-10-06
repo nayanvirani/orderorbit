@@ -1,65 +1,65 @@
 @extends('layouts.site')
+@php($page = \App\Support\SiteContent::page('solutions'))
+@php($d = $page['detail'])
+@php($vars = ['name' => $solution['name']])
 
-@section('title', $solution['name'].' | OrderOrbit Space')
-@section('description', $solution['seo_description'])
+@section('title', \App\Support\SiteContent::plain($solution['name']).' | OrderOrbit Space')
+@section('description', \App\Support\SiteContent::plain($solution['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <nav class="mn-crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">Home</a><span>/</span><a href="{{ route('site.solutions') }}">Solutions</a><span>/</span><span>{{ $solution['name'] }}</span></nav>
-            <span class="mn-kicker">For {{ strtolower($solution['name']) }}</span>
-            <h1>{{ $solution['h1'] }}</h1>
-            <p class="mn-lead">{{ $solution['hero'] }}</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a><a class="btn lg" href="{{ route('site.pricing') }}">See pricing</a></div>
+<section class="page-hero">
+    <div class="wrap">
+        <div class="stack lg measure" style="max-width:860px">
+            <nav class="crumbs" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">{{ $d['breadcrumb_home'] }}</a><span aria-hidden="true">/</span><a href="{{ route('site.solutions') }}">{{ $page['eyebrow'] }}</a><span aria-hidden="true">/</span><span>{{ $solution['name'] }}</span></nav>
+            <span class="eyebrow">{{ site_md($d['eyebrow'], $vars) }}</span>
+            <h1 style="font-size:clamp(38px,4.6vw,60px)">{{ site_md($solution['h1']) }}</h1>
+            <p class="lead" style="font-size:19px">{{ site_md($solution['hero']) }}</p>
+            <div class="row">
+                <a class="btn primary" href="{{ site_url($d['install']['href']) }}" data-event="cta_install_clicked">{{ $d['install']['label'] }}</a>
+                <a class="btn secondary" href="{{ site_url($d['pricing']['href']) }}">{{ $d['pricing']['label'] }}</a>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <div class="mn-shot">@include('site.visuals.'.$solution['visual'])</div>
+<div class="visual-band"><div class="shot">@include('site.visuals.'.$solution['visual'])</div></div>
 
-    <section class="mn-section" style="margin-top:clamp(48px,7vw,88px)">
-        <div class="mn-narrow">
-            <h2>Overview</h2>
-            <div class="mn-prose">@foreach ($solution['overview'] as $paragraph)<p>{{ $paragraph }}</p>@endforeach</div>
+<section class="section">
+    <div class="wrap split top">
+        <div class="narrow stack">
+            <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['overview_title'], $vars) }}</h2>
+            <div class="prose" style="font-size:17px">@foreach ($solution['overview'] as $paragraph)<p>{{ site_md($paragraph) }}</p>@endforeach</div>
         </div>
-    </section>
-
-    <section class="mn-section">
-        <div class="mn-narrow">
-            <h2>A setup that works</h2>
-            <ol class="mn-steps">
-                @foreach ($solution['setup'] as [$title, $text])<li><div><b>{{ $title }}</b><span>{{ $text }}</span></div></li>@endforeach
-            </ol>
-            @if (! empty($solution['later']))
-                <p class="mn-group" style="margin-top:28px">Coming soon</p>
-                <p class="mn-intro" style="margin:0">{{ implode(' · ', $solution['later']) }}</p>
-            @endif
-        </div>
-    </section>
-
-    <section class="mn-section">
-        <div class="mn-wide">
-            <h2>Features used</h2>
-            <ul class="mn-rows">
-                @foreach ($features as $slug => $f)
-                    <li><a href="{{ route('site.feature', $slug) }}"><b>{{ $f['name'] }}@if (($f['status'] ?? 'live') === 'soon')<span class="soon">Soon</span>@endif</b><span>{{ $f['summary'] ?? $f['menu'] }}</span><i>Learn more →</i></a></li>
+        <div class="wide stack lg">
+            <h2 style="font-size:clamp(24px,2.4vw,30px)">{{ site_md($d['setup_title'], $vars) }}</h2>
+            <ol class="grid" style="--min:260px;margin:0;padding:0;list-style:none">
+                @foreach ($solution['setup'] as $step)
+                    <li class="card reveal"><span class="step-num">{{ $loop->iteration }}</span><b class="card-title" style="font-size:18px">{{ $step[0] ?? '' }}</b><span class="card-text">{{ site_md($step[1] ?? '') }}</span></li>
                 @endforeach
-            </ul>
+            </ol>
         </div>
-    </section>
+    </div>
+</section>
 
-    @if (! empty($solution['faqs']))
-        <section class="mn-section">
-            <div class="mn-narrow"><h2>Questions</h2>@include('site.partials.faq', ['faqs' => $solution['faqs']])</div>
-        </section>
-    @endif
-
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Set it up on your store</h2>
-            <p>Install OrderOrbit Space and publish your first offer in a few minutes.</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a></div>
+<section class="section white">
+    <div class="wrap stack lg">
+        <h2 style="font-size:32px">{{ site_md($d['features_title'], $vars) }}</h2>
+        <div class="grid">
+            @foreach ($features as $slug => $f)
+                <a class="card soft reveal" href="{{ route('site.feature', $slug) }}"><span class="icon-tile"><x-icon :name="$f['icon']"/></span><span class="card-title" style="font-size:18px">{{ $f['name'] }}</span><span class="card-text">{{ $f['summary'] ?? $f['menu'] }}</span><span class="card-link">{{ $d['learn_more'] }}</span></a>
+            @endforeach
         </div>
-    </section>
-</div>
+    </div>
+</section>
+
+@if (! empty($solution['faqs']))
+<section class="section">
+    <div class="wrap split top">
+        <div class="narrow"><h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['faq_title'], $vars) }}</h2></div>
+        <div class="wide">@include('site.partials.faq', ['faqs' => $solution['faqs']])</div>
+    </div>
+</section>
+@endif
+
+@include('site.partials.cta', ['cta' => ['title' => $d['cta_title'], 'text' => $d['cta_text'], 'primary' => $d['install']], 'vars' => $vars])
 @endsection

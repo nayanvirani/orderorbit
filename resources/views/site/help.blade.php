@@ -1,52 +1,46 @@
 @extends('layouts.site')
+@php($c = \App\Support\SiteContent::page('help'))
 
-@section('title', 'Help Center | OrderOrbit Space')
-@section('description', 'Answers about setting up bundles, progressive gifts, upsells, countdowns, analytics and billing in OrderOrbit Space.')
+@section('title', \App\Support\SiteContent::plain($c['seo_title']))
+@section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <span class="mn-kicker">Help center</span>
-            <h1>How can we <em>help?</em></h1>
-            <p class="mn-lead">Short answers to the questions merchants ask most, from installing the app to reading your analytics.</p>
-            <p><a href="{{ route('site.docs.index') }}">Browse the step-by-step guides →</a></p>
-            <label class="search"><x-icon name="search"/><input type="search" placeholder="Search help topics…" aria-label="Search help topics" data-help-search></label>
+<section class="page-hero dark center">
+    <div class="wrap">
+        <span class="eyebrow">{{ $c['eyebrow'] }}</span>
+        <h1>{{ site_md($c['title']) }}</h1>
+        <p class="lead">{{ site_md($c['lead']) }}</p>
+        <label class="search" role="search"><span class="sr-only">{{ $c['search_label'] }}</span><input type="search" placeholder="{{ $c['search_placeholder'] }}" aria-label="{{ $c['search_label'] }}" data-help-search></label>
+        @if ($c['guides_link']['label'])<a class="link" style="color:var(--heading)" href="{{ site_url($c['guides_link']['href']) }}">{{ $c['guides_link']['label'] }}</a>@endif
+    </div>
+</section>
+
+<section class="section" style="padding-bottom:40px">
+    <div class="wrap stack lg">
+        <h2 style="font-size:32px">{{ site_md($c['topics_title']) }}</h2>
+        <div class="grid" style="--min:280px;gap:16px">
+            @foreach ($helpCategories as $cat)
+                <a class="card" style="padding:22px;gap:6px" href="#{{ $cat['slug'] }}"><b class="card-title" style="font-size:18px">{{ $cat['name'] }}</b><span class="card-text">{{ site_md($cat['text']) }}</span><span class="small dim">{{ \App\Support\SiteContent::plain($c['articles'], ['count' => count($cat['articles'])]) }}</span></a>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+@foreach ($helpCategories as $cat)
+    <section class="section tight" id="{{ $cat['slug'] }}" data-help-item style="scroll-margin-top:96px">
+        <div class="wrap split top">
+            <div class="narrow stack"><h2 style="font-size:clamp(24px,2.6vw,32px)">{{ $cat['name'] }}</h2><p class="muted">{{ site_md($cat['text']) }}</p></div>
+            <div class="wide">@include('site.partials.faq', ['faqs' => $cat['articles'], 'openFirst' => false])</div>
         </div>
     </section>
+@endforeach
 
-    <section class="mn-section plain">
-        <div class="mn-narrow">
-            <p class="mn-group">Topics</p>
-            <ul class="mn-chips">
-                @foreach ($helpCategories as $c)<li><a href="#{{ $c['slug'] }}">{{ $c['name'] }}</a></li>@endforeach
-            </ul>
-        </div>
-    </section>
+<section class="section tight" data-help-empty hidden>
+    <div class="wrap stack center">
+        <h2 style="font-size:28px">{{ \App\Support\SiteContent::plain($c['empty_title'], ['q' => '']) }}<span data-help-q hidden></span></h2>
+        <p class="muted">{{ site_md($c['empty_text']) }}</p>
+    </div>
+</section>
 
-    @foreach ($helpCategories as $c)
-        <section class="mn-section" id="{{ $c['slug'] }}" data-help-item>
-            <div class="mn-narrow">
-                <h2>{{ $c['name'] }}</h2>
-                <p class="mn-intro">{{ $c['text'] }}</p>
-                @include('site.partials.faq', ['faqs' => $c['articles'], 'openFirst' => false])
-            </div>
-        </section>
-    @endforeach
-
-    <section class="mn-section" data-help-empty hidden>
-        <div class="mn-narrow">
-            <h2>Nothing found for "<span data-help-q></span>"</h2>
-            <p class="mn-intro">Try different words or <a href="{{ route('site.contact') }}">contact us</a>.</p>
-        </div>
-    </section>
-
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Still stuck?</h2>
-            <p>Open Support inside the app — it includes your store details automatically — or send us a message. We reply within one business day.</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ route('site.contact') }}">Contact us</a></div>
-        </div>
-    </section>
-</div>
+@include('site.partials.cta', ['cta' => $c['cta'], 'class' => ''])
 @endsection

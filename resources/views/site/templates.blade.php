@@ -1,59 +1,52 @@
 @extends('layouts.site')
+@php($c = \App\Support\SiteContent::page('templates'))
+@php($features = \App\Support\Content::features())
+@php($list = array_values(array_filter($templates, fn ($t) => isset($features[$t['feature']]))))
+@php($used = collect($list)->pluck('feature')->unique()->values())
 
-@section('title', 'Templates | OrderOrbit Space')
-@section('description', 'Ready-made layouts for bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart and trust blocks. Pick one and make it yours.')
-
-@php
-    $features = \App\Support\Content::features();
-    // One main template per live feature; the rest are listed by name.
-    $byFeature = collect($templates)->groupBy('feature')->filter(fn ($t, $slug) => isset($features[$slug]) && ($features[$slug]['status'] ?? 'live') === 'live');
-@endphp
+@section('title', \App\Support\SiteContent::plain($c['seo_title']))
+@section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <span class="mn-kicker">Templates</span>
-            <h1>Start from a template, <em>finish with your brand.</em></h1>
-            <p class="mn-lead">A template is a ready-made layout, not a fixed design. Pick one in the app, then change every offer, product, text, colour, size and spacing to match your store, with a live preview.</p>
-        </div>
-    </section>
+@include('site.partials.page-hero', ['c' => $c])
 
-    <section class="mn-section plain">
-        <div class="mn-wide mn-tpl">
-            @foreach ($byFeature as $slug => $list)
-                @php($names = $list->pluck('name')->unique()->values())
-                <article class="mn-tpl-item">
-                    <div>
-                        <span class="mn-kicker">{{ $names->count() }} {{ \Illuminate\Support\Str::plural('layout', $names->count()) }}</span>
-                        <h3>{{ $features[$slug]['name'] }}</h3>
-                        <p>{{ $features[$slug]['summary'] ?? $features[$slug]['menu'] }}</p>
-                        <ul class="mn-chips">@foreach ($names as $name)<li>{{ $name }}</li>@endforeach</ul>
-                        <a class="btn sm" href="{{ route('site.feature', $slug) }}">About {{ strtolower($features[$slug]['name']) }}</a>
+<section class="section" style="padding-top:56px">
+    <div class="wrap stack lg">
+        <div class="row between" style="align-items:center">
+            <div class="chips" role="group" aria-label="{{ $c['filter_label'] }}" data-chips="tpl-grid">
+                <button type="button" class="chip" data-chip="all" aria-pressed="true">{{ $c['all'] }}</button>
+                @foreach ($used as $slug)<button type="button" class="chip" data-chip="{{ $slug }}" aria-pressed="false">{{ $features[$slug]['name'] }}</button>@endforeach
+            </div>
+            <span class="small dim" data-chip-count data-template="{{ \App\Support\SiteContent::plain($c['count']) }}">{{ \App\Support\SiteContent::plain($c['count'], ['count' => count($list)]) }}</span>
+        </div>
+        <div class="grid" id="tpl-grid">
+            @foreach ($list as $t)
+                <div class="card tpl-card" data-chip-item data-tags="{{ $t['feature'] }}">
+                    <div class="thumb" aria-hidden="true">@include('site.partials.thumb', ['type' => $t['type'], 'v' => $loop->index % 3])</div>
+                    <div class="body">
+                        <span class="feature">{{ $features[$t['feature']]['name'] }}</span>
+                        <span class="name">{{ $t['name'] }}</span>
+                        <div class="actions">
+                            <a class="btn secondary sm" href="{{ route('site.feature', $t['feature']) }}">{{ $c['preview'] }}</a>
+                            <a class="btn ink sm" href="{{ config('shopify.install_url') }}" data-event="template_use_clicked">{{ $c['use'] }}</a>
+                        </div>
                     </div>
-                    <div>@include('site.visuals.'.$slug)</div>
-                </article>
+                </div>
             @endforeach
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="mn-section">
-        <div class="mn-narrow">
-            <h2>How templates work</h2>
-            <ol class="mn-steps">
-                <li><div><b>Pick a feature</b><span>Bundles come in six types; progressive gifts combine free gifts, free shipping and discounts in one bar.</span></div></li>
-                <li><div><b>Choose a template</b><span>Each feature has several layouts. Preview them with one of your own products before you start.</span></div></li>
-                <li><div><b>Make it yours</b><span>Your theme's fonts are used by default. Colours, sizes, borders, text and custom CSS are all editable.</span></div></li>
-            </ol>
+<section class="section white">
+    <div class="wrap stack xl">
+        <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($c['how']['title']) }}</h2>
+        <div class="grid">
+            @foreach ($c['how']['steps'] as $step)
+                <div class="card soft"><span class="step-num">{{ $loop->iteration }}</span><b class="card-title" style="font-size:19px">{{ $step[0] ?? '' }}</b><span class="card-text">{{ site_md($step[1] ?? '') }}</span></div>
+            @endforeach
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Try the templates on your store</h2>
-            <p>Every template is available on every plan.</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a></div>
-        </div>
-    </section>
-</div>
+@include('site.partials.cta', ['cta' => $c['cta'], 'class' => ''])
 @endsection

@@ -1,34 +1,42 @@
 @extends('layouts.site')
+@php($c = \App\Support\SiteContent::page('solutions'))
 
-@section('title', 'Solutions | OrderOrbit Space')
-@section('description', 'How DTC, repeat-purchase, fashion and Shopify Plus brands use OrderOrbit Space to raise order value.')
+@section('title', \App\Support\SiteContent::plain($c['seo_title']))
+@section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <span class="mn-kicker">Solutions</span>
-            <h1>A setup for <em>your kind of store.</em></h1>
-            <p class="mn-lead">Pick the model closest to yours to see which offers to start with and why.</p>
-        </div>
-    </section>
+@include('site.partials.page-hero', ['c' => $c])
 
-    <section class="mn-section plain">
-        <div class="mn-wide">
-            <ul class="mn-rows">
-                @foreach ($solutions as $slug => $s)
-                    <li><a href="{{ route('site.solution', $slug) }}"><b>{{ $s['name'] }}</b><span>{{ $s['hero'] }}</span><i>See the setup →</i></a></li>
-                @endforeach
-            </ul>
-        </div>
-    </section>
+<section class="section" style="padding-top:72px">
+    <div class="wrap grid" style="--min:520px;gap:24px">
+        @foreach ($solutions as $slug => $s)
+            <a class="card lg {{ $loop->last ? 'ink' : '' }} reveal" href="{{ route('site.solution', $slug) }}">
+                <span class="icon-tile" style="width:52px;height:52px"><x-icon :name="$s['icon']"/></span>
+                <span class="card-title" style="font-size:26px">{{ $s['name'] }}</span>
+                <span class="card-text" style="font-size:17px">{{ site_md($s['hero']) }}</span>
+                <span class="tags">@foreach (array_slice($s['features'], 0, 3) as $fs)@php($fn = \App\Support\Content::features()[$fs]['name'] ?? null)@if ($fn)<span class="tag">{{ $fn }}</span>@endif @endforeach</span>
+                <span class="card-link">{{ $c['card_link'] }}</span>
+            </a>
+        @endforeach
+    </div>
+</section>
 
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Not sure where to start?</h2>
-            <p>Most stores begin with a quantity-break bundle on their best-selling product and a free-shipping bar.</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a><a class="btn lg" href="{{ route('site.contact') }}">Ask us</a></div>
+@php($st = $c['start'])
+<section class="section white">
+    <div class="wrap split">
+        <div class="stack lg">
+            <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($st['title']) }}</h2>
+            <p class="lead" style="font-size:18px">{{ site_md($st['text']) }}</p>
+            <div class="row">
+                <a class="btn primary" href="{{ site_url($st['primary']['href']) }}" data-event="cta_install_clicked">{{ $st['primary']['label'] }}</a>
+                <a class="btn secondary" href="{{ site_url($st['secondary']['href']) }}">{{ $st['secondary']['label'] }}</a>
+            </div>
         </div>
-    </section>
-</div>
+        <div class="grid" style="--min:200px;gap:16px">
+            @foreach ($st['plan'] as $step)
+                <div class="card lavender" style="padding:24px;gap:8px"><span class="num">{{ $step['when'] }}</span><b style="font-size:17px;color:var(--c-heading)">{{ $step['title'] }}</b><span class="card-text" style="font-size:14px">{{ $step['text'] }}</span></div>
+            @endforeach
+        </div>
+    </div>
+</section>
 @endsection

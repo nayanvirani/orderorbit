@@ -1,44 +1,41 @@
 @extends('layouts.site')
+@php($c = \App\Support\SiteContent::page('about'))
 
-@section('title', 'About | OrderOrbit Space')
-@section('description', 'OrderOrbit Space helps Shopify stores raise order value with offers that respect the theme, measure honestly and stay in the merchant\'s control.')
+@section('title', \App\Support\SiteContent::plain($c['seo_title']))
+@section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')
-<div class="mn">
-    <section class="mn-hero">
-        <div class="wrap">
-            <span class="mn-kicker">About</span>
-            <h1>Growth tools that <em>work with your store,</em> not against it.</h1>
+<section class="page-hero">
+    <div class="wrap split" style="align-items:flex-end">
+        <div class="stack lg" style="flex:1 1 640px">
+            <span class="eyebrow">{{ $c['eyebrow'] }}</span>
+            <h1>{{ site_md($c['title']) }}</h1>
         </div>
-    </section>
+        <div class="prose" style="flex:1 1 420px">@foreach ($c['paragraphs'] as $paragraph)<p>{{ site_md($paragraph) }}</p>@endforeach</div>
+    </div>
+</section>
 
-    <section class="mn-section plain">
-        <div class="mn-narrow mn-prose">
-            <p>OrderOrbit Space started with a simple frustration: most Shopify growth apps feel bolted on. They fight the theme's add-to-cart, ask shoppers to type discount codes, and leave merchants guessing whether they made any money.</p>
-            <p>We think offers should look like part of your store, apply their prices where Shopify applies prices — at checkout — and report honestly on what they earned. One well-built app, with one design and one set of numbers, beats a stack of add-ons.</p>
+<section class="section">
+    <div class="wrap stack xl">
+        <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($c['principles_title']) }}</h2>
+        <div class="grid" style="--min:380px">
+            @foreach ($c['principles'] as $p)
+                <div class="card reveal"><span class="num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><b class="card-title">{{ $p[0] ?? '' }}</b><span class="card-text" style="font-size:16px">{{ site_md($p[1] ?? '') }}</span></div>
+            @endforeach
+            <div class="card ink reveal"><span class="num" style="color:var(--c-dark-accent)">{{ $c['independent']['label'] }}</span><b class="card-title">{{ $c['independent']['title'] }}</b><span class="card-text" style="font-size:16px">{{ site_md($c['independent']['text']) }}</span></div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="mn-section">
-        <div class="mn-wide">
-            <h2>What we won't compromise on</h2>
-            <ul class="mn-list">
-                <li><b>Native placement</b><span>Offers sit in Theme Editor blocks or next to your add-to-cart. No theme code edits, and removing one is a click.</span></li>
-                <li><b>Honest measurement</b><span>Revenue is credited to the offer that added each order line, and nothing is claimed that we can't measure.</span></li>
-                <li><b>Honest urgency</b><span>Countdowns only use real deadlines. We don't build fake scarcity.</span></li>
-                <li><b>Your control</b><span>You decide what shows, where and to whom — and your team's roles decide who can publish.</span></li>
-                <li><b>Privacy by default</b><span>Analytics respect shoppers' consent and never collect personal data.</span></li>
-                <li><b>Clear about what's next</b><span>Features still in progress are marked "coming soon" until they're in the app.</span></li>
-            </ul>
+@php($ct = $c['contact'])
+<section class="section white">
+    <div class="wrap stack center">
+        <h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($ct['title']) }}</h2>
+        <p class="lead" style="font-size:18px">{{ site_md($ct['text']) }}</p>
+        <div class="row center" style="margin-top:8px">
+            <a class="btn primary" href="{{ site_url($ct['primary']['href']) }}">{{ $ct['primary']['label'] }}</a>
+            <a class="btn secondary" href="{{ site_url($ct['secondary']['href']) }}" data-event="cta_install_clicked">{{ $ct['secondary']['label'] }}</a>
         </div>
-    </section>
-
-    <section class="mn-section mn-cta">
-        <div class="mn-narrow">
-            <h2>Questions, ideas or partnerships?</h2>
-            <p>We read every message and reply within one business day.</p>
-            <div class="ctas"><a class="btn primary lg" href="{{ route('site.contact') }}">Contact us</a><a class="btn lg" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">Install on Shopify</a></div>
-        </div>
-    </section>
-</div>
+    </div>
+</section>
 @endsection
