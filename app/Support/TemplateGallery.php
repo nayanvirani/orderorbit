@@ -51,7 +51,7 @@ class TemplateGallery
     }
 
     /** Templates shown on the public website per feature; the rest are only in the app. */
-    public const PUBLIC_PER_FEATURE = 3;
+    public const PUBLIC_PER_FEATURE = 1;
 
     /**
      * The public showcase: a few templates per feature, taken in turn from each of its block types,
