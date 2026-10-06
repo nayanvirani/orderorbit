@@ -45,6 +45,9 @@ Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, '
 Route::post('/site-access', [SiteController::class, 'unlock'])->middleware('throttle:5,1')->name('site.unlock');
 Route::get('/site-access/lock', [SiteController::class, 'lock'])->name('site.lock');
 
+// Crawler rules (generated: search engines follow config site.search_engines).
+Route::get('/robots.txt', [SiteController::class, 'robots'])->name('site.robots');
+
 // Public website (Part A)
 Route::controller(SiteController::class)->name('site.')->middleware([\App\Http\Middleware\BlockCrawlers::class, \App\Http\Middleware\SitePreviewGate::class])->group(function () {
     Route::get('/', 'home')->name('home');

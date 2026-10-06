@@ -1,6 +1,13 @@
+{{-- /robots.txt (SiteController::robots). AI, SEO and scraping bots are always kept out; search engines
+     only when SITE_SEARCH_ENGINES is on. The website also enforces this (BlockCrawlers). --}}
 # OrderOrbit Space - https://orderorbit.space
+@if ($search)
 # Search engines may index the public website. AI crawlers, AI agents, SEO and scraping bots may not
 # (the website also refuses them).
+@else
+# This website isn't open to crawlers: no search engines, AI crawlers, AI agents, SEO or scraping bots
+# (the website also refuses them). Link previews are allowed.
+@endif
 
 # ---------------------------------------------------------------- AI, SEO and scraping bots: blocked
 # OpenAI
@@ -88,11 +95,30 @@ User-agent: HTTrack
 User-agent: Nutch
 Disallow: /
 
-# ---------------------------------------------------------------- Everyone else (search engines)
+@if ($search)
+# ---------------------------------------------------------------- Search engines
 User-agent: *
 Disallow: /app
 Disallow: /admin
 Disallow: /webhooks
 Disallow: /templates/previews.json
 
-Sitemap: https://orderorbit.space/sitemap.xml
+Sitemap: {{ route('site.sitemap') }}
+@else
+# ---------------------------------------------------------------- Link previews (Slack, WhatsApp, social networks)
+User-agent: facebookexternalhit
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: Slackbot
+User-agent: Slackbot-LinkExpanding
+User-agent: WhatsApp
+User-agent: TelegramBot
+User-agent: Discordbot
+Allow: /
+Disallow: /app
+Disallow: /admin
+
+# ---------------------------------------------------------------- Everyone else, search engines included
+User-agent: *
+Disallow: /
+@endif

@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Keeps AI crawlers, AI agents, SEO and scraping bots off the public website (public/robots.txt
- * asks the same; this enforces it for bots that ignore it). Search engines (Google, Bing,
- * DuckDuckGo, Yahoo, Yandex, Apple search) and link previews (Slack, WhatsApp, social networks)
+ * Keeps AI crawlers, AI agents, SEO and scraping bots off the public website (/robots.txt asks
+ * the same; this enforces it for bots that ignore it), and search engines too while search
+ * indexing is off (config site.search_engines). Link previews (Slack, WhatsApp, social networks)
  * still get the pages. The app, webhooks and storefront files are not affected.
  */
 class BlockCrawlers
@@ -34,6 +34,14 @@ class BlockCrawlers
         'playwright', 'selenium', 'httrack', 'nutch', 'heritrix',
     ];
 
+    /** Search engine crawlers, refused while search indexing is off (config site.search_engines). */
+    public const SEARCH_ENGINES = [
+        // Crawler names only: shoppers' browsers (Yandex Browser, Cốc Cốc, Naver and Ecosia apps) must not match.
+        'googlebot', 'google-inspectiontool', 'adsbot-google', 'mediapartners-google', 'storebot-google', 'bingbot', 'bingpreview',
+        'msnbot', 'adidxbot', 'duckduckbot', 'yahoo! slurp', 'yandexbot', 'yandeximages', 'yandex.com/bots', 'baiduspider',
+        'sogou web spider', 'exabot', 'qwantify', 'qwantbot', 'mojeek', 'applebot', 'yeti/', 'coccocbot', 'daumoa', 'seznambot',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         $agent = strtolower((string) $request->userAgent());
@@ -46,7 +54,8 @@ class BlockCrawlers
         $response = $next($request);
         // Added to any robots header already set (e.g. "noindex, nofollow" while the site is coming soon).
         $current = (string) $response->headers->get('X-Robots-Tag', '');
-        $response->headers->set('X-Robots-Tag', ltrim($current.', noai, noimageai', ', '));
+        $tags = config('site.search_engines') ? 'noai, noimageai' : 'noindex, nofollow, noai, noimageai';
+        $response->headers->set('X-Robots-Tag', implode(', ', array_unique(array_filter(array_map('trim', explode(',', $current.','.$tags))))));
 
         return $response;
     }
@@ -54,7 +63,7 @@ class BlockCrawlers
     public static function blocked(string $agent): bool
     {
         $agent = strtolower($agent);
-        foreach (self::BLOCKED as $part) {
+        foreach (config('site.search_engines') ? self::BLOCKED : array_merge(self::BLOCKED, self::SEARCH_ENGINES) as $part) {
             if (str_contains($agent, $part)) {
                 return true;
             }
