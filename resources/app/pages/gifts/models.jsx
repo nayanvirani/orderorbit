@@ -1,10 +1,11 @@
-import { ActionButton } from '../../components/form.jsx';
-import { Preview, useRuntime } from '../../components/runtime.jsx';
+import { useRuntime } from '../../components/runtime.jsx';
+import { TemplateCard, TemplateGrid } from '../../components/templates.jsx';
 import { Page } from '../../components/ui.jsx';
-import { route, useShared } from '../../router.jsx';
+import { route, useRouter, useShared } from '../../router.jsx';
 
 export default function GiftModels({ groups }) {
   const { currency } = useShared();
+  const { submit } = useRouter();
   const ready = useRuntime();
   const context = { currency, cartTotal: 6000, page: 'product' };
   return (
@@ -13,18 +14,12 @@ export default function GiftModels({ groups }) {
       {groups.map(({ group, models }) => (
         <div key={group}>
           <h2 className="bx-group">{group}</h2>
-          <div className="bx-models">
+          <TemplateGrid>
             {models.map((m) => (
-              <div className="bx-model" key={m.key}>
-                <div className="tpl-stage"><Preview ready={ready} experience={m.preview} context={context} /></div>
-                <div className="tpl-body">
-                  <strong className="b-template-name">{m.name}</strong>
-                  <p className="bx-muted">{m.description}</p>
-                  <div className="tpl-action"><ActionButton variant="primary" inlineSize="fill" url={route('app.gifts.store')} data={{ model: m.key }}>Use this template</ActionButton></div>
-                </div>
-              </div>
+              <TemplateCard key={m.key} preview={m.preview} context={context} ready={ready} name={m.name} description={m.description}
+                onUse={() => submit(route('app.gifts.store'), { model: m.key })} />
             ))}
-          </div>
+          </TemplateGrid>
         </div>
       ))}
     </Page>

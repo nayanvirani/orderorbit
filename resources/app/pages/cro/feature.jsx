@@ -1,10 +1,12 @@
-import { Preview, useRuntime } from '../../components/runtime.jsx';
+import { useRuntime } from '../../components/runtime.jsx';
+import { TemplateCard, TemplateGrid } from '../../components/templates.jsx';
 import { EmptyState, Hero, Page, Upgrade, ago } from '../../components/ui.jsx';
-import { appUrl, route, useShared } from '../../router.jsx';
+import { appUrl, route, useRouter, useShared } from '../../router.jsx';
 import ExperienceStatus from './_status.jsx';
 
 export default function Feature({ feature, types, experiences, counts, discounts, templates, editor, checkout, notice, planFeature, accountsUrl, docsUrl }) {
   const { can, currency } = useShared();
+  const { submit } = useRouter();
   const ready = useRuntime({ checkout });
   const first = types[0];
   const locked = notice === 'plus';
@@ -73,18 +75,13 @@ export default function Feature({ feature, types, experiences, counts, discounts
       </s-section>
 
       <s-section heading="Start from a template">
-        <div className="b-templates">
+        <TemplateGrid>
           {templates.map((t) => (
-            <a key={`${t.type}:${t.key}`} className="b-template" href={can.manage_experiences ? create(t.type, t.key) : undefined}>
-              <div className="tpl-stage"><Preview ready={ready} experience={t.preview} context={context} className="b-template-preview oo-preview" /></div>
-              <div className="tpl-body">
-                <span className="b-template-name">{t.name}</span>
-                {types.length > 1 && <span className="oo-muted oo-small">{t.type_label}</span>}
-                {can.manage_experiences && <span className="tpl-cta">Use this template →</span>}
-              </div>
-            </a>
+            <TemplateCard key={`${t.type}:${t.key}`} preview={t.preview} context={context} ready={ready} name={t.name}
+              meta={types.length > 1 ? <span className="oo-muted oo-small">{t.type_label}</span> : null}
+              onUse={can.manage_experiences && !locked ? () => submit(route('app.cro.experiences.store'), { type: t.type, template: t.key }) : undefined} />
           ))}
-        </div>
+        </TemplateGrid>
       </s-section>
     </Page>
   );

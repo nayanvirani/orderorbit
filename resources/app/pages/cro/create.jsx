@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { Field, Form } from '../../components/form.jsx';
-import { Preview, useRuntime } from '../../components/runtime.jsx';
+import { Field } from '../../components/form.jsx';
+import { useRuntime } from '../../components/runtime.jsx';
+import { TemplateCard, TemplateGrid } from '../../components/templates.jsx';
 import { Hero, Page } from '../../components/ui.jsx';
 import { appUrl, route, useRouter, useShared } from '../../router.jsx';
 
-export default function CreateExperience({ type, typeDef, creatable, previews, selected }) {
+export default function CreateExperience({ type, typeDef, creatable, previews }) {
   const { submit } = useRouter();
   const { currency } = useShared();
   const ready = useRuntime({ checkout: !!typeDef?.checkout });
-  const [template, setTemplate] = useState(selected && previews.some((p) => p.key === selected) ? selected : previews[0]?.key);
   const [name, setName] = useState('');
-  const [busy, setBusy] = useState(false);
   const context = { currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' };
 
   return (
@@ -35,22 +34,17 @@ export default function CreateExperience({ type, typeDef, creatable, previews, s
         </s-section>
       ) : (
         <s-section>
-          <Form onSubmit={async () => { setBusy(true); await submit(route('app.cro.experiences.store'), { type, template, name }); setBusy(false); }}>
-            <div className="b-templates">
-              {previews.map((p) => (
-                <label className="b-template" key={p.key}>
-                  <input type="radio" name="template" checked={template === p.key} onChange={() => setTemplate(p.key)} />
-                  <div className="tpl-stage"><Preview ready={ready} experience={p.preview} context={context} className="b-template-preview oo-preview" /></div>
-                  <div className="tpl-body"><span className="b-template-name">{p.name}</span></div>
-                </label>
-              ))}
-            </div>
-            <div className="oo-form-row" style={{ marginTop: 16 }}>
-              <Field label="Internal name (optional)" className="grow"><input maxLength={120} value={name} onChange={(e) => setName(e.target.value)} placeholder={typeDef.placeholder} style={{ minWidth: 260 }} /></Field>
-              <s-button type="submit" variant="primary" loading={busy || undefined}>Continue</s-button>
-              <s-button href={appUrl(route('app.cro.experiences.create'))}>Back</s-button>
-            </div>
-          </Form>
+          <div className="oo-form-row" style={{ marginBottom: 16 }}>
+            <Field label="Internal name (optional)" className="grow"><input maxLength={120} value={name} onChange={(e) => setName(e.target.value)} placeholder={typeDef.placeholder} style={{ minWidth: 260 }} /></Field>
+            <s-button href={appUrl(route('app.cro.experiences.create'))}>Back</s-button>
+          </div>
+          <p className="oo-muted" style={{ margin: '0 0 12px' }}>Click a template to create your {typeDef.lower} and open it in the builder.</p>
+          <TemplateGrid>
+            {previews.map((p) => (
+              <TemplateCard key={p.key} preview={p.preview} context={context} ready={ready} name={p.name}
+                onUse={() => submit(route('app.cro.experiences.store'), { type, template: p.key, name })} />
+            ))}
+          </TemplateGrid>
         </s-section>
       )}
     </Page>

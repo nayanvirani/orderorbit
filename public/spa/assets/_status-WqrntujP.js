@@ -1,1 +1,0 @@
-import{j as r}from"./main-82u0SxG5.js";const a={running:["success","Running"],paused:["warning","Paused"],draft:["neutral","Draft"],completed:["info","Completed"],stopped:["neutral","Stopped early"]};function o({status:e}){const[n,t]=a[e]||["neutral",e];return r.jsx("s-badge",{tone:n,children:t})}export{o as default};

@@ -36,7 +36,23 @@ export function useRuntime(options = {}) {
 }
 
 /** Draws an experience into an element with the storefront runtime (again only when it changes). */
-export function Preview({ experience, context, ready, className = 'oo-preview', empty }) {
+/**
+ * Scales a drawn preview (CSS zoom, so it lays out wider and shrinks) until its whole height fits
+ * in `max` pixels, from `start` down to `min`: template cards show the complete widget.
+ */
+function fitPreview(el, max, start = 0.85, min = 0.42) {
+  if (!el || !max) return;
+  let zoom = start;
+  el.style.zoom = zoom;
+  for (let i = 0; i < 5; i++) {
+    const height = el.getBoundingClientRect().height;
+    if (!height || height <= max + 1 || zoom <= min) break;
+    zoom = Math.max(min, zoom * (max / height) * 0.98);
+    el.style.zoom = zoom;
+  }
+}
+
+export function Preview({ experience, context, ready, className = 'oo-preview', empty, fit }) {
   const ref = useRef(null);
   const key = JSON.stringify([experience, context]);
   useEffect(() => {
@@ -46,6 +62,11 @@ export function Preview({ experience, context, ready, className = 'oo-preview', 
         if (shown === false && empty) {
           el.hidden = false;
           el.innerHTML = `<p class="b-muted b-empty-preview">${empty}</p>`;
+        }
+        if (fit) {
+          // Again once images and fonts have settled.
+          fitPreview(el, fit);
+          setTimeout(() => fitPreview(el, fit), 350);
         }
       });
     }

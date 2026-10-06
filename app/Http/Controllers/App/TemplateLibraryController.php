@@ -17,6 +17,9 @@ class TemplateLibraryController extends Controller
     public function index(Request $request, Store $store): Page
     {
         $type = Registry::has($request->query('type')) ? $request->query('type') : null;
+        // Filtered by feature (Bundles, Countdown timer, Checkout blocks…), or by one block type.
+        $features = collect(Registry::features())->map(fn ($f) => ['label' => $f['label'], 'types' => array_values(array_filter($f['types'] ?? [], fn ($t) => isset(Registry::creatable()[$t])))])->filter(fn ($f) => $f['types'] !== []);
+        $feature = $features->has($request->query('feature')) ? $request->query('feature') : null;
         $branding = CroSetting::brandingFor($store);
         // Keyed in PHP so the query stays portable (Postgres in production, SQLite in tests).
         $versions = CroTemplate::get(['type', 'key', 'current_version'])->mapWithKeys(fn ($t) => ["{$t->type}:{$t->key}" => $t->current_version]);
@@ -26,7 +29,7 @@ class TemplateLibraryController extends Controller
 
         $templates = [];
         foreach (Registry::creatable() as $typeKey => $definition) {
-            if ($type && $type !== $typeKey) {
+            if (($type && $type !== $typeKey) || ($feature && ! in_array($typeKey, $features[$feature]['types'], true))) {
                 continue;
             }
             foreach (Registry::offered($typeKey) as $key => $template) {
@@ -45,6 +48,8 @@ class TemplateLibraryController extends Controller
 
         return page('cro/templates', [
             'type' => $type,
+            'feature' => $feature,
+            'features' => $features->map(fn ($f) => $f['label'])->all(),
             'templates' => $templates,
             'types' => collect(Registry::creatable())->map(fn ($t) => $t['label'])->all(),
         ]);

@@ -96,28 +96,25 @@
 .b-image-actions label.b-btn { cursor: pointer; }
 
 /* Template pickers (feature pages, new widget, template library, bundle and gift models):
-   three equal cards per row, each with the same preview stage and the action at the bottom. */
-.b-templates, .bx-models, .bx-types { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
-@media (max-width: 1100px) { .b-templates, .bx-models, .bx-types { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 680px) { .b-templates, .bx-models, .bx-types { grid-template-columns: minmax(0, 1fr); } }
-.b-template, .bx-model, .bx-type { position: relative; display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; border: 1px solid #e3e3e3; border-radius: 14px; background: #fff; color: inherit; text-decoration: none; box-shadow: 0 1px 0 rgba(26, 26, 26, .05); transition: border-color .15s, box-shadow .15s, transform .15s; }
-a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover { color: inherit; text-decoration: none; }
-a.b-template:hover, a.bx-type:hover, .bx-model:hover { transform: translateY(-2px); border-color: #cfcfcf; box-shadow: 0 12px 26px -16px rgba(26, 26, 26, .35); }
-.b-template:has(> input:checked) { border-color: var(--ob-accent, #4f46e5); box-shadow: 0 0 0 3px var(--ob-accent-soft, #eef2ff); }
-.b-template > input { position: absolute; top: 12px; right: 12px; z-index: 2; }
-.tpl-stage { position: relative; display: flex; flex-direction: column; justify-content: safe center; height: 270px; padding: 18px; overflow: hidden; background: #f6f6f7; border-bottom: 1px solid #ececec; pointer-events: none; }
-.tpl-stage.tpl-tall { height: 380px; justify-content: flex-start; }
-.tpl-stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: linear-gradient(rgba(246, 246, 247, 0), #f6f6f7); }
-.tpl-stage > .oo-preview, .tpl-stage > div { width: 100%; max-height: none; zoom: .8; }
-.tpl-stage > .b-template-preview { zoom: .8; }
+   three equal cards per row; each draws the whole template scaled to one preview area
+   (components/templates.jsx) and is created with one click. */
+.b-templates, .bx-types { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+@media (max-width: 1100px) { .b-templates, .bx-types { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) { .b-templates, .bx-types { grid-template-columns: minmax(0, 1fr); } }
+.b-template, .bx-type { position: relative; display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; border: 1px solid #e3e3e3; border-radius: 14px; background: #fff; color: inherit; text-decoration: none; box-shadow: 0 1px 0 rgba(26, 26, 26, .05); transition: border-color .15s, box-shadow .15s, transform .15s; }
+a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover, a.b-template *, a.bx-type * { color: inherit; text-decoration: none; }
+.b-template.is-clickable { cursor: pointer; }
+.b-template.is-clickable:hover, a.bx-type:hover { transform: translateY(-2px); border-color: var(--ob-accent, #4f46e5); box-shadow: 0 14px 28px -18px rgba(79, 70, 229, .55); }
+.b-template.is-clickable:focus-visible { outline: 2px solid var(--ob-accent, #4f46e5); outline-offset: 2px; }
+.b-template.is-busy { opacity: .6; pointer-events: none; }
+.tpl-stage { position: relative; display: flex; flex-direction: column; justify-content: center; height: 300px; padding: 18px; overflow: hidden; background: #f6f6f7; border-bottom: 1px solid #ececec; pointer-events: none; }
+.tpl-stage.tpl-tall { height: 400px; }
+.bx-type .tpl-stage { height: 270px; }
+.tpl-stage > .oo-preview { width: 100%; flex: none; }
 .tpl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; padding: 14px 16px 16px; }
 .tpl-body p { margin: 0; font-size: 13px; }
 .tpl-body .b-template-name { font-size: 15px; font-weight: 650; }
-.tpl-action { margin-top: auto; padding-top: 8px; }
-.tpl-action s-button { display: block; width: 100%; }
-.tpl-cta { margin-top: auto; padding-top: 8px; font-weight: 650; color: var(--ob-accent, #4f46e5); }
-.bx-type .tpl-stage { height: 250px; }
+.tpl-cta { margin-top: auto; display: block; padding: 9px 12px; border: 1px solid #d9d8fb; border-radius: 10px; text-align: center; font-weight: 650; font-size: 13.5px; color: var(--ob-accent, #4f46e5); background: #fff; transition: background .15s, color .15s; }
+.b-template.is-clickable:hover .tpl-cta { background: var(--ob-accent, #4f46e5); border-color: var(--ob-accent, #4f46e5); color: #fff; }
 .bx-type-body { flex: 1; }
 .bx-type-link { justify-content: center; background: linear-gradient(160deg, #f4fbf7, #fff 70%); border-style: dashed; }
-/* Side-by-side layouts need more room: draw them a little smaller so tiers stay in one row. */
-.tpl-stage > div:has(.oo-bl-horizontal) { zoom: .64; }

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { ActionButton } from '../../components/form.jsx';
-import { Preview, useRuntime } from '../../components/runtime.jsx';
+import { useRuntime } from '../../components/runtime.jsx';
+import { TemplateCard, TemplateGrid } from '../../components/templates.jsx';
 import { Page } from '../../components/ui.jsx';
-import { route, useShared } from '../../router.jsx';
+import { route, useRouter, useShared } from '../../router.jsx';
 
 const LAYOUTS = [['all', 'All'], ['vertical', 'Vertical'], ['horizontal', 'Horizontal'], ['grid', 'Grid']];
 
 export default function BundleModels({ type, models, presets }) {
   const { currency } = useShared();
+  const { submit } = useRouter();
   const ready = useRuntime();
   const [layout, setLayout] = useState('all');
   const [preset, setPreset] = useState('black');
@@ -44,18 +45,12 @@ export default function BundleModels({ type, models, presets }) {
           <span className="bx-muted">{context.productTitle}</span>
         </div>
       </div>
-      <div className="bx-models">
+      <TemplateGrid>
         {models.filter((m) => layout === 'all' || m.layout === layout).map((m) => (
-          <div className="bx-model" key={m.key}>
-            <div className="tpl-stage tpl-tall"><Preview ready={ready} experience={m.previews[preset]} context={context} /></div>
-            <div className="tpl-body">
-              <strong className="b-template-name">{m.name}</strong>
-              <p className="bx-muted">{m.description}</p>
-              <div className="tpl-action"><ActionButton variant="primary" inlineSize="fill" url={route('app.bundles.store')} data={{ model: m.key, preset }}>Use this template</ActionButton></div>
-            </div>
-          </div>
+          <TemplateCard key={m.key} tall preview={m.previews[preset]} context={context} ready={ready} name={m.name} description={m.description}
+            onUse={() => submit(route('app.bundles.store'), { model: m.key, preset })} />
         ))}
-      </div>
+      </TemplateGrid>
     </Page>
   );
 }
