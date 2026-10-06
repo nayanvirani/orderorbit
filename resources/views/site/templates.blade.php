@@ -7,10 +7,22 @@
 @section('title', \App\Support\SiteContent::plain($c['seo_title']))
 @section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
-@section('content')
-@include('site.partials.page-hero', ['c' => $c])
+@push('head')
+    <link rel="stylesheet" href="{{ route('storefront.asset', 'orderorbit.css') }}?v={{ @filemtime(base_path('extensions/orderorbit-theme/assets/orderorbit.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/checkout-preview.css') }}?v={{ filemtime(public_path('css/checkout-preview.css')) }}">
+    <script>window.OO_SAMPLE_IMAGE = @json(\App\Services\Experiences\TemplateLibrary::samples()[0]['image']); window.OO_PREVIEW_JS = @json(asset('js/checkout-preview.js') . '?v=' . filemtime(public_path('js/checkout-preview.js')));</script>
+@endpush
 
-<section class="section" style="padding-top:56px">
+@section('content')
+<section class="page-hero glow-hero">
+    <div class="wrap">
+        <span class="eyebrow">{{ site_md($c['eyebrow']) }}</span>
+        <h1>{{ site_md($c['title']) }}</h1>
+        <p class="lead">{{ site_md($c['lead']) }}</p>
+    </div>
+</section>
+
+<section class="section" style="padding-top:48px">
     <div class="wrap stack lg">
         <div class="row between" style="align-items:center">
             <div class="chips" role="group" aria-label="{{ $c['filter_label'] }}" data-chips="tpl-grid">
@@ -19,12 +31,12 @@
             </div>
             <span class="small dim" data-chip-count data-template="{{ \App\Support\SiteContent::plain($c['count']) }}">{{ \App\Support\SiteContent::plain($c['count'], ['count' => count($list)]) }}</span>
         </div>
-        <div class="grid" id="tpl-grid">
+        <div class="grid" id="tpl-grid" style="--min:330px" data-template-gallery="{{ route('site.templates.previews') }}">
             @foreach ($list as $t)
                 <div class="card tpl-card" data-chip-item data-tags="{{ $t['feature'] }}">
-                    <div class="thumb" aria-hidden="true">@include('site.partials.thumb', ['type' => $t['type'], 'v' => $loop->index % 3])</div>
+                    <div class="thumb live"><div class="oo-preview" data-tpl="{{ $t['type'] }}:{{ $t['key'] }}"><span class="tpl-loading" aria-hidden="true"></span></div></div>
                     <div class="body">
-                        <span class="feature">{{ $features[$t['feature']]['name'] }}</span>
+                        <span class="feature">{{ $features[$t['feature']]['name'] }}@if ($t['label'] !== $features[$t['feature']]['name']) · {{ $t['label'] }}@endif</span>
                         <span class="name">{{ $t['name'] }}</span>
                         <div class="actions">
                             <a class="btn secondary sm" href="{{ route('site.feature', $t['feature']) }}">{{ $c['preview'] }}</a>
@@ -50,3 +62,7 @@
 
 @include('site.partials.cta', ['cta' => $c['cta'], 'class' => ''])
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/site-templates.js') }}?v={{ filemtime(public_path('js/site-templates.js')) }}" defer></script>
+@endpush

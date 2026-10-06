@@ -62,9 +62,10 @@ class Content
         return $solution ? ['slug' => $slug] + $solution : null;
     }
 
+    /** The app's templates (App\Support\TemplateGallery), so the website shows exactly what merchants get. */
     public static function templates(): array
     {
-        return SiteContent::applyList('templates', self::base('templates'));
+        return TemplateGallery::all();
     }
 
     public static function posts(): array

@@ -31,11 +31,11 @@ class GiftSchema
     public static function models(): array
     {
         return [
-            'pg-classic' => ['name' => 'Classic bar', 'group' => 'Classic', 'layout' => 'classic', 'description' => 'A clean progress bar with a marker for each reward.'],
-            'pg-minimal' => ['name' => 'Minimal strip', 'group' => 'Classic', 'layout' => 'minimal', 'description' => 'An ultra-compact track that fits anywhere.'],
-            'pg-steps' => ['name' => 'Milestone steps', 'group' => 'Expressive', 'layout' => 'steps', 'description' => 'Step markers with connecting lines for each reward.'],
-            'pg-cards' => ['name' => 'Reward cards', 'group' => 'Expressive', 'layout' => 'cards', 'description' => 'A card for each reward that lights up when it’s unlocked.'],
-            'pg-radial' => ['name' => 'Radial counter', 'group' => 'Expressive', 'layout' => 'radial', 'description' => 'Circular progress with the reward list beside it.'],
+            'pg-classic' => ['name' => 'Classic bar', 'group' => 'Classic', 'layout' => 'classic', 'description' => 'A clean progress bar with a marker for each reward.', 'design' => ['accent' => '#111111']],
+            'pg-minimal' => ['name' => 'Minimal strip', 'group' => 'Classic', 'layout' => 'minimal', 'description' => 'An ultra-compact track that fits anywhere.', 'design' => ['accent' => '#0f8a5f', 'track' => '#d3efe1', 'background' => '#f3fbf7', 'border' => '#cdeedd', 'radius' => 24, 'bar_height' => 6]],
+            'pg-steps' => ['name' => 'Milestone steps', 'group' => 'Expressive', 'layout' => 'steps', 'description' => 'Step markers with connecting lines for each reward.', 'design' => ['accent' => '#2448ff', 'track' => '#d9e0ff', 'background' => '#f5f7ff', 'border' => '#dfe5ff', 'radius' => 14]],
+            'pg-cards' => ['name' => 'Reward cards', 'group' => 'Expressive', 'layout' => 'cards', 'description' => 'A card for each reward that lights up when it’s unlocked.', 'design' => ['accent' => '#e0147b', 'track' => '#fbd3e7', 'background' => '#fff6fb', 'muted' => '#9b5a7a', 'border' => '#f8d7e8', 'radius' => 18]],
+            'pg-radial' => ['name' => 'Radial counter', 'group' => 'Expressive', 'layout' => 'radial', 'description' => 'Circular progress with the reward list beside it.', 'design' => ['accent' => '#ffd166', 'track' => '#2e2a5a', 'background' => '#15123b', 'text' => '#ffffff', 'muted' => '#b9b5dc', 'border' => '#2e2a5a', 'radius' => 18]],
         ];
     }
 
@@ -75,7 +75,7 @@ class GiftSchema
                 self::milestone(75, 'shipping', 'Free shipping'),
                 self::milestone(100, 'choice', 'Choose your gift'),
             ],
-            'design' => self::designDefaults(),
+            'design' => array_merge(self::designDefaults(), $model['design'] ?? []),
             'schedule' => ['starts_at' => null, 'ends_at' => null],
             'analytics' => ['track_views' => true, 'track_clicks' => true],
             'behavior' => ['priority' => 50],

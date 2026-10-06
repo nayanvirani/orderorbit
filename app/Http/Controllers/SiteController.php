@@ -99,11 +99,18 @@ class SiteController extends Controller
 
     public function templates(): View
     {
-        return view('site.templates', [
-            'templates' => Content::templates(),
-            'surfaces' => self::SURFACES,
-            'types' => self::TEMPLATE_TYPES,
-        ]);
+        return view('site.templates', ['templates' => Content::templates()]);
+    }
+
+    /** Every gallery template's render-ready preview, keyed type:key (drawn in the browser by the storefront runtime). */
+    public function templatePreviews(): \Illuminate\Http\JsonResponse
+    {
+        $previews = [];
+        foreach (\App\Support\TemplateGallery::all() as $t) {
+            $previews[$t['type'].':'.$t['key']] = \App\Support\TemplateGallery::preview($t['type'], $t['key']);
+        }
+
+        return response()->json($previews)->header('Cache-Control', 'public, max-age=600');
     }
 
     public function pricing(): View

@@ -16,7 +16,7 @@ use Throwable;
  * text; resetting deletes it. Saved copies are always read through the built-in shape, so a
  * field added in code later still shows its built-in text.
  *
- * Keys: page.{name}, feature.{slug}, solution.{slug}, guide.{slug}, list.{blog|help|templates|pricing}.
+ * Keys: page.{name}, feature.{slug}, solution.{slug}, guide.{slug}, list.{blog|help|pricing}.
  */
 class SiteContent
 {
@@ -47,7 +47,6 @@ class SiteContent
     public const LISTS = [
         'blog' => ['Blog posts', '/blog'],
         'help' => ['Help topics & articles', '/help'],
-        'templates' => ['Template gallery', '/templates'],
         'pricing' => ['Pricing questions', '/pricing'],
     ];
 

@@ -143,7 +143,7 @@
     var pre = 0;
     c.offers.forEach(function (o, i) { if (o.preselected) pre = i; });
     var s = c.settings;
-    return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + '" style="' + vars(exp.design || {}) + '">' + header(s) +
+    return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s) +
       (mix ? OrderOrbit.bundleMix.html(c, ctx, B) : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
       upsells(c, ctx) + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';

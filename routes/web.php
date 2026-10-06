@@ -54,6 +54,7 @@ Route::controller(SiteController::class)->name('site.')->middleware(\App\Http\Mi
     Route::get('/solutions', 'solutions')->name('solutions');
     Route::get('/solutions/{slug}', 'solution')->name('solution');
     Route::get('/templates', 'templates')->name('templates');
+    Route::get('/templates/previews.json', 'templatePreviews')->name('templates.previews');
     Route::get('/pricing', 'pricing')->name('pricing');
     Route::get('/resources', 'resources')->name('resources');
     Route::get('/blog', 'blog')->name('blog');

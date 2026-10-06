@@ -123,7 +123,9 @@ export function reviewLink(pattern, product, shopUrl) {
 }
 
 const BANNER = ['banner'];
-const PLAIN = ['compact', 'button', 'faq'];
+const PLAIN = ['compact', 'button'];
+// Layouts drawn on a subdued box.
+const SUBDUED = ['premium', 'slider', 'education', 'faq'];
 const BORDERS = ['base', 'large', 'large-100', 'large-200'];
 
 function size(kind, value) {
@@ -134,7 +136,7 @@ function size(kind, value) {
 }
 
 /** How a block's frame is drawn, from its layout and Design step (same rules as checkout blocks). */
-export function boxStyle(style, design) {
+export function boxStyle(style, design, as) {
   const d = design || {};
   const set = (key) => d[key] && d[key] !== 'auto';
   const custom = set('ck_background') || set('ck_border') || set('ck_radius') || set('ck_padding');
@@ -142,14 +144,14 @@ export function boxStyle(style, design) {
     inlineSize: d.ck_width && d.ck_width !== 'full' ? size(d.ck_width, d.ck_width_value) : undefined,
     minBlockSize: d.ck_height === 'px' ? size('px', d.ck_height_value) : undefined,
   };
-  if (!custom && BANNER.indexOf(style) !== -1) return { kind: 'banner', props: {}, size: sized };
-  if (!custom && PLAIN.indexOf(style) !== -1) return { kind: 'plain', props: {}, size: sized };
-  const plain = PLAIN.indexOf(style) !== -1;
+  if (!custom && (as === 'banner' || BANNER.indexOf(style) !== -1)) return { kind: 'banner', props: {}, size: sized };
+  if (!custom && (as === 'plain' || PLAIN.indexOf(style) !== -1)) return { kind: 'plain', props: {}, size: sized };
+  const plain = as === 'plain' || PLAIN.indexOf(style) !== -1;
   const border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
   return {
     kind: 'box',
     props: {
-      background: set('ck_background') ? d.ck_background : style === 'premium' || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
+      background: set('ck_background') ? d.ck_background : as === 'subdued' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
       border: BORDERS.indexOf(border) !== -1 ? border + ' base ' + (d.ck_border_style || 'solid') : 'none',
       borderRadius: set('ck_radius') ? d.ck_radius : plain ? 'none' : 'base',
       padding: set('ck_padding') ? d.ck_padding : plain ? 'none' : 'base',

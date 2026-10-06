@@ -92,6 +92,7 @@
 
   function vars(d) {
     return h.esc('--pg-accent:' + (d.accent || '#111') + ';--pg-track:' + (d.track || '#e7e7e7') + ';--pg-muted:' + (d.muted || '#8a8a8a') + ';--pg-line:' + (d.border || '#e3e3e3') +
+      ';--pg-bg:' + (d.background || '#fff') + ';--pg-text:' + (d.text || '#111') + ';--pg-r:' + (d.radius != null ? d.radius : 10) + 'px' +
       ';--pg-h:' + (d.bar_height || 8) + 'px;--pg-fs:' + (d.title_size || 16) + 'px');
   }
 

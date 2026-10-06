@@ -47,5 +47,13 @@
   "call": "Call us",
   "helpCenter": "Help center",
   "returns": "Returns",
-  "viewRewards": "See all rewards"
+  "viewRewards": "See all rewards",
+  "stats": {
+    "orders": "Orders",
+    "spent": "Spent",
+    "last": "Last order"
+  },
+  "reorderItems": "Adds {count} items from this order to your cart",
+  "member": "Member",
+  "nextTier": "Next: {tier}"
 }

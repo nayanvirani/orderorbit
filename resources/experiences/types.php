@@ -212,9 +212,9 @@ return [
         'empty' => 'Suggest a last add-on in the cart.',
         'templates' => [
             'carousel' => ['name' => 'Carousel', 'style' => 'carousel'],
-            'grid' => ['name' => 'Grid', 'style' => 'grid'],
-            'horizontal' => ['name' => 'Horizontal', 'style' => 'row'],
-            'minimal-card' => ['name' => 'Minimal Card', 'style' => 'minimal'],
+            'grid' => ['name' => 'Grid', 'style' => 'grid', 'design' => ['background_color' => '#fff7ed', 'primary_color' => '#f06a0f', 'accent_color' => '#f06a0f', 'radius' => 16]],
+            'horizontal' => ['name' => 'Horizontal', 'style' => 'row', 'design' => ['background_color' => '#15123b', 'text_color' => '#ffffff', 'primary_color' => '#8b7bff', 'accent_color' => '#a99cff', 'radius' => 18, 'border' => false]],
+            'minimal-card' => ['name' => 'Minimal Card', 'style' => 'minimal', 'design' => ['border' => false, 'radius' => 0, 'button_style' => 'outline', 'spacing' => 'compact', 'accent_color' => '#0f8a5f', 'primary_color' => '#0f8a5f']],
         ],
         'content' => [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'You might also like', 'max' => 80],
@@ -237,13 +237,13 @@ return [
         'empty' => 'Add a real deadline to a real campaign.',
         'templates' => [
             'minimal' => ['name' => 'Minimal', 'style' => 'minimal'],
-            'banner' => ['name' => 'Banner', 'style' => 'banner', 'content' => ['cta_text' => 'Shop the sale']],
+            'banner' => ['name' => 'Banner', 'style' => 'banner', 'content' => ['cta_text' => 'Shop the sale'], 'design' => ['background_color' => '#d92d20', 'text_color' => '#ffffff', 'primary_color' => '#d92d20', 'accent_color' => '#ffd166']],
             'premium-card' => ['name' => 'Premium Card', 'style' => 'premium'],
-            'offer-countdown' => ['name' => 'Offer Countdown', 'style' => 'card', 'content' => ['headline' => 'Extra 20% off ends soon', 'subheadline' => 'Use the code at checkout', 'code' => 'ORBIT20', 'cta_text' => 'Shop now']],
-            'product-countdown' => ['name' => 'Product Countdown', 'style' => 'compact', 'content' => ['headline' => 'Offer ends in']],
-            'flip-clock' => ['name' => 'Flip Clock', 'style' => 'flip', 'content' => ['headline' => 'Flash sale ends in']],
-            'circles' => ['name' => 'Circles', 'style' => 'circles', 'content' => ['headline' => 'Hurry, the sale ends in']],
-            'shipping-cutoff' => ['name' => 'Shipping Cutoff', 'style' => 'cutoff', 'content' => ['mode' => 'daily', 'headline' => 'Order within {time} to ship today', 'ended_message' => 'Order now to ship on the next business day']],
+            'offer-countdown' => ['name' => 'Offer Countdown', 'style' => 'card', 'content' => ['headline' => 'Extra 20% off ends soon', 'subheadline' => 'Use the code at checkout', 'code' => 'ORBIT20', 'cta_text' => 'Shop now'], 'design' => ['background_color' => '#f5f7ff', 'primary_color' => '#2448ff', 'accent_color' => '#2448ff', 'radius' => 18, 'border' => false]],
+            'product-countdown' => ['name' => 'Product Countdown', 'style' => 'compact', 'content' => ['headline' => 'Offer ends in'], 'design' => ['primary_color' => '#f06a0f', 'accent_color' => '#f06a0f', 'background_color' => '#fff7ed', 'border' => false]],
+            'flip-clock' => ['name' => 'Flip Clock', 'style' => 'flip', 'content' => ['headline' => 'Flash sale ends in'], 'design' => ['background_color' => '#15123b', 'text_color' => '#ffffff', 'primary_color' => '#000000', 'accent_color' => '#ffd166', 'radius' => 16]],
+            'circles' => ['name' => 'Circles', 'style' => 'circles', 'content' => ['headline' => 'Hurry, the sale ends in'], 'design' => ['primary_color' => '#7b2ff2', 'accent_color' => '#7b2ff2', 'background_color' => '#f8f3ff', 'border' => false, 'radius' => 20]],
+            'shipping-cutoff' => ['name' => 'Shipping Cutoff', 'style' => 'cutoff', 'content' => ['mode' => 'daily', 'headline' => 'Order within {time} to ship today', 'ended_message' => 'Order now to ship on the next business day'], 'design' => ['primary_color' => '#0f8a5f', 'accent_color' => '#0f8a5f', 'background_color' => '#f3fbf7', 'border' => false]],
         ],
         'content' => [
             'mode' => ['type' => 'select', 'label' => 'Timer type', 'default' => 'date', 'options' => ['date' => 'Count down to a date', 'hours' => 'Hours, from when the shopper arrives', 'minutes' => 'Minutes, from when the shopper arrives', 'daily' => 'A daily cutoff time (e.g. same-day shipping)']],
@@ -275,8 +275,8 @@ return [
         'empty' => 'Keep the buy button in reach on long product pages.',
         'templates' => [
             'simple-sticky-bar' => ['name' => 'Simple sticky bar', 'style' => 'bar'],
-            'floating-pill' => ['name' => 'Floating pill', 'style' => 'pill'],
-            'full-width-bar' => ['name' => 'Full-width bar', 'style' => 'full', 'content' => ['show_compare' => true]],
+            'floating-pill' => ['name' => 'Floating pill', 'style' => 'pill', 'design' => ['primary_color' => '#5b45f0', 'accent_color' => '#5b45f0']],
+            'full-width-bar' => ['name' => 'Full-width bar', 'style' => 'full', 'content' => ['show_compare' => true], 'design' => ['background_color' => '#fff7ed', 'primary_color' => '#f06a0f', 'accent_color' => '#f06a0f', 'radius' => 0]],
         ],
         'content' => [
             'button_text' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Add to cart', 'max' => 30],
@@ -305,12 +305,12 @@ return [
         'templates' => [
             'classic-card' => ['name' => 'Classic card', 'style' => 'card'],
             'minimal-line' => ['name' => 'Minimal line', 'style' => 'minimal', 'content' => ['progress' => 'none']],
-            'timeline' => ['name' => 'Timeline steps', 'style' => 'timeline'],
-            'countdown-tiles' => ['name' => 'Countdown tiles', 'style' => 'tiles', 'content' => ['breakdown' => 'months']],
-            'goal-tracker' => ['name' => 'Goal tracker', 'style' => 'goal', 'content' => ['progress' => 'goal']],
+            'timeline' => ['name' => 'Timeline steps', 'style' => 'timeline', 'design' => ['primary_color' => '#2448ff', 'accent_color' => '#2448ff', 'background_color' => '#f5f7ff', 'border' => false, 'radius' => 18]],
+            'countdown-tiles' => ['name' => 'Countdown tiles', 'style' => 'tiles', 'content' => ['breakdown' => 'months'], 'design' => ['primary_color' => '#7b2ff2', 'accent_color' => '#7b2ff2', 'background_color' => '#f8f3ff', 'border' => false]],
+            'goal-tracker' => ['name' => 'Goal tracker', 'style' => 'goal', 'content' => ['progress' => 'goal'], 'design' => ['primary_color' => '#0f8a5f', 'accent_color' => '#0f8a5f', 'background_color' => '#f3fbf7', 'border' => false]],
             'premium-dark' => ['name' => 'Premium dark', 'style' => 'premium'],
-            'banner' => ['name' => 'Banner', 'style' => 'banner'],
-            'badge-pill' => ['name' => 'Badge pill', 'style' => 'pill', 'content' => ['progress' => 'none']],
+            'banner' => ['name' => 'Banner', 'style' => 'banner', 'design' => ['background_color' => '#2448ff', 'text_color' => '#ffffff', 'primary_color' => '#2448ff', 'accent_color' => '#ffd166']],
+            'badge-pill' => ['name' => 'Badge pill', 'style' => 'pill', 'content' => ['progress' => 'none'], 'design' => ['primary_color' => '#e0147b', 'accent_color' => '#e0147b']],
         ],
         'content' => [
             'products' => ['type' => 'products', 'label' => 'Pre-order products', 'required' => true, 'max_items' => 50, 'help' => 'It only shows on these products. In Shopify, turn on "Continue selling when out of stock" for them.'],
@@ -348,10 +348,10 @@ return [
         'empty' => 'Show shoppers what others just bought.',
         'templates' => [
             'classic-card' => ['name' => 'Classic card', 'style' => 'card'],
-            'rounded-pill' => ['name' => 'Rounded pill', 'style' => 'pill'],
+            'rounded-pill' => ['name' => 'Rounded pill', 'style' => 'pill', 'design' => ['background_color' => '#5b45f0', 'text_color' => '#ffffff', 'primary_color' => '#ffd166', 'accent_color' => '#ffd166']],
             'dark-toast' => ['name' => 'Dark toast', 'style' => 'premium'],
-            'minimal-text' => ['name' => 'Minimal text', 'style' => 'minimal', 'content' => ['show_image' => false]],
-            'slim-bar' => ['name' => 'Slim bar', 'style' => 'banner', 'content' => ['position_desktop' => 'bottom-left', 'position_mobile' => 'top']],
+            'minimal-text' => ['name' => 'Minimal text', 'style' => 'minimal', 'content' => ['show_image' => false], 'design' => ['background_color' => '#fffbea', 'text_color' => '#3d2c00', 'primary_color' => '#b45309', 'accent_color' => '#b45309', 'border' => false]],
+            'slim-bar' => ['name' => 'Slim bar', 'style' => 'banner', 'content' => ['position_desktop' => 'bottom-left', 'position_mobile' => 'top'], 'design' => ['background_color' => '#0f3d2e', 'text_color' => '#e7fff4', 'primary_color' => '#6ee7b7', 'accent_color' => '#6ee7b7', 'radius' => 999]],
         ],
         'content' => [
             'buyer_label' => ['type' => 'text', 'label' => 'Who bought it', 'default' => 'Someone', 'max' => 40, 'help' => 'Shown as {buyer}. Shopper names are never shown, so use a word like "Someone" or "A customer".'],
@@ -388,12 +388,12 @@ return [
         'empty' => 'Show shoppers why they can trust you.',
         'templates' => [
             'review-card' => ['name' => 'Review Card', 'style' => 'card'],
-            'review-slider' => ['name' => 'Review Slider', 'style' => 'slider'],
-            'rating-strip' => ['name' => 'Rating Strip', 'style' => 'compact'],
+            'review-slider' => ['name' => 'Review Slider', 'style' => 'slider', 'design' => ['background_color' => '#fff6fb', 'accent_color' => '#e0147b', 'primary_color' => '#e0147b', 'radius' => 20]],
+            'rating-strip' => ['name' => 'Rating Strip', 'style' => 'compact', 'design' => ['background_color' => '#fffbea', 'accent_color' => '#d9a400', 'primary_color' => '#7a5a00', 'radius' => 999, 'border' => false]],
             'customer-quote' => ['name' => 'Customer Quote', 'style' => 'premium'],
-            'avatar-testimonials' => ['name' => 'Avatar Testimonials', 'style' => 'grid'],
-            'trust-row' => ['name' => 'Trust Row', 'style' => 'row'],
-            'guarantee-card' => ['name' => 'Guarantee Card', 'style' => 'banner'],
+            'avatar-testimonials' => ['name' => 'Avatar Testimonials', 'style' => 'grid', 'design' => ['background_color' => '#f5f7ff', 'accent_color' => '#2448ff', 'primary_color' => '#2448ff', 'radius' => 18, 'border' => false]],
+            'trust-row' => ['name' => 'Trust Row', 'style' => 'row', 'design' => ['accent_color' => '#0f8a5f', 'primary_color' => '#0f8a5f']],
+            'guarantee-card' => ['name' => 'Guarantee Card', 'style' => 'banner', 'design' => ['background_color' => '#ecfdf5', 'text_color' => '#064e3b', 'accent_color' => '#059669', 'primary_color' => '#059669', 'radius' => 16, 'border' => false]],
         ],
         'content' => [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Loved by our customers', 'max' => 80],

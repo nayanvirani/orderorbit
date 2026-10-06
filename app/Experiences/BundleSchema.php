@@ -75,7 +75,12 @@ class BundleSchema
         'blue' => ['accent' => '#2448ff', 'selected_background' => '#eff2ff', 'button_background' => '#2448ff', 'label_background' => '#2448ff'],
         'purple' => ['accent' => '#7b2ff2', 'selected_background' => '#f5efff', 'button_background' => '#7b2ff2', 'label_background' => '#7b2ff2'],
         'red' => ['accent' => '#d92d20', 'selected_background' => '#fff1f0', 'button_background' => '#d92d20', 'label_background' => '#d92d20'],
+        'night' => ['accent' => '#8b7bff', 'selected_background' => '#221d4f', 'button_background' => '#8b7bff', 'label_background' => '#8b7bff', 'background' => '#14112f', 'text' => '#ffffff', 'muted' => '#b9b5dc', 'border' => '#2e2a5a', 'gift_background' => '#1d1946', 'summary_background' => '#183a2c', 'summary_text' => '#6ee7b7', 'badge_background' => '#3a1830', 'badge_text' => '#ff8fb3'],
+        'luxe' => ['accent' => '#c9a45c', 'selected_background' => '#241f1a', 'button_background' => '#c9a45c', 'button_text' => '#1a1714', 'label_background' => '#c9a45c', 'label_text' => '#1a1714', 'background' => '#1a1714', 'text' => '#f5efe4', 'muted' => '#bfb39f', 'border' => '#3a332a', 'gift_background' => '#241f1a', 'summary_background' => '#2a241c', 'summary_text' => '#e5c886', 'badge_background' => '#3a2f1c', 'badge_text' => '#e5c886'],
     ];
+
+    /** Visual skins: each bundle template has its own look (header, offer cards, selection and button). */
+    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe'];
 
     /**
      * Ready-made models per bundle type. "layout" and "style" pick the storefront
@@ -84,35 +89,35 @@ class BundleSchema
     public static function models(): array
     {
         return [
-            'qb-classic' => ['type' => 'quantity-breaks', 'name' => 'Classic quantity breaks', 'description' => 'Stacked tiers with a “Most popular” ribbon on the middle offer.', 'layout' => 'vertical'],
-            'qb-horizontal' => ['type' => 'quantity-breaks', 'name' => 'Horizontal tiers', 'description' => 'Tiers side by side with progressive discounts.', 'layout' => 'horizontal'],
+            'qb-classic' => ['type' => 'quantity-breaks', 'name' => 'Classic quantity breaks', 'description' => 'Stacked tiers with a “Most popular” ribbon on the middle offer.', 'layout' => 'vertical', 'skin' => 'classic', 'design' => ['preset' => 'black']],
+            'qb-horizontal' => ['type' => 'quantity-breaks', 'name' => 'Horizontal tiers', 'description' => 'Tiers side by side with progressive discounts.', 'layout' => 'horizontal', 'skin' => 'tiles', 'design' => ['preset' => 'purple', 'radius' => 16, 'border_width' => 1]],
             'qb-bogo' => ['type' => 'quantity-breaks', 'name' => '1 bought = 1 free', 'description' => 'BOGO-style offers: two for the price of one, four for the price of two.', 'layout' => 'vertical',
                 'offers' => [
                     self::quantityOffer(2, 'percentage', 50, '1 bought = 1 free', '2 products for the price of one'),
                     self::quantityOffer(4, 'percentage', 50, '2 bought = 2 free', '4 products for the price of 2', label: 'Most advantageous offer', highlight: true),
-                ]],
+                ], 'skin' => 'promo', 'design' => ['preset' => 'red', 'radius' => 6]],
             'qb-inversion' => ['type' => 'quantity-breaks', 'name' => 'Quantity inversion offer', 'description' => 'Leads with the 2-product offer and an extra-discount banner, then the single product.', 'layout' => 'vertical',
                 'offers' => [
                     self::quantityOffer(2, 'percentage', 20, '2 Products', 'You save {saving}', label: '20% Additional discount', highlight: true, preselected: true),
                     self::quantityOffer(1, 'none', 0, '1 Product', 'Standard price'),
-                ]],
-            'qb-compact' => ['type' => 'quantity-breaks', 'name' => 'Compact selector', 'description' => 'A slim radio list that fits tight product pages.', 'layout' => 'vertical', 'style' => 'compact'],
+                ], 'skin' => 'spotlight', 'design' => ['preset' => 'orange', 'radius' => 14]],
+            'qb-compact' => ['type' => 'quantity-breaks', 'name' => 'Compact selector', 'description' => 'A slim radio list that fits tight product pages.', 'layout' => 'vertical', 'style' => 'compact', 'skin' => 'minimal', 'design' => ['preset' => 'black', 'radius' => 8, 'border_width' => 1, 'offer_title_size' => 15, 'price_size' => 16]],
 
-            'qg-classic' => ['type' => 'quantity-gifts', 'name' => 'Quantity breaks + gifts', 'description' => 'Each tier unlocks more free gifts, shown under the offers.', 'layout' => 'vertical'],
-            'qg-horizontal' => ['type' => 'quantity-gifts', 'name' => 'Gift tiers side by side', 'description' => 'Horizontal tiers with the gifts each one unlocks.', 'layout' => 'horizontal'],
+            'qg-classic' => ['type' => 'quantity-gifts', 'name' => 'Quantity breaks + gifts', 'description' => 'Each tier unlocks more free gifts, shown under the offers.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'pink', 'radius' => 18]],
+            'qg-horizontal' => ['type' => 'quantity-gifts', 'name' => 'Gift tiers side by side', 'description' => 'Horizontal tiers with the gifts each one unlocks.', 'layout' => 'horizontal', 'skin' => 'ribbon', 'design' => ['preset' => 'yellow', 'radius' => 12]],
 
-            'vo-classic' => ['type' => 'variant-offers', 'name' => 'Classic variant offers', 'description' => 'One card per pack size or variant, each with its own price.', 'layout' => 'vertical'],
-            'vo-grid' => ['type' => 'variant-offers', 'name' => 'Variant cards', 'description' => 'Variant offers as a grid of cards.', 'layout' => 'grid'],
+            'vo-classic' => ['type' => 'variant-offers', 'name' => 'Classic variant offers', 'description' => 'One card per pack size or variant, each with its own price.', 'layout' => 'vertical', 'skin' => 'soft', 'design' => ['preset' => 'blue', 'radius' => 22, 'border_width' => 1]],
+            'vo-grid' => ['type' => 'variant-offers', 'name' => 'Variant cards', 'description' => 'Variant offers as a grid of cards.', 'layout' => 'grid', 'skin' => 'cards', 'design' => ['preset' => 'green', 'radius' => 16]],
 
-            'mm-bundler' => ['type' => 'mix-match', 'name' => 'Mix & match — bundler', 'description' => 'Product slots in a list with progressive discounts as the bundle fills.', 'layout' => 'vertical'],
-            'mm-slots' => ['type' => 'mix-match', 'name' => 'Mix & match — slot cards', 'description' => 'A row of slot cards shoppers fill one by one.', 'layout' => 'horizontal'],
-            'mm-grid' => ['type' => 'mix-match', 'name' => 'Mix & match — product grid', 'description' => 'Pick straight from a grid of products with a live bundle total.', 'layout' => 'grid'],
+            'mm-bundler' => ['type' => 'mix-match', 'name' => 'Mix & match — bundler', 'description' => 'Product slots in a list with progressive discounts as the bundle fills.', 'layout' => 'vertical', 'skin' => 'list', 'design' => ['preset' => 'purple', 'radius' => 12]],
+            'mm-slots' => ['type' => 'mix-match', 'name' => 'Mix & match — slot cards', 'description' => 'A row of slot cards shoppers fill one by one.', 'layout' => 'horizontal', 'skin' => 'night', 'design' => ['preset' => 'night', 'radius' => 14]],
+            'mm-grid' => ['type' => 'mix-match', 'name' => 'Mix & match — product grid', 'description' => 'Pick straight from a grid of products with a live bundle total.', 'layout' => 'grid', 'skin' => 'market', 'design' => ['preset' => 'orange', 'radius' => 14]],
 
-            'fx-classic' => ['type' => 'fixed', 'name' => 'Classic fixed bundle', 'description' => 'The single product or the full pack, with the pack’s products listed.', 'layout' => 'vertical'],
-            'fx-fbt' => ['type' => 'fixed', 'name' => 'Frequently bought together', 'description' => 'Products side by side with plus signs and one total.', 'layout' => 'horizontal', 'style' => 'fbt'],
-            'fx-checklist' => ['type' => 'fixed', 'name' => 'Complete the set', 'description' => 'A checklist of the pack’s products with the saving highlighted.', 'layout' => 'vertical', 'style' => 'checklist'],
+            'fx-classic' => ['type' => 'fixed', 'name' => 'Classic fixed bundle', 'description' => 'The single product or the full pack, with the pack’s products listed.', 'layout' => 'vertical', 'skin' => 'outline', 'design' => ['preset' => 'blue', 'radius' => 4, 'selected_background' => '#ffffff']],
+            'fx-fbt' => ['type' => 'fixed', 'name' => 'Frequently bought together', 'description' => 'Products side by side with plus signs and one total.', 'layout' => 'horizontal', 'style' => 'fbt', 'skin' => 'fbt', 'design' => ['preset' => 'black', 'radius' => 12]],
+            'fx-checklist' => ['type' => 'fixed', 'name' => 'Complete the set', 'description' => 'A checklist of the pack’s products with the saving highlighted.', 'layout' => 'vertical', 'style' => 'checklist', 'skin' => 'checklist', 'design' => ['preset' => 'green', 'radius' => 10]],
 
-            'fg-classic' => ['type' => 'fixed-gifts', 'name' => 'Fixed bundle + gifts', 'description' => 'A pack that unlocks free gifts, shown as gift tiles.', 'layout' => 'vertical'],
+            'fg-classic' => ['type' => 'fixed-gifts', 'name' => 'Fixed bundle + gifts', 'description' => 'A pack that unlocks free gifts, shown as gift tiles.', 'layout' => 'vertical', 'skin' => 'luxe', 'design' => ['preset' => 'luxe', 'radius' => 6]],
         ];
     }
 
@@ -209,6 +214,7 @@ class BundleSchema
                 'timer' => ['enabled' => false, 'mode' => 'end_of_day', 'ends_at' => null, 'text' => 'Offer ends in'],
                 'layout' => $model['layout'],
                 'style' => $model['style'] ?? 'cards',
+                'skin' => $model['skin'] ?? 'classic',
                 'position' => 'above_atc',
                 'after_add' => 'cart',
                 'show_variants' => true,
@@ -227,7 +233,7 @@ class BundleSchema
             'gifts' => ['enabled' => in_array($type, ['quantity-gifts', 'fixed-gifts'], true), 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked'],
             'upsells' => ['enabled' => false, 'title' => 'Complete your order', 'products' => [], 'discount_percent' => 10],
             'summary' => ['enabled' => true, 'text' => 'You save {saving}'],
-            'design' => array_merge(self::designDefaults(), array_intersect_key($branding, array_flip(['font']))),
+            'design' => array_merge(self::designDefaults($model['design']['preset'] ?? 'black'), $model['design'] ?? [], array_intersect_key($branding, array_flip(['font']))),
             'schedule' => ['starts_at' => null, 'ends_at' => null],
             'analytics' => ['track_views' => true, 'track_clicks' => true],
             'behavior' => ['priority' => 50],
@@ -304,6 +310,7 @@ class BundleSchema
             ],
             'layout' => self::pick($s['layout'] ?? null, ['vertical', 'horizontal', 'grid'], $d['layout']),
             'style' => self::pick($s['style'] ?? null, ['cards', 'compact', 'fbt', 'checklist'], 'cards'),
+            'skin' => self::pick($s['skin'] ?? null, self::SKINS, 'classic'),
             'position' => self::pick($s['position'] ?? null, ['above_atc', 'below_atc', 'block'], 'above_atc'),
             'after_add' => self::pick($s['after_add'] ?? null, ['cart', 'stay', 'checkout'], 'cart'),
             'show_variants' => self::bool($s['show_variants'] ?? true),

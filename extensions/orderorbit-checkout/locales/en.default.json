@@ -8,5 +8,19 @@
   "reviews": "{count} reviews",
   "slide": "{current} of {total}",
   "previous": "Previous",
-  "next": "Next"
+  "next": "Next",
+  "verified": "Verified buyer",
+  "endsIn": "Ends in {time}",
+  "days": "Days",
+  "hours": "Hours",
+  "minutes": "Minutes",
+  "seconds": "Seconds",
+  "limitedTime": "Limited time",
+  "unlocked": "Unlocked",
+  "free": "Free",
+  "freeGift": "Free gift",
+  "exclusive": "Exclusive offer",
+  "pickedForYou": "Picked for you",
+  "itemsInOrder": "{count} items from this order",
+  "review": "Review"
 }
