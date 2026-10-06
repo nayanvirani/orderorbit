@@ -20,7 +20,7 @@ class SitePreviewGateTest extends TestCase
     public function test_visitors_only_see_coming_soon(): void
     {
         foreach (['/', '/features/bundles', '/pricing', '/templates'] as $url) {
-            $this->get($url)->assertOk()->assertSee('coming soon')->assertDontSee('Install on Shopify')->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+            $this->get($url)->assertOk()->assertSee('coming soon')->assertDontSee('Install on Shopify')->assertHeader('X-Robots-Tag', 'noindex, nofollow, noai, noimageai');
         }
         // Legal pages stay public (required for the Shopify listing); the app is never gated.
         $this->get('/privacy')->assertOk()->assertDontSee('Owner access');

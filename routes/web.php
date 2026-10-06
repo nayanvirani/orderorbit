@@ -46,7 +46,7 @@ Route::post('/site-access', [SiteController::class, 'unlock'])->middleware('thro
 Route::get('/site-access/lock', [SiteController::class, 'lock'])->name('site.lock');
 
 // Public website (Part A)
-Route::controller(SiteController::class)->name('site.')->middleware(\App\Http\Middleware\SitePreviewGate::class)->group(function () {
+Route::controller(SiteController::class)->name('site.')->middleware([\App\Http\Middleware\BlockCrawlers::class, \App\Http\Middleware\SitePreviewGate::class])->group(function () {
     Route::get('/', 'home')->name('home');
     Route::get('/how-it-works', 'how')->name('how');
     Route::get('/features', 'features')->name('features');
