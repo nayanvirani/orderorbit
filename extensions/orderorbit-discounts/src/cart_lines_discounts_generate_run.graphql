@@ -13,6 +13,11 @@ query CartInput {
       gift: attribute(key: "_oo_gift") {
         value
       }
+      sellingPlanAllocation {
+        sellingPlan {
+          id
+        }
+      }
       cost {
         amountPerQuantity {
           amount

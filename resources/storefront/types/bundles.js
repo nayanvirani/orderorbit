@@ -133,6 +133,9 @@
     return h.esc(out);
   }
 
+  // Subscribe & save (oo-bundles-sub.js), when the bundle has subscriptions on.
+  function sub(c) { return c.subscription && c.subscription.enabled && OrderOrbit.bundleSub; }
+
   // ------------------------------------------------------------------ render
   OrderOrbit.define('bundles', function (exp, ctx) {
     var c = exp.content;
@@ -145,13 +148,13 @@
     var s = c.settings;
     return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s) +
       (mix ? OrderOrbit.bundleMix.html(c, ctx, B) : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
-      upsells(c, ctx) + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
+      (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + upsells(c, ctx) + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';
   }, {
     always: true,
     prepare: function (exp, ctx) {
       var c = exp.content;
-      var mix = c.bundle_type === 'mix-match' ? OrderOrbit.need('bundles-mix') : null;
+      var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub')]);
       // The admin preview uses saved product data; the storefront loads live variants and prices.
       if (ctx.preview) return mix;
       var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products } }, ['a', 'b'])];
@@ -194,14 +197,17 @@
       function update() {
         var sum = root.querySelector('[data-oo-sum]');
         var saving = 0;
+        var full = picks.reduce(function (n, p) { return n + p.price; }, 0);
         if (mix) {
           saving = OrderOrbit.bundleMix.update(root, c, ctx, picks, btn, B, upsellTotal());
+          if (sub(c)) sub(c).update(root, c, ctx, 'm', full, full - saving, upsellTotal(), btn);
         } else {
           var i = current();
           root.querySelectorAll('.oo-boffer').forEach(function (el) { el.classList.toggle('oo-bsel', Number(el.getAttribute('data-oo-offer')) === i); });
           var pr = prices(c.offers[i], ctx);
           saving = pr.saving;
           btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(pr.after + upsellTotal(), ctx);
+          if (sub(c)) sub(c).update(root, c, ctx, i, pr.full, pr.after, upsellTotal(), btn);
         }
         if (sum) { sum.hidden = !(saving > 0); sum.innerHTML = fillText(c.summary.text, { saving: saving, pct: 0 }, ctx); }
       }
@@ -228,7 +234,8 @@
           });
           o.gifts.forEach(function (g) { if (g.product[0]) add(g.product[0].variant_id, g.quantity, true); });
         }
-        return list.concat(upsellItems());
+        list = list.concat(upsellItems());
+        return sub(c) ? sub(c).items(root, c, ctx, mix ? 'm' : current(), list) : list;
       }
 
       // The bundle replaces the theme's variant picker, quantity, add to cart, buy-now and

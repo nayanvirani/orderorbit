@@ -60,7 +60,19 @@ class BundleSchema
             'goal' => 'Increase the perceived value of the bundle.',
             'offer_kinds' => ['multi', 'quantity'],
         ],
+        // A catalog entry: its models are quantity, pack and mix & match bundles with subscriptions on.
+        'subscription' => [
+            'label' => 'Subscription bundle',
+            'lead' => 'Subscribe to a bundle and save on every delivery.',
+            'example' => '2 bottles every month = −10% + subscription price.',
+            'goal' => 'Turn one-time buyers into recurring revenue.',
+            'offer_kinds' => [],
+            'catalog' => true,
+        ],
     ];
+
+    /** How the subscribe option is shown in a bundle. */
+    public const SUBSCRIPTION_LAYOUTS = ['cards' => 'Two option cards', 'toggle' => 'Toggle', 'checkbox' => 'Checkbox'];
 
     public const OFFER_KINDS = ['quantity' => 'Quantity break', 'multi' => 'Multi-products', 'mono' => 'Mono-product'];
 
@@ -77,10 +89,12 @@ class BundleSchema
         'red' => ['accent' => '#d92d20', 'selected_background' => '#fff1f0', 'button_background' => '#d92d20', 'label_background' => '#d92d20'],
         'night' => ['accent' => '#8b7bff', 'selected_background' => '#221d4f', 'button_background' => '#8b7bff', 'label_background' => '#8b7bff', 'background' => '#14112f', 'text' => '#ffffff', 'muted' => '#b9b5dc', 'border' => '#2e2a5a', 'gift_background' => '#1d1946', 'summary_background' => '#183a2c', 'summary_text' => '#6ee7b7', 'badge_background' => '#3a1830', 'badge_text' => '#ff8fb3'],
         'luxe' => ['accent' => '#c9a45c', 'selected_background' => '#241f1a', 'button_background' => '#c9a45c', 'button_text' => '#1a1714', 'label_background' => '#c9a45c', 'label_text' => '#1a1714', 'background' => '#1a1714', 'text' => '#f5efe4', 'muted' => '#bfb39f', 'border' => '#3a332a', 'gift_background' => '#241f1a', 'summary_background' => '#2a241c', 'summary_text' => '#e5c886', 'badge_background' => '#3a2f1c', 'badge_text' => '#e5c886'],
+        'sage' => ['accent' => '#2f6f5e', 'selected_background' => '#eef6f2', 'button_background' => '#2f6f5e', 'label_background' => '#2f6f5e', 'gift_background' => '#f3f8f5', 'summary_background' => '#e6f2ec', 'summary_text' => '#1f5446'],
+        'berry' => ['accent' => '#a3214f', 'selected_background' => '#fbeff3', 'button_background' => '#a3214f', 'label_background' => '#a3214f', 'background' => '#fffafb', 'border' => '#efd5de', 'summary_background' => '#fbe7ee', 'summary_text' => '#8a1c43'],
     ];
 
     /** Visual skins: each bundle template has its own look (header, offer cards, selection and button). */
-    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe'];
+    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe', 'subscribe', 'refill', 'box'];
 
     /**
      * Ready-made models per bundle type. "layout" and "style" pick the storefront
@@ -116,6 +130,25 @@ class BundleSchema
             'fx-classic' => ['type' => 'fixed', 'name' => 'Classic fixed bundle', 'description' => 'The single product or the full pack, with the pack’s products listed.', 'layout' => 'vertical', 'skin' => 'outline', 'design' => ['preset' => 'blue', 'radius' => 4, 'selected_background' => '#ffffff']],
             'fx-fbt' => ['type' => 'fixed', 'name' => 'Frequently bought together', 'description' => 'Products side by side with plus signs and one total.', 'layout' => 'horizontal', 'style' => 'fbt', 'skin' => 'fbt', 'design' => ['preset' => 'black', 'radius' => 12]],
             'fx-checklist' => ['type' => 'fixed', 'name' => 'Complete the set', 'description' => 'A checklist of the pack’s products with the saving highlighted.', 'layout' => 'vertical', 'style' => 'checklist', 'skin' => 'checklist', 'design' => ['preset' => 'green', 'radius' => 10]],
+
+            // Subscription bundles: listed under "Subscription bundle" (group), built on the bundle types above.
+            'sb-tiers' => ['type' => 'quantity-breaks', 'group' => 'subscription', 'name' => 'Subscribe & save tiers', 'description' => 'Quantity tiers with one-time or subscribe cards; the subscription is preselected.', 'layout' => 'vertical', 'skin' => 'subscribe', 'design' => ['preset' => 'sage', 'radius' => 14],
+                'offers' => [
+                    self::quantityOffer(1, 'none', 0, '1 bottle', 'Every delivery'),
+                    self::quantityOffer(2, 'percentage', 10, '2 bottles', 'You save {saving} on your first delivery', label: 'Most popular', highlight: true, preselected: true),
+                    self::quantityOffer(3, 'percentage', 15, '3 bottles', 'You save {saving} on your first delivery'),
+                ],
+                'settings' => ['title' => 'Subscribe & save', 'subtitle' => 'Pick a pack and how often it arrives'],
+                'subscription' => ['enabled' => true, 'layout' => 'cards', 'default' => 'subscribe']],
+            'sb-set' => ['type' => 'fixed', 'group' => 'subscription', 'name' => 'Refill set subscription', 'description' => 'A product set delivered on repeat, with a subscribe toggle and its benefits.', 'layout' => 'vertical', 'style' => 'checklist', 'skin' => 'refill', 'design' => ['preset' => 'berry', 'radius' => 18],
+                'offers' => [
+                    self::offer(['id' => 'm1', 'kind' => 'multi', 'title' => 'The complete routine', 'subtitle' => 'You save {saving} on your first delivery', 'discount_type' => 'percentage', 'discount_value' => 10, 'label' => 'Refill set', 'highlight' => true, 'preselected' => true]),
+                ],
+                'settings' => ['title' => 'Your routine, on repeat', 'subtitle' => 'The full set, delivered when you need it'],
+                'subscription' => ['enabled' => true, 'layout' => 'toggle', 'default' => 'subscribe']],
+            'sb-box' => ['type' => 'mix-match', 'group' => 'subscription', 'name' => 'Build your subscription box', 'description' => 'Shoppers fill a box and choose how often it arrives.', 'layout' => 'grid', 'skin' => 'box', 'design' => ['preset' => 'orange', 'radius' => 16],
+                'settings' => ['title' => 'Build your box', 'subtitle' => 'Choose 3 favourites, delivered on your schedule'],
+                'subscription' => ['enabled' => true, 'layout' => 'checkbox', 'default' => 'subscribe', 'subscribe_label' => 'Deliver my box on repeat']],
 
             'fg-classic' => ['type' => 'fixed-gifts', 'name' => 'Fixed bundle + gifts', 'description' => 'A pack that unlocks free gifts, shown as gift tiles.', 'layout' => 'vertical', 'skin' => 'luxe', 'design' => ['preset' => 'luxe', 'radius' => 6]],
         ];
@@ -233,19 +266,38 @@ class BundleSchema
             'gifts' => ['enabled' => in_array($type, ['quantity-gifts', 'fixed-gifts'], true), 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked'],
             'upsells' => ['enabled' => false, 'title' => 'Complete your order', 'products' => [], 'discount_percent' => 10],
             'summary' => ['enabled' => true, 'text' => 'You save {saving}'],
+            'subscription' => self::subscriptionDefaults(),
             'design' => array_merge(self::designDefaults($model['design']['preset'] ?? 'black'), $model['design'] ?? [], array_intersect_key($branding, array_flip(['font']))),
             'schedule' => ['starts_at' => null, 'ends_at' => null],
             'analytics' => ['track_views' => true, 'track_clicks' => true],
             'behavior' => ['priority' => 50],
         ];
 
-        foreach (['offers', 'mix', 'gifts', 'upsells', 'summary'] as $section) {
+        foreach (['settings', 'offers', 'mix', 'gifts', 'upsells', 'summary', 'subscription'] as $section) {
             if (isset($model[$section])) {
                 $config[$section] = $section === 'offers' ? $model[$section] : array_merge($config[$section], $model[$section]);
             }
         }
 
         return $config;
+    }
+
+    /**
+     * Subscribe & save inside a bundle. Plans come from the store's subscription app (Shopify selling
+     * plans on the products); shoppers pick how often, and every paid item is added on that plan.
+     */
+    public static function subscriptionDefaults(): array
+    {
+        return [
+            'enabled' => false,
+            'layout' => 'cards',
+            'default' => 'subscribe',
+            'once_label' => 'One-time purchase',
+            'subscribe_label' => 'Subscribe & save',
+            'frequency_label' => 'Deliver every',
+            'benefits' => "Save on every delivery\nSkip, pause or cancel anytime",
+            'recurring_text' => 'Then {price} per delivery',
+        ];
     }
 
     public static function designDefaults(string $preset = 'black'): array
@@ -289,7 +341,7 @@ class BundleSchema
     {
         $input = self::migrateLegacy($input);
         $errors = [];
-        $type = array_key_exists($input['bundle_type'] ?? '', self::TYPES) ? $input['bundle_type'] : 'quantity-breaks';
+        $type = array_key_exists($input['bundle_type'] ?? '', self::TYPES) && empty(self::TYPES[$input['bundle_type']]['catalog']) ? $input['bundle_type'] : 'quantity-breaks';
         $defaults = self::defaults(self::firstModel($type));
 
         $s = (array) ($input['settings'] ?? []);
@@ -401,6 +453,8 @@ class BundleSchema
         $g = (array) ($input['gifts'] ?? []);
         $u = (array) ($input['upsells'] ?? []);
         $sm = (array) ($input['summary'] ?? []);
+        $sub = (array) ($input['subscription'] ?? []);
+        $sd = self::subscriptionDefaults();
         $config = [
             'bundle_type' => $type,
             'settings' => $settings,
@@ -414,6 +468,16 @@ class BundleSchema
                 'discount_percent' => max(0, min(100, round((float) ($u['discount_percent'] ?? 0), 2))),
             ],
             'summary' => ['enabled' => self::bool($sm['enabled'] ?? true), 'text' => self::text($sm['text'] ?? 'You save {saving}', 80)],
+            'subscription' => [
+                'enabled' => self::bool($sub['enabled'] ?? false),
+                'layout' => self::pick($sub['layout'] ?? null, array_keys(self::SUBSCRIPTION_LAYOUTS), 'cards'),
+                'default' => self::pick($sub['default'] ?? null, ['subscribe', 'once'], 'subscribe'),
+                'once_label' => self::text($sub['once_label'] ?? $sd['once_label'], 40) ?: $sd['once_label'],
+                'subscribe_label' => self::text($sub['subscribe_label'] ?? $sd['subscribe_label'], 40) ?: $sd['subscribe_label'],
+                'frequency_label' => self::text($sub['frequency_label'] ?? $sd['frequency_label'], 40),
+                'benefits' => mb_substr(implode("\n", array_slice(array_filter(array_map(fn ($l) => self::text($l, 80), preg_split('/\R/', (string) ($sub['benefits'] ?? $sd['benefits'])))), 0, 4)), 0, 400),
+                'recurring_text' => self::text($sub['recurring_text'] ?? $sd['recurring_text'], 80),
+            ],
             'design' => self::design((array) ($input['design'] ?? [])),
             'schedule' => [
                 'starts_at' => self::date($input['schedule']['starts_at'] ?? null, $timezone),
@@ -487,7 +551,7 @@ class BundleSchema
     public static function firstModel(string $type): string
     {
         foreach (self::models() as $key => $model) {
-            if ($model['type'] === $type) {
+            if (($model['group'] ?? $model['type']) === $type) {
                 return $key;
             }
         }
@@ -523,6 +587,7 @@ class BundleSchema
                 'gifts' => $config['gifts'],
                 'upsells' => ['enabled' => $config['upsells']['enabled'], 'title' => $config['upsells']['title'], 'products' => $strip($config['upsells']['products']), 'discount_percent' => $config['upsells']['discount_percent']],
                 'summary' => $config['summary'],
+                'subscription' => $config['subscription'] ?? self::subscriptionDefaults(),
             ],
             'design' => $config['design'] + [
                 // The runtime's shared variables.

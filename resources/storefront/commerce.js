@@ -27,7 +27,9 @@
       return Object.assign(p, {
         title: live.title, image: img ? (img.indexOf('//') === 0 ? 'https:' + img : img) : p.image,
         price: first.price, compare_at: first.compare_at, variant_id: first.id, available: variants.some(function (v) { return v.available; }),
-        variants: variants.length > 1 ? variants : null
+        variants: variants.length > 1 ? variants : null,
+        // Subscription plans (selling plans) and each variant's plan prices, for subscription bundles.
+        plans: (live.selling_plan_groups || []).length ? { groups: live.selling_plan_groups, variants: live.variants } : null
       });
     }).catch(function () { return p; });
   }
@@ -138,7 +140,7 @@
     var detail = {
       experience: { id: exp.id, type: exp.type, template: exp.template },
       // Theme code may change these before they are sent (e.g. add a line property).
-      items: items.map(function (i) { return { id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }; }),
+      items: items.map(function (i) { return Object.assign({ id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }, i.selling_plan ? { selling_plan: i.selling_plan } : {}); }),
       after: (exp.behavior && exp.behavior.after_add) || 'cart',
       element: rootEl || null,
       getCart: cart

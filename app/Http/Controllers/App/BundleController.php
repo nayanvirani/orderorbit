@@ -53,7 +53,7 @@ class BundleController extends Controller
         return page('bundles/index', [
             'tab' => $tab,
             'bundles' => $bundles->values()->map(fn (Experience $e) => ExperienceController::row($e) + [
-                'kind' => BundleSchema::TYPES[$e->draft_config['bundle_type'] ?? '']['label'] ?? 'Bundle',
+                'kind' => (BundleSchema::TYPES[$e->draft_config['bundle_type'] ?? '']['label'] ?? 'Bundle').(! empty($e->draft_config['subscription']['enabled']) ? ' · Subscription' : ''),
                 'summary' => $summary($e),
                 'stats' => $stats[$e->handle] ?? ['views' => 0, 'adds' => 0, 'orders' => 0, 'revenue' => 0],
             ]),
@@ -88,7 +88,7 @@ class BundleController extends Controller
         return page('bundles/models', [
             'typeKey' => $type,
             'type' => ['label' => BundleSchema::TYPES[$type]['label'], 'lead' => BundleSchema::TYPES[$type]['lead']],
-            'models' => collect(BundleSchema::models())->where('type', $type)->map(fn ($model, $key) => [
+            'models' => collect(BundleSchema::models())->filter(fn ($model) => ($model['group'] ?? $model['type']) === $type)->map(fn ($model, $key) => [
                 'key' => $key, 'name' => $model['name'], 'description' => $model['description'], 'layout' => $model['layout'],
                 'previews' => collect(BundleSchema::PRESETS)->keys()->mapWithKeys(fn ($preset) => [$preset => TemplateLibrary::bundlePreview($key, $branding, $preset)])->all(),
             ])->values(),
@@ -182,7 +182,8 @@ class BundleController extends Controller
             'config' => $config,
             'fieldErrors' => (object) $errors,
             'banner' => $banner ?? (request('error') ? (string) request('error') : null),
-            'type' => ['label' => $type['label']],
+            'type' => ['label' => $type['label'].(! empty($config['subscription']['enabled']) ? ' · Subscription' : '')],
+            'subscriptionLayouts' => BundleSchema::SUBSCRIPTION_LAYOUTS,
             'meta' => [
                 'samples' => TemplateLibrary::samples(),
                 'timezone' => $store->timezone ?? 'UTC',

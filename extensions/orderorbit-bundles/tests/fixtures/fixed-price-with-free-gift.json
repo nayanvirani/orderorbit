@@ -24,7 +24,8 @@
               "product": {
                 "id": "gid://shopify/Product/1"
               }
-            }
+            },
+            "sellingPlanAllocation": null
           },
           {
             "id": "gid://shopify/CartLine/1",
@@ -44,7 +45,8 @@
               "product": {
                 "id": "gid://shopify/Product/2"
               }
-            }
+            },
+            "sellingPlanAllocation": null
           },
           {
             "id": "gid://shopify/CartLine/2",
@@ -66,7 +68,8 @@
               "product": {
                 "id": "gid://shopify/Product/7"
               }
-            }
+            },
+            "sellingPlanAllocation": null
           }
         ]
       },

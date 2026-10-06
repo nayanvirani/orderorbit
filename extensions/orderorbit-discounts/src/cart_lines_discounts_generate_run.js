@@ -13,7 +13,10 @@ import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionS
  *   bq     { id, o: [ null | { q, t: "percentage"|"amount"|"fixed_price"|"none", v, g } ] }
  *          one-product bundle offers: lines tagged _oo_bundle = "<id>|<offer index>|<group>";
  *          the group gets the offer price once it holds q items, and up to g gift lines
- *          (_oo_gift) in the group are free
+ *          (_oo_gift) in the group are free. Entries with s = 1 are packs (p = their product ids,
+ *          all required) and apply only to groups bought on a subscription: those can't be merged
+ *          by the cart transform. mix: { p, tiers: [[count, percent], ...] } prices mix & match
+ *          groups ("<id>|m|<group>") bought on a subscription the same way.
  *   pg     { id, by: "value"|"count", m: [{ t, r: "gift"|"choice"|"shipping"|"percent"|"amount", v, q }] }
  *          progressive gifts: gift lines carry _oo_offer = id and _oo_gift = milestone index and are
  *          free (up to q units) once the milestone is reached; the best reached order discount applies
@@ -92,9 +95,21 @@ const RULES = {
     });
     const found = [];
     for (const [tag, group] of Object.entries(groups)) {
-      const o = (offer.o || [])[Number(tag.split('|')[1])];
-      if (!o) continue;
+      const index = tag.split('|')[1];
       const paid = group.filter((line) => !line.gift);
+      const subscribed = group.some((line) => line.sub);
+      if (index === 'm') {
+        // Mix & match on a subscription: the best tier reached, for products from the pool.
+        const mix = offer.mix;
+        if (!mix || !subscribed || !paid.every((line) => (mix.p || []).includes(line.product))) continue;
+        const tier = [...(mix.tiers || [])].sort((a, b) => b[0] - a[0]).find(([need]) => units(paid) >= Number(need));
+        if (tier && Number(tier[1]) > 0) found.push(candidate(offer.m || 'Bundle discount', paid.map((line) => ({line})), percent(tier[1])));
+        continue;
+      }
+      const o = (offer.o || [])[Number(index)];
+      if (!o) continue;
+      // Packs: only on a subscription (otherwise the cart transform prices them), and complete.
+      if (o.s && (!subscribed || !(o.p || []).every((id) => paid.some((line) => line.product === id)) || !paid.every((line) => (o.p || []).includes(line.product)))) continue;
       if (units(paid) < (Number(o.q) || 1)) continue;
       const total = paid.reduce((sum, line) => sum + line.unit * line.qty, 0);
       const v = Number(o.v) || 0;
@@ -169,6 +184,7 @@ export function cartLinesDiscountsGenerateRun(input) {
       bundle: line.bundle?.value || null,
       gift: !!line.gift?.value,
       giftIndex: line.gift?.value ?? null,
+      sub: !!line.sellingPlanAllocation,
       unit: Number(line.cost.amountPerQuantity.amount),
     }));
 

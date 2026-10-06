@@ -128,6 +128,55 @@ class BundleModuleTest extends TestCase
         $this->assertArrayNotHasKey('excluded', $payload['content']['settings']);
     }
 
+    public function test_subscription_bundles(): void
+    {
+        $store = $this->installedStore();
+        $owner = $this->member($store, 'owner');
+
+        // Listed as a bundle type, with its own models built on the real bundle types.
+        $this->assertContains('Subscription bundle', array_column($this->page('/app/cro/bundles/new', $owner)->json('props.types'), 'label'));
+        $names = array_column($this->page('/app/cro/bundles/new/subscription', $owner)->assertOk()->json('props.models'), 'name');
+        $this->assertSame(['Subscribe & save tiers', 'Refill set subscription', 'Build your subscription box'], $names);
+
+        $this->post('/app/cro/bundles', ['model' => 'sb-box'], $this->as($owner))->assertRedirectContains('/app/cro/bundles/');
+        $bundle = Experience::where('type', 'bundles')->firstOrFail();
+        $this->assertSame('mix-match', $bundle->draft_config['bundle_type']);
+        $this->assertTrue($bundle->draft_config['subscription']['enabled']);
+        $this->assertSame('checkbox', $bundle->draft_config['subscription']['layout']);
+        $this->page("/app/cro/bundles/{$bundle->id}", $owner)->assertOk()->assertJsonPath('props.type.label', 'Bundle builder & mix and match · Subscription');
+
+        // The catalog type is never a bundle's own type; options are cleaned.
+        [$config] = BundleSchema::normalize(['bundle_type' => 'subscription', 'subscription' => ['enabled' => '1', 'layout' => 'nope', 'benefits' => "One\n\n<b>Two</b>\nThree\nFour\nFive"]]);
+        $this->assertSame('quantity-breaks', $config['bundle_type']);
+        $this->assertTrue($config['subscription']['enabled']);
+        $this->assertSame('cards', $config['subscription']['layout']);
+        $this->assertSame("One\nTwo\nThree\nFour", $config['subscription']['benefits']);
+        $this->assertSame($config['subscription'], BundleSchema::payload($config)['content']['subscription']);
+    }
+
+    public function test_subscription_packs_are_priced_by_the_discount_function(): void
+    {
+        $experience = new Experience;
+        $experience->handle = 'b1';
+        $experience->type = 'bundles';
+        $pack = BundleSchema::defaults('sb-set');
+        $pack['offers'][0]['products'] = [['id' => 'gid://shopify/Product/1', 'title' => 'Serum', 'quantity' => 2], ['id' => 'gid://shopify/Product/2', 'title' => 'Cream']];
+
+        // Packs on a subscription can't be merged by the cart transform, so the function prices them.
+        $entry = \App\Services\Experiences\OfferSync::offersFor($experience, $pack)[0];
+        $this->assertSame('bq', $entry['k']);
+        $this->assertSame(['q' => 3, 't' => 'percentage', 'v' => 10.0, 'p' => ['1', '2'], 's' => 1], $entry['o'][0]);
+
+        // Without subscriptions, packs stay with the cart transform (unchanged).
+        $pack['subscription']['enabled'] = false;
+        $this->assertSame([], \App\Services\Experiences\OfferSync::offersFor($experience, $pack));
+
+        $box = BundleSchema::defaults('sb-box');
+        $box['mix']['pool'] = [['id' => 'gid://shopify/Product/3', 'title' => 'A'], ['id' => 'gid://shopify/Product/4', 'title' => 'B']];
+        $entry = \App\Services\Experiences\OfferSync::offersFor($experience, $box)[0];
+        $this->assertSame(['p' => ['3', '4'], 'tiers' => [[2, 10.0], [3, 15.0]]], $entry['mix']);
+    }
+
     public function test_legacy_bundles_are_migrated(): void
     {
         [$config] = BundleSchema::normalize(['content' => [

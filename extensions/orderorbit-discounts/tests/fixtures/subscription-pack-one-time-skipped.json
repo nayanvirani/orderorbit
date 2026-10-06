@@ -1,0 +1,91 @@
+{
+  "payload": {
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|0|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/1"
+              }
+            },
+            "sellingPlanAllocation": null
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 1,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|0|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "30"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/2"
+              }
+            },
+            "sellingPlanAllocation": null
+          }
+        ]
+      },
+      "discount": {
+        "discountClasses": [
+          "PRODUCT",
+          "ORDER"
+        ],
+        "metafield": {
+          "jsonValue": {
+            "offers": [
+              {
+                "k": "bq",
+                "id": "b1",
+                "o": [
+                  {
+                    "q": 2,
+                    "t": "percentage",
+                    "v": 15,
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "s": 1
+                  }
+                ],
+                "m": "Bundle & save"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": []
+    }
+  }
+}

@@ -7,7 +7,7 @@ import { Page } from '../../components/ui.jsx';
 import { route, useRouter, useShared } from '../../router.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
 
-export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta }) {
+export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts }) {
   const { submit } = useRouter();
   const { currency } = useShared();
   const ready = useRuntime();
@@ -56,7 +56,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     const d = c.design;
     return {
       id: x.handle, type: 'bundles', template: 'editor', style: c.settings.layout, version: 0, priority: 50,
-      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary },
+      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription },
       design: { ...d, primary_color: d.button_background, accent_color: d.accent, text_color: d.text, background_color: d.background, border: false },
       behavior: { priority: 50, after_add: c.settings.after_add, position: c.settings.position, animation: 'none' },
       targeting: {},
@@ -75,7 +75,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
       pageProduct: { title: p.title, price: Number(first.price || 29), image: image || null, variants: variants.length > 1 ? variants : null } });
   };
 
-  const ctx = { state, set, update, errors, meta, open, toggle, expand, currency };
+  const ctx = { state, set, update, errors, meta: { ...meta, subscriptionLayouts }, open, toggle, expand, currency };
 
   return (
     <Page heading={x.name} back={route('app.bundles.index')} backLabel="Bundles">
@@ -216,10 +216,32 @@ function Extras() {
         <Picker path="upsells.products" label="Add-on products" max={4} />
         <F path="upsells.discount_percent" label="Add-on discount (%)" type="number" min={0} max={100} step={0.01} help="Applies only to add-ons ticked in this bundle." />
       </Section>
+      <Subscription />
       <Section id="summary" title="Savings summary" toggle="summary.enabled">
         <F path="summary.text" label="Text" max={80} help="Use {saving} for the amount saved." />
       </Section>
     </>
+  );
+}
+
+function Subscription() {
+  const { meta } = useContext(Ctx);
+  return (
+    <Section id="subscription" title="Subscriptions" toggle="subscription.enabled">
+      <Help text="Shoppers choose one-time or subscribe & save, and how often. Plans come from your subscription app (Shopify Subscriptions, Recharge, Skio, Loop, Seal, Appstle and others), so add a subscription plan to the bundle's products there first. The option shows only when every product in the selected offer has a plan for the same frequency." />
+      <Row>
+        <F path="subscription.layout" label="Layout" type="select" options={meta.subscriptionLayouts || { cards: 'Two option cards', toggle: 'Toggle', checkbox: 'Checkbox' }} />
+        <F path="subscription.default" label="Selected at first" type="select" options={{ subscribe: 'Subscribe & save', once: 'One-time purchase' }} />
+      </Row>
+      <Row>
+        <F path="subscription.once_label" label="One-time label" max={40} />
+        <F path="subscription.subscribe_label" label="Subscribe label" max={40} />
+      </Row>
+      <F path="subscription.frequency_label" label="Frequency label" max={40} />
+      <F path="subscription.benefits" label="Benefits (one per line, up to 4)" type="textarea" rows={3} />
+      <F path="subscription.recurring_text" label="Later deliveries text" max={80} help="Use {price} for the price of each later delivery and {frequency} for how often." />
+      <Help text="Pricing: the bundle discount applies to the first delivery. Later deliveries are priced by your subscription app's plan (for example 10% off every delivery). Shopify doesn't let apps change the price of later subscription deliveries." />
+    </Section>
   );
 }
 

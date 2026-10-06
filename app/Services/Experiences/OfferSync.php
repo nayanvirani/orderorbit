@@ -49,14 +49,24 @@ class OfferSync
         $offers = [];
         // One-product offers (quantity breaks, variant offers) and their gifts. Offers of several
         // products are merged and priced by the cart transform, so they're null here.
-        $perOffer = array_map(fn ($o) => $o['kind'] === 'multi' ? null : array_filter([
-            'q' => $o['quantity'],
+        // With subscriptions on, packs and mix & match boxes bought on a subscription can't be merged
+        // (Shopify's cart transform skips subscription lines), so this function prices them too:
+        // "s" marks entries that apply only to groups holding subscription lines.
+        $subscribed = ! empty($bundle['subscription']['enabled']);
+        $ids = fn (array $items) => array_values(array_filter(array_map(fn ($p) => preg_match('#(\d+)$#', (string) ($p['id'] ?? ''), $m) ? $m[1] : null, $items)));
+        $perOffer = array_map(fn ($o) => $o['kind'] === 'multi' && ! $subscribed ? null : array_filter([
+            'q' => $o['kind'] === 'multi' ? array_sum(array_map(fn ($p) => max(1, (int) ($p['quantity'] ?? 1)), $o['products'])) : $o['quantity'],
             't' => $o['discount_type'],
             'v' => $o['discount_value'],
             'g' => array_sum(array_map(fn ($g) => $g['product'] ? $g['quantity'] : 0, $o['gifts'])),
-        ], fn ($v) => $v !== 0 && $v !== 0.0), $bundle['offers']);
-        if (array_filter($perOffer, fn ($o) => $o !== null && (($o['t'] ?? 'none') !== 'none' || ($o['g'] ?? 0) > 0))) {
-            $offers[] = ['k' => 'bq', 'id' => $experience->handle, 'o' => $perOffer, 'm' => $bundle['settings']['title'] ?: 'Bundle discount'];
+            'p' => $o['kind'] === 'multi' ? $ids($o['products']) : null,
+            's' => $o['kind'] === 'multi' ? 1 : null,
+        ], fn ($v) => $v !== 0 && $v !== 0.0 && $v !== null), $bundle['offers']);
+        $mix = $subscribed && $bundle['bundle_type'] === 'mix-match' && $bundle['mix']['tiers']
+            ? ['p' => $ids($bundle['mix']['pool']), 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $bundle['mix']['tiers'])]
+            : null;
+        if ($mix || array_filter($perOffer, fn ($o) => $o !== null && (($o['t'] ?? 'none') !== 'none' || ($o['g'] ?? 0) > 0))) {
+            $offers[] = array_filter(['k' => 'bq', 'id' => $experience->handle, 'o' => $perOffer, 'mix' => $mix, 'm' => $bundle['settings']['title'] ?: 'Bundle discount'], fn ($v) => $v !== null);
         }
         if ($bundle['upsells']['enabled'] && $bundle['upsells']['discount_percent'] > 0 && $bundle['upsells']['products']) {
             $offers[] = ['k' => 'upsell', 'id' => $experience->handle.':u', 'v' => $bundle['upsells']['discount_percent'], 'm' => $bundle['upsells']['title'] ?: 'Add-on offer'];

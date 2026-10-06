@@ -10,6 +10,9 @@
  * or the first item picked); no extra product is created. Orders keep the
  * component lines, so Shopify deducts each product's inventory.
  *
+ * Groups holding a subscription line (a selling plan) are left alone: Shopify doesn't allow
+ * transforms on those lines, so the OrderOrbit discount prices them instead.
+ *
  * Config (cart transform metafield $app:bundles), money in shop currency:
  *   { bundles: [{ id, title, image,
  *       o: [ null | { p: [productIds], t: "percentage"|"amount"|"fixed_price"|"none", v, n } ],
@@ -48,6 +51,7 @@ export function cartTransformRun(input) {
       id: line.id,
       qty: line.quantity,
       gift: !!line.gift?.value,
+      sub: !!line.sellingPlanAllocation,
       variant: line.merchandise.id,
       product: numericId(line.merchandise.product.id),
       unit: Number(line.cost.amountPerQuantity.amount),
@@ -60,6 +64,7 @@ export function cartTransformRun(input) {
     const bundle = bundles.find((b) => b.id === bundleId);
     if (!bundle) continue;
 
+    if (lines.some((line) => line.sub)) continue;
     const paid = lines.filter((line) => !line.gift);
     if (!paid.length || lines.length < 2 && units(lines) < 2) continue;
 
