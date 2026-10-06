@@ -67,6 +67,7 @@ class SiteTheme
         'Shape' => [
             'radius' => ['Card corner radius', 'px', '20', '--radius', 'In pixels (0–40).'],
             'button_radius' => ['Button corner radius', 'px', '999', '--radius-btn', '999 for pill buttons, 0 for square.'],
+            'page_width' => ['Page width', 'px', '1360', '--wrap', 'The widest the content gets on large screens (1000–1600).'],
         ],
     ];
 
@@ -75,7 +76,7 @@ class SiteTheme
 
     public const WEIGHTS = ['300' => 'Light', '400' => 'Regular', '500' => 'Medium', '600' => 'Semibold', '700' => 'Bold'];
 
-    private const LIMITS = ['body_size' => [14, 20], 'radius' => [0, 40], 'button_radius' => [0, 999]];
+    private const LIMITS = ['body_size' => [14, 20], 'radius' => [0, 40], 'button_radius' => [0, 999], 'page_width' => [1000, 1600]];
 
     /** @return array<string, array{0: string, 1: string, 2: string, 3: string, 4: ?string}> key => field */
     public static function fields(): array

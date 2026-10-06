@@ -24,7 +24,7 @@
         @media (prefers-reduced-motion: reduce) { .orbit i { animation: none; } }
         .eyebrow { font: 500 11px/1 var(--f-label), system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
         h1 { margin: 14px 0 12px; color: var(--c-heading); font: var(--fw-heading) clamp(40px, 9vw, 64px)/1 var(--f-heading), system-ui, sans-serif; letter-spacing: -.01em; }
-        h1 em { font-style: italic; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
+        h1 em { font-style: normal; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
         p { margin: 0 auto; max-width: 440px; color: var(--muted); }
         details { margin-top: 40px; }
         summary { display: inline-block; cursor: pointer; font: 500 12px/1 var(--f-label), system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); list-style: none; }

@@ -25,7 +25,7 @@
         @media (prefers-reduced-motion: reduce) { .orbit i { animation: none; } }
         .code { font: 500 12px/1 var(--f-label), system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
         h1 { margin: 14px 0 14px; color: var(--c-heading); font: var(--fw-heading) clamp(40px, 9vw, 64px)/1.02 var(--f-heading), system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; }
-        h1 em { font-style: italic; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
+        h1 em { font-style: normal; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
         p { margin: 0 auto; max-width: 460px; color: var(--muted); text-wrap: pretty; }
         .ctas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; }
         .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border: 1px solid var(--ink); border-radius: var(--radius-btn); color: var(--ink); font: 500 15px/1 var(--f-body), sans-serif; text-decoration: none; background: none; cursor: pointer; }

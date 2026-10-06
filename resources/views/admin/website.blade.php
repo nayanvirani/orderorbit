@@ -31,7 +31,7 @@
                                     @foreach (\App\Support\SiteTheme::WEIGHTS as $w => $wl)<option value="{{ $w }}" @selected((string) $value === (string) $w)>{{ $wl }} ({{ $w }})</option>@endforeach
                                 </select>
                             @else
-                                <span class="ad-input-prefix"><input type="number" name="theme[{{ $key }}]" value="{{ $value }}" data-var="{{ $var }}" data-type="px" data-key="{{ $key }}" min="0" max="999" style="border-radius:9px 0 0 9px"><span style="border-radius:0 9px 9px 0;border-left:0;border-right:1px solid #cfd1dc">px</span></span>
+                                <span class="ad-input-prefix"><input type="number" name="theme[{{ $key }}]" value="{{ $value }}" data-var="{{ $var }}" data-type="px" data-key="{{ $key }}" min="0" max="1600" style="border-radius:9px 0 0 9px"><span style="border-radius:0 9px 9px 0;border-left:0;border-right:1px solid #cfd1dc">px</span></span>
                             @endif
                             @if ($help)<small>{{ $help }}</small>@endif
                         </label>
