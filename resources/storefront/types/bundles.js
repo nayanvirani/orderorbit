@@ -32,11 +32,22 @@
 
   function units(o) { return o.kind === 'multi' ? 0 : Number(o.quantity || 1); }
 
-  function prices(o, ctx) {
-    var b = base(ctx);
-    var full = o.kind === 'quantity' ? b.price * units(o)
-      : o.kind === 'mono' ? Number((o.product[0] || {}).price || 0) * units(o)
-        : (o.products || []).reduce(function (sum, p) { return sum + Number(p.price || 0) * Number(p.quantity || 1); }, 0);
+  // Total of n units of a product: each unit at the variant picked in its picker (key:u), else at
+  // the product's price, so offers with differently priced variants show what the cart charges.
+  function picked(root, key, n, price) {
+    var sum = 0;
+    for (var u = 0; u < n; u++) {
+      var sel = root && root.querySelector('[data-oo-v="' + key + ':' + u + '"]');
+      var opt = sel && sel.options[sel.selectedIndex];
+      sum += opt && opt.getAttribute('data-price') ? Number(opt.getAttribute('data-price')) : Number(price || 0);
+    }
+    return sum;
+  }
+
+  function prices(o, ctx, i, root) {
+    var full = o.kind === 'quantity' ? picked(root, i + ':p', units(o), base(ctx).price)
+      : o.kind === 'mono' ? picked(root, i + ':p', units(o), (o.product[0] || {}).price)
+        : (o.products || []).reduce(function (sum, p, j) { return sum + picked(root, i + ':' + j, Number(p.quantity || 1), p.price); }, 0);
     var after = afterOffer(full, o);
     return { full: full, after: after, saving: Math.max(0, full - after), pct: full ? Math.round((1 - after / full) * 100) : 0 };
   }
@@ -87,30 +98,23 @@
     return '<span class="oo-bthumb">' + h.productImage(p) + (n > 1 ? '<i>×' + n + '</i>' : '') + '</span>';
   }
 
+  function priceHtml(pr, ctx) { return '<b>' + money(pr.after, ctx) + '</b>' + (pr.saving > 0 ? '<s>' + money(pr.full, ctx) + '</s>' : ''); }
+
   function offerCard(o, i, c, ctx, selected) {
-    var pr = prices(o, ctx);
+    var pr = prices(o, ctx, i);
     var badge = o.badge || (pr.pct > 0 ? '−' + pr.pct + '%' : '');
     return '<label class="oo-boffer' + (selected ? ' oo-bsel' : '') + (o.highlight ? ' oo-bhl' : '') + '" data-oo-offer="' + i + '">' +
       (o.label ? '<span class="oo-blabel">' + h.esc(o.label) + '</span>' : '') +
       '<span class="oo-brow"><input type="radio" name="oo-b-' + h.esc(c._id) + '" value="' + i + '"' + (selected ? ' checked' : '') + '>' + thumb(o, ctx) +
       '<span class="oo-bmain"><span class="oo-btitle">' + h.esc(o.title) + (badge ? ' <em class="oo-bbadge">' + h.esc(badge) + '</em>' : '') + '</span>' +
       (o.subtitle ? '<span class="oo-bsubt">' + fillText(o.subtitle, pr, ctx) + '</span>' : '') + '</span>' +
-      '<span class="oo-bprice"><b>' + money(pr.after, ctx) + '</b>' + (pr.saving > 0 ? '<s>' + money(pr.full, ctx) + '</s>' : '') + '</span></span>' +
+      '<span class="oo-bprice">' + priceHtml(pr, ctx) + '</span></span>' +
       '<span class="oo-bdetail">' + detail(o, i, c, ctx) + giftTiles(o, c, ctx) + '</span></label>';
-  }
-
-  function timer(t) {
-    if (!t.enabled) return '';
-    var end;
-    if (t.mode === 'date') end = Date.parse(t.ends_at || '');
-    else { var d = new Date(); d.setHours(24, 0, 0, 0); end = d.getTime(); }
-    if (!end || end <= Date.now()) return '';
-    return '<div class="oo-btimer"><span>' + h.esc(t.text) + '</span><span class="oo-timer" data-oo-end="' + end + '"><b>--</b>:<b>--</b>:<b>--</b>:<b>--</b></span></div>';
   }
 
   function header(s) {
     return (s.title ? '<div class="oo-bhead' + (s.hide_lines ? '' : ' oo-blines') + '"><span>' + h.esc(s.title) + '</span></div>' : '') +
-      (s.subtitle ? '<p class="oo-bsub">' + h.esc(s.subtitle) + '</p>' : '') + timer(s.timer || {});
+      (s.subtitle ? '<p class="oo-bsub">' + h.esc(s.subtitle) + '</p>' : '') + OrderOrbit.timers.bundle(s.timer);
   }
 
   function upsells(c, ctx) {
@@ -197,14 +201,13 @@
       function update() {
         var sum = root.querySelector('[data-oo-sum]');
         var saving = 0;
-        var full = picks.reduce(function (n, p) { return n + p.price; }, 0);
         if (mix) {
           saving = OrderOrbit.bundleMix.update(root, c, ctx, picks, btn, B, upsellTotal());
-          if (sub(c)) sub(c).update(root, c, ctx, 'm', full, full - saving, upsellTotal(), btn);
         } else {
           var i = current();
           root.querySelectorAll('.oo-boffer').forEach(function (el) { el.classList.toggle('oo-bsel', Number(el.getAttribute('data-oo-offer')) === i); });
-          var pr = prices(c.offers[i], ctx);
+          var pr = prices(c.offers[i], ctx, i, root);
+          root.querySelector('.oo-bsel .oo-bprice').innerHTML = priceHtml(pr, ctx);
           saving = pr.saving;
           btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(pr.after + upsellTotal(), ctx);
           if (sub(c)) sub(c).update(root, c, ctx, i, pr.full, pr.after, upsellTotal(), btn);

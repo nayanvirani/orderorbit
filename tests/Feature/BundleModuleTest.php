@@ -165,6 +165,7 @@ class BundleModuleTest extends TestCase
         // Packs on a subscription can't be merged by the cart transform, so the function prices them.
         $entry = \App\Services\Experiences\OfferSync::offersFor($experience, $pack)[0];
         $this->assertSame('bq', $entry['k']);
+        $this->assertSame('Bundle discount · first delivery', $entry['m'], 'Told apart from the subscription plan\'s own saving in the cart.');
         $this->assertSame(['q' => 3, 't' => 'percentage', 'v' => 10.0, 'p' => ['1', '2'], 's' => 1], $entry['o'][0]);
 
         // Without subscriptions, packs stay with the cart transform (unchanged).

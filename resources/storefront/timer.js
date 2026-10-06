@@ -52,4 +52,14 @@
       if (!timer) timer = setInterval(tick, 1000);
     }
   };
+
+  // A bundle's header timer: to a date, or to the end of the shopper's day.
+  OrderOrbit.timers.bundle = function (t) {
+    if (!t || !t.enabled) return '';
+    var end;
+    if (t.mode === 'date') end = Date.parse(t.ends_at || '');
+    else { var d = new Date(); d.setHours(24, 0, 0, 0); end = d.getTime(); }
+    if (!end || end <= Date.now()) return '';
+    return '<div class="oo-btimer"><span>' + OrderOrbit.h.esc(t.text) + '</span><span class="oo-timer" data-oo-end="' + end + '"><b>--</b>:<b>--</b>:<b>--</b>:<b>--</b></span></div>';
+  };
 })();

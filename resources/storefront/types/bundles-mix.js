@@ -47,6 +47,8 @@
       btn.disabled = picks.length < Math.min(2, c.mix.slots);
       root.querySelectorAll('[data-oo-pick]').forEach(function (b) { b.disabled = full; b.textContent = full ? 'Bundle full' : '+ Add'; });
       btn.innerHTML = h.esc(c.settings.button_text) + (total ? ' · ' + B.money(total - saving + extra, ctx) : '');
+      // Subscribe & save (oo-bundles-sub.js) prices the box's first delivery.
+      if (c.subscription && c.subscription.enabled && OrderOrbit.bundleSub) OrderOrbit.bundleSub.update(root, c, ctx, 'm', total, total - saving, extra, btn);
       return saving;
     }
   };

@@ -66,7 +66,9 @@ class OfferSync
             ? ['p' => $ids($bundle['mix']['pool']), 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $bundle['mix']['tiers'])]
             : null;
         if ($mix || array_filter($perOffer, fn ($o) => $o !== null && (($o['t'] ?? 'none') !== 'none' || ($o['g'] ?? 0) > 0))) {
-            $offers[] = array_filter(['k' => 'bq', 'id' => $experience->handle, 'o' => $perOffer, 'mix' => $mix, 'm' => $bundle['settings']['title'] ?: 'Bundle discount'], fn ($v) => $v !== null);
+            $offers[] = array_filter(['k' => 'bq', 'id' => $experience->handle, 'o' => $perOffer, 'mix' => $mix,
+                // On a subscription the plan has its own saving; name this one so shoppers can tell them apart.
+                'm' => $subscribed ? 'Bundle discount · first delivery' : ($bundle['settings']['title'] ?: 'Bundle discount')], fn ($v) => $v !== null);
         }
         if ($bundle['upsells']['enabled'] && $bundle['upsells']['discount_percent'] > 0 && $bundle['upsells']['products']) {
             $offers[] = ['k' => 'upsell', 'id' => $experience->handle.':u', 'v' => $bundle['upsells']['discount_percent'], 'm' => $bundle['upsells']['title'] ?: 'Add-on offer'];
