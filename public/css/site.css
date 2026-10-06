@@ -18,9 +18,9 @@
     --accent: #0a0a0a;
     --on-accent: #ffffff;
     --dot: rgba(10, 10, 10, .12);
-    --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
-    --sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --serif: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --sans: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
     --radius: 20px;
     --shadow: 0 30px 70px -35px rgba(0, 0, 0, .35);
     /* Kept for mockups/partials that reference it: monochrome "gradient". */
