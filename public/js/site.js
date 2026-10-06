@@ -34,12 +34,19 @@
     // Mobile menu
     const toggle = $('[data-menu-toggle]');
     const menu = $('[data-mobile-menu]');
-    toggle && toggle.addEventListener('click', () => {
-        const open = !menu.classList.contains('open');
+    // Scrolling is locked on <html>, not <body>: with overflow-x: clip on <html>, a locked <body> becomes
+    // its own scroll box and the sticky header (with the close button) scrolls out of view.
+    const setMenu = (open) => {
+        if (!menu) return;
         menu.classList.toggle('open', open);
         toggle.setAttribute('aria-expanded', open);
-        document.body.style.overflow = open ? 'hidden' : '';
-    });
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Menu');
+        document.documentElement.classList.toggle('menu-open', open);
+    };
+    toggle && toggle.addEventListener('click', () => setMenu(!menu.classList.contains('open')));
+    menu && menu.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu && menu.classList.contains('open')) { setMenu(false); toggle.focus(); } });
+    window.addEventListener('resize', () => { if (window.innerWidth > 1080 && menu && menu.classList.contains('open')) setMenu(false); });
 
     // Tabs
     $$('[data-tabs]').forEach((root) => {

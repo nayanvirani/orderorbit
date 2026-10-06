@@ -88,12 +88,12 @@
             <div class="header-actions">
                 <a class="signin" href="{{ config('shopify.sign_in_url') }}">{{ $menu['signin'] }}</a>
                 <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">{{ $menu['install'] }}</a>
-                <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" data-menu-toggle><x-icon name="menu"/></button>
+                <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle><x-icon name="menu" class="when-closed"/><x-icon name="x" class="when-open"/></button>
             </div>
         </div>
     </header>
 
-    <div class="mobile-menu" data-mobile-menu>
+    <div class="mobile-menu" id="mobile-menu" data-mobile-menu>
         <details>
             <summary>{{ $menu['product'] }} <x-icon name="chev"/></summary>
             <div class="links">
