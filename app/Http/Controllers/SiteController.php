@@ -99,14 +99,18 @@ class SiteController extends Controller
 
     public function templates(): View
     {
-        return view('site.templates', ['templates' => Content::templates()]);
+        return view('site.templates', [
+            'templates' => \App\Support\TemplateGallery::showcase(),
+            'hidden' => \App\Support\TemplateGallery::hiddenCounts(),
+            'total' => count(Content::templates()),
+        ]);
     }
 
-    /** Every gallery template's render-ready preview, keyed type:key (drawn in the browser by the storefront runtime). */
+    /** The showcased templates' render-ready previews, keyed type:key (drawn in the browser by the storefront runtime). */
     public function templatePreviews(): \Illuminate\Http\JsonResponse
     {
         $previews = [];
-        foreach (\App\Support\TemplateGallery::all() as $t) {
+        foreach (\App\Support\TemplateGallery::showcase() as $t) {
             $previews[$t['type'].':'.$t['key']] = \App\Support\TemplateGallery::preview($t['type'], $t['key']);
         }
 

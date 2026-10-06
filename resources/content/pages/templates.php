@@ -10,7 +10,17 @@ return [
     'lead' => 'A template is a ready-made layout, not a fixed design. Pick one in the app, then change every offer, product, text, colour, size and spacing to match your store, with a live preview.',
     'all' => 'All',
     'filter_label' => 'Filter templates by feature',
-    'count' => '{count} templates',
+    'count' => 'Showing {count} of {total} templates',
+    'more' => [
+        'title' => '+{count} more {feature} templates',
+        'text' => 'Install the app free to see and use every layout.',
+        'button' => 'Install to see all',
+    ],
+    'locked' => [
+        'title' => '*{hidden} more templates* are waiting inside the app',
+        'text' => 'This page shows a few layouts per feature. Install OrderOrbit Space free to browse the full library of {total} ready-made templates and preview each one on your own products.',
+        'button' => 'Install free and see all templates',
+    ],
     'preview' => 'About this feature',
     'use' => 'Use template',
     'how' => [

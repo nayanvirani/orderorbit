@@ -31,7 +31,7 @@ class PublicSiteTest extends TestCase
         $this->get('/features/quantity-breaks')->assertRedirect('/features/bundles');
         $this->get('/features/upsell-cross-sell')->assertRedirect('/features/cart-upsells');
         $this->get('/features/progressive-gifts')->assertOk()->assertSee('Rewards that grow with the cart.');
-        $this->get('/templates')->assertOk()->assertSee('A template is a ready-made layout')->assertSee('Quantity inversion offer')->assertSee('Radial counter');
+        $this->get('/templates')->assertOk()->assertSee('A template is a ready-made layout')->assertSee('Showing');
     }
 
     public function test_unknown_feature_is_a_404_page(): void

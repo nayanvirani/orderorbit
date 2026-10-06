@@ -50,6 +50,53 @@ class TemplateGallery
         return $list;
     }
 
+    /** Templates shown on the public website per feature; the rest are only in the app. */
+    public const PUBLIC_PER_FEATURE = 3;
+
+    /**
+     * The public showcase: a few templates per feature, taken in turn from each of its block types,
+     * so visitors see the range without the whole library being on the open web.
+     *
+     * @return list<array{type: string, key: string, name: string, label: string, surface: string, feature: string}>
+     */
+    public static function showcase(): array
+    {
+        $byFeature = [];
+        foreach (self::all() as $t) {
+            $byFeature[$t['feature']][$t['type']][] = $t;
+        }
+        $out = [];
+        foreach ($byFeature as $types) {
+            $picked = [];
+            for ($round = 0; count($picked) < self::PUBLIC_PER_FEATURE; $round++) {
+                $added = false;
+                foreach ($types as $list) {
+                    if (isset($list[$round]) && count($picked) < self::PUBLIC_PER_FEATURE) {
+                        $picked[] = $list[$round];
+                        $added = true;
+                    }
+                }
+                if (! $added) {
+                    break;
+                }
+            }
+            array_push($out, ...$picked);
+        }
+
+        return $out;
+    }
+
+    /** Templates per website feature that are only shown inside the app. @return array<string, int> */
+    public static function hiddenCounts(): array
+    {
+        $hidden = array_count_values(array_column(self::all(), 'feature'));
+        foreach (self::showcase() as $t) {
+            $hidden[$t['feature']]--;
+        }
+
+        return $hidden;
+    }
+
     /** The render-ready preview of a template, in neutral sample branding. */
     public static function preview(string $type, string $key): array
     {

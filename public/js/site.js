@@ -153,10 +153,15 @@
         const items = $$('[data-chip-item]', scope);
         const count = $('[data-chip-count]', scope.parentNode || document);
         const pick = (value) => {
-            let shown = 0;
-            items.forEach((el) => { const ok = value === 'all' || (el.dataset.tags || '').split(' ').includes(value); el.hidden = !ok; shown += ok; });
+            // Items with data-more (e.g. "more templates in the app") add to {total}, not {count}.
+            let shown = 0, more = 0;
+            items.forEach((el) => {
+                const ok = value === 'all' || (el.dataset.tags || '').split(' ').includes(value);
+                el.hidden = !ok;
+                if (ok && el.dataset.more) more += Number(el.dataset.more); else shown += ok;
+            });
             $$('[data-chip]', group).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.chip === value)));
-            if (count) count.textContent = count.dataset.template.replace('{count}', shown);
+            if (count) count.textContent = count.dataset.template.replace('{count}', shown).replace('{total}', shown + more);
         };
         $$('[data-chip]', group).forEach((b) => b.addEventListener('click', () => pick(b.dataset.chip)));
         const hash = location.hash.slice(1);

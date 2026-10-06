@@ -570,3 +570,22 @@ table.compare { width: 100%; min-width: 760px; border-collapse: collapse; font-s
 .tpl-card .thumb.live .oo-preview { width: 100%; pointer-events: none; font-size: 14px; color: #1d1b33; text-align: left; }
 .tpl-loading { display: block; height: 100%; min-height: 220px; border-radius: 14px; background: linear-gradient(90deg, var(--c-surface), color-mix(in srgb, var(--c-surface) 60%, var(--c-bg-alt)), var(--c-surface)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 @keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Templates page: the rest of the library is in the app */
+.tpl-more { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 460px; padding: 32px 28px; text-align: center; color: var(--c-heading); text-decoration: none; background: linear-gradient(160deg, var(--accent-soft), var(--c-surface) 70%); border: 1px dashed color-mix(in srgb, var(--c-accent) 45%, var(--c-line)); }
+.tpl-more:hover { color: var(--c-heading); border-color: var(--c-accent); transform: translateY(-2px); }
+.tpl-more b { font-size: 21px; line-height: 1.25; }
+.tpl-more > span:not(.btn):not(.lock):not(.tpl-more-stack) { color: var(--c-muted); font-size: 15px; max-width: 260px; }
+.tpl-more .btn { margin-top: 6px; }
+.tpl-more .lock { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--c-accent); color: var(--c-on-accent); box-shadow: 0 12px 28px -12px var(--c-accent); }
+.tpl-more .lock .i { width: 24px; height: 24px; }
+.tpl-more-stack { position: relative; width: 150px; height: 74px; margin-bottom: 6px; }
+.tpl-more-stack i { position: absolute; inset: 0; border-radius: 12px; background: var(--c-surface); border: 1px solid var(--c-line); box-shadow: 0 10px 24px -16px rgba(20, 16, 60, .4); filter: blur(.4px); }
+.tpl-more-stack i:nth-child(1) { transform: rotate(-8deg) translate(-18px, 6px); opacity: .6; }
+.tpl-more-stack i:nth-child(2) { transform: rotate(6deg) translate(18px, 4px); opacity: .8; }
+.tpl-more-stack i:nth-child(3) { background: repeating-linear-gradient(180deg, var(--c-bg-alt) 0 10px, var(--c-surface) 10px 20px); }
+.tpl-locked { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 36px 40px; border-radius: 24px; background: var(--c-dark-bg); color: var(--c-dark-text); }
+.tpl-locked h2 { margin: 0; font-size: clamp(24px, 2.6vw, 32px); color: inherit; }
+.tpl-locked p { margin: 0; max-width: 680px; opacity: .8; font-size: 16.5px; line-height: 1.6; }
+.tpl-locked .btn { flex: none; }
+@media (max-width: 760px) { .tpl-locked { flex-direction: column; align-items: flex-start; padding: 28px 22px; } }
