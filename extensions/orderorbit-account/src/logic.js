@@ -144,9 +144,12 @@ export function boxStyle(style, design, as) {
     inlineSize: d.ck_width && d.ck_width !== 'full' ? size(d.ck_width, d.ck_width_value) : undefined,
     minBlockSize: d.ck_height === 'px' ? size('px', d.ck_height_value) : undefined,
   };
-  if (!custom && (as === 'banner' || BANNER.indexOf(style) !== -1)) return { kind: 'banner', props: {}, size: sized };
-  if (!custom && (as === 'plain' || PLAIN.indexOf(style) !== -1)) return { kind: 'plain', props: {}, size: sized };
-  const plain = as === 'plain' || PLAIN.indexOf(style) !== -1;
+  // "Show as" in the Design step picks the frame; the banner colour is one of Shopify's banner tones.
+  const frame = d.ck_frame && d.ck_frame !== 'auto' ? d.ck_frame : null;
+  const tone = d.ck_banner_tone && d.ck_banner_tone !== 'auto' ? d.ck_banner_tone : undefined;
+  if (frame === 'banner' || (!frame && !custom && (as === 'banner' || BANNER.indexOf(style) !== -1))) return { kind: 'banner', tone, props: {}, size: sized };
+  if (frame === 'plain' || (!frame && !custom && (as === 'plain' || PLAIN.indexOf(style) !== -1))) return { kind: 'plain', props: {}, size: sized };
+  const plain = !frame && (as === 'plain' || PLAIN.indexOf(style) !== -1);
   const border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
   return {
     kind: 'box',

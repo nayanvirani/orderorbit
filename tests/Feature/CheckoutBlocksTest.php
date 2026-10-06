@@ -41,16 +41,16 @@ class CheckoutBlocksTest extends TestCase
         return $experience->fresh();
     }
 
-    public function test_fifteen_block_types_with_checkout_only_settings(): void
+    public function test_seventeen_block_types_with_checkout_only_settings(): void
     {
         $checkout = array_keys(array_filter(Registry::types(), fn ($t) => $t['surface'] === 'checkout'));
         $thankYou = array_keys(array_filter(Registry::types(), fn ($t) => $t['surface'] === 'thank-you'));
-        $this->assertCount(7, $checkout);
+        $this->assertCount(9, $checkout);
         $this->assertCount(8, $thankYou);
 
         // Checkout uses the store's checkout branding: Shopify's box styles only, and only the targeting checkout knows.
         $fields = Schema::fields('checkout-trust');
-        $this->assertSame(['ck_background', 'ck_border', 'ck_border_style', 'ck_radius', 'ck_padding', 'ck_width', 'ck_width_value', 'ck_height', 'ck_height_value', 'ck_text', 'ck_tone'], array_keys($fields['design']));
+        $this->assertSame(['ck_frame', 'ck_banner_tone', 'ck_background', 'ck_border', 'ck_border_style', 'ck_radius', 'ck_padding', 'ck_width', 'ck_width_value', 'ck_height', 'ck_height_value', 'ck_text', 'ck_tone'], array_keys($fields['design']));
         $this->assertSame([], Schema::fields('post-purchase')['design']);
         $this->assertSame(['priority'], array_keys($fields['behavior']));
         $this->assertSame(['cart_min', 'cart_max', 'countries'], array_keys($fields['targeting']));

@@ -14,7 +14,7 @@ export default async () => {
   render(<Extension />, document.body);
 };
 
-const ICON = { shipping: 'delivery', returns: 'return', secure: 'lock', guarantee: 'check-circle', support: 'question-circle' };
+const ICON = { shipping: 'delivery', worldwide: 'globe', returns: 'return', secure: 'lock', guarantee: 'check-circle', support: 'question-circle', quality: 'star', natural: 'nature', love: 'heart', gift: 'gift', shield: 'shield-check-mark', delivery: 'delivery', star: 'star' };
 
 function readPayload() {
   const entry = (shopify.appMetafields?.value || []).find(
@@ -112,7 +112,7 @@ function useVisitor(needed) {
 function Frame({ exp, heading, tone, as, children }) {
   const box = boxStyle(exp.style, exp.design, as);
   if (box.kind === 'banner') {
-    return <Sized size={box.size}><s-banner heading={heading || undefined} tone={tone || 'info'}><s-stack gap="small-200">{children}</s-stack></s-banner></Sized>;
+    return <Sized size={box.size}><s-banner heading={heading || undefined} tone={box.tone || tone || 'info'}><s-stack gap="small-200">{children}</s-stack></s-banner></Sized>;
   }
   if (box.kind === 'plain') {
     return <Sized size={box.size}><s-stack gap="small-200">{heading ? <T type="strong">{heading}</T> : null}{children}</s-stack></Sized>;
@@ -162,6 +162,7 @@ function Reviews({ exp, c }) {
   const count = c.review_count ? ' · ' + shopify.i18n.translate('reviews', { count: Number(c.review_count).toLocaleString() }) : '';
   const summary = c.rating ? (
     <s-stack direction="inline" gap="small-200" alignItems="center">
+      {c.summary_label ? <T type="strong">{c.summary_label}</T> : null}
       <Stars rating={c.rating} />
       <T type="strong">{c.rating}</T>
       {count ? <T>{count}</T> : null}
@@ -170,16 +171,39 @@ function Reviews({ exp, c }) {
   const quote = (r) => (
     <s-stack gap="small-100">
       <Stars rating={r.rating} />
+      {r.title ? <T type="strong">{r.title}</T> : null}
       <T>“{r.quote}”</T>
-      <T color="subdued">{r.author}</T>
+      <T color="subdued">{[r.author, r.date].filter(Boolean).join(', ')}</T>
     </s-stack>
   );
+  const footer = c.footer ? <T color="subdued">{c.footer}</T> : null;
+
+  if (exp.style === 'carousel') {
+    const r = reviews[i % reviews.length];
+    return (
+      <Frame exp={exp} as="plain">
+        <s-stack direction="inline" gap="small-200" alignItems="center" justifyContent="center">
+          {c.summary_label ? <s-heading>{c.summary_label}</s-heading> : null}
+          <Stars rating={c.rating || 5} />
+        </s-stack>
+        <s-box border="base" borderRadius="base" padding="base">{quote(r)}</s-box>
+        {reviews.length > 1 ? (
+          <s-stack direction="inline" gap="small-300" justifyContent="center">
+            <s-button variant="tertiary" accessibilityLabel={shopify.i18n.translate('previous')} onClick={() => setI((i + reviews.length - 1) % reviews.length)}>←</s-button>
+            <s-button variant="tertiary" accessibilityLabel={shopify.i18n.translate('next')} onClick={() => setI(i + 1)}>→</s-button>
+          </s-stack>
+        ) : null}
+        {footer ? <s-stack alignItems="center">{footer}</s-stack> : null}
+      </Frame>
+    );
+  }
 
   if (exp.style === 'card') {
     return (
       <Frame exp={exp} heading={c.headline}>
         {summary}
         <s-grid gridTemplateColumns="1fr 1fr" gap="base">{reviews.map((r) => <Tile>{quote(r)}</Tile>)}</s-grid>
+        {footer}
       </Frame>
     );
   }
@@ -226,6 +250,7 @@ function Reviews({ exp, c }) {
         {summary}
       </Row>
       <Divided items={reviews.map(quote)} />
+      {footer}
     </Frame>
   );
 }
@@ -262,7 +287,16 @@ function Countdown({ exp, c }) {
   const pad = (n) => (n < 10 ? '0' : '') + n;
   const days = Math.floor(left / 864e5);
   const parts = [Math.floor((left % 864e5) / 36e5), Math.floor((left % 36e5) / 6e4), Math.floor((left % 6e4) / 1e3)].map(pad);
-  const time = (days ? days + 'd ' : '') + parts.join(':');
+  // Under an hour reads as 9:52, like a reservation timer.
+  const time = days ? days + 'd ' + parts.join(':') : parts[0] === '00' ? Number(parts[1]) + ':' + parts[2] : parts.join(':');
+
+  if (exp.style === 'reserved') {
+    return (
+      <Frame exp={exp} as="banner" tone="success">
+        <T type="strong">{c.headline} {time}</T>
+      </Frame>
+    );
+  }
 
   if (exp.style === 'banner') {
     return <Frame exp={exp} heading={c.headline} tone="warning"><T>{shopify.i18n.translate('endsIn', { time })}</T></Frame>;
@@ -519,11 +553,28 @@ function Trust({ exp, c }) {
   const icon = (b, tone, size) => <s-icon type={ICON[b.icon] || 'check-circle'} tone={tone} size={size} />;
   const guarantee = c.guarantee ? <T color="subdued">{c.guarantee}</T> : null;
 
+  if (exp.style === 'benefits') {
+    return (
+      <Frame exp={exp} as="plain">
+        {c.headline ? <s-stack alignItems="center"><T color="subdued">{c.headline}</T></s-stack> : null}
+        {badges.map((b) => (
+          <s-stack direction="inline" gap="base" alignItems="center">
+            {icon(b, undefined, 'large')}
+            <s-stack gap="none">
+              <T>{b.label}</T>
+              {b.description ? <T type="small" color="subdued">{b.description}</T> : null}
+            </s-stack>
+          </s-stack>
+        ))}
+        {guarantee}
+      </Frame>
+    );
+  }
   if (exp.style === 'grid') {
     return (
       <Frame exp={exp} heading={c.headline}>
         <s-grid gridTemplateColumns={columns(Math.min(3, badges.length))} gap="small-300">
-          {badges.map((b) => <Tile center>{icon(b, undefined, 'large')}<T type="strong">{b.label}</T></Tile>)}
+          {badges.map((b) => <Tile center>{icon(b, undefined, 'large')}<T type="strong">{b.label}</T>{b.description ? <T type="small" color="subdued">{b.description}</T> : null}</Tile>)}
         </s-grid>
         {guarantee}
       </Frame>
@@ -534,7 +585,7 @@ function Trust({ exp, c }) {
       <Frame exp={exp} heading={c.headline}>
         <Divided items={badges.map((b) => (
           <Row justify="space-between">
-            <s-stack direction="inline" gap="small-200" alignItems="center">{icon(b, 'success')}<T>{b.label}</T></s-stack>
+            <s-stack direction="inline" gap="small-200" alignItems="center">{icon(b, 'success')}<s-stack gap="none"><T>{b.label}</T>{b.description ? <T type="small" color="subdued">{b.description}</T> : null}</s-stack></s-stack>
             <s-icon type="check-circle" tone="success" />
           </Row>
         ))} />
@@ -556,6 +607,183 @@ function Trust({ exp, c }) {
         {badges.map((b) => <s-stack direction="inline" gap="small-200" alignItems="center">{icon(b, 'success')}<T>{b.label}</T></s-stack>)}
       </s-stack>
       {guarantee}
+    </Frame>
+  );
+}
+
+// Live prices of product variants in the shopper's currency (Storefront API), keyed by variant id.
+function useVariantPrices(products) {
+  const ids = products.map((p) => p.variant_id).filter(Boolean).map((id) => 'gid://shopify/ProductVariant/' + numericId(id));
+  const [prices, setPrices] = useState({});
+  useEffect(() => {
+    if (!ids.length || !shopify.query) return;
+    shopify.query(
+      `query ($ids: [ID!]!, $country: CountryCode) @inContext(country: $country) {
+        nodes(ids: $ids) { ... on ProductVariant { id availableForSale price { amount } compareAtPrice { amount } } }
+      }`,
+      { variables: { ids, country: shopify.localization?.country?.value?.isoCode } },
+    ).then(({ data }) => {
+      const out = {};
+      ((data && data.nodes) || []).filter(Boolean).forEach((v) => {
+        out[numericId(v.id)] = { price: Number(v.price?.amount || 0), compare: v.compareAtPrice ? Number(v.compareAtPrice.amount) : null, available: v.availableForSale !== false };
+      });
+      setPrices(out);
+    }).catch(() => {});
+  }, [ids.join(',')]);
+  return prices;
+}
+
+/** What a product costs now and, when lower than before, what it cost (live price, else the saved one). */
+function offerPrice(p, live, percent) {
+  const l = live[numericId(p.variant_id)];
+  const base = l ? l.price : Number(p.price || 0);
+  const compare = l ? l.compare : (p.compare_at != null ? Number(p.compare_at) : null);
+  const now = base * (1 - (percent || 0) / 100);
+  const was = percent ? base : compare && compare > base ? compare : null;
+  return { now, was, off: was ? Math.round((1 - now / was) * 100) : 0 };
+}
+
+function inCart(p) {
+  const variant = 'gid://shopify/ProductVariant/' + numericId(p.variant_id);
+  return (shopify.lines?.value || []).some((l) => l.merchandise?.id === variant || (p.id && numericId(l.merchandise?.product?.id) === numericId(p.id)));
+}
+
+function Upsell({ exp, c }) {
+  const [busy, setBusy] = useState('');
+  const [failed, setFailed] = useState(false);
+  const products = (c.products || []).filter((p) => p.variant_id);
+  const live = useVariantPrices(products);
+  const canAdd = shopify.instructions?.value?.lines?.canAddCartLine !== false;
+  const shown = products.filter((p) => !inCart(p) && live[numericId(p.variant_id)]?.available !== false).slice(0, exp.style === 'featured' ? 1 : 3);
+  if (!shown.length || !canAdd) return null;
+  const percent = Number(c.discount_percent) || 0;
+  const bullets = String(c.bullets || '').split('\n').map((b) => b.trim()).filter(Boolean).slice(0, 4);
+
+  async function add(p) {
+    setBusy(p.variant_id);
+    setFailed(false);
+    // Tagged with this block, so the OrderOrbit discount applies the offer's saving.
+    const result = await shopify.applyCartLinesChange({
+      type: 'addCartLine', merchandiseId: 'gid://shopify/ProductVariant/' + numericId(p.variant_id), quantity: 1,
+      attributes: [{ key: '_oo_offer', value: exp.id }],
+    });
+    setBusy('');
+    if (result.type === 'success') track(exp, 'upsell_accepted');
+    else setFailed(true);
+  }
+
+  const priceRow = (p) => {
+    const pr = offerPrice(p, live, percent);
+    return (
+      <s-stack direction="inline" gap="small-200" alignItems="center">
+        <T type="strong">{money(pr.now)}</T>
+        {pr.was ? <T type="redundant" color="subdued">{money(pr.was)}</T> : null}
+        {pr.off > 0 ? <s-badge>{'-' + pr.off + '%'}</s-badge> : null}
+      </s-stack>
+    );
+  };
+  const button = (p, variant) => <s-button variant={variant || 'primary'} loading={busy === p.variant_id || undefined} onClick={() => add(p)}>{c.button_text}</s-button>;
+  const benefits = bullets.length ? (
+    <s-stack gap="none">{bullets.map((b) => <s-stack direction="inline" gap="small-100" alignItems="center"><s-icon type="check" size="small-100" tone="success" /><T type="small" color="subdued">{b}</T></s-stack>)}</s-stack>
+  ) : null;
+  const status = failed ? <T color="subdued">{shopify.i18n.translate('addFailed')}</T> : null;
+
+  if (exp.style === 'featured') {
+    const p = shown[0];
+    return (
+      <Frame exp={exp} heading={c.headline}>
+        {p.image ? <s-image src={p.image} alt={p.title} aspectRatio="16/9" objectFit="cover" borderRadius="base" /> : null}
+        <T type="strong">{c.offer_title || p.title}</T>
+        {benefits}
+        {priceRow(p)}
+        <s-button variant="primary" inlineSize="fill" loading={busy === p.variant_id || undefined} onClick={() => add(p)}>{c.button_text}</s-button>
+        {status}
+      </Frame>
+    );
+  }
+  if (exp.style === 'compact') {
+    return (
+      <Frame exp={exp} heading={c.headline}>
+        <Divided items={shown.map((p) => (
+          <Row justify="space-between">
+            <s-stack direction="inline" gap="base" alignItems="center">
+              {p.image ? <s-product-thumbnail src={p.image} alt={p.title} size="small" /> : null}
+              <s-stack gap="none"><T>{c.offer_title && shown.length === 1 ? c.offer_title : p.title}</T>{priceRow(p)}</s-stack>
+            </s-stack>
+            {button(p, 'secondary')}
+          </Row>
+        ))} />
+        {status}
+      </Frame>
+    );
+  }
+  // Complete your order: a card per product with its benefits, price and saving.
+  return (
+    <Frame exp={exp} heading={c.headline} as="plain">
+      {shown.map((p) => (
+        <s-box border="base" borderRadius="large" padding="base">
+          <Row justify="space-between">
+            <s-stack direction="inline" gap="base" alignItems="center">
+              {p.image ? <s-product-thumbnail src={p.image} alt={p.title} /> : null}
+              <s-stack gap="small-100">
+                <T type="strong">{c.offer_title && shown.length === 1 ? c.offer_title : p.title}</T>
+                {benefits}
+                {priceRow(p)}
+              </s-stack>
+            </s-stack>
+            {button(p)}
+          </Row>
+        </s-box>
+      ))}
+      {status}
+    </Frame>
+  );
+}
+
+function AddOn({ exp, c }) {
+  const [busy, setBusy] = useState(false);
+  const p = (c.product || [])[0];
+  const live = useVariantPrices(p ? [p] : []);
+  if (!p || !p.variant_id) return null;
+  const variant = 'gid://shopify/ProductVariant/' + numericId(p.variant_id);
+  const line = (shopify.lines?.value || []).find((l) => l.merchandise?.id === variant);
+  const canChange = shopify.instructions?.value?.lines?.canAddCartLine !== false;
+  if (!canChange && !line) return null;
+  const price = money(offerPrice(p, live, 0).now);
+
+  // Opt-in: the shopper ticks it to add the add-on and unticks it to remove it.
+  async function toggle() {
+    setBusy(true);
+    const result = line
+      ? await shopify.applyCartLinesChange({ type: 'removeCartLine', id: line.id, quantity: line.quantity })
+      : await shopify.applyCartLinesChange({ type: 'addCartLine', merchandiseId: variant, quantity: 1, attributes: [{ key: '_oo_offer', value: exp.id }] });
+    setBusy(false);
+    if (!line && result.type === 'success') track(exp, 'upsell_accepted');
+  }
+
+  if (exp.style === 'compact') {
+    return (
+      <Frame exp={exp}>
+        <s-checkbox checked={!!line} disabled={busy || undefined} label={c.title + ' · ' + price} onChange={toggle} />
+        {c.description ? <T type="small" color="subdued">{c.description}</T> : null}
+      </Frame>
+    );
+  }
+  return (
+    <Frame exp={exp} heading={c.headline} as="plain">
+      <s-box border="base" borderRadius="large" padding="base">
+        <Row justify="space-between" align="start">
+          <s-stack direction="inline" gap="base" alignItems="start">
+            <s-icon type={ICON[c.icon] || 'shield-check-mark'} size="large" />
+            <s-stack gap="small-100">
+              <T type="strong">{c.title}</T>
+              <T type="small" color="subdued">{shopify.i18n.translate('addonPrice', { price })}</T>
+              {c.description ? <T type="small" color="subdued">{c.description}</T> : null}
+            </s-stack>
+          </s-stack>
+          <s-checkbox checked={!!line} disabled={busy || undefined} accessibilityLabel={c.title} onChange={toggle} />
+        </Row>
+      </s-box>
     </Frame>
   );
 }
@@ -861,6 +1089,8 @@ const BLOCKS = {
   'checkout-gift': FreeGift,
   'checkout-promo': Promotion,
   'checkout-trust': Trust,
+  'checkout-upsell': Upsell,
+  'checkout-addon': AddOn,
   'ty-cross-sell': CrossSell,
   'ty-reorder': Reorder,
   'ty-review': ReviewRequest,

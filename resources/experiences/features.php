@@ -103,7 +103,7 @@ return [
         'icon' => 'checkout',
         'tone' => 'checkout',
         'label' => 'Checkout blocks',
-        'types' => ['checkout-reviews', 'checkout-countdown', 'checkout-shipping', 'checkout-gift', 'checkout-promo', 'checkout-trust', 'checkout-image'],
+        'types' => ['checkout-reviews', 'checkout-countdown', 'checkout-shipping', 'checkout-gift', 'checkout-promo', 'checkout-trust', 'checkout-upsell', 'checkout-addon', 'checkout-image'],
         'tagline' => 'Keep selling <em>inside checkout.</em>',
         'lead' => 'Reviews, countdowns, shipping progress, free gifts, promotions, trust and images, shown inside Shopify checkout. Blocks inside checkout need Shopify Plus; Shopify doesn\'t allow them on other plans.',
         'steps' => [

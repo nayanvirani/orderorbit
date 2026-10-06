@@ -96,3 +96,11 @@
 /* Design step: text colour and tone */
 .ck-subdued, .ck-subdued .ck-title, .ck-subdued .ck-heading { color: #707070; }
 .ck-toned, .ck-toned .ck-title, .ck-toned .ck-heading, .ck-toned .ck-muted { color: var(--ck-text); }
+
+/* Review carousel card, upsell and add-on cards */
+.ck-review-card { padding: 14px 16px; border: 1px solid #dedede; border-radius: 10px; background: #fff; }
+.ck-offer { padding: 14px; border: 1px solid #dedede; border-radius: 10px; background: #fff; }
+.ck-check-line { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+.ck-check-line .ck-icon { width: 13px; height: 13px; }
+.ck-wide { aspect-ratio: 16 / 9; }
+.ck-checkbox { flex: none; width: 18px; height: 18px; border: 1.5px solid #8a8a8a; border-radius: 4px; background: #fff; }

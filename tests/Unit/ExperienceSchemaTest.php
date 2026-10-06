@@ -17,9 +17,9 @@ class ExperienceSchemaTest extends TestCase
             [$config, $errors] = Schema::normalize($type, Schema::defaults($type));
             $this->assertSame(Schema::SECTIONS, array_keys($config), $type);
 
-            // Only product picks, deadlines, ship dates and merchant-only content (real reviews, codes, a promotion headline, an image) need merchant input.
+            // Only product picks (including an add-on product), deadlines, ship dates and merchant-only content (real reviews, codes, a promotion headline, an image) need merchant input.
             foreach (array_keys($errors) as $key) {
-                $this->assertContains($key, ['content.products', 'content.gift_products', 'content.buy_products', 'content.ends_at', 'content.ship_date', 'content.reviews', 'content.code', 'content.headline', 'content.offer_product', 'content.image'], "{$type}: unexpected default error {$key}");
+                $this->assertContains($key, ['content.products', 'content.gift_products', 'content.buy_products', 'content.ends_at', 'content.ship_date', 'content.reviews', 'content.code', 'content.headline', 'content.offer_product', 'content.product', 'content.image'], "{$type}: unexpected default error {$key}");
             }
         }
     }

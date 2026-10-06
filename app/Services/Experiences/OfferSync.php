@@ -106,7 +106,8 @@ class OfferSync
                 'v' => (float) ($c['get_discount'] ?? 100),
                 'once' => ! ($c['repeat'] ?? true),
             ],
-            'product-upsells', 'cart-upsells' => (float) ($c['discount_percent'] ?? 0) > 0
+            // Checkout upsell lines are added with _oo_offer = this block, like storefront upsells.
+            'product-upsells', 'cart-upsells', 'checkout-upsell' => (float) ($c['discount_percent'] ?? 0) > 0
                 ? ['k' => 'upsell', 'v' => (float) $c['discount_percent']] : null,
             'free-gifts' => ! empty($c['gift_products']) && ($amounts = collect($c['thresholds'] ?? [])->pluck('amount')->filter(fn ($a) => $a !== null && $a !== '')->map(fn ($a) => (float) $a)->sort()->values()->all())
                 ? ['k' => 'gift', 'th' => $amounts] : null,

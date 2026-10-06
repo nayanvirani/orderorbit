@@ -54,6 +54,21 @@ class OfferMappingTest extends TestCase
         $this->assertSame(['k' => 'ship', 'min' => 60.0, 'id' => 'exp-1', 'm' => 'Free shipping'], $this->offer('shipping-bar', ['free_shipping' => true]));
     }
 
+    public function test_checkout_upsells_are_discounted_by_the_function(): void
+    {
+        $this->assertNull($this->offer('checkout-upsell', ['discount_percent' => 0]));
+        $this->assertSame(['k' => 'upsell', 'v' => 15.0, 'id' => 'exp-1', 'm' => 'Checkout offer'], $this->offer('checkout-upsell', ['discount_percent' => 15]));
+    }
+
+    public function test_checkout_blocks_can_be_shown_as_coloured_banners(): void
+    {
+        $design = Schema::fields('checkout-countdown')['design'];
+        $this->assertSame(['auto', 'banner', 'box', 'plain'], array_keys($design['ck_frame']['options']));
+        $this->assertSame(['auto', 'info', 'success', 'warning', 'critical'], array_keys($design['ck_banner_tone']['options']));
+        $this->assertArrayHasKey('cart-reservation', \App\Experiences\Registry::templates('checkout-countdown'));
+        $this->assertArrayNotHasKey('payment_methods', Schema::fields('checkout-trust')['content']);
+    }
+
     public function test_bundle_offers_map_one_product_offers_and_upsells(): void
     {
         $config = \App\Experiences\BundleSchema::defaults('qg-classic');

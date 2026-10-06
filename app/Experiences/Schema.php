@@ -86,6 +86,10 @@ class Schema
         $borders = ['base', 'large', 'large-100', 'large-200'];
 
         return [
+            // Checkout blocks can't use custom colours: Shopify gives banners four colours (info blue,
+            // success green, warning yellow, critical red) and boxes the checkout's own colours.
+            'ck_frame' => ['type' => 'select', 'label' => 'Show as', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'banner' => 'Coloured banner', 'box' => 'Box', 'plain' => 'Plain (no frame)']],
+            'ck_banner_tone' => ['type' => 'select', 'label' => 'Banner colour', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'info' => 'Blue (info)', 'success' => 'Green (success)', 'warning' => 'Yellow (warning)', 'critical' => 'Red (critical)'], 'help' => 'For banner layouts. Exact shades follow your checkout branding.'],
             'ck_background' => ['type' => 'select', 'label' => 'Background', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'transparent' => 'None (transparent)', 'base' => 'Checkout background', 'subdued' => 'Subtle tint']],
             'ck_border' => ['type' => 'select', 'label' => 'Border', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'none' => 'No border', 'base' => 'Thin', 'large' => 'Medium', 'large-100' => 'Thick', 'large-200' => 'Extra thick']],
             'ck_border_style' => ['type' => 'select', 'label' => 'Border style', 'default' => 'solid', 'when' => ['ck_border' => $borders], 'options' => ['solid' => 'Solid', 'dashed' => 'Dashed', 'dotted' => 'Dotted']],

@@ -51,9 +51,13 @@
     megaphone: '<path d="M3 10v4h4l8 5V5L7 10z"/><path d="M18 9a4 4 0 0 1 0 6"/>',
     alert: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
     chat: '<path d="M4 5h16v11H9l-5 4z"/>',
-    share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8 11 8-4M8 13l8 4"/>'
+    share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8 11 8-4M8 13l8 4"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3"/>',
+    leaf: '<path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19 13 11"/>',
+    shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>'
   };
-  var BADGE_ICON = { shipping: 'delivery', returns: 'return', secure: 'lock', guarantee: 'check', support: 'question' };
+  var BADGE_ICON = { shipping: 'delivery', worldwide: 'globe', returns: 'return', secure: 'lock', guarantee: 'check', support: 'question', quality: 'star', natural: 'leaf', love: 'heart', gift: 'gift', shield: 'shield', delivery: 'delivery', star: 'star' };
+  var SAMPLE_UPSELL = [{ title: 'Blending brush', price: 29, compare_at: 44 }];
 
   function icon(name, tone, size) {
     return '<svg class="ck-icon' + (size ? ' ck-icon-' + size : '') + (tone ? ' ck-t-' + tone : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[name] || ICONS.check) + '</svg>';
@@ -93,11 +97,14 @@
     var set = function (k) { return d[k] && d[k] !== 'auto'; };
     var style = exp.style || 'card';
     var custom = set('ck_background') || set('ck_border') || set('ck_radius') || set('ck_padding');
-    var kind = !custom && (opts.as === 'banner' || BANNER.indexOf(style) !== -1) ? 'banner'
-      : !custom && (opts.as === 'plain' || PLAIN.indexOf(style) !== -1) ? 'plain' : 'box';
+    // "Show as" and "Banner colour" from the Design step (Shopify's four banner tones).
+    var forced = d.ck_frame && d.ck_frame !== 'auto' ? d.ck_frame : null;
+    var kind = forced || (!custom && (opts.as === 'banner' || BANNER.indexOf(style) !== -1) ? 'banner'
+      : !custom && (opts.as === 'plain' || PLAIN.indexOf(style) !== -1) ? 'plain' : 'box');
+    if (set('ck_banner_tone')) opts = Object.assign({}, opts, { tone: d.ck_banner_tone });
     var css = [];
     if (kind === 'box') {
-      var plain = PLAIN.indexOf(style) !== -1 || opts.as === 'plain';
+      var plain = !forced && (PLAIN.indexOf(style) !== -1 || opts.as === 'plain');
       var bg = set('ck_background') ? d.ck_background : opts.as === 'subdued' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : 'base';
       var border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
       css.push('background:' + (bg === 'subdued' ? '#f4f4f4' : bg === 'transparent' ? 'transparent' : '#fff'));
@@ -149,9 +156,17 @@
       var list = sample ? SAMPLE_REVIEWS : c.reviews;
       var rating = c.rating || (sample ? 4.9 : null), count = c.review_count || (sample ? 1240 : null);
       var summary = rating ? row(stars(rating, 'warning') + '<span class="ck-text"><b>' + h.esc(rating) + '</b>' + (count ? ' · ' + h.esc(Number(count).toLocaleString()) + ' reviews' : '') + '</span>') : '';
-      var quote = function (r) { return col(stars(r.rating, 'warning') + para('“' + r.quote + '”') + muted(h.esc(r.author)), 'ck-tight'); };
+      var quote = function (r) { return col(stars(r.rating, 'warning') + (r.title ? '<p class="ck-text"><b>' + h.esc(r.title) + '</b></p>' : '') + para('“' + r.quote + '”') + muted(h.esc([r.author, r.date].filter(Boolean).join(', '))), 'ck-tight'); };
+      var foot = c.footer ? muted(h.esc(c.footer)) : '';
+      if (c.summary_label) summary = row('<span class="ck-text"><b>' + h.esc(c.summary_label) + '</b></span>' + stars(rating || 5, 'warning') + (count ? '<span class="ck-muted">' + h.esc(Number(count).toLocaleString()) + ' reviews</span>' : ''));
+      if (exp.style === 'carousel') {
+        var cur = list[0];
+        if (sample) cur = { author: 'Sample: Deborah W.', rating: 5, title: 'Smooches to us!', quote: 'Your reviews appear here. Add real ones in the Content step.', date: 'Jun 5, 2026' };
+        return frame(exp, { as: 'plain' }, row('<p class="ck-heading">' + h.esc(c.summary_label || 'Excellent') + '</p>' + stars(5, 'warning'), 'ck-center-row') +
+          '<div class="ck-review-card">' + quote(cur) + '</div>' + row(button('←', false) + button('→', false), 'ck-center-row') + (foot ? col(foot, 'ck-center') : ''));
+      }
       if (exp.style === 'card') {
-        return frame(exp, { heading: c.headline }, summary + grid(list.slice(0, 2).map(function (r) { return tile(quote(r)); }), 2));
+        return frame(exp, { heading: c.headline }, summary + grid(list.slice(0, 2).map(function (r) { return tile(quote(r)); }), 2) + foot);
       }
       if (exp.style === 'slider') {
         var r = list[0];
@@ -163,7 +178,7 @@
         return frame(exp, {}, row(col('<p class="ck-big">' + h.esc(rating || 5) + '</p>', 'ck-shrink') + col(stars(rating || 5, 'warning') + muted(h.esc(c.headline) + (count ? ' · ' + h.esc(Number(count).toLocaleString()) + ' reviews' : '')))) +
           '<hr class="ck-divider">' + para('“' + top.quote + '”', 'ck-lead') + row(muted(h.esc(top.author)) + badge('Verified buyer', 'check')));
       }
-      return frame(exp, { as: 'plain' }, row(title(c.headline) + summary, 'ck-between') + divided(list.map(quote)));
+      return frame(exp, { as: 'plain' }, row(title(c.headline) + summary, 'ck-between') + divided(list.map(quote)) + foot);
     },
 
     'checkout-countdown': function (exp) {
@@ -173,8 +188,9 @@
       var left = timed ? length : c.ends_at ? Math.max(0, Date.parse(c.ends_at) - Date.now()) : 2 * 3600e3 + 14 * 60e3 + 37e3;
       var pad = function (n) { return (n < 10 ? '0' : '') + n; };
       var parts = [Math.floor(left / 3600e3), Math.floor(left % 3600e3 / 60e3), Math.floor(left % 60e3 / 1e3)].map(pad);
-      var time = parts.join(':');
+      var time = parts[0] === '00' ? Number(parts[1]) + ':' + parts[2] : parts.join(':');
       var info = timed ? note('Starts when each shopper reaches checkout' + (c.repeat === 'end' ? ', then stops.' : ' and starts again every ' + (c.mode === 'hours' ? (Number(c.hours) || 1) + ' h.' : (Number(c.minutes) || 1) + ' min.'))) : '';
+      if (exp.style === 'reserved') return frame(exp, { as: 'banner', tone: 'success', bannerIcon: 'check' }, '<p class="ck-text"><b>' + h.esc(c.headline) + ' ' + time + '</b></p>') + info;
       if (exp.style === 'banner') return frame(exp, { heading: c.headline, tone: 'warning', bannerIcon: 'clock' }, para('Ends in ' + time) + info);
       if (exp.style === 'card') {
         return frame(exp, { heading: c.headline }, grid(['Hours', 'Minutes', 'Seconds'].map(function (l, i) { return tile('<p class="ck-big">' + parts[i] + '</p><p class="ck-muted">' + l + '</p>'); }), 3) + info);
@@ -237,11 +253,15 @@
     'checkout-trust': function (exp) {
       var c = exp.content;
       var badges = c.badges || [];
+      var desc = function (b) { return b.description ? '<p class="ck-muted">' + h.esc(b.description) + '</p>' : ''; };
+      if (exp.style === 'benefits') {
+        return frame(exp, { as: 'plain' }, (c.headline ? col(muted(h.esc(c.headline)), 'ck-center') : '') + badges.map(function (b) { return row(icon(BADGE_ICON[b.icon] || 'check', null, 'large') + col('<p class="ck-text">' + h.esc(b.label) + '</p>' + desc(b), 'ck-tight')); }).join('') + para(c.guarantee, 'ck-muted-text'));
+      }
       if (exp.style === 'grid') {
-        return frame(exp, { heading: c.headline }, grid(badges.map(function (b) { return tile(col(icon(BADGE_ICON[b.icon] || 'check', null, 'large') + '<p class="ck-text"><b>' + h.esc(b.label) + '</b></p>', 'ck-center')); }), Math.min(3, badges.length || 1)) + para(c.guarantee, 'ck-muted-text'));
+        return frame(exp, { heading: c.headline }, grid(badges.map(function (b) { return tile(col(icon(BADGE_ICON[b.icon] || 'check', null, 'large') + '<p class="ck-text"><b>' + h.esc(b.label) + '</b></p>' + desc(b), 'ck-center')); }), Math.min(3, badges.length || 1)) + para(c.guarantee, 'ck-muted-text'));
       }
       if (exp.style === 'card') {
-        return frame(exp, { heading: c.headline || 'Why shop with us' }, divided(badges.map(function (b) { return row(icon(BADGE_ICON[b.icon] || 'check', 'success') + '<p class="ck-text ck-grow">' + h.esc(b.label) + '</p>' + icon('check', 'success')); })) + para(c.guarantee, 'ck-muted-text'));
+        return frame(exp, { heading: c.headline || 'Why shop with us' }, divided(badges.map(function (b) { return row(icon(BADGE_ICON[b.icon] || 'check', 'success') + col('<p class="ck-text">' + h.esc(b.label) + '</p>' + desc(b), 'ck-grow ck-tight') + icon('check', 'success')); })) + para(c.guarantee, 'ck-muted-text'));
       }
       if (exp.style === 'banner') {
         return frame(exp, { heading: c.headline || '30-day money-back guarantee', tone: 'success', bannerIcon: 'lock' }, para(c.guarantee || 'Not happy? Send it back within 30 days for a full refund.') + row(badges.map(function (b) { return '<span class="ck-muted">✓ ' + h.esc(b.label) + '</span>'; }).join(''), 'ck-wrap'));
@@ -417,6 +437,39 @@
         }).join('') + '</div>' + row(links.map(function (l) { return link(l[1]); }).join(''), 'ck-wrap'));
       }
       return frame(exp, { heading: c.headline }, para(c.message, 'ck-muted-text') + grid(links.map(function (l) { return tile(row(icon(l[0], 'info') + '<span class="ck-text"><b>' + h.esc(l[1]) + '</b></span>')); }), links.length > 2 ? 3 : links.length));
+    },
+
+    'checkout-upsell': function (exp, ctx) {
+      var c = exp.content;
+      var list = (c.products && c.products.length ? c.products : SAMPLE_UPSELL).slice(0, exp.style === 'featured' ? 1 : 3);
+      var pct = Number(c.discount_percent) || 0;
+      var bullets = String(c.bullets || (c.products && c.products.length ? '' : 'Blends in seconds\nPrevents the cakey look\nOne pass = smooth, even skin')).split('\n').map(function (b) { return b.trim(); }).filter(Boolean).slice(0, 4);
+      var priceRow = function (p) {
+        var base = Number(p.price || 0), now = base * (1 - pct / 100), was = pct ? base : (p.compare_at > base ? Number(p.compare_at) : 0), off = was ? Math.round((1 - now / was) * 100) : 0;
+        return row('<span class="ck-text"><b>' + h.esc(h.money(now, ctx.currency)) + '</b></span>' + (was ? '<s class="ck-muted">' + h.esc(h.money(was, ctx.currency)) + '</s>' : '') + (off > 0 ? badge('-' + off + '%') : ''), 'ck-tight-row');
+      };
+      var benefits = bullets.length ? col(bullets.map(function (b) { return '<p class="ck-muted ck-check-line">' + icon('check', 'success') + h.esc(b) + '</p>'; }).join(''), 'ck-tight') : '';
+      var name = function (p) { return c.offer_title && list.length === 1 ? c.offer_title : p.title; };
+      if (exp.style === 'featured') {
+        var f = list[0];
+        return frame(exp, { heading: c.headline }, '<span class="ck-cover ck-wide"><img src="' + h.esc(f.image || img()) + '" alt=""></span><p class="ck-text"><b>' + h.esc(c.offer_title || f.title) + '</b></p>' + benefits + priceRow(f) + button(c.button_text, true).replace('ck-btn', 'ck-btn ck-block'));
+      }
+      if (exp.style === 'compact') {
+        return frame(exp, { heading: c.headline }, divided(list.map(function (p) { return row(thumb(p, 'small') + col('<p class="ck-text">' + h.esc(name(p)) + '</p>' + priceRow(p), 'ck-grow ck-tight') + button(c.button_text, false)); })));
+      }
+      return frame(exp, { as: 'plain', heading: c.headline }, list.map(function (p) {
+        return '<div class="ck-offer">' + row(thumb(p) + col('<p class="ck-text"><b>' + h.esc(name(p)) + '</b></p>' + benefits + priceRow(p), 'ck-grow ck-tight') + button(c.button_text, true)) + '</div>';
+      }).join(''));
+    },
+
+    'checkout-addon': function (exp, ctx) {
+      var c = exp.content;
+      var p = (c.product || [])[0] || { title: 'Shipping protection', price: 5 };
+      var price = h.money(Number(p.price || 0), ctx.currency);
+      var box = '<span class="ck-checkbox"></span>';
+      if (exp.style === 'compact') return frame(exp, {}, row(box + '<span class="ck-text">' + h.esc(c.title + ' · ' + price) + '</span>') + (c.description ? muted(h.esc(c.description)) : ''));
+      return frame(exp, { as: 'plain', heading: c.headline }, '<div class="ck-offer">' + row(icon(BADGE_ICON[c.icon] || 'shield', null, 'large') + col('<p class="ck-text"><b>' + h.esc(c.title) + '</b></p><p class="ck-muted">Add for ' + h.esc(price) + '</p>' + (c.description ? '<p class="ck-muted">' + h.esc(c.description) + '</p>' : ''), 'ck-grow ck-tight') + box) + '</div>' +
+        ((c.product || []).length ? '' : note('Preview with a sample add-on. Choose your add-on product in the Content step.')));
     },
 
     'checkout-image': image,
