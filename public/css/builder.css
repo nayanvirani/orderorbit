@@ -107,13 +107,11 @@ a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover, a.b-template *, a.
 .b-template.is-clickable:hover, a.bx-type:hover { transform: translateY(-2px); border-color: var(--ob-accent, #4f46e5); box-shadow: 0 14px 28px -18px rgba(79, 70, 229, .55); }
 .b-template.is-clickable:focus-visible { outline: 2px solid var(--ob-accent, #4f46e5); outline-offset: 2px; }
 .b-template.is-busy { opacity: .6; pointer-events: none; }
-/* The preview area takes the row's spare height (cards in a row stay aligned) and grows for tall
-   templates, so a template is always shown whole. */
-.tpl-stage { position: relative; display: flex; flex-direction: column; justify-content: center; flex: 1 0 auto; min-height: 300px; padding: 18px; background: #f6f6f7; border-bottom: 1px solid #ececec; pointer-events: none; }
-.tpl-stage.tpl-tall { min-height: 400px; }
-.bx-type .tpl-stage { min-height: 270px; }
+/* Every template is drawn whole at one size (the same scale on every card); the preview area takes
+   the row's spare height so cards in a row stay aligned. */
+.tpl-stage { position: relative; display: flex; flex-direction: column; justify-content: flex-start; flex: 1 0 auto; min-height: 220px; padding: 18px; background: #f6f6f7; border-bottom: 1px solid #ececec; pointer-events: none; }
+.tpl-stage > .oo-preview { width: 100%; flex: none; zoom: .7; }
 .tpl-body { flex: 0 0 auto !important; }
-.tpl-stage > .oo-preview { width: 100%; flex: none; }
 .tpl-body { display: flex; flex-direction: column; gap: 6px; flex: 1; padding: 14px 16px 16px; }
 .tpl-body p { margin: 0; font-size: 13px; }
 .tpl-body .b-template-name { font-size: 15px; font-weight: 650; }

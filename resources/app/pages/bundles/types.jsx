@@ -12,7 +12,7 @@ export default function BundleTypes({ types }) {
       <div className="bx-types">
         {types.map((t) => (
           <a key={t.key} className="bx-type" href={appUrl(route('app.bundles.models', { type: t.key }))}>
-            <span className="tpl-stage"><Preview ready={ready} experience={t.preview} context={context} className="oo-preview" fit={234} /></span>
+            <span className="tpl-stage"><Preview ready={ready} experience={t.preview} context={context} className="oo-preview" /></span>
             <span className="bx-type-body">
               <strong>{t.label}</strong>
               <span className="bx-muted">{t.lead}</span>

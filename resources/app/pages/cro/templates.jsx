@@ -3,7 +3,7 @@ import { useRuntime } from '../../components/runtime.jsx';
 import { Hero, Page, Tabs } from '../../components/ui.jsx';
 import { route, useRouter, useShared } from '../../router.jsx';
 
-const SURFACE = { product: 'Product page', cart: 'Cart', any: 'Any page' };
+const SURFACE = { product: 'Product page', cart: 'Cart', any: 'Any page', global: 'Every page', checkout: 'Checkout', 'thank-you': 'Thank You & Order Status', 'post-purchase': 'After checkout', account: 'Customer accounts' };
 
 export default function Templates({ feature, features, templates }) {
   const { can, currency } = useShared();

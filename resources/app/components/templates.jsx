@@ -1,9 +1,7 @@
-// Template cards for every template picker: the whole template drawn to fit one preview area,
-// its name and details, and one action. Picking a template is one click.
+// Template cards for every template picker: the whole template at one consistent size, its name
+// and details, and one action. Picking a template is one click.
 import { useState } from 'react';
 import { Preview } from './runtime.jsx';
-
-export const STAGE = 300;
 
 export function TemplateGrid({ children }) {
   return <div className="b-templates">{children}</div>;
@@ -27,7 +25,7 @@ export function TemplateCard({ preview, context, ready, name, meta, description,
       role={onUse ? 'button' : undefined} tabIndex={onUse ? 0 : undefined} aria-busy={busy || undefined}
       onClick={onUse ? use : undefined} onKeyDown={onUse ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); use(); } } : undefined}>
       <div className={`tpl-stage${tall ? ' tpl-tall' : ''}`}>
-        <Preview ready={ready} experience={preview} context={context} className="oo-preview" fit={(tall ? 400 : STAGE) - 36} />
+        <Preview ready={ready} experience={preview} context={context} className="oo-preview" />
       </div>
       <div className="tpl-body">
         <span className="b-template-name">{name}</span>
