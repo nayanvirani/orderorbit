@@ -805,3 +805,9 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-xstep.oo-xone .oo-xrem:hover { background: var(--b-sel, #f4f4f4); }
 .oo-bk-boxdark .oo-xone { background: none; border: 0; }
 .oo-bk-boxdark .oo-xone .oo-xrem { border-color: rgba(255, 255, 255, .3); }
+/* Mix & match and box gift: dimmed until the box unlocks it */
+.oo-bboxgift { margin-top: 12px; padding: 10px 12px; border: 1px dashed var(--b-accent, #999); border-radius: calc(var(--b-radius, 12px) * .8); }
+.oo-bboxgift .oo-bups-title { margin: 0; }
+.oo-bundle .oo-bboxgift .oo-bgifts { margin: 10px 0 6px; justify-content: flex-start; align-items: flex-start; }
+.oo-bboxgift:not(.oo-bgift-on) .oo-bgift { filter: grayscale(.8); opacity: .7; }
+.oo-bboxgift small { display: block; font-size: .85em; opacity: .85; }

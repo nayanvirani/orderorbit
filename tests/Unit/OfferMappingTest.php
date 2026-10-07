@@ -79,7 +79,7 @@ class OfferMappingTest extends TestCase
 
         $this->assertSame('bq', $offers[0]['k']);
         $this->assertNull($offers[0]['o'][0]['v'] ?? null, 'The one-product tier at full price has no saving.');
-        $this->assertSame(['q' => 2, 't' => 'percentage', 'v' => 10.0, 'g' => 1], $offers[0]['o'][1]);
+        $this->assertSame(['q' => 2, 't' => 'percentage', 'v' => 10.0, 'g' => 1, 'gp' => ['9']], $offers[0]['o'][1]);
         $this->assertSame(['k' => 'upsell', 'id' => 'b-1:u', 'v' => 10.0, 'm' => 'Add'], $offers[1]);
     }
 

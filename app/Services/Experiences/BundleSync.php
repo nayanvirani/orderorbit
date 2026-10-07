@@ -63,6 +63,7 @@ class BundleSync
             $items,
         )));
         $multi = collect($config['offers'])->first(fn ($o) => $o['kind'] === 'multi' && $o['products']);
+        $gifts = fn (array $list) => self::giftEntry($config, $list);
 
         return array_filter([
             'id' => $bundle->handle,
@@ -73,7 +74,7 @@ class BundleSync
                 't' => $o['discount_type'],
                 'v' => $o['discount_value'],
                 'n' => $o['title'] ?: null,
-            ], fn ($v) => $v !== null) : null, $config['offers']),
+            ] + $gifts($o['gifts']), fn ($v) => $v !== null) : null, $config['offers']),
             'mix' => self::mixEntry($config),
         ], fn ($v) => $v !== null);
     }
@@ -90,7 +91,9 @@ class BundleSync
         }
         $m = $config['mix'];
         $ids = fn (array $items) => array_values(array_filter(array_map(fn ($p) => preg_match('#(\d+)$#', (string) ($p['id'] ?? ''), $x) ? $x[1] : null, $items)));
-        $entry = ['p' => $ids($m['pool']), 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $m['tiers'])];
+        $entry = ['p' => $ids($m['pool']), 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $m['tiers'])]
+            // The gift unlocks at its item count; by default a box's minimum or a full mix & match.
+            + self::giftEntry($config, $config['gifts']['items'] ?? [], ($config['gifts']['unlock'] ?? 0) ?: ($config['bundle_type'] === 'byob' ? $m['min'] : $m['slots']));
         if ($config['bundle_type'] !== 'byob') {
             return $entry;
         }
@@ -103,6 +106,21 @@ class BundleSync
             'min' => $m['min'], 'max' => $m['slots'], 'pp' => $m['per_product'] ?: null,
             't' => $m['pricing'] === 'fixed' ? 'fixed' : null, 'v' => $m['pricing'] === 'fixed' ? $m['fixed_price'] : null,
         ], fn ($v) => $v !== null);
+    }
+
+    /**
+     * The gifts a group may hold for free: gp = the gift product ids, gq = how many units, gm = the
+     * number of items that unlocks them (boxes). Empty when gifts are off: gift lines are then paid.
+     */
+    public static function giftEntry(array $config, array $gifts, int $unlock = 0): array
+    {
+        $gifts = array_filter($gifts, fn ($g) => ! empty($g['product']));
+        if (empty($config['gifts']['enabled']) || ! $gifts) {
+            return [];
+        }
+        $ids = array_values(array_unique(array_filter(array_map(fn ($g) => preg_match('#(\d+)$#', (string) ($g['product'][0]['id'] ?? ''), $m) ? $m[1] : null, $gifts))));
+
+        return ['gp' => $ids, 'gq' => array_sum(array_column($gifts, 'quantity'))] + ($unlock > 0 ? ['gm' => $unlock] : []);
     }
 
     /** The collections boxes are filled from: checked live by the functions (an input variable). */

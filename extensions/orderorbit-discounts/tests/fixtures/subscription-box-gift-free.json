@@ -1,0 +1,188 @@
+{
+  "payload": {
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "10"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/5",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": true
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": {
+              "sellingPlan": {
+                "id": "gid://shopify/SellingPlan/7"
+              }
+            },
+            "offer": {
+              "value": "b1"
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 2,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "10"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/6",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": true
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": {
+              "sellingPlan": {
+                "id": "gid://shopify/SellingPlan/7"
+              }
+            },
+            "offer": {
+              "value": "b1"
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/9",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": {
+              "value": "1"
+            },
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "25"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/9",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": true
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": null,
+            "offer": {
+              "value": "b1"
+            }
+          }
+        ]
+      },
+      "discount": {
+        "discountClasses": [
+          "PRODUCT",
+          "ORDER"
+        ],
+        "metafield": {
+          "jsonValue": {
+            "offers": [
+              {
+                "k": "bq",
+                "id": "b1",
+                "o": [],
+                "mix": {
+                  "c": [
+                    "gid://shopify/Collection/77"
+                  ],
+                  "tiers": [],
+                  "min": 2,
+                  "max": 6,
+                  "t": "fixed",
+                  "v": 15,
+                  "gp": [
+                    "9"
+                  ],
+                  "gq": 1
+                },
+                "m": "Box"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "productDiscountsAdd": {
+            "candidates": [
+              {
+                "message": "Box",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/0"
+                    }
+                  },
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/1"
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 50
+                  }
+                }
+              },
+              {
+                "message": "Free gift",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/9"
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 100
+                  }
+                }
+              }
+            ],
+            "selectionStrategy": "ALL"
+          }
+        }
+      ]
+    }
+  }
+}

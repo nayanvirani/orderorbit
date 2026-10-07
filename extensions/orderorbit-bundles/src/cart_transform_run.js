@@ -15,10 +15,12 @@
  *
  * Config (cart transform metafield $app:bundles), money in shop currency:
  *   { bundles: [{ id, title, image,
- *       o: [ null | { p: [productIds], t: "percentage"|"amount"|"fixed_price"|"none", v, n } ],
+ *       o: [ null | { p: [productIds], t: "percentage"|"amount"|"fixed_price"|"none", v, n, gp, gq } ],
  *       mix: { p: [productIds] | c: [collectionIds], tiers: [[count, percent], ...],
- *              min, max, pp (limit per product), t: "fixed", v (box price) } }] }
- * Build-your-own boxes only merge when they respect their size and limits.
+ *              min, max, pp (limit per product), t: "fixed", v (box price), gp, gq, gm } }] }
+ * Build-your-own boxes only merge when they respect their size and limits. Gifts (gp = gift product
+ * ids, gq = units, gm = items that unlock them) are free only within those; otherwise the gift lines
+ * stay out of the bundle line and are paid at full price.
  *
  * @typedef {import("../generated/api").CartTransformRunInput} CartTransformRunInput
  * @typedef {import("../generated/api").CartTransformRunResult} CartTransformRunResult
@@ -45,6 +47,13 @@ export function mixFits(mix, paid) {
     }
   }
   return true;
+}
+
+/** The group's gift lines are the entry's gift products, within its gift units, unlocked by count items. */
+export function giftsFit(entry, gifts, count) {
+  if (!gifts.length) return true;
+  const ids = entry.gp || [];
+  return gifts.every((line) => ids.includes(line.product)) && units(gifts) <= (Number(entry.gq) || 0) && count >= (Number(entry.gm) || 0);
 }
 
 // What the paid items should cost after the offer.
@@ -81,7 +90,7 @@ export function cartTransformRun(input) {
   }
 
   const operations = [];
-  for (const [tag, lines] of Object.entries(groups)) {
+  for (let [tag, lines] of Object.entries(groups)) {
     const [bundleId, index] = tag.split('|');
     const bundle = bundles.find((b) => b.id === bundleId);
     if (!bundle) continue;
@@ -97,6 +106,7 @@ export function cartTransformRun(input) {
       const mix = bundle.mix;
       if (!mix || !mixFits(mix, paid)) continue;
       const count = units(paid);
+      if (!giftsFit(mix, lines.filter((line) => line.gift), count)) lines = paid;
       const tier = [...(mix.tiers || [])].sort((a, b) => b[0] - a[0]).find(([need]) => count >= need);
       // A box can have one price (an exact size), or a discount by number of items.
       target = mix.t === 'fixed' ? offerPrice(total(paid), 'fixed_price', Number(mix.v) || 0, rate) : offerPrice(total(paid), 'percentage', tier ? Number(tier[1]) : 0, rate);
@@ -106,6 +116,7 @@ export function cartTransformRun(input) {
       const ids = offer.p || [];
       // The pack is complete and holds nothing else.
       if (!paid.every((line) => ids.includes(line.product)) || !ids.every((id) => paid.some((line) => line.product === id))) continue;
+      if (!giftsFit(offer, lines.filter((line) => line.gift), units(paid))) lines = paid;
       target = offerPrice(total(paid), offer.t, Number(offer.v) || 0, rate);
       title = offer.n || title;
       main = paid.find((line) => line.product === ids[0]) || main;

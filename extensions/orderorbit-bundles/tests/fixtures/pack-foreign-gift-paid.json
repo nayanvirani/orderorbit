@@ -1,0 +1,169 @@
+{
+  "payload": {
+    "export": "cart-transform-run",
+    "target": "cart.transform.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|2|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/10",
+              "product": {
+                "id": "gid://shopify/Product/1",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|2|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "30"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/20",
+              "product": {
+                "id": "gid://shopify/Product/2",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null
+          },
+          {
+            "id": "gid://shopify/CartLine/2",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|2|g1"
+            },
+            "gift": {
+              "value": "1"
+            },
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "25"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/90",
+              "product": {
+                "id": "gid://shopify/Product/9",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null
+          }
+        ]
+      },
+      "cartTransform": {
+        "metafield": {
+          "jsonValue": {
+            "bundles": [
+              {
+                "id": "b1",
+                "title": "Skincare set",
+                "image": "https://cdn.shopify.com/a.jpg",
+                "o": [
+                  null,
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "percentage",
+                    "v": 15,
+                    "n": "Complete bundle"
+                  },
+                  {
+                    "p": [
+                      "1",
+                      "2"
+                    ],
+                    "t": "fixed_price",
+                    "v": 40,
+                    "gp": [
+                      "7"
+                    ],
+                    "gq": 1
+                  }
+                ],
+                "mix": {
+                  "p": [
+                    "1",
+                    "2",
+                    "3"
+                  ],
+                  "tiers": [
+                    [
+                      2,
+                      10
+                    ],
+                    [
+                      3,
+                      15
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "linesMerge": {
+            "cartLines": [
+              {
+                "cartLineId": "gid://shopify/CartLine/0",
+                "quantity": 1
+              },
+              {
+                "cartLineId": "gid://shopify/CartLine/1",
+                "quantity": 1
+              }
+            ],
+            "parentVariantId": "gid://shopify/ProductVariant/10",
+            "attributes": [
+              {
+                "key": "_oo_offer",
+                "value": "b1"
+              }
+            ],
+            "title": "Skincare set",
+            "image": {
+              "url": "https://cdn.shopify.com/a.jpg"
+            },
+            "price": {
+              "percentageDecrease": {
+                "value": 20
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

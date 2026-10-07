@@ -211,6 +211,24 @@ class BundleModuleTest extends TestCase
         $this->assertSame('With one of each product, the box needs at least 3 products to choose from.', BundleSchema::normalize($one)[1]['mix.min']);
         $this->assertTrue(BundleSchema::defaults('byob-grid')['mix']['show_quantity']);
 
+        // Box gifts: chosen for the box, unlocked at a number of items (by default the minimum);
+        // checkout gets the gift products, how many and the unlock count, and never frees other products.
+        $gift = BundleSchema::defaults('byob-grid');
+        $gift['mix']['pool'] = [['id' => 'gid://shopify/Product/1', 'title' => 'A']];
+        $gift['gifts'] = ['enabled' => true, 'title' => 'Free gift', 'items' => [['product' => [], 'quantity' => 1]], 'unlock' => 20];
+        $errors = BundleSchema::normalize($gift)[1];
+        $this->assertSame('Choose the gift product.', $errors['gifts.items.0.product']);
+        $this->assertSame('The box holds at most 12 items, so the gift could never unlock.', $errors['gifts.unlock']);
+        $gift['gifts']['items'] = [['product' => [['id' => 'gid://shopify/Product/9', 'title' => 'Tote', 'variant_id' => 'gid://shopify/ProductVariant/90']], 'quantity' => 2]];
+        $gift['gifts']['unlock'] = 0;
+        [$config, $errors] = BundleSchema::normalize($gift);
+        $this->assertSame([], $errors);
+        $this->assertSame(['gp' => ['9'], 'gq' => 2, 'gm' => 3], array_intersect_key(\App\Services\Experiences\BundleSync::mixEntry($config), array_flip(['gp', 'gq', 'gm'])));
+        $this->assertSame('Tote', BundleSchema::payload($config)['content']['gifts']['items'][0]['product'][0]['title']);
+        $config['gifts']['enabled'] = false;
+        $this->assertArrayNotHasKey('gp', \App\Services\Experiences\BundleSync::mixEntry($config));
+        $this->assertSame(['Choose the gift product.'], array_values(array_filter(BundleSchema::normalize(['bundle_type' => 'quantity-gifts', 'offers' => [['kind' => 'quantity', 'title' => 'Two', 'quantity' => 2, 'gifts' => [['product' => []]]]]])[1], fn ($k) => str_contains($k, 'gifts'), ARRAY_FILTER_USE_KEY)));
+
         // A discount step bigger than the box can never be reached.
         $small = BundleSchema::defaults('byob-grid');
         $small['mix'] = array_merge($small['mix'], ['pool' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']], 'slots' => 8]);

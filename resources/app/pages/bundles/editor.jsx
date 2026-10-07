@@ -18,7 +18,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-cards', 'box-size', 'box-price', 'd-overall']));
   const [device, setDevice] = useState('desktop');
   const [context, setContext] = useState({ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });
-  const tabOf = (k) => (k.startsWith('offers') || k.startsWith('mix') || k.startsWith('upsells') ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
+  const tabOf = (k) => (/^(offers|mix|upsells|gifts|subscription|summary)/.test(k) ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
   const errorTabs = Object.keys(errors).map(tabOf);
   const [tab, setTab] = useState(errorTabs[0] || 'settings');
 
@@ -53,6 +53,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
       (o.gifts || []).forEach((g) => { if (!g.product.length) g.product = [meta.samples[3]]; });
     });
     if (!c.mix.pool.length) c.mix.pool = samples;
+    (c.gifts.items || []).forEach((g) => { if (!g.product.length) g.product = [meta.samples[3]]; });
     const d = c.design;
     return {
       id: x.handle, type: 'bundles', template: 'editor', style: c.settings.layout, version: 0, priority: 50,
@@ -205,11 +206,31 @@ function offerTitle(o) {
 }
 
 function Extras() {
+  const { state, update, errors } = useContext(Ctx);
+  const box = state.bundle_type === 'byob' || state.bundle_type === 'mix-match';
+  const items = state.gifts.items || [];
   return (
     <>
       <Section id="gifts" title="Gifts" toggle="gifts.enabled">
         <F path="gifts.title" label="Gifts title" max={80} />
-        <Help text="Add gift products inside each offer. Gifts are free at checkout when the offer is bought." />
+        {box ? (
+          <>
+            <div className="bx-sub-list">
+              <span className="b-label">Free gifts with the box</span>
+              {items.map((g, j) => (
+                <div className="bx-sub-item" key={j}>
+                  <Picker path={`gifts.items.${j}.product`} label={`Gift ${j + 1}`} max={1} />
+                  <F path={`gifts.items.${j}.quantity`} label="Quantity" type="number" min={1} max={10} />
+                  <button type="button" className="b-icon-btn" aria-label="Remove gift" onClick={() => update((s) => { s.gifts.items.splice(j, 1); return s; })}>×</button>
+                </div>
+              ))}
+              {errors['gifts.items'] && <p className="b-error">{errors['gifts.items']}</p>}
+              {items.length < 4 && <button type="button" className="b-btn" onClick={() => update((s) => { (s.gifts.items = s.gifts.items || []).push({ product: [], quantity: 1 }); return s; })}>Add gift</button>}
+            </div>
+            <F path="gifts.unlock" label="Unlocks at (items in the box)" type="number" min={0} max={100}
+              help={state.bundle_type === 'byob' ? '0 = as soon as the box reaches its minimum. The gift is added free with the box, and checkout only makes it free when the box has this many items.' : '0 = when the box is full. The gift is added free with the box, and checkout only makes it free when the box has this many items.'} />
+          </>
+        ) : <Help text="Add gift products inside each offer. Gifts are free at checkout when the offer is bought." />}
       </Section>
       <Section id="upsells" title="Upsells" toggle="upsells.enabled">
         <F path="upsells.title" label="Title" max={80} />

@@ -58,7 +58,8 @@ class OfferSync
             'q' => $o['kind'] === 'multi' ? array_sum(array_map(fn ($p) => max(1, (int) ($p['quantity'] ?? 1)), $o['products'])) : $o['quantity'],
             't' => $o['discount_type'],
             'v' => $o['discount_value'],
-            'g' => array_sum(array_map(fn ($g) => $g['product'] ? $g['quantity'] : 0, $o['gifts'])),
+            'g' => BundleSync::giftEntry($bundle, $o['gifts'])['gq'] ?? null,
+            'gp' => BundleSync::giftEntry($bundle, $o['gifts'])['gp'] ?? null,
             'p' => $o['kind'] === 'multi' ? $ids($o['products']) : null,
             's' => $o['kind'] === 'multi' ? 1 : null,
         ], fn ($v) => $v !== 0 && $v !== 0.0 && $v !== null), $bundle['offers']);

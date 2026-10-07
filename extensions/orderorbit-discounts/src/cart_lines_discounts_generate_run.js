@@ -13,10 +13,11 @@ import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionS
  *   bq     { id, o: [ null | { q, t: "percentage"|"amount"|"fixed_price"|"none", v, g } ] }
  *          one-product bundle offers: lines tagged _oo_bundle = "<id>|<offer index>|<group>";
  *          the group gets the offer price once it holds q items, and up to g gift lines
- *          (_oo_gift) in the group are free. Entries with s = 1 are packs (p = their product ids,
+ *          (_oo_gift) of the gift products gp in the group are free. Entries with s = 1 are packs (p = their product ids,
  *          all required) and apply only to groups bought on a subscription: those can't be merged
- *          by the cart transform. mix: { p, tiers: [[count, percent], ...] } prices mix & match
- *          groups ("<id>|m|<group>") bought on a subscription the same way.
+ *          by the cart transform. mix: { p, tiers: [[count, percent], ...], gp, gq, gm } prices mix & match
+ *          groups ("<id>|m|<group>") bought on a subscription the same way; up to gq gift units of
+ *          the products gp are free once the box holds gm items.
  *   pg     { id, by: "value"|"count", m: [{ t, r: "gift"|"choice"|"shipping"|"percent"|"amount", v, q }] }
  *          progressive gifts: gift lines carry _oo_offer = id and _oo_gift = milestone index and are
  *          free (up to q units) once the milestone is reached; the best reached order discount applies
@@ -123,6 +124,8 @@ const RULES = {
         const tier = [...(mix.tiers || [])].sort((a, b) => b[0] - a[0]).find(([need]) => units(paid) >= Number(need));
         const pct = mix.t === 'fixed' ? (total > 0 ? Math.max(0, 1 - (Number(mix.v) * rate) / total) * 100 : 0) : tier ? Number(tier[1]) : 0;
         if (pct > 0) found.push(candidate(offer.m || 'Bundle discount', paid.map((line) => ({line})), percent(Math.round(pct * 100) / 100)));
+        const boxGifts = group.filter((line) => line.gift && (mix.gp || []).includes(line.product));
+        if (boxGifts.length && mix.gq && units(paid) >= (Number(mix.gm) || 0)) found.push(candidate('Free gift', takeUnits(boxGifts, Number(mix.gq)), percent(100)));
         continue;
       }
       const o = (offer.o || [])[Number(index)];
@@ -137,7 +140,7 @@ const RULES = {
           : o.t === 'fixed_price' && total > 0 ? Math.max(0, 1 - (v * rate) / total) * 100
             : 0;
       if (pct > 0) found.push(candidate(offer.m || 'Bundle discount', paid.map((line) => ({line})), percent(Math.round(pct * 100) / 100)));
-      const gifts = group.filter((line) => line.gift);
+      const gifts = group.filter((line) => line.gift && (o.gp || []).includes(line.product));
       if (o.g && gifts.length) found.push(candidate('Free gift', takeUnits(gifts, Number(o.g)), percent(100)));
     }
     return found;

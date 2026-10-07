@@ -141,7 +141,7 @@
     c.offers.forEach(function (o, i) { if (o.preselected) pre = i; });
     var s = c.settings;
     return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s, mix && c.mix) +
-      (mix ? M(c).html(c, ctx, B) : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
+      (mix ? M(c).html(c, ctx, B) + (X() ? X().boxGifts(c) : '') : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
       (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + (X() ? X().upsells(c, ctx) : '') + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';
   }, {
@@ -153,7 +153,7 @@
         (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras')]);
       // The admin preview uses saved product data; the storefront loads live variants and prices.
       if (ctx.preview) return mix;
-      var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products } }, ['a', 'b'])];
+      var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products, g: (c.gifts.items || []).map(function (g) { return g.product[0]; }).filter(Boolean) } }, ['a', 'b', 'g'])];
       c.offers.forEach(function (o) {
         jobs.push(S.hydrate({ content: { a: o.products, b: o.product, g: o.gifts.map(function (g) { return g.product[0]; }).filter(Boolean) } }, ['a', 'b', 'g']));
       });
@@ -184,6 +184,7 @@
         var saving = 0;
         if (mix) {
           saving = M(c).update(root, c, ctx, picks, btn, B, upsellTotal());
+          if (X()) X().giftUpdate(root, c, picks.length);
         } else {
           var i = current();
           root.querySelectorAll('.oo-boffer').forEach(function (el) { el.classList.toggle('oo-bsel', Number(el.getAttribute('data-oo-offer')) === i); });
@@ -207,6 +208,7 @@
         };
         if (mix) {
           picks.forEach(function (p) { add(p.v, 1); });
+          if (X()) X().giftItems(c, picks.length).forEach(function (g) { add(g[0], g[1], true); });
         } else {
           var i = current();
           var o = c.offers[i];
@@ -216,7 +218,7 @@
           if (o.kind === 'multi') (o.products || []).forEach(function (p, j) {
             for (var k = 0; k < Number(p.quantity || 1); k++) add(v(i + ':' + j + ':' + k, p.variant_id), 1);
           });
-          o.gifts.forEach(function (g) { if (g.product[0]) add(g.product[0].variant_id, g.quantity, true); });
+          if (c.gifts.enabled) o.gifts.forEach(function (g) { if (g.product[0]) add(g.product[0].variant_id, g.quantity, true); });
         }
         list = list.concat(X() ? X().items(root, c, exp) : []);
         return sub(c) ? sub(c).items(root, c, ctx, mix ? 'm' : current(), list) : list;

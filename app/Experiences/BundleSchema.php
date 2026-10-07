@@ -283,7 +283,8 @@ class BundleSchema
                 'tiers' => [['count' => 2, 'discount' => 10], ['count' => 3, 'discount' => 15]],
                 'slot_text' => 'Choose',
             ],
-            'gifts' => ['enabled' => in_array($type, ['quantity-gifts', 'fixed-gifts'], true), 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked'],
+            // Offers carry their own gifts; mix & match and boxes use items, unlocked at a number of items.
+            'gifts' => ['enabled' => in_array($type, ['quantity-gifts', 'fixed-gifts'], true), 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked', 'items' => [], 'unlock' => 0],
             'upsells' => ['enabled' => false, 'title' => 'Complete your order', 'products' => [], 'discount_percent' => 10],
             'summary' => ['enabled' => true, 'text' => 'You save {saving}'],
             'subscription' => self::subscriptionDefaults(),
@@ -458,7 +459,7 @@ class BundleSchema
             }
             foreach ($offer['gifts'] as $g => $gift) {
                 if ($gift['product'] === []) {
-                    $errors["offers.{$i}.gifts.{$g}"] = 'Choose the gift product.';
+                    $errors["offers.{$i}.gifts.{$g}.product"] = 'Choose the gift product.';
                 }
             }
             $offers[] = $offer;
@@ -541,7 +542,7 @@ class BundleSchema
             'settings' => $settings,
             'offers' => $offers,
             'mix' => $mix,
-            'gifts' => ['enabled' => self::bool($g['enabled'] ?? false), 'title' => self::text($g['title'] ?? '', 80), 'locked_text' => self::text($g['locked_text'] ?? 'Locked', 30)],
+            'gifts' => self::boxGifts($g, $type, $mix, $errors),
             'upsells' => [
                 'enabled' => self::bool($u['enabled'] ?? false),
                 'title' => self::text($u['title'] ?? '', 80),
@@ -641,6 +642,38 @@ class BundleSchema
     }
 
     /**
+     * Gifts settings. Mix & match and boxes have their own gift items (offers carry theirs), unlocked
+     * once the box holds "unlock" items (0 = any box that can be added).
+     */
+    private static function boxGifts(array $g, string $type, array $mix, array &$errors): array
+    {
+        $gifts = ['enabled' => self::bool($g['enabled'] ?? false), 'title' => self::text($g['title'] ?? '', 80), 'locked_text' => self::text($g['locked_text'] ?? 'Locked', 30), 'items' => [], 'unlock' => 0];
+        if (! in_array($type, ['mix-match', 'byob'], true)) {
+            return $gifts;
+        }
+        foreach (array_slice(array_values(array_filter((array) ($g['items'] ?? []), 'is_array')), 0, 4) as $item) {
+            $gifts['items'][] = ['product' => array_slice(self::resources($item['product'] ?? [], 'Product', 1), 0, 1), 'quantity' => max(1, min(10, (int) ($item['quantity'] ?? 1)))];
+        }
+        $gifts['unlock'] = max(0, min(100, (int) ($g['unlock'] ?? 0)));
+        if (! $gifts['enabled']) {
+            return $gifts;
+        }
+        if ($gifts['items'] === []) {
+            $errors['gifts.items'] = 'Add the gift product.';
+        }
+        foreach ($gifts['items'] as $i => $item) {
+            if ($item['product'] === []) {
+                $errors["gifts.items.{$i}.product"] = 'Choose the gift product.';
+            }
+        }
+        if ($gifts['unlock'] > $mix['slots']) {
+            $errors['gifts.unlock'] = 'The box holds at most '.$mix['slots'].' items, so the gift could never unlock.';
+        }
+
+        return $gifts;
+    }
+
+    /**
      * Storefront payload parts for a bundle config.
      *
      * @return array{content: array, design: array, behavior: array, targeting: array}
@@ -670,7 +703,7 @@ class BundleSchema
                         'min' => $config['mix']['min'], 'per_product' => $config['mix']['per_product'], 'pricing' => $config['mix']['pricing'], 'fixed_price' => $config['mix']['fixed_price'],
                         'show_quantity' => $config['mix']['show_quantity'], 'add_text' => $config['mix']['add_text'], 'remove_text' => $config['mix']['remove_text'],
                     ] : []),
-                'gifts' => $config['gifts'],
+                'gifts' => ['items' => array_map(fn ($g) => ['product' => $strip($g['product']), 'quantity' => $g['quantity']], $config['gifts']['items'])] + $config['gifts'],
                 'upsells' => ['enabled' => $config['upsells']['enabled'], 'title' => $config['upsells']['title'], 'products' => $strip($config['upsells']['products']), 'discount_percent' => $config['upsells']['discount_percent']],
                 'summary' => $config['summary'],
                 'subscription' => $config['subscription'] ?? self::subscriptionDefaults(),
