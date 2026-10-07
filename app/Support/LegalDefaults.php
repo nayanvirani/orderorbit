@@ -117,12 +117,11 @@ To the fullest extent permitted by law, the App is provided **"as is" and "as av
 
 To the fullest extent permitted by law:
 
-- **(a) No indirect losses.** We are not liable for any indirect, incidental, special, consequential, exemplary or punitive damages, or for any loss of profits, revenue, sales, goodwill, data or business opportunity, however caused, even if we were told they were possible.
-- **(b) Total liability cap.** Our total liability for all claims relating to the App or these Terms is limited to the greater of:
-  - the fees you paid for the App in the {{liability_months}} months before the event giving rise to the claim; or
-  - {{liability_minimum}}.
+- **(a) No liability for damages.** We are not liable to you or to anyone else for any loss or damage of any kind arising from or relating to the App, our services or these Terms. This includes direct, indirect, incidental, special, consequential, exemplary and punitive damages, and any loss of profits, revenue, sales, orders, goodwill, data or business opportunity, however caused and under any legal theory (contract, tort including negligence, or otherwise), even if we were told such loss was possible.
+- **(b) No compensation.** We do not pay compensation, damages, credits or refunds for any claim. Any refund of App charges is at our sole discretion.
+- **(c) Your remedy.** If you are not satisfied with the App, your only remedy is to stop using it and uninstall it.
 
-Nothing in these Terms limits liability that cannot be limited by law, such as liability for fraud.
+Nothing in these Terms excludes or limits liability that cannot be excluded or limited by law, such as liability for fraud.
 
 ## 15. Indemnity
 

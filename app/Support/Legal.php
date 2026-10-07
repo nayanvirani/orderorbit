@@ -34,8 +34,6 @@ class Legal
         'support_hours' => ['Support hours', 'business days (Monday to Friday, excluding public holidays)', null, false],
         'response_time' => ['First-response target', '2 business days', null, false],
         'notice_days' => ['Notice before material changes (days)', '15', 'How long before changed Terms take effect.', false],
-        'liability_months' => ['Liability cap: months of fees', '12', 'Caps what you could owe a merchant: the fees they paid in this many months.', false],
-        'liability_minimum' => ['Liability cap: minimum amount', 'USD 100', null, false],
     ];
 
     /** Placeholders available in page bodies, for the editor's help text. */
@@ -50,8 +48,6 @@ class Legal
         'support_hours' => 'Support hours',
         'response_time' => 'First-response target',
         'notice_days' => 'Notice days',
-        'liability_months' => 'Liability cap months',
-        'liability_minimum' => 'Liability cap minimum',
         'website' => 'Website address',
         'effective_date' => 'This page\'s effective date',
         'url:terms' => 'Link to another legal page (any slug)',
@@ -110,8 +106,6 @@ class Legal
             'support_hours' => $d['support_hours'],
             'response_time' => $d['response_time'],
             'notice_days' => $d['notice_days'],
-            'liability_months' => $d['liability_months'],
-            'liability_minimum' => $d['liability_minimum'],
             'website' => rtrim(config('app.url'), '/'),
             'effective_date' => $effective ?? now()->toFormattedDateString(),
         ];

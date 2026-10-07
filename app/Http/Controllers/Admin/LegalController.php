@@ -41,7 +41,6 @@ class LegalController extends Controller
         $rules['contact_email'] = ['nullable', 'email', 'max:190'];
         $rules['privacy_email'] = ['nullable', 'email', 'max:190'];
         $rules['notice_days'] = ['nullable', 'integer', 'min:0', 'max:180'];
-        $rules['liability_months'] = ['nullable', 'integer', 'min:1', 'max:60'];
         $data = $request->validate($rules);
         // Defaults fill anything left empty that has one.
         foreach (Legal::DETAILS as $key => [, $default]) {
