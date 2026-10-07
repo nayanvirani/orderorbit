@@ -13,10 +13,11 @@ use Throwable;
 /**
  * Internal Admin (Finance): monthly earnings, expenses and profit.
  *
- * Revenue: each paid subscription counts its price once in every month it was billable (after
- * its free trial, until it was cancelled). Test stores, test charges and complimentary plans
- * don't count. Plus manual income entries.
- * Expenses: fixed monthly costs (e.g. Railway), percentage fees on subscription revenue
+ * Revenue: each store with a paid subscription counts once in every month it was billable (after
+ * its free trial, until it was cancelled), at the plan it was on last that month. Development,
+ * partner and staff stores, test stores, test charges and complimentary plans don't count.
+ * Plus manual income entries.
+ * Expenses: Railway hosting (from Railway's API), other fixed monthly costs, percentage fees on subscription revenue
  * (e.g. Shopify's 2.9% processing fee) and manual expense entries.
  */
 class Finance
@@ -41,7 +42,8 @@ class Finance
             // No database yet: defaults.
         }
 
-        $recurring = $saved['recurring'] ?? [['name' => 'Railway (project base plan)', 'amount' => 5.0, 'from' => now()->format('Y-m'), 'until' => null]];
+        // Railway comes from its API (RailwayBilling); these are other fixed costs (domain, tools…).
+        $recurring = $saved['recurring'] ?? [];
         $fees = $saved['fees'] ?? [['name' => 'Shopify processing fee', 'percent' => 2.9]];
 
         return [
@@ -96,14 +98,19 @@ class Finance
             ->values()->all();
         $fees = collect($settings['fees'])->map(fn ($f) => $f + ['amount' => round($subscriptions * $f['percent'] / 100, 2)])->all();
 
+        $railway = RailwayBilling::forMonth($month);
+        // Connected to Railway: a typed-in Railway cost would count it twice.
+        $skipped = $railway['connected'] ? array_values(array_filter($recurring, fn ($r) => stripos($r['name'], 'railway') !== false)) : [];
+        $recurring = array_values(array_filter($recurring, fn ($r) => ! in_array($r, $skipped, true)));
+
         $revenue = round($subscriptions + $income, 2);
-        $expenses = round(array_sum(array_column($recurring, 'amount')) + array_sum(array_column($fees, 'amount')) + $manual, 2);
+        $expenses = round($railway['amount'] + array_sum(array_column($recurring, 'amount')) + array_sum(array_column($fees, 'amount')) + $manual, 2);
         $profit = round($revenue - $expenses, 2);
 
         return [
             'month' => $month, 'label' => $start->format('F Y'),
             'subscriptions' => $subscriptions, 'subscribers' => $billable->count(), 'income' => $income, 'revenue' => $revenue,
-            'recurring' => $recurring, 'fees' => $fees, 'entries' => $entries, 'manual' => $manual,
+            'railway' => $railway, 'skipped' => $skipped, 'recurring' => $recurring, 'fees' => $fees, 'entries' => $entries, 'manual' => $manual,
             'expenses' => $expenses, 'profit' => $profit, 'margin' => $revenue > 0 ? round($profit / $revenue * 100, 1) : null,
         ];
     }
@@ -116,8 +123,24 @@ class Finance
         return collect(range(0, $count - 1))->map(fn ($i) => self::month($last->subMonths($i)->format('Y-m')))->all();
     }
 
-    /** Paid subscriptions billable at some point in the month. */
+    /** Shopify plans of stores that are never charged (development, partner sandbox, staff…). */
+    public const UNBILLED_PLANS = '/develop|partner|sandbox|staff|affiliate|preview/i';
+
+    /**
+     * Paid subscriptions billed in the month: at most one per store (the plan it was on last that
+     * month, as Shopify credits a replaced plan), never for development, partner or staff stores.
+     */
     private static function billable(CarbonImmutable $start, CarbonImmutable $end)
+    {
+        return self::active($start, $end)
+            ->reject(fn (Subscription $s) => preg_match(self::UNBILLED_PLANS, (string) $s->store->shopify_plan))
+            ->groupBy('store_id')
+            ->map(fn ($subs) => $subs->sortBy(fn ($s) => [$s->activated_at->timestamp, $s->id])->last())
+            ->values();
+    }
+
+    /** Paid subscriptions active at some point in the month. */
+    private static function active(CarbonImmutable $start, CarbonImmutable $end)
     {
         return Subscription::with('store')
             ->where('test', false)->where('price', '>', 0)->whereNotNull('activated_at')

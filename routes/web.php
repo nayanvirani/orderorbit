@@ -370,6 +370,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/finance/entries/{entry}', 'update')->whereNumber('entry')->name('finance.update');
             Route::post('/finance/entries/{entry}/delete', 'destroy')->whereNumber('entry')->name('finance.destroy');
             Route::post('/finance/settings', 'settings')->name('finance.settings');
+            Route::post('/finance/railway', 'railway')->name('finance.railway');
+            Route::post('/finance/railway/refresh', 'railwayRefresh')->name('finance.railway.refresh');
         });
 
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\CrawlersController::class)->group(function () {

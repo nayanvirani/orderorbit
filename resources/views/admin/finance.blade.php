@@ -19,7 +19,7 @@
 
 <div class="ad-kpis">
     <div><small>Revenue · {{ $m['label'] }}</small><b>{{ $money($m['revenue']) }}</b><span>{{ $m['subscribers'] }} paying {{ \Illuminate\Support\Str::plural('store', $m['subscribers']) }}{{ $m['income'] ? ' + '.$money($m['income']).' other income' : '' }}</span></div>
-    <div><small>Expenses</small><b>{{ $money($m['expenses']) }}</b><span>Fixed costs, fees and entries</span></div>
+    <div><small>Expenses</small><b>{{ $money($m['expenses']) }}</b><span>{{ $m['railway']['connected'] ? 'Railway, ' : '' }}fixed costs, fees and entries</span></div>
     <div class="{{ $m['profit'] < 0 ? 'alert' : '' }}"><small>Profit</small><b style="color:{{ $m['profit'] < 0 ? 'var(--bad)' : 'var(--ok)' }}">{{ $money($m['profit']) }}</b><span>Revenue − expenses</span></div>
     <div><small>Profit margin</small><b>{{ $m['margin'] === null ? '—' : $m['margin'].'%' }}</b><span>{{ $isCurrent ? 'Month so far' : 'Whole month' }}</span></div>
 </div>
@@ -35,6 +35,20 @@
                 <tr class="fn-total"><td>Total revenue</td><td class="num">{{ $money($m['revenue']) }}</td></tr>
 
                 <tr class="fn-head"><th colspan="2">Expenses</th></tr>
+                @if ($m['railway']['connected'])
+                    @foreach ($m['railway']['invoices'] as $inv)
+                        <tr><td>Railway invoice <span class="ad-muted">· {{ \Carbon\Carbon::parse($inv['date'])->format('M j') }}{{ $inv['charged'] != $inv['total'] ? ' · '.$money($inv['total']).' before credits' : '' }}</span></td><td class="num">{{ $money($inv['charged']) }}</td></tr>
+                    @endforeach
+                    @if ($m['railway']['estimate'])
+                        @php($est = $m['railway']['estimate'])
+                        <tr><td>Railway, current period <span class="ad-badge warn">Estimate</span> <span class="ad-muted">· invoice due {{ \Carbon\Carbon::parse($est['due'])->format('M j') }}, usage so far {{ $money($est['usage']) }}{{ $est['minimum'] ? ', plan minimum '.$money($est['minimum']) : '' }}</span></td><td class="num">{{ $money($est['amount']) }}</td></tr>
+                    @endif
+                    @if (! $m['railway']['invoices'] && ! $m['railway']['estimate'])
+                        <tr><td>Railway <span class="ad-muted">· no invoice this month</span></td><td class="num">{{ $money(0) }}</td></tr>
+                    @endif
+                @else
+                    <tr><td>Railway <span class="ad-muted">· <a href="#railway">connect Railway</a> to add hosting costs automatically</span></td><td class="num">—</td></tr>
+                @endif
                 @foreach ($m['recurring'] as $r)
                     <tr><td>{{ $r['name'] }} <span class="ad-muted">· monthly</span></td><td class="num">{{ $money($r['amount']) }}</td></tr>
                 @endforeach
@@ -47,7 +61,8 @@
                 <tr class="fn-profit {{ $m['profit'] < 0 ? 'loss' : '' }}"><td>Profit</td><td class="num">{{ $money($m['profit']) }}</td></tr>
             </tbody>
         </table>
-        <p class="ad-muted" style="margin:0">Subscription revenue counts each paid plan once per month it was billable (after the free trial, until cancelled). Test stores, test charges and complimentary plans aren't counted. Shopify bills every 30 days, so compare with your Shopify Partners payouts and add any difference as income or expense.</p>
+        @if ($m['skipped'])<p class="ad-muted" style="margin:0 0 8px">Not counted while Railway is connected (it would count twice): {{ implode(', ', array_column($m['skipped'], 'name')) }}. Remove {{ count($m['skipped']) === 1 ? 'it' : 'them' }} from Monthly costs below.</p>@endif
+        <p class="ad-muted" style="margin:0">Subscription revenue counts each store with a paid plan once per month it was billable (after the free trial, until cancelled), at the plan it was on last that month. Development, partner and staff stores aren't charged by Shopify, so they aren't counted, nor are test stores, test charges or complimentary plans. Shopify bills every 30 days, so compare with your Shopify Partners payouts and add any difference as income or expense.</p>
     </section>
 
     <section class="ad-card">
@@ -106,10 +121,50 @@
     @endif
 </section>
 
+<section class="ad-card" id="railway">
+    <header>
+        <div><h2>Railway hosting</h2><p class="ad-muted" style="margin:4px 0 0">Invoices and the running period's usage come from Railway's API, so hosting costs are added automatically.</p></div>
+        @if ($railway['ok'])
+            <form method="POST" action="{{ route('admin.finance.railway.refresh') }}">@csrf<button class="ad-btn" type="submit">Refresh</button></form>
+        @endif
+    </header>
+    @if ($railway['ok'])
+        <div class="ad-kpis" style="margin-bottom:12px">
+            <div><small>Workspace</small><b style="font-size:18px">{{ $railway['workspace'] }}</b><span>{{ ucfirst(strtolower($railway['plan'])) }} plan</span></div>
+            <div><small>Current period</small><b style="font-size:18px">{{ \Carbon\Carbon::parse($railway['period']['start'])->format('M j') }} – {{ \Carbon\Carbon::parse($railway['period']['end'])->format('M j') }}</b><span>Next invoice on {{ \Carbon\Carbon::parse($railway['period']['end'])->format('M j') }}</span></div>
+            <div><small>Usage so far</small><b style="font-size:18px">{{ $money($railway['usage']) }}</b><span>{{ $railway['credit'] ? 'Credit '.$money($railway['credit']) : 'No credit' }}</span></div>
+        </div>
+        @if ($railway['invoices'])
+            <table class="ad-table">
+                <thead><tr><th>Invoice date</th><th>Status</th><th class="num">Total</th><th class="num">Charged</th><th></th></tr></thead>
+                <tbody>
+                    @foreach ($railway['invoices'] as $inv)
+                        <tr><td>{{ \Carbon\Carbon::parse($inv['date'])->format('M j, Y') }}</td><td><span class="ad-badge {{ $inv['status'] === 'paid' ? 'ok' : 'warn' }}">{{ ucfirst($inv['status']) }}</span></td><td class="num">{{ $money($inv['total']) }}</td><td class="num">{{ $money($inv['charged']) }}</td><td class="num">@if ($inv['url'])<a href="{{ $inv['url'] }}" target="_blank" rel="noopener">View</a>@endif</td></tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+        <p class="ad-muted" style="margin:0 0 12px">Updated {{ \Carbon\Carbon::parse($railway['fetched_at'])->diffForHumans() }}. "Charged" is what Railway billed after credits; it's what Finance counts.</p>
+    @elseif ($railway['error'] !== 'not_connected')
+        <p class="ad-badge bad" style="margin-bottom:12px">{{ $railway['error'] }}</p>
+    @endif
+    <form method="POST" action="{{ route('admin.finance.railway') }}" class="ad-form">
+        @csrf
+        <div class="ad-fields">
+            <label>Railway account token<input type="password" name="token" autocomplete="off" placeholder="{{ $railwaySettings['token'] ? ($railwaySettings['from_env'] ? 'Set by the RAILWAY_API_TOKEN variable' : 'Saved · paste a new one to replace it') : 'Paste a token' }}"><small>Create one at railway.com/account/tokens (an account token: workspace tokens can't read billing). Saved encrypted.</small></label>
+            <label>Workspace ID (optional)<input type="text" name="workspace_id" value="{{ $railwaySettings['workspace_id'] }}" placeholder="Your first workspace"><small>Only if your token sees several workspaces.</small></label>
+        </div>
+        <div class="ad-inline" style="margin-top:12px;display:flex;gap:8px">
+            <button class="ad-btn primary" type="submit">{{ $railwaySettings['token'] ? 'Save' : 'Connect Railway' }}</button>
+            @if ($railwaySettings['token'] && ! $railwaySettings['from_env'])<button class="ad-btn" type="submit" name="disconnect" value="1" onclick="return confirm('Disconnect Railway?')">Disconnect</button>@endif
+        </div>
+    </form>
+</section>
+
 <form method="POST" action="{{ route('admin.finance.settings') }}" class="ad-card" data-fn-settings>
     @csrf
     <header>
-        <div><h2>Monthly costs and fees</h2><p class="ad-muted" style="margin:4px 0 0">Charged every month between the months you set, e.g. the Railway project plan. Fees are a percentage of subscription revenue, e.g. Shopify's processing fee.</p></div>
+        <div><h2>Other monthly costs and fees</h2><p class="ad-muted" style="margin:4px 0 0">Fixed costs charged every month between the months you set (domain, email, tools). Railway comes from its API above. Fees are a percentage of subscription revenue, e.g. Shopify's processing fee.</p></div>
     </header>
     <h3 class="fn-sub">Fixed monthly costs</h3>
     <div class="fn-rows" data-rows="recurring">

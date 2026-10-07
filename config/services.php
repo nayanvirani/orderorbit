@@ -14,6 +14,12 @@ return [
     |
     */
 
+    // Railway's public API, for hosting costs in Finance (Internal Admin). An account token from
+    // railway.com/account/tokens; it can also be saved in the admin.
+    'railway' => [
+        'token' => env('RAILWAY_API_TOKEN'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
