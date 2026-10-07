@@ -106,36 +106,55 @@ class FinanceTest extends TestCase
         $this->actingAs($this->admin('operations'))->get('/admin/finance')->assertForbidden();
     }
 
-    public function test_railway_costs_come_from_its_api(): void
+    public function test_railway_counts_this_projects_share_of_the_workspace_bill(): void
     {
-        Http::fake(['backboard.railway.com/*' => Http::response(['data' => ['me' => ['workspaces' => [[
-            'id' => 'w1', 'name' => 'My Projects', 'plan' => 'HOBBY',
-            'customer' => ['currentUsage' => 6.93, 'creditBalance' => 0, 'billingPeriod' => ['start' => '2026-09-19T03:03:04.000Z', 'end' => '2026-10-19T03:03:04.000Z'], 'invoices' => [
-                ['invoiceId' => 'in_3', 'periodStart' => '2026-09-19T03:03:04.000Z', 'periodEnd' => '2026-09-19T03:03:04.000Z', 'total' => 590, 'amountPaid' => 90, 'amountDue' => 90, 'status' => 'paid', 'hostedURL' => 'https://invoice.stripe.com/x'],
-                ['invoiceId' => 'in_2', 'periodStart' => '2026-07-31T12:15:38.000Z', 'periodEnd' => '2026-08-31T12:15:38.000Z', 'total' => 0, 'amountPaid' => 0, 'amountDue' => 0, 'status' => 'paid', 'hostedURL' => null],
-                ['invoiceId' => 'in_1', 'periodStart' => '2026-07-31T12:15:38.000Z', 'periodEnd' => '2026-07-31T12:15:38.000Z', 'total' => 500, 'amountPaid' => 500, 'amountDue' => 500, 'status' => 'paid', 'hostedURL' => null],
-                ['invoiceId' => 'in_0', 'periodStart' => '2026-07-01T00:00:00.000Z', 'periodEnd' => '2026-07-01T00:00:00.000Z', 'total' => 999, 'amountPaid' => 0, 'amountDue' => 999, 'status' => 'void', 'hostedURL' => null],
-            ]],
-        ]]]]])]);
+        $p1 = '4f701e1c-e495-4fef-9f3c-56ada663b3ae';
+        $p2 = 'aa408320-51db-4e24-b35b-98d3fe219033';
+        config(['services.railway.project_id' => $p1]);
+        // Usage weights: CPU minutes (x 20/43200 $) — the project uses 1 part, the workspace 4 parts (25%).
+        $usage = fn ($minutes) => [['measurement' => 'CPU_USAGE', 'value' => $minutes]];
+        Http::fake(function ($request) use ($p1, $p2, $usage) {
+            $q = $request['query'];
+            if (str_contains($q, 'project(id:')) {
+                return Http::response(['data' => ['project' => ['id' => $p1, 'name' => 'OrderOrbit', 'workspaceId' => 'w1']]]);
+            }
+            if (str_contains($q, 'workspace(workspaceId:')) {
+                return Http::response(['data' => ['workspace' => [
+                    'id' => 'w1', 'name' => 'My Projects', 'plan' => 'HOBBY', 'projects' => ['edges' => [['node' => ['id' => $p1, 'name' => 'OrderOrbit']], ['node' => ['id' => $p2, 'name' => 'SpeedPilot']]]],
+                    'customer' => ['currentUsage' => 6.93, 'creditBalance' => 0, 'billingPeriod' => ['start' => '2026-09-19T03:03:04.000Z', 'end' => '2026-10-19T03:03:04.000Z'], 'invoices' => [
+                        ['invoiceId' => 'in_3', 'periodStart' => '2026-09-19T03:03:04.000Z', 'periodEnd' => '2026-09-19T03:03:04.000Z', 'total' => 590, 'amountPaid' => 90, 'amountDue' => 90, 'status' => 'paid', 'hostedURL' => 'https://invoice.stripe.com/x'],
+                        ['invoiceId' => 'in_1', 'periodStart' => '2026-07-31T12:15:38.000Z', 'periodEnd' => '2026-07-31T12:15:38.000Z', 'total' => 500, 'amountPaid' => 500, 'amountDue' => 500, 'status' => 'paid', 'hostedURL' => null],
+                        ['invoiceId' => 'in_0', 'periodStart' => '2026-07-01T00:00:00.000Z', 'periodEnd' => '2026-07-01T00:00:00.000Z', 'total' => 999, 'amountPaid' => 0, 'amountDue' => 999, 'status' => 'void', 'hostedURL' => null],
+                    ]],
+                ]]]);
+            }
+            if (str_contains($q, 'usage(')) {
+                // Running period and the Sep 19 invoice: 25%; before the project existed (Jul 31 invoice): 0%.
+                return Http::response(['data' => [
+                    'w_now' => $usage(400), 'p_now' => $usage(100),
+                    'w_i0' => $usage(400), 'p_i0' => $usage(100),
+                    'w_i1' => $usage(400), 'p_i1' => [],
+                ]]);
+            }
+
+            return Http::response(['errors' => [['message' => 'Not Authorized']]]);
+        });
         $admin = $this->admin();
-        $this->actingAs($admin)->post('/admin/finance/railway', ['token' => 'secret-token'])->assertRedirect()->assertSessionHas('status', 'Railway connected: My Projects (Hobby plan).');
-        $this->assertNotSame('secret-token', \Illuminate\Support\Facades\DB::table('platform_settings')->where('key', 'railway')->value('value'), 'The token is stored encrypted.');
-        $this->assertStringNotContainsString('secret-token', (string) \Illuminate\Support\Facades\DB::table('platform_settings')->where('key', 'railway')->value('value'));
+        $this->actingAs($admin)->post('/admin/finance/railway', ['token' => 'secret-token'])->assertRedirect()->assertSessionHas('status', 'Railway connected: costs of the OrderOrbit project.');
+        $this->assertStringNotContainsString('secret-token', (string) \Illuminate\Support\Facades\DB::table('platform_settings')->where('key', 'railway')->value('value'), 'The token is stored encrypted.');
         Finance::save([['name' => 'Railway (project base plan)', 'amount' => 5, 'from' => '2026-01', 'until' => null]], []);
 
-        // Invoices count in the month they were issued, at what was charged after credits.
-        $this->assertSame(5.0, Finance::month('2026-07')['railway']['amount']);
-        $this->assertSame(0.0, Finance::month('2026-08')['railway']['amount']);
-        $this->assertSame(0.9, Finance::month('2026-09')['railway']['amount']);
-        // The running period: an estimate (Hobby's $5 minimum or the usage, if higher), due Oct 19.
+        // Only the project's share of what was charged: 25% of $0.90 in September, nothing in July.
+        $this->assertSame(0.0, Finance::month('2026-07')['railway']['amount']);
+        $this->assertSame(0.23, Finance::month('2026-09')['railway']['amount']);
+        // The running period: 25% of the estimated bill (Hobby's $5 minimum or the usage, if higher).
         $oct = Finance::month('2026-10');
-        $this->assertSame(['amount' => 6.93, 'usage' => 6.93, 'minimum' => 5.0, 'due' => '2026-10-19'], $oct['railway']['estimate']);
-        $this->assertSame(6.93, $oct['expenses']);
+        $this->assertSame(['bill' => 6.93, 'amount' => 1.73, 'share' => 0.25, 'usage' => 6.93, 'minimum' => 5.0, 'due' => '2026-10-19'], $oct['railway']['estimate']);
+        $this->assertSame(1.73, $oct['expenses']);
         $this->assertSame(['Railway (project base plan)'], array_column($oct['skipped'], 'name'), 'A typed-in Railway cost is not counted twice.');
-        $this->assertSame([], $oct['recurring']);
 
-        $this->actingAs($admin)->get('/admin/finance')->assertOk()->assertSee('My Projects')->assertSee('$6.93')->assertSee('Estimate')->assertSee('Not counted while Railway is connected');
-        $this->actingAs($admin)->get('/admin/finance?month=2026-09')->assertOk()->assertSee('Railway invoice')->assertSee('$5.90 before credits', false)->assertSee('$0.90');
+        $this->actingAs($admin)->get('/admin/finance')->assertOk()->assertSee('OrderOrbit')->assertSee('25%')->assertSee('Estimate')->assertSee('SpeedPilot');
+        $this->actingAs($admin)->get('/admin/finance?month=2026-09')->assertOk()->assertSee('25% of the Sep 19 invoice', false)->assertSee('$0.23');
         Http::assertSent(fn ($r) => $r->hasHeader('Authorization', 'Bearer secret-token'));
 
         $this->actingAs($admin)->post('/admin/finance/railway', ['disconnect' => '1'])->assertRedirect();

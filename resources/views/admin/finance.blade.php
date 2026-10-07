@@ -37,11 +37,11 @@
                 <tr class="fn-head"><th colspan="2">Expenses</th></tr>
                 @if ($m['railway']['connected'])
                     @foreach ($m['railway']['invoices'] as $inv)
-                        <tr><td>Railway invoice <span class="ad-muted">· {{ \Carbon\Carbon::parse($inv['date'])->format('M j') }}{{ $inv['charged'] != $inv['total'] ? ' · '.$money($inv['total']).' before credits' : '' }}</span></td><td class="num">{{ $money($inv['charged']) }}</td></tr>
+                        <tr><td>Railway · {{ $m['railway']['project'] }} <span class="ad-muted">· {{ $inv['share'] === null ? 'no usage' : round($inv['share'] * 100, 1).'%' }} of the {{ \Carbon\Carbon::parse($inv['date'])->format('M j') }} invoice ({{ $money($inv['charged']) }}{{ $inv['charged'] != $inv['total'] ? ' after credits' : '' }})</span></td><td class="num">{{ $money($inv['counted']) }}</td></tr>
                     @endforeach
                     @if ($m['railway']['estimate'])
                         @php($est = $m['railway']['estimate'])
-                        <tr><td>Railway, current period <span class="ad-badge warn">Estimate</span> <span class="ad-muted">· invoice due {{ \Carbon\Carbon::parse($est['due'])->format('M j') }}, usage so far {{ $money($est['usage']) }}{{ $est['minimum'] ? ', plan minimum '.$money($est['minimum']) : '' }}</span></td><td class="num">{{ $money($est['amount']) }}</td></tr>
+                        <tr><td>Railway · {{ $m['railway']['project'] }}, current period <span class="ad-badge warn">Estimate</span> <span class="ad-muted">· {{ $est['share'] === null ? 'no usage yet' : round($est['share'] * 100, 1).'%' }} of the {{ $money($est['bill']) }} bill due {{ \Carbon\Carbon::parse($est['due'])->format('M j') }}</span></td><td class="num">{{ $money($est['amount']) }}</td></tr>
                     @endif
                     @if (! $m['railway']['invoices'] && ! $m['railway']['estimate'])
                         <tr><td>Railway <span class="ad-muted">· no invoice this month</span></td><td class="num">{{ $money(0) }}</td></tr>
@@ -123,36 +123,42 @@
 
 <section class="ad-card" id="railway">
     <header>
-        <div><h2>Railway hosting</h2><p class="ad-muted" style="margin:4px 0 0">Invoices and the running period's usage come from Railway's API, so hosting costs are added automatically.</p></div>
+        <div><h2>Railway hosting</h2><p class="ad-muted" style="margin:4px 0 0">This project's hosting cost, from Railway's API. Railway bills the whole workspace, so only this project's part of each bill is counted: its share of the workspace's CPU, memory, network and volume usage.</p></div>
         @if ($railway['ok'])
             <form method="POST" action="{{ route('admin.finance.railway.refresh') }}">@csrf<button class="ad-btn" type="submit">Refresh</button></form>
         @endif
     </header>
     @if ($railway['ok'])
         <div class="ad-kpis" style="margin-bottom:12px">
-            <div><small>Workspace</small><b style="font-size:18px">{{ $railway['workspace'] }}</b><span>{{ ucfirst(strtolower($railway['plan'])) }} plan</span></div>
+            <div><small>Project</small><b style="font-size:18px">{{ $railway['project'] }}</b><span>Workspace {{ $railway['workspace'] }} · {{ ucfirst(strtolower($railway['plan'])) }} plan</span></div>
             <div><small>Current period</small><b style="font-size:18px">{{ \Carbon\Carbon::parse($railway['period']['start'])->format('M j') }} – {{ \Carbon\Carbon::parse($railway['period']['end'])->format('M j') }}</b><span>Next invoice on {{ \Carbon\Carbon::parse($railway['period']['end'])->format('M j') }}</span></div>
-            <div><small>Usage so far</small><b style="font-size:18px">{{ $money($railway['usage']) }}</b><span>{{ $railway['credit'] ? 'Credit '.$money($railway['credit']) : 'No credit' }}</span></div>
+            <div><small>{{ $railway['project'] }} share so far</small><b style="font-size:18px">{{ $railway['share_now'] === null ? '—' : round($railway['share_now'] * 100, 1).'%' }}</b><span>of the workspace's usage ({{ $money($railway['usage']) }} so far)</span></div>
         </div>
         @if ($railway['invoices'])
             <table class="ad-table">
-                <thead><tr><th>Invoice date</th><th>Status</th><th class="num">Total</th><th class="num">Charged</th><th></th></tr></thead>
+                <thead><tr><th>Workspace invoice</th><th>Status</th><th class="num">Charged</th><th class="num">{{ $railway['project'] }} share</th><th class="num">{{ $railway['project'] }} cost</th><th></th></tr></thead>
                 <tbody>
                     @foreach ($railway['invoices'] as $inv)
-                        <tr><td>{{ \Carbon\Carbon::parse($inv['date'])->format('M j, Y') }}</td><td><span class="ad-badge {{ $inv['status'] === 'paid' ? 'ok' : 'warn' }}">{{ ucfirst($inv['status']) }}</span></td><td class="num">{{ $money($inv['total']) }}</td><td class="num">{{ $money($inv['charged']) }}</td><td class="num">@if ($inv['url'])<a href="{{ $inv['url'] }}" target="_blank" rel="noopener">View</a>@endif</td></tr>
+                        <tr><td>{{ \Carbon\Carbon::parse($inv['date'])->format('M j, Y') }}</td><td><span class="ad-badge {{ $inv['status'] === 'paid' ? 'ok' : 'warn' }}">{{ ucfirst($inv['status']) }}</span></td><td class="num">{{ $money($inv['charged']) }}{{ $inv['charged'] != $inv['total'] ? ' of '.$money($inv['total']) : '' }}</td><td class="num">{{ $inv['share'] === null ? '—' : round($inv['share'] * 100, 1).'%' }}</td><td class="num">{{ $money(round($inv['charged'] * ($inv['share'] ?? 0), 2)) }}</td><td class="num">@if ($inv['url'])<a href="{{ $inv['url'] }}" target="_blank" rel="noopener">View</a>@endif</td></tr>
                     @endforeach
                 </tbody>
             </table>
         @endif
-        <p class="ad-muted" style="margin:0 0 12px">Updated {{ \Carbon\Carbon::parse($railway['fetched_at'])->diffForHumans() }}. "Charged" is what Railway billed after credits; it's what Finance counts.</p>
+        <p class="ad-muted" style="margin:0 0 12px">Updated {{ \Carbon\Carbon::parse($railway['fetched_at'])->diffForHumans() }}. "Charged" is what Railway billed after credits. The share is this project's part of the workspace's usage in the month before each invoice; "—" means no usage was recorded then.</p>
     @elseif ($railway['error'] !== 'not_connected')
         <p class="ad-badge bad" style="margin-bottom:12px">{{ $railway['error'] }}</p>
     @endif
     <form method="POST" action="{{ route('admin.finance.railway') }}" class="ad-form">
         @csrf
         <div class="ad-fields">
-            <label>Railway account token<input type="password" name="token" autocomplete="off" placeholder="{{ $railwaySettings['token'] ? ($railwaySettings['from_env'] ? 'Set by the RAILWAY_API_TOKEN variable' : 'Saved · paste a new one to replace it') : 'Paste a token' }}"><small>Create one at railway.com/account/tokens (an account token: workspace tokens can't read billing). Saved encrypted.</small></label>
-            <label>Workspace ID (optional)<input type="text" name="workspace_id" value="{{ $railwaySettings['workspace_id'] }}" placeholder="Your first workspace"><small>Only if your token sees several workspaces.</small></label>
+            <label>Railway token<input type="password" name="token" autocomplete="off" placeholder="{{ $railwaySettings['token'] ? ($railwaySettings['from_env'] ? 'Set by the RAILWAY_API_TOKEN variable' : 'Saved · paste a new one to replace it') : 'Paste a token' }}"><small>A workspace token from railway.com/account/tokens. Saved encrypted.</small></label>
+            <label>Project
+                @if (! empty($railway['projects']))
+                    <select name="project_id">@foreach ($railway['projects'] as $pid => $pname)<option value="{{ $pid }}" @selected($pid === ($railway['project_id'] ?? $railwaySettings['project_id']))>{{ $pname }}</option>@endforeach</select>
+                @else
+                    <input type="text" name="project_id" value="{{ $railwaySettings['project_id'] }}" placeholder="This app's project (detected)">
+                @endif
+                <small>The project whose cost is counted. This app's own project is detected automatically.</small></label>
         </div>
         <div class="ad-inline" style="margin-top:12px;display:flex;gap:8px">
             <button class="ad-btn primary" type="submit">{{ $railwaySettings['token'] ? 'Save' : 'Connect Railway' }}</button>

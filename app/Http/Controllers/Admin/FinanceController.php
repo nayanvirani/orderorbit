@@ -77,19 +77,19 @@ class FinanceController extends Controller
         return back()->with('status', 'Monthly costs and fees saved.');
     }
 
-    /** Railway API token (encrypted) and optional workspace, or disconnect. */
+    /** Railway API token (encrypted) and the project to count, or disconnect. */
     public function railway(Request $request): RedirectResponse
     {
-        $request->validate(['token' => ['nullable', 'string', 'max:200'], 'workspace_id' => ['nullable', 'string', 'max:64']]);
+        $request->validate(['token' => ['nullable', 'string', 'max:200'], 'project_id' => ['nullable', 'string', 'max:64']]);
         $forget = $request->boolean('disconnect');
-        RailwayBilling::save($request->input('token'), $request->input('workspace_id'), $forget);
+        RailwayBilling::save($request->input('token'), $request->input('project_id'), $forget);
         AuditLog::record($forget ? 'admin.railway_disconnected' : 'admin.railway_connected', null, ['by' => $request->user()->email]);
         if ($forget) {
             return back()->with('status', 'Railway disconnected.');
         }
         $data = RailwayBilling::data();
 
-        return back()->with('status', $data['ok'] ? 'Railway connected: '.$data['workspace'].' ('.ucfirst(strtolower($data['plan'])).' plan).' : 'Saved, but '.lcfirst($data['error']));
+        return back()->with('status', $data['ok'] ? 'Railway connected: costs of the '.$data['project'].' project.' : 'Saved, but '.lcfirst($data['error']));
     }
 
     public function railwayRefresh(): RedirectResponse

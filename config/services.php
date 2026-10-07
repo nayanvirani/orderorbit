@@ -18,6 +18,8 @@ return [
     // railway.com/account/tokens; it can also be saved in the admin.
     'railway' => [
         'token' => env('RAILWAY_API_TOKEN'),
+        // Set by Railway in every deployment: the project whose cost Finance counts.
+        'project_id' => env('RAILWAY_PROJECT_ID'),
     ],
 
     'postmark' => [
