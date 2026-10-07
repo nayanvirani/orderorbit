@@ -70,14 +70,6 @@
     return '<div class="oo-bunits">' + out + '</div>';
   }
 
-  function giftTiles(o, c, ctx) {
-    if (!c.gifts.enabled || !o.gifts.length) return '';
-    return '<div class="oo-bgifts">' + o.gifts.map(function (g) {
-      var p = g.product[0] || {};
-      return '<span class="oo-bgift">' + h.productImage(p) + '<small>' + (g.quantity > 1 ? g.quantity + ' × ' : '') + h.esc(p.title || 'Gift') + '</small><b>FREE</b></span>';
-    }).join('') + '</div>';
-  }
-
   function detail(o, i, c, ctx) {
     var show = c.settings.show_variants;
     if (o.kind === 'quantity') return show ? unitPickers(i + ':p', base(ctx).variants, units(o), ctx) : '';
@@ -109,22 +101,12 @@
       '<span class="oo-bmain"><span class="oo-btitle">' + h.esc(o.title) + (badge ? ' <em class="oo-bbadge">' + h.esc(badge) + '</em>' : '') + '</span>' +
       (o.subtitle ? '<span class="oo-bsubt">' + fillText(o.subtitle, pr, ctx) + '</span>' : '') + '</span>' +
       '<span class="oo-bprice">' + priceHtml(pr, ctx) + '</span></span>' +
-      '<span class="oo-bdetail">' + detail(o, i, c, ctx) + giftTiles(o, c, ctx) + '</span></label>';
+      '<span class="oo-bdetail">' + detail(o, i, c, ctx) + (X() ? X().gifts(o, c) : '') + '</span></label>';
   }
 
   function header(s) {
     return (s.title ? '<div class="oo-bhead' + (s.hide_lines ? '' : ' oo-blines') + '"><span>' + h.esc(s.title) + '</span></div>' : '') +
       (s.subtitle ? '<p class="oo-bsub">' + h.esc(s.subtitle) + '</p>' : '') + OrderOrbit.timers.bundle(s.timer);
-  }
-
-  function upsells(c, ctx) {
-    var u = c.upsells;
-    if (!u.enabled || !u.products.length) return '';
-    return '<div class="oo-bups">' + (u.title ? '<p class="oo-bups-title">' + h.esc(u.title) + '</p>' : '') + u.products.map(function (p, j) {
-      var price = Number(p.price || 0);
-      return '<label class="oo-bup"><input type="checkbox" data-oo-up="' + j + '">' + h.productImage(p) + '<span>' + h.esc(p.title) + '</span><span class="oo-bprice"><b>' +
-        money(price * (1 - Number(u.discount_percent || 0) / 100), ctx) + '</b>' + (u.discount_percent ? '<s>' + money(price, ctx) + '</s>' : '') + '</span></label>';
-    }).join('') + '</div>';
   }
 
   // Design settings from the app's Design tab, as CSS variables on the widget.
@@ -136,6 +118,9 @@
     ['radius', 'border_width', 'title_size', 'offer_title_size', 'price_size', 'image_size'].forEach(function (k) { if (d[k] != null) out += '--b-' + k.replace(/_/g, '-') + ':' + d[k] + 'px;'; });
     return h.esc(out);
   }
+
+  // Gift tiles and add-on upsells (oo-bundles-extras.js), for bundles that use them.
+  function X() { return OrderOrbit.bundleExtras; }
 
   // Subscribe & save (oo-bundles-sub.js), when the bundle has subscriptions on.
   function sub(c) { return c.subscription && c.subscription.enabled && OrderOrbit.bundleSub; }
@@ -152,13 +137,14 @@
     var s = c.settings;
     return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s) +
       (mix ? OrderOrbit.bundleMix.html(c, ctx, B) : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
-      (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + upsells(c, ctx) + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
+      (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + (X() ? X().upsells(c, ctx) : '') + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';
   }, {
     always: true,
     prepare: function (exp, ctx) {
       var c = exp.content;
-      var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub')]);
+      var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub'),
+        (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras')]);
       // The admin preview uses saved product data; the storefront loads live variants and prices.
       if (ctx.preview) return mix;
       var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products } }, ['a', 'b'])];
@@ -185,18 +171,7 @@
         return sel ? sel.value : fallback;
       }
 
-      function upsellItems() {
-        return [].slice.call(root.querySelectorAll('[data-oo-up]:checked')).map(function (el) {
-          var p = c.upsells.products[Number(el.getAttribute('data-oo-up'))];
-          return { id: p.variant_id, quantity: 1, properties: { _oo_offer: exp.id + ':u' } };
-        });
-      }
-
-      function upsellTotal() {
-        return [].slice.call(root.querySelectorAll('[data-oo-up]:checked')).reduce(function (sum, el) {
-          return sum + Number(c.upsells.products[Number(el.getAttribute('data-oo-up'))].price || 0) * (1 - Number(c.upsells.discount_percent || 0) / 100);
-        }, 0);
-      }
+      function upsellTotal() { return X() ? X().total(root, c) : 0; }
 
       function update() {
         var sum = root.querySelector('[data-oo-sum]');
@@ -210,7 +185,7 @@
           root.querySelector('.oo-bsel .oo-bprice').innerHTML = priceHtml(pr, ctx);
           saving = pr.saving;
           btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(pr.after + upsellTotal(), ctx);
-          if (sub(c)) sub(c).update(root, c, ctx, i, pr.full, pr.after, upsellTotal(), btn);
+          if (sub(c)) sub(c).update(root, c, ctx, i, pr.full, pr.after, upsellTotal(), btn, items());
         }
         if (sum) { sum.hidden = !(saving > 0); sum.innerHTML = fillText(c.summary.text, { saving: saving, pct: 0 }, ctx); }
       }
@@ -237,7 +212,7 @@
           });
           o.gifts.forEach(function (g) { if (g.product[0]) add(g.product[0].variant_id, g.quantity, true); });
         }
-        list = list.concat(upsellItems());
+        list = list.concat(X() ? X().items(root, c, exp) : []);
         return sub(c) ? sub(c).items(root, c, ctx, mix ? 'm' : current(), list) : list;
       }
 
@@ -265,11 +240,7 @@
         if (unpick) { e.preventDefault(); picks.splice(Number(unpick.getAttribute('data-oo-unpick')), 1); update(); }
       });
       btn.addEventListener('click', function () {
-        // Upsell accept / decline for the bundle's add-ons.
-        if (c.upsells.enabled && c.upsells.products.length) {
-          var taken = root.querySelectorAll('[data-oo-up]:checked').length;
-          OrderOrbit.track(taken ? 'upsell_accepted' : 'upsell_declined', exp, { quantity: taken || 1 });
-        }
+        if (X()) X().track(root, c, exp);
         var after = Object.assign({}, exp, { behavior: Object.assign({}, exp.behavior) });
         S.add(after, ctx, items(), btn, root);
       });

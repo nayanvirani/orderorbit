@@ -40,6 +40,8 @@ return [
         'templates_title' => '{count} ready-made templates',
         'templates_text' => 'Pick one in the app, then change the text, colours, sizes and spacing to match your store.',
         'templates_link' => 'Browse all templates →',
+        'templates_locked' => 'Every {name} template is inside the app. Install free and preview each one on your own products before you choose.',
+        'templates_install' => 'Install free and see them all',
         'faq_title' => 'Questions',
         'related_title' => 'Works well with',
         'cta_title' => 'Try {name} on your store',

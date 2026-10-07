@@ -78,6 +78,45 @@
       '<label class="oo-bso oo-bso-sub" data-oo-so="sub">' + radio('sub', sub) + '<span class="oo-bso-t">' + h.esc(s.subscribe_label) + save + '</span><b data-oo-sp="sub"></b>' + more(s, freqs) + '</label>';
   }
 
+  /**
+   * What the chosen items cost one-time and on the plan for frequency f, from each picked variant's
+   * own plan price (Shopify's selling plan allocations), so fixed-price plans and mixed variants are
+   * exact. Null when a price is unknown (the preview, or a variant without that plan).
+   */
+  function priced(c, ctx, key, f, list) {
+    if (ctx.preview || !list) return null;
+    var variants = {};
+    productsFor(c, ctx, key).forEach(function (p) {
+      var plan = (plansOf(p) || {})[f.key];
+      ((p.plans || {}).variants || []).forEach(function (v) {
+        var a = plan && (v.selling_plan_allocations || []).filter(function (x) { return x.selling_plan_id === plan.id; })[0];
+        variants[v.id] = { once: v.price / 100, plan: a ? a.price / 100 : null };
+      });
+    });
+    var once = 0, onPlan = 0, ok = true;
+    list.forEach(function (item) {
+      var props = item.properties || {};
+      if (!props._oo_bundle || props._oo_gift) return;
+      var v = variants[h.numericId(item.id)];
+      if (!v || v.plan == null) { ok = false; return; }
+      once += v.once * item.quantity;
+      onPlan += v.plan * item.quantity;
+    });
+    return ok && once > 0 ? { once: once, plan: onPlan } : null;
+  }
+
+  // The bundle offer on the plan prices, as the OrderOrbit discount applies it at checkout.
+  function offerOn(c, key, total, full, after) {
+    var o = key === 'm' ? null : c.offers[key];
+    var v = Number((o || {}).discount_value || 0);
+    var rate = (window.Shopify && Shopify.currency && Number(Shopify.currency.rate)) || 1;
+    if (!o) return full ? total * after / full : total; // mix & match: the tier's percentage
+    if (o.discount_type === 'percentage') return total * (1 - Math.min(100, v) / 100);
+    if (o.discount_type === 'amount') return Math.max(0, total - v * rate);
+    if (o.discount_type === 'fixed_price') return Math.min(total, v * rate);
+    return total;
+  }
+
   function subscribed(el) {
     var check = el.querySelector('[data-oo-subcheck]');
     if (check) return check.checked;
@@ -97,7 +136,7 @@
     },
 
     // Redraws for the selected offer; prices the button for a subscription's first delivery.
-    update: function (root, c, ctx, key, full, after, extra, btn) {
+    update: function (root, c, ctx, key, full, after, extra, btn, list) {
       var el = root.querySelector('[data-oo-sub]');
       if (!el) return;
       if (el.getAttribute('data-key') !== String(key)) {
@@ -111,13 +150,17 @@
       var on = !!f && subscribed(el);
       el.classList.toggle('oo-bsx-on', on);
       if (!f) return;
-      var pct = Math.round((1 - f.ratio) * 100);
+      // Exact prices from the picked variants' plan prices; the plan's average ratio otherwise.
+      var p = priced(c, ctx, key, f, list);
+      var later = p ? p.plan : full * f.ratio;
+      var first = p ? offerOn(c, key, p.plan, full, after) : after * f.ratio;
+      var pct = Math.round((1 - (p ? p.plan / p.once : f.ratio)) * 100);
       var set = function (sel, html) { el.querySelectorAll(sel).forEach(function (n) { n.innerHTML = html; }); };
       set('[data-oo-spct]', pct > 0 ? 'Save ' + pct + '%' : '');
       set('[data-oo-sp="once"]', money(after + extra, ctx));
-      set('[data-oo-sp="sub"]', money(after * f.ratio + extra, ctx));
-      set('[data-oo-sp="rec"]', !full ? '' : h.esc(c.subscription.recurring_text || '').replace('{price}', money(full * f.ratio, ctx)).replace('{frequency}', h.esc(f.label)));
-      if (on && full) btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(after * f.ratio + extra, ctx);
+      set('[data-oo-sp="sub"]', money(first + extra, ctx));
+      set('[data-oo-sp="rec"]', !full ? '' : h.esc(c.subscription.recurring_text || '').replace('{price}', money(later, ctx)).replace('{frequency}', h.esc(f.label)));
+      if (on && full) btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(first + extra, ctx);
     },
 
     // Puts each paid bundle item on its product's plan for the chosen frequency.

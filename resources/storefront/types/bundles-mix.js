@@ -48,7 +48,7 @@
       root.querySelectorAll('[data-oo-pick]').forEach(function (b) { b.disabled = full; b.textContent = full ? 'Bundle full' : '+ Add'; });
       btn.innerHTML = h.esc(c.settings.button_text) + (total ? ' · ' + B.money(total - saving + extra, ctx) : '');
       // Subscribe & save (oo-bundles-sub.js) prices the box's first delivery.
-      if (c.subscription && c.subscription.enabled && OrderOrbit.bundleSub) OrderOrbit.bundleSub.update(root, c, ctx, 'm', total, total - saving, extra, btn);
+      if (c.subscription && c.subscription.enabled && OrderOrbit.bundleSub) OrderOrbit.bundleSub.update(root, c, ctx, 'm', total, total - saving, extra, btn, picks.map(function (p) { return { id: p.v, quantity: 1, properties: { _oo_bundle: 1 } }; }));
       return saving;
     }
   };

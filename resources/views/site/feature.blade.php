@@ -77,7 +77,11 @@
             <div class="stack" style="gap:10px"><h2 style="font-size:clamp(28px,3vw,40px)">{{ site_md($d['templates_title'], $vars) }}</h2><span class="muted" style="font-size:17px">{{ site_md($d['templates_text'], $vars) }}</span></div>
             <a class="link" href="{{ route('site.templates') }}#{{ $feature['slug'] }}">{{ $d['templates_link'] }}</a>
         </div>
-        <div class="chips">@foreach ($names as $name)<span class="chip static">{{ $name }}</span>@endforeach</div>
+        {{-- The templates themselves are only shown in the app. --}}
+        <div class="tpl-locked">
+            <p>{{ site_md($d['templates_locked'], $vars) }}</p>
+            <a class="btn primary" href="{{ config('shopify.install_url') }}" data-event="cta_install_clicked">{{ $d['templates_install'] }}</a>
+        </div>
     </div>
 </section>
 @endif

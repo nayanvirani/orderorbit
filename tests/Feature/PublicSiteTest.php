@@ -31,6 +31,9 @@ class PublicSiteTest extends TestCase
         $this->get('/features/quantity-breaks')->assertRedirect('/features/bundles');
         $this->get('/features/upsell-cross-sell')->assertRedirect('/features/cart-upsells');
         $this->get('/features/progressive-gifts')->assertOk()->assertSee('Rewards that grow with the cart.');
+        // Feature pages say how many templates there are, but the templates themselves are only in the app.
+        $this->get('/features/bundles')->assertOk()->assertSee('ready-made templates')->assertSee('template is inside the app')
+            ->assertDontSee('Classic quantity breaks')->assertDontSee('Quantity inversion offer');
         $this->get('/templates')->assertOk()->assertSee('A template is a ready-made layout')->assertSee('Showing');
     }
 
