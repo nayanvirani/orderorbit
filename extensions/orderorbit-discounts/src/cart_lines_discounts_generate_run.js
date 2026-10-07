@@ -52,6 +52,22 @@ function takeUnits(lines, count) {
 
 const units = (lines) => lines.reduce((sum, line) => sum + line.qty, 0);
 
+// Mix & match and build-your-own box: allowed products (p) or collections (c), size (min, max) and limit per product (pp).
+function mixFits(mix, paid) {
+  const allowed = (line) => (mix.c ? (line.collections || []).some((c) => mix.c.includes(c)) : (mix.p || []).includes(line.product));
+  if (!paid.length || !paid.every(allowed)) return false;
+  const count = units(paid);
+  if ((mix.min && count < mix.min) || (mix.max && count > mix.max)) return false;
+  if (mix.pp) {
+    const per = {};
+    for (const line of paid) {
+      per[line.product] = (per[line.product] || 0) + line.qty;
+      if (per[line.product] > mix.pp) return false;
+    }
+  }
+  return true;
+}
+
 const RULES = {
   tiers(offer, lines) {
     const ids = offer.p || [];
@@ -99,11 +115,14 @@ const RULES = {
       const paid = group.filter((line) => !line.gift);
       const subscribed = group.some((line) => line.sub);
       if (index === 'm') {
-        // Mix & match on a subscription: the best tier reached, for products from the pool.
+        // Mix & match or a build-your-own box on a subscription: the best tier reached (or the box price),
+        // for allowed products, within the box's size and limit per product.
         const mix = offer.mix;
-        if (!mix || !subscribed || !paid.every((line) => (mix.p || []).includes(line.product))) continue;
+        if (!mix || !subscribed || !mixFits(mix, paid)) continue;
+        const total = paid.reduce((sum, line) => sum + line.unit * line.qty, 0);
         const tier = [...(mix.tiers || [])].sort((a, b) => b[0] - a[0]).find(([need]) => units(paid) >= Number(need));
-        if (tier && Number(tier[1]) > 0) found.push(candidate(offer.m || 'Bundle discount', paid.map((line) => ({line})), percent(tier[1])));
+        const pct = mix.t === 'fixed' ? (total > 0 ? Math.max(0, 1 - (Number(mix.v) * rate) / total) * 100 : 0) : tier ? Number(tier[1]) : 0;
+        if (pct > 0) found.push(candidate(offer.m || 'Bundle discount', paid.map((line) => ({line})), percent(Math.round(pct * 100) / 100)));
         continue;
       }
       const o = (offer.o || [])[Number(index)];
@@ -180,6 +199,7 @@ export function cartLinesDiscountsGenerateRun(input) {
       id: line.id,
       qty: line.quantity,
       product: numericId(line.merchandise.product.id),
+      collections: (line.merchandise.product.inCollections || []).filter((c) => c.isMember).map((c) => c.collectionId),
       offer: line.offer?.value || null,
       bundle: line.bundle?.value || null,
       gift: !!line.gift?.value,

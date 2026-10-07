@@ -749,3 +749,48 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-bk-box .oo-mcard { border-radius: var(--b-radius, 16px); }
 .oo-bk-box .oo-madd { border-radius: 999px; }
 .oo-bk-box .oo-badd { border-radius: 999px; }
+
+/* Bundles · build your own box (oo-bundles-box.js) */
+.oo-xbox { display: grid; gap: 12px; }
+.oo-xhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; }
+.oo-xcount { font-weight: 700; font-variant-numeric: tabular-nums; }
+.oo-xhead .oo-bmsg { margin: 0; font-size: .92em; }
+.oo-xbar { height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--b-accent, #111) 14%, transparent); overflow: hidden; }
+.oo-xbar i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--b-accent, #111); transition: width .25s ease; }
+.oo-xgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.oo-bl-vertical .oo-xgrid, .oo-bl-horizontal .oo-xgrid { grid-template-columns: 1fr; }
+.oo-xcard { display: grid; gap: 8px; padding: 10px; border: var(--b-border-width, 2px) solid var(--b-line, #d4d4d4); border-radius: var(--b-radius, 10px); background: var(--b-bg, #fff); transition: border-color .15s, background .15s; }
+.oo-xcard.oo-xon { border-color: var(--b-accent, #111); background: var(--b-sel, #f4f4f4); }
+.oo-xcard.oo-xsold { opacity: .5; }
+.oo-ximg .oo-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: calc(var(--b-radius, 10px) * .7); }
+.oo-xinfo { display: grid; gap: 4px; min-width: 0; }
+.oo-xname { font-weight: 600; line-height: 1.3; }
+.oo-xprice { color: var(--b-muted, #6b6b6b); font-size: .92em; }
+.oo-xinfo .oo-variant { width: 100%; min-width: 0; }
+.oo-xstep { display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; border: 1px solid var(--b-line, #d4d4d4); border-radius: 999px; overflow: hidden; background: var(--b-bg, #fff); }
+.oo-xstep button { height: 34px; border: 0; background: none; color: var(--b-text, inherit); font: 600 18px/1 inherit; cursor: pointer; }
+.oo-xstep button:hover:not(:disabled) { background: var(--b-sel, #f4f4f4); }
+.oo-xstep button:disabled { opacity: .3; cursor: not-allowed; }
+.oo-xstep b { text-align: center; font-variant-numeric: tabular-nums; }
+/* List layout: image, name and the stepper on one row. */
+.oo-bl-vertical .oo-xcard { grid-template-columns: 56px minmax(0, 1fr) 120px; align-items: center; }
+.oo-bl-vertical .oo-ximg .oo-img { width: 56px; }
+.oo-xtray { display: flex; flex-wrap: wrap; gap: 6px; }
+.oo-xtray[hidden] { display: none; }
+.oo-xchip { padding: 4px 10px; border-radius: 999px; background: var(--b-sel, #f4f4f4); font-size: .85em; }
+/* The add button stays in reach while scrolling a long box on phones. */
+.oo-bundle:has(.oo-xbox) .oo-badd { position: sticky; bottom: 10px; z-index: 2; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .45); }
+.oo-badd:disabled { opacity: .55; cursor: not-allowed; }
+/* The sticky box button stays solid when it can't be used yet; previews keep it in place. */
+.oo-bundle:has(.oo-xbox) .oo-badd:disabled { opacity: 1; filter: saturate(.25) brightness(1.08); }
+.oo-preview .oo-bundle:has(.oo-xbox) .oo-badd { position: static; }
+/* Box skins */
+.oo-bk-boxgrid .oo-bhead, .oo-bk-boxlist .oo-bhead, .oo-bk-boxdark .oo-bhead { text-transform: none; letter-spacing: 0; font-size: 1.2em; justify-content: flex-start; }
+.oo-bk-boxgrid .oo-bhead::before, .oo-bk-boxgrid .oo-bhead::after, .oo-bk-boxlist .oo-bhead::before, .oo-bk-boxlist .oo-bhead::after, .oo-bk-boxdark .oo-bhead::before, .oo-bk-boxdark .oo-bhead::after { display: none; }
+.oo-bk-boxgrid .oo-bsub, .oo-bk-boxlist .oo-bsub, .oo-bk-boxdark .oo-bsub { text-align: left; font-style: normal; }
+.oo-bk-boxgrid .oo-xcard { border-width: 1px; box-shadow: 0 8px 20px -16px rgba(0, 0, 0, .35); }
+.oo-bk-boxlist .oo-xcard { border-width: 1px; border-radius: calc(var(--b-radius, 12px) * .8); }
+.oo-bk-boxdark { padding: 18px; border-radius: calc(var(--b-radius, 16px) + 4px); background: var(--b-bg, #14112f); color: var(--b-text, #fff); }
+.oo-bk-boxdark .oo-xcard, .oo-bk-boxdark .oo-xstep { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .14); }
+.oo-bk-boxdark .oo-xcard.oo-xon { background: rgba(255, 255, 255, .12); border-color: var(--b-accent, #8b7bff); }
+.oo-bk-boxdark .oo-xchip { background: rgba(255, 255, 255, .1); }

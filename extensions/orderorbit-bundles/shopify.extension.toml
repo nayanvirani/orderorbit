@@ -12,6 +12,12 @@ description = "t:description"
   input_query = "src/cart_transform_run.graphql"
   export = "cart-transform-run"
 
+  # Input variables (metafield $app:input): the collections that build-your-own boxes are filled
+  # from, so membership is checked live at checkout.
+  [extensions.input.variables]
+  namespace = "$app"
+  key = "input"
+
   [extensions.build]
   command = ""
   path = "dist/function.wasm"

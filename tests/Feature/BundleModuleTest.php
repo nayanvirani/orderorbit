@@ -178,6 +178,55 @@ class BundleModuleTest extends TestCase
         $this->assertSame(['p' => ['3', '4'], 'tiers' => [[2, 10.0], [3, 15.0]]], $entry['mix']);
     }
 
+    public function test_build_your_own_box(): void
+    {
+        $store = $this->installedStore();
+        $owner = $this->member($store, 'owner');
+        $this->assertContains('Build your own box', array_column($this->page('/app/cro/bundles/new', $owner)->json('props.types'), 'label'));
+        $this->assertSame(['Box builder grid', 'Box builder list', 'Box of 6, one price', 'Subscription box'], array_column($this->page('/app/cro/bundles/new/byob', $owner)->json('props.models'), 'name'));
+
+        // Defaults: 3 to 12 items, discount steps; the products still have to be chosen.
+        [$config, $errors] = BundleSchema::normalize(BundleSchema::defaults('byob-grid'));
+        $this->assertSame('byob', $config['bundle_type']);
+        $this->assertSame([3, 12, 0, 'tiers'], [$config['mix']['min'], $config['mix']['slots'], $config['mix']['per_product'], $config['mix']['pricing']]);
+        $this->assertSame(['mix.pool'], array_keys($errors));
+
+        // Limits are checked: min above max, a per-product limit that can't reach the minimum, a box price without an exact size.
+        $box = BundleSchema::defaults('byob-grid');
+        $box['mix'] = array_merge($box['mix'], ['pool' => [['id' => 'gid://shopify/Product/1', 'title' => 'A'], ['id' => 'gid://shopify/Product/2', 'title' => 'B']], 'min' => 13, 'per_product' => 2, 'pricing' => 'fixed', 'fixed_price' => 0]);
+        $errors = BundleSchema::normalize($box)[1];
+        $this->assertArrayHasKey('mix.min', $errors);
+        $this->assertArrayHasKey('mix.per_product', $errors);
+        $this->assertSame('A box price needs an exact box size: set the minimum and maximum to the same number.', $errors['mix.fixed_price']);
+
+        // A discount step bigger than the box can never be reached.
+        $small = BundleSchema::defaults('byob-grid');
+        $small['mix'] = array_merge($small['mix'], ['pool' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']], 'slots' => 8]);
+        $this->assertSame('A discount step needs more items than the box holds: keep each step at 8 items or fewer.', BundleSchema::normalize($small)[1]['mix.tiers']);
+        $this->assertSame('Choose {min} to {max} items. The more you add, the more you save.', BundleSchema::defaults('byob-grid')['settings']['subtitle']);
+
+        // A collection box: checkout checks collection membership live, with the size limits and the box price.
+        $exact = BundleSchema::defaults('byob-exact');
+        $exact['mix'] = array_merge($exact['mix'], ['source' => 'collection', 'collection' => [['id' => 'gid://shopify/Collection/77', 'title' => 'Snacks', 'handle' => 'snacks']], 'per_product' => 3]);
+        [$config, $errors] = BundleSchema::normalize($exact);
+        $this->assertSame([], $errors);
+        $this->assertSame(['c' => ['gid://shopify/Collection/77'], 'tiers' => [], 'min' => 6, 'max' => 6, 'pp' => 3, 't' => 'fixed', 'v' => 60.0], \App\Services\Experiences\BundleSync::mixEntry($config));
+        $this->assertSame(['gid://shopify/Collection/77'], \App\Services\Experiences\BundleSync::boxCollections([['mix' => \App\Services\Experiences\BundleSync::mixEntry($config)]]));
+        $this->assertTrue(\App\Services\Experiences\BundleSync::merges($config));
+        $payload = BundleSchema::payload($config)['content']['mix'];
+        $this->assertSame(['collection', 'snacks', 6, 6, 3, 'fixed', 60.0], [$payload['source'], $payload['collection'][0]['handle'], $payload['min'], $payload['slots'], $payload['per_product'], $payload['pricing'], $payload['fixed_price']]);
+
+        // On a subscription, the discount prices the box (the cart transform can't merge subscription lines).
+        $experience = new Experience;
+        $experience->handle = 'box1';
+        $experience->type = 'bundles';
+        $sub = BundleSchema::defaults('byob-subscription');
+        $sub['mix']['pool'] = [['id' => 'gid://shopify/Product/1', 'title' => 'A']];
+        $entry = \App\Services\Experiences\OfferSync::offersFor($experience, $sub)[0];
+        $this->assertSame(['p' => ['1'], 'tiers' => [[6, 10.0], [12, 20.0]], 'min' => 4, 'max' => 12], $entry['mix']);
+        $this->assertSame('{"boxCollections":[]}', \App\Services\Experiences\OfferSync::inputVariables(json_encode(['offers' => [$entry]])));
+    }
+
     public function test_legacy_bundles_are_migrated(): void
     {
         [$config] = BundleSchema::normalize(['content' => [

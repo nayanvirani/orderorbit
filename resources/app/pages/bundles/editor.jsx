@@ -15,7 +15,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const [name, setName] = useState(x.name);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(null);
-  const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'd-overall']));
+  const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-size', 'box-price', 'd-overall']));
   const [device, setDevice] = useState('desktop');
   const [context, setContext] = useState({ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });
   const tabOf = (k) => (k.startsWith('offers') || k.startsWith('mix') || k.startsWith('upsells') ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
@@ -97,7 +97,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
               </div>
 
               <nav className="bx-tabbar" role="tablist" aria-label="Bundle editor">
-                {[['settings', 'Settings'], ['offers', state.bundle_type === 'mix-match' ? 'Products' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
+                {[['settings', 'Settings'], ['offers', state.bundle_type === 'mix-match' || state.bundle_type === 'byob' ? 'Products' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
                   <button type="button" role="tab" key={k} aria-selected={tab === k} className={errorTabs.includes(k) ? 'has-error' : ''} onClick={() => setTab(k)}>{l}</button>
                 ))}
               </nav>
@@ -158,7 +158,7 @@ function SettingsPanel() {
         <F path="settings.countries" label="Markets (countries)" placeholder="All markets" help="Two-letter country codes separated by commas, e.g. US, CA. Leave empty for all markets." />
       </Section>
       <Section id="titles" title="Titles">
-        <Row><F path="settings.title" label="Header title" max={80} /><F path="settings.subtitle" label="Subtitle" max={160} /></Row>
+        <Row><F path="settings.title" label="Header title" max={80} /><F path="settings.subtitle" label="Subtitle" max={160} help={state.bundle_type === 'byob' ? 'Use {min} and {max} for the box limits.' : ''} /></Row>
         <F path="settings.hide_lines" label="Hide header lines" type="toggle" />
       </Section>
       <Section id="timer" title="Timer">
@@ -245,8 +245,59 @@ function Subscription() {
   );
 }
 
+/** Discount steps by number of items (mix & match and build your own box). */
+function Tiers({ max }) {
+  const { state, update, errors } = useContext(Ctx);
+  return (
+    <div className="b-field">
+      <span className="b-label">Discount by number of items</span>
+      {state.mix.tiers.map((t, j) => (
+        <div className="bx-tier" key={j}>
+          <F path={`mix.tiers.${j}.count`} label="Items" type="number" min={1} max={max} />
+          <F path={`mix.tiers.${j}.discount`} label="% off" type="number" min={0} max={100} step={0.01} />
+          <button type="button" className="b-icon-btn" aria-label="Remove" onClick={() => update((s) => { s.mix.tiers.splice(j, 1); return s; })}>×</button>
+        </div>
+      ))}
+      <button type="button" className="b-btn" onClick={() => update((s) => { const last = s.mix.tiers[s.mix.tiers.length - 1]; s.mix.tiers.push({ count: last ? last.count + 1 : 2, discount: last ? last.discount + 5 : 10 }); return s; })}>Add discount step</button>
+      {errors['mix.tiers'] && <p className="b-error">{errors['mix.tiers']}</p>}
+      <Help text="The best step reached applies to the whole box." />
+    </div>
+  );
+}
+
+/** Build your own box: where the products come from, the box size and limits, and the price. */
+function BoxPanel() {
+  const { state } = useContext(Ctx);
+  const m = state.mix;
+  return (
+    <>
+      <Section id="mix" title="Products in the box">
+        <F path="mix.source" label="Shoppers choose from" type="select" options={{ products: 'Products I pick', collection: 'A collection' }} />
+        {m.source === 'collection'
+          ? <Picker path="mix.collection" kind="collection" label="Collection" max={1} help="Products added to the collection later appear in the box automatically. Sold-out products can't be added." />
+          : <Picker path="mix.pool" label="Products" max={100} />}
+      </Section>
+      <Section id="box-size" title="Box size and limits">
+        <Row>
+          <F path="mix.min" label="Minimum items" type="number" min={1} max={100} help="The box can't be added to the cart with fewer items." />
+          <F path="mix.slots" label="Maximum items" type="number" min={1} max={100} help="Shoppers can't add more than this." />
+        </Row>
+        <F path="mix.per_product" label="Most of one product (0 = no limit)" type="number" min={0} max={100} help="E.g. 2: shoppers can add up to 2 of each product." />
+        <Help text="These limits are also checked at checkout, so the box price only applies to a box that respects them." />
+      </Section>
+      <Section id="box-price" title="Box price">
+        <F path="mix.pricing" label="Pricing" type="select" options={{ tiers: 'Discount by number of items', fixed: 'One price for the box', none: 'No discount' }} />
+        {m.pricing === 'tiers' && <Tiers max={100} />}
+        {m.pricing === 'fixed' && <F path="mix.fixed_price" label="Box price" type="number" min={0} step={0.01} help="For a box of an exact size: set the minimum and maximum to the same number." />}
+      </Section>
+      <Extras />
+    </>
+  );
+}
+
 function OffersPanel() {
   const { state, update, errors, meta, open, toggle, expand } = useContext(Ctx);
+  if (state.bundle_type === 'byob') return <BoxPanel />;
   if (state.bundle_type === 'mix-match') {
     return (
       <>

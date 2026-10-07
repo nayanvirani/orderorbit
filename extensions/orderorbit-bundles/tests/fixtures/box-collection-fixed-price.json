@@ -1,0 +1,120 @@
+{
+  "payload": {
+    "export": "cart-transform-run",
+    "target": "cart.transform.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "10"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/50",
+              "product": {
+                "id": "gid://shopify/Product/5",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": true
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": null
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 2,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "10"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/60",
+              "product": {
+                "id": "gid://shopify/Product/6",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": true
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": null
+          }
+        ]
+      },
+      "cartTransform": {
+        "metafield": {
+          "jsonValue": {
+            "bundles": [
+              {
+                "id": "b1",
+                "title": "Build your box",
+                "mix": {
+                  "c": [
+                    "gid://shopify/Collection/77"
+                  ],
+                  "tiers": [],
+                  "min": 2,
+                  "max": 6,
+                  "t": "fixed",
+                  "v": 15
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "linesMerge": {
+            "cartLines": [
+              {
+                "cartLineId": "gid://shopify/CartLine/0",
+                "quantity": 1
+              },
+              {
+                "cartLineId": "gid://shopify/CartLine/1",
+                "quantity": 2
+              }
+            ],
+            "parentVariantId": "gid://shopify/ProductVariant/50",
+            "attributes": [
+              {
+                "key": "_oo_offer",
+                "value": "b1"
+              }
+            ],
+            "title": "Build your box",
+            "price": {
+              "percentageDecrease": {
+                "value": 50
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-query CartTransformRunInput {
+query CartTransformRunInput($boxCollections: [ID!]! = []) {
   presentmentCurrencyRate
   cart {
     lines {
@@ -26,6 +26,10 @@ query CartTransformRunInput {
           id
           product {
             id
+            inCollections(ids: $boxCollections) {
+              collectionId
+              isMember
+            }
           }
         }
       }

@@ -104,9 +104,11 @@
       '<span class="oo-bdetail">' + detail(o, i, c, ctx) + (X() ? X().gifts(o, c) : '') + '</span></label>';
   }
 
-  function header(s) {
+  // {min} and {max} in a box's subtitle follow its limits.
+  function header(s, m) {
+    var sub = m ? String(s.subtitle || '').replace(/\{min\}/g, m.min || 1).replace(/\{max\}/g, m.slots) : s.subtitle;
     return (s.title ? '<div class="oo-bhead' + (s.hide_lines ? '' : ' oo-blines') + '"><span>' + h.esc(s.title) + '</span></div>' : '') +
-      (s.subtitle ? '<p class="oo-bsub">' + h.esc(s.subtitle) + '</p>' : '') + OrderOrbit.timers.bundle(s.timer);
+      (sub ? '<p class="oo-bsub">' + h.esc(sub) + '</p>' : '') + OrderOrbit.timers.bundle(s.timer);
   }
 
   // Design settings from the app's Design tab, as CSS variables on the widget.
@@ -122,6 +124,9 @@
   // Gift tiles and add-on upsells (oo-bundles-extras.js), for bundles that use them.
   function X() { return OrderOrbit.bundleExtras; }
 
+  // Mix & match (oo-bundles-mix.js) or build your own box (oo-bundles-box.js): a pool of products.
+  function M(c) { return c.bundle_type === 'byob' ? OrderOrbit.bundleBox : c.bundle_type === 'mix-match' ? OrderOrbit.bundleMix : null; }
+
   // Subscribe & save (oo-bundles-sub.js), when the bundle has subscriptions on.
   function sub(c) { return c.subscription && c.subscription.enabled && OrderOrbit.bundleSub; }
 
@@ -130,20 +135,21 @@
     var c = exp.content;
     if (!c || !c.settings) return null;
     c._id = exp.id;
-    var mix = c.bundle_type === 'mix-match';
-    if (mix ? !OrderOrbit.bundleMix : !c.offers.length) return null;
+    var mix = /^(mix-match|byob)$/.test(c.bundle_type);
+    if (mix ? !M(c) : !c.offers.length) return null;
     var pre = 0;
     c.offers.forEach(function (o, i) { if (o.preselected) pre = i; });
     var s = c.settings;
-    return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s) +
-      (mix ? OrderOrbit.bundleMix.html(c, ctx, B) : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
+    return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s, mix && c.mix) +
+      (mix ? M(c).html(c, ctx, B) : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
       (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + (X() ? X().upsells(c, ctx) : '') + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';
   }, {
     always: true,
     prepare: function (exp, ctx) {
       var c = exp.content;
-      var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub'),
+      var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'),
+        c.bundle_type === 'byob' && OrderOrbit.need('bundles-box').then(function () { return !ctx.preview && OrderOrbit.bundleBox.load(c); }), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub'),
         (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras')]);
       // The admin preview uses saved product data; the storefront loads live variants and prices.
       if (ctx.preview) return mix;
@@ -157,7 +163,7 @@
     setup: function (root, exp, ctx) {
       if (!root) return;
       var c = exp.content;
-      var mix = c.bundle_type === 'mix-match';
+      var mix = /^(mix-match|byob)$/.test(c.bundle_type);
       var btn = root.querySelector('[data-oo-add]');
       var picks = [];
 
@@ -177,7 +183,7 @@
         var sum = root.querySelector('[data-oo-sum]');
         var saving = 0;
         if (mix) {
-          saving = OrderOrbit.bundleMix.update(root, c, ctx, picks, btn, B, upsellTotal());
+          saving = M(c).update(root, c, ctx, picks, btn, B, upsellTotal());
         } else {
           var i = current();
           root.querySelectorAll('.oo-boffer').forEach(function (el) { el.classList.toggle('oo-bsel', Number(el.getAttribute('data-oo-offer')) === i); });

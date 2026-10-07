@@ -48,7 +48,7 @@ class BundleSync
      */
     public static function merges(array $bundle): bool
     {
-        return $bundle['bundle_type'] === 'mix-match'
+        return in_array($bundle['bundle_type'], ['mix-match', 'byob'], true)
             || collect($bundle['offers'])->contains(fn ($o) => $o['kind'] === 'multi' && $o['products'] !== []);
     }
 
@@ -74,11 +74,41 @@ class BundleSync
                 'v' => $o['discount_value'],
                 'n' => $o['title'] ?: null,
             ], fn ($v) => $v !== null) : null, $config['offers']),
-            'mix' => $config['bundle_type'] === 'mix-match' ? [
-                'p' => $ids($config['mix']['pool']),
-                'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $config['mix']['tiers']),
-            ] : null,
+            'mix' => self::mixEntry($config),
         ], fn ($v) => $v !== null);
+    }
+
+    /**
+     * Mix & match and build-your-own-box pricing for the functions (cart transform, and the discount for
+     * subscription lines): which products (p, or c: collections, checked live at checkout), the
+     * discount steps, and for a box its size limits (min, max), limit per product (pp) and fixed price.
+     */
+    public static function mixEntry(array $config): ?array
+    {
+        if (! in_array($config['bundle_type'], ['mix-match', 'byob'], true)) {
+            return null;
+        }
+        $m = $config['mix'];
+        $ids = fn (array $items) => array_values(array_filter(array_map(fn ($p) => preg_match('#(\d+)$#', (string) ($p['id'] ?? ''), $x) ? $x[1] : null, $items)));
+        $entry = ['p' => $ids($m['pool']), 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $m['tiers'])];
+        if ($config['bundle_type'] !== 'byob') {
+            return $entry;
+        }
+        if (($m['source'] ?? 'products') === 'collection') {
+            $entry = ['c' => array_column($m['collection'], 'id')] + $entry;
+            unset($entry['p']);
+        }
+
+        return $entry + array_filter([
+            'min' => $m['min'], 'max' => $m['slots'], 'pp' => $m['per_product'] ?: null,
+            't' => $m['pricing'] === 'fixed' ? 'fixed' : null, 'v' => $m['pricing'] === 'fixed' ? $m['fixed_price'] : null,
+        ], fn ($v) => $v !== null);
+    }
+
+    /** The collections boxes are filled from: checked live by the functions (an input variable). */
+    public static function boxCollections(array $entries): array
+    {
+        return array_values(array_unique(array_merge(...array_map(fn ($e) => $e['mix']['c'] ?? [], $entries ?: [[]]))));
     }
 
     private function assertEligible(Store $store): void
@@ -92,12 +122,15 @@ class BundleSync
     private function writeConfig(Store $store, array $config): void
     {
         $value = json_encode(['bundles' => $config], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $fingerprint = 'bundle-config:'.$store->id.':'.md5($value.$store->cart_transform_id);
+        // The function's input variables: box collections, so membership is checked live at checkout.
+        $vars = json_encode(['boxCollections' => self::boxCollections($config)], JSON_UNESCAPED_SLASHES);
+        $fingerprint = 'bundle-config:'.$store->id.':'.md5($value.$vars.$store->cart_transform_id);
         if (Cache::has($fingerprint)) {
             return;
         }
 
         $metafield = ['namespace' => '$app', 'key' => 'bundles', 'type' => 'json', 'value' => $value];
+        $input = ['namespace' => '$app', 'key' => 'input', 'type' => 'json', 'value' => $vars];
 
         if (! $store->cart_transform_id) {
             $this->assertEligible($store);
@@ -108,11 +141,11 @@ class BundleSync
                     userErrors { field message code }
                   }
                 }
-                GQL, ['handle' => self::FUNCTION_HANDLE, 'metafields' => [$metafield]]);
+                GQL, ['handle' => self::FUNCTION_HANDLE, 'metafields' => [$metafield, $input]]);
 
             if ($id = $created['cartTransformCreate']['cartTransform']['id'] ?? null) {
                 $store->forceFill(['cart_transform_id' => $id])->save();
-                Cache::forever('bundle-config:'.$store->id.':'.md5($value.$id), true);
+                Cache::forever('bundle-config:'.$store->id.':'.md5($value.$vars.$id), true);
 
                 return;
             }
@@ -128,9 +161,9 @@ class BundleSync
             mutation BundleConfig($metafields: [MetafieldsSetInput!]!) {
               metafieldsSet(metafields: $metafields) { userErrors { field message } }
             }
-            GQL, ['metafields' => [['ownerId' => $store->cart_transform_id] + $metafield]]);
+            GQL, ['metafields' => [['ownerId' => $store->cart_transform_id] + $metafield, ['ownerId' => $store->cart_transform_id] + $input]]);
         $this->assertNoErrors($result['metafieldsSet']['userErrors'] ?? []);
-        Cache::forever('bundle-config:'.$store->id.':'.md5($value.$store->cart_transform_id), true);
+        Cache::forever('bundle-config:'.$store->id.':'.md5($value.$vars.$store->cart_transform_id), true);
     }
 
     private function assertNoErrors(array $errors): void

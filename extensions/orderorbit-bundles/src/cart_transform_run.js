@@ -16,7 +16,9 @@
  * Config (cart transform metafield $app:bundles), money in shop currency:
  *   { bundles: [{ id, title, image,
  *       o: [ null | { p: [productIds], t: "percentage"|"amount"|"fixed_price"|"none", v, n } ],
- *       mix: { p: [productIds], tiers: [[count, percent], ...] } }] }
+ *       mix: { p: [productIds] | c: [collectionIds], tiers: [[count, percent], ...],
+ *              min, max, pp (limit per product), t: "fixed", v (box price) } }] }
+ * Build-your-own boxes only merge when they respect their size and limits.
  *
  * @typedef {import("../generated/api").CartTransformRunInput} CartTransformRunInput
  * @typedef {import("../generated/api").CartTransformRunResult} CartTransformRunResult
@@ -25,6 +27,25 @@
 const numericId = (gid) => String(gid || '').split('/').pop();
 const units = (lines) => lines.reduce((sum, line) => sum + line.qty, 0);
 const total = (lines) => lines.reduce((sum, line) => sum + line.unit * line.qty, 0);
+
+/**
+ * Mix & match and build-your-own box: every item is one of the box's products (p) or in one of its
+ * collections (c), and the box respects its size (min, max) and limit per product (pp).
+ */
+export function mixFits(mix, paid) {
+  const allowed = (line) => (mix.c ? (line.collections || []).some((c) => mix.c.includes(c)) : (mix.p || []).includes(line.product));
+  if (!paid.length || !paid.every(allowed)) return false;
+  const count = units(paid);
+  if ((mix.min && count < mix.min) || (mix.max && count > mix.max)) return false;
+  if (mix.pp) {
+    const per = {};
+    for (const line of paid) {
+      per[line.product] = (per[line.product] || 0) + line.qty;
+      if (per[line.product] > mix.pp) return false;
+    }
+  }
+  return true;
+}
 
 // What the paid items should cost after the offer.
 function offerPrice(paid, type, value, rate) {
@@ -54,6 +75,7 @@ export function cartTransformRun(input) {
       sub: !!line.sellingPlanAllocation,
       variant: line.merchandise.id,
       product: numericId(line.merchandise.product.id),
+      collections: (line.merchandise.product.inCollections || []).filter((c) => c.isMember).map((c) => c.collectionId),
       unit: Number(line.cost.amountPerQuantity.amount),
     });
   }
@@ -73,10 +95,11 @@ export function cartTransformRun(input) {
     let main = paid[0];
     if (index === 'm') {
       const mix = bundle.mix;
-      if (!mix || !paid.every((line) => mix.p.includes(line.product))) continue;
+      if (!mix || !mixFits(mix, paid)) continue;
       const count = units(paid);
       const tier = [...(mix.tiers || [])].sort((a, b) => b[0] - a[0]).find(([need]) => count >= need);
-      target = offerPrice(total(paid), 'percentage', tier ? Number(tier[1]) : 0, rate);
+      // A box can have one price (an exact size), or a discount by number of items.
+      target = mix.t === 'fixed' ? offerPrice(total(paid), 'fixed_price', Number(mix.v) || 0, rate) : offerPrice(total(paid), 'percentage', tier ? Number(tier[1]) : 0, rate);
     } else {
       const offer = (bundle.o || [])[Number(index)];
       if (!offer) continue;

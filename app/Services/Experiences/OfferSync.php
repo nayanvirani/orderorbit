@@ -62,9 +62,7 @@ class OfferSync
             'p' => $o['kind'] === 'multi' ? $ids($o['products']) : null,
             's' => $o['kind'] === 'multi' ? 1 : null,
         ], fn ($v) => $v !== 0 && $v !== 0.0 && $v !== null), $bundle['offers']);
-        $mix = $subscribed && $bundle['bundle_type'] === 'mix-match' && $bundle['mix']['tiers']
-            ? ['p' => $ids($bundle['mix']['pool']), 'tiers' => array_map(fn ($t) => [$t['count'], $t['discount']], $bundle['mix']['tiers'])]
-            : null;
+        $mix = $subscribed && (($bundle['mix']['tiers'] ?? []) || ($bundle['mix']['pricing'] ?? '') === 'fixed') ? BundleSync::mixEntry($bundle) : null;
         if ($mix || array_filter($perOffer, fn ($o) => $o !== null && (($o['t'] ?? 'none') !== 'none' || ($o['g'] ?? 0) > 0))) {
             $offers[] = array_filter(['k' => 'bq', 'id' => $experience->handle, 'o' => $perOffer, 'mix' => $mix,
                 // On a subscription the plan has its own saving; name this one so shoppers can tell them apart.
@@ -193,7 +191,7 @@ class OfferSync
             }
             GQL, ['discount' => $input + [
             'functionHandle' => self::FUNCTION_HANDLE,
-            'metafields' => [['namespace' => '$app', 'key' => 'offers', 'type' => 'json', 'value' => $value]],
+            'metafields' => [['namespace' => '$app', 'key' => 'offers', 'type' => 'json', 'value' => $value], ['namespace' => '$app', 'key' => 'input', 'type' => 'json', 'value' => self::inputVariables($value)]],
         ]]);
 
         $this->assertNoErrors($result['discountAutomaticAppCreate']['userErrors'] ?? []);
@@ -204,6 +202,14 @@ class OfferSync
 
         $experience->forceFill(['shopify_discount_id' => $id])->saveQuietly();
         Cache::forever('offer:'.$experience->id.':'.md5($value.json_encode($input).$id), true);
+    }
+
+    /** The function's input variables: collections that boxes are filled from, checked live at checkout. */
+    public static function inputVariables(string $offersJson): string
+    {
+        $offers = json_decode($offersJson, true)['offers'] ?? [];
+
+        return json_encode(['boxCollections' => array_values(array_unique(array_merge(...array_map(fn ($o) => $o['mix']['c'] ?? [], $offers ?: [[]]))))], JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -219,9 +225,10 @@ class OfferSync
               }
               metafieldsSet(metafields: $metafields) { userErrors { field message } }
             }
-            GQL, ['id' => $id, 'discount' => $input, 'metafields' => [[
-            'ownerId' => $id, 'namespace' => '$app', 'key' => 'offers', 'type' => 'json', 'value' => $value,
-        ]]]);
+            GQL, ['id' => $id, 'discount' => $input, 'metafields' => [
+            ['ownerId' => $id, 'namespace' => '$app', 'key' => 'offers', 'type' => 'json', 'value' => $value],
+            ['ownerId' => $id, 'namespace' => '$app', 'key' => 'input', 'type' => 'json', 'value' => self::inputVariables($value)],
+        ]]);
 
         $errors = $result['discountAutomaticAppUpdate']['userErrors'] ?? [];
         if ($errors !== [] && collect($errors)->contains(fn ($e) => stripos($e['message'] ?? '', 'not exist') !== false || stripos($e['message'] ?? '', 'not found') !== false)) {

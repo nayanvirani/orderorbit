@@ -157,8 +157,9 @@
       var pct = Math.round((1 - (p ? p.plan / p.once : f.ratio)) * 100);
       var set = function (sel, html) { el.querySelectorAll(sel).forEach(function (n) { n.innerHTML = html; }); };
       set('[data-oo-spct]', pct > 0 ? 'Save ' + pct + '%' : '');
-      set('[data-oo-sp="once"]', money(after + extra, ctx));
-      set('[data-oo-sp="sub"]', money(first + extra, ctx));
+      // An empty box has no price yet.
+      set('[data-oo-sp="once"]', full ? money(after + extra, ctx) : '');
+      set('[data-oo-sp="sub"]', full ? money(first + extra, ctx) : '');
       set('[data-oo-sp="rec"]', !full ? '' : h.esc(c.subscription.recurring_text || '').replace('{price}', money(later, ctx)).replace('{frequency}', h.esc(f.label)));
       if (on && full) btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(first + extra, ctx);
     },

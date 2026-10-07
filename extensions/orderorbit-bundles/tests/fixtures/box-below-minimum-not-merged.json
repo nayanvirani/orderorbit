@@ -1,0 +1,102 @@
+{
+  "payload": {
+    "export": "cart-transform-run",
+    "target": "cart.transform.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "10"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/10",
+              "product": {
+                "id": "gid://shopify/Product/1",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": false
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": null
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 1,
+            "bundle": {
+              "value": "b1|m|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "10"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/20",
+              "product": {
+                "id": "gid://shopify/Product/2",
+                "inCollections": [
+                  {
+                    "collectionId": "gid://shopify/Collection/77",
+                    "isMember": false
+                  }
+                ]
+              }
+            },
+            "sellingPlanAllocation": null
+          }
+        ]
+      },
+      "cartTransform": {
+        "metafield": {
+          "jsonValue": {
+            "bundles": [
+              {
+                "id": "b1",
+                "title": "Build your box",
+                "mix": {
+                  "p": [
+                    "1",
+                    "2",
+                    "3"
+                  ],
+                  "tiers": [
+                    [
+                      4,
+                      10
+                    ],
+                    [
+                      6,
+                      20
+                    ]
+                  ],
+                  "min": 3,
+                  "max": 6,
+                  "pp": 2
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": []
+    }
+  }
+}

@@ -60,6 +60,13 @@ class BundleSchema
             'goal' => 'Increase the perceived value of the bundle.',
             'offer_kinds' => ['multi', 'quantity'],
         ],
+        'byob' => [
+            'label' => 'Build your own box',
+            'lead' => 'Shoppers fill a box with the items and quantities they want.',
+            'example' => 'Any 6 to 12 items. 12 or more = −20%.',
+            'goal' => 'Sell more items per order with a box shoppers design.',
+            'offer_kinds' => [],
+        ],
         // A catalog entry: its models are quantity, pack and mix & match bundles with subscriptions on.
         'subscription' => [
             'label' => 'Subscription bundle',
@@ -94,7 +101,7 @@ class BundleSchema
     ];
 
     /** Visual skins: each bundle template has its own look (header, offer cards, selection and button). */
-    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe', 'subscribe', 'refill', 'box'];
+    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe', 'subscribe', 'refill', 'box', 'boxgrid', 'boxlist', 'boxdark'];
 
     /**
      * Ready-made models per bundle type. "layout" and "style" pick the storefront
@@ -149,6 +156,18 @@ class BundleSchema
             'sb-box' => ['type' => 'mix-match', 'group' => 'subscription', 'name' => 'Build your subscription box', 'description' => 'Shoppers fill a box and choose how often it arrives.', 'layout' => 'grid', 'skin' => 'box', 'design' => ['preset' => 'orange', 'radius' => 16],
                 'settings' => ['title' => 'Build your box', 'subtitle' => 'Choose 3 favourites, delivered on your schedule'],
                 'subscription' => ['enabled' => true, 'layout' => 'checkbox', 'default' => 'subscribe', 'subscribe_label' => 'Deliver my box on repeat']],
+
+            // Build your own box: any quantities of the box's products, between a minimum and a maximum.
+            'byob-grid' => ['type' => 'byob', 'name' => 'Box builder grid', 'description' => 'Products with quantity buttons and a live box tracker.', 'layout' => 'grid', 'skin' => 'boxgrid', 'design' => ['preset' => 'purple', 'radius' => 14],
+                'settings' => ['title' => 'Build your box', 'subtitle' => 'Choose {min} to {max} items. The more you add, the more you save.']],
+            'byob-list' => ['type' => 'byob', 'name' => 'Box builder list', 'description' => 'A compact list with quantity buttons, for smaller ranges.', 'layout' => 'vertical', 'skin' => 'boxlist', 'design' => ['preset' => 'green', 'radius' => 12],
+                'settings' => ['title' => 'Make your own set', 'subtitle' => 'Pick {min} to {max} items in any mix.']],
+            'byob-exact' => ['type' => 'byob', 'name' => 'Box of 6, one price', 'description' => 'A box of exactly 6 items for one fixed price.', 'layout' => 'grid', 'skin' => 'boxdark', 'design' => ['preset' => 'night', 'radius' => 16],
+                'settings' => ['title' => 'Any 6 for one price', 'subtitle' => 'Fill your box with {max} favourites.'],
+                'mix' => ['min' => 6, 'slots' => 6, 'pricing' => 'fixed', 'fixed_price' => 60, 'tiers' => []]],
+            'byob-subscription' => ['type' => 'byob', 'name' => 'Subscription box', 'description' => 'Shoppers build a box and choose how often it arrives.', 'layout' => 'grid', 'skin' => 'boxgrid', 'design' => ['preset' => 'sage', 'radius' => 16],
+                'settings' => ['title' => 'Build your monthly box', 'subtitle' => 'Choose {min} to {max} items, delivered on your schedule.'],
+                'mix' => ['min' => 4], 'subscription' => ['enabled' => true, 'layout' => 'cards', 'default' => 'subscribe']],
 
             'fg-classic' => ['type' => 'fixed-gifts', 'name' => 'Fixed bundle + gifts', 'description' => 'A pack that unlocks free gifts, shown as gift tiles.', 'layout' => 'vertical', 'skin' => 'luxe', 'design' => ['preset' => 'luxe', 'radius' => 6]],
         ];
@@ -240,6 +259,7 @@ class BundleSchema
                 'title' => 'BUNDLE & SAVE',
                 'subtitle' => match ($type) {
                     'mix-match' => 'Choose '.($model['slots'] ?? 3).' products from our collection',
+                    'byob' => 'Choose {min} to {max} items for your box',
                     'quantity-gifts', 'fixed-gifts' => 'Free gifts with your order',
                     default => 'The more you buy, the more you save',
                 },
@@ -257,7 +277,7 @@ class BundleSchema
                 'countries' => '',
             ],
             'offers' => self::defaultOffers($type),
-            'mix' => [
+            'mix' => $type === 'byob' ? self::boxDefaults() : [
                 'slots' => 3,
                 'pool' => [],
                 'tiers' => [['count' => 2, 'discount' => 10], ['count' => 3, 'discount' => 15]],
@@ -297,6 +317,22 @@ class BundleSchema
             'frequency_label' => 'Deliver every',
             'benefits' => "Save on every delivery\nSkip, pause or cancel anytime",
             'recurring_text' => 'Then {price} per delivery',
+        ];
+    }
+
+    /**
+     * Build your own box: the products (a collection, or picked products), the box size (shoppers
+     * can't add the box below the minimum or add more than the maximum), an optional limit per
+     * product, and the price (a discount by number of items, or one price for a box of exact size).
+     * "slots" is the maximum, so the shared mix & match engine stops at it.
+     */
+    public static function boxDefaults(): array
+    {
+        return [
+            'source' => 'products', 'collection' => [], 'pool' => [],
+            'min' => 3, 'slots' => 12, 'per_product' => 0,
+            'pricing' => 'tiers', 'tiers' => [['count' => 6, 'discount' => 10], ['count' => 12, 'discount' => 20]], 'fixed_price' => 0,
+            'slot_text' => 'Choose',
         ];
     }
 
@@ -426,7 +462,7 @@ class BundleSchema
             }
             $offers[] = $offer;
         }
-        if ($type !== 'mix-match' && ! collect($offers)->where('visible', true)->count()) {
+        if (! in_array($type, ['mix-match', 'byob'], true) && ! collect($offers)->where('visible', true)->count()) {
             $errors['offers'] = 'Add at least one visible offer.';
         }
         // Exactly one offer starts selected.
@@ -436,18 +472,51 @@ class BundleSchema
 
         // Mix & match
         $m = (array) ($input['mix'] ?? []);
+        $box = $type === 'byob';
         $mix = [
-            'slots' => max(2, min(8, (int) ($m['slots'] ?? 3))),
-            'pool' => self::resources($m['pool'] ?? [], 'Product', 50),
+            'slots' => $box ? max(1, min(100, (int) ($m['slots'] ?? 12))) : max(2, min(8, (int) ($m['slots'] ?? 3))),
+            'pool' => self::resources($m['pool'] ?? [], 'Product', $box ? 100 : 50),
             'tiers' => [],
             'slot_text' => self::text($m['slot_text'] ?? 'Choose', 24) ?: 'Choose',
         ];
         foreach (array_slice(array_values(array_filter((array) ($m['tiers'] ?? []), 'is_array')), 0, 6) as $t) {
-            $mix['tiers'][] = ['count' => max(1, min(8, (int) ($t['count'] ?? 1))), 'discount' => max(0, min(100, round((float) ($t['discount'] ?? 0), 2)))];
+            $mix['tiers'][] = ['count' => max(1, min($box ? 100 : 8, (int) ($t['count'] ?? 1))), 'discount' => max(0, min(100, round((float) ($t['discount'] ?? 0), 2)))];
         }
         usort($mix['tiers'], fn ($a, $b) => $a['count'] <=> $b['count']);
         if ($type === 'mix-match' && count($mix['pool']) < 2) {
             $errors['mix.pool'] = 'Add at least two products shoppers can choose from.';
+        }
+        if ($box) {
+            $mix += [
+                'source' => self::pick($m['source'] ?? null, ['products', 'collection'], 'products'),
+                'collection' => array_slice(self::resources($m['collection'] ?? [], 'Collection', 1), 0, 1),
+                'min' => max(1, min(100, (int) ($m['min'] ?? 3))),
+                'per_product' => max(0, min(100, (int) ($m['per_product'] ?? 0))),
+                'pricing' => self::pick($m['pricing'] ?? null, ['tiers', 'fixed', 'none'], 'tiers'),
+                'fixed_price' => max(0, min(1000000, round((float) ($m['fixed_price'] ?? 0), 2))),
+            ];
+            if ($mix['source'] === 'collection' && $mix['collection'] === []) {
+                $errors['mix.collection'] = 'Choose the collection shoppers fill the box from.';
+            }
+            if ($mix['source'] === 'products' && $mix['pool'] === []) {
+                $errors['mix.pool'] = 'Add the products shoppers can put in the box.';
+            }
+            if ($mix['min'] > $mix['slots']) {
+                $errors['mix.min'] = 'The minimum can\'t be more than the maximum.';
+            }
+            if ($mix['per_product'] && $mix['per_product'] * max(1, $mix['source'] === 'products' ? count($mix['pool']) : 100) < $mix['min']) {
+                $errors['mix.per_product'] = 'With this limit per product, shoppers can\'t reach the minimum.';
+            }
+            if ($mix['pricing'] === 'fixed' && $mix['min'] !== $mix['slots']) {
+                $errors['mix.fixed_price'] = 'A box price needs an exact box size: set the minimum and maximum to the same number.';
+            } elseif ($mix['pricing'] === 'fixed' && $mix['fixed_price'] <= 0) {
+                $errors['mix.fixed_price'] = 'Set the box price.';
+            }
+            if ($mix['pricing'] !== 'tiers') {
+                $mix['tiers'] = [];
+            } elseif ($mix['tiers'] !== [] && end($mix['tiers'])['count'] > $mix['slots']) {
+                $errors['mix.tiers'] = 'A discount step needs more items than the box holds: keep each step at '.$mix['slots'].' items or fewer.';
+            }
         }
 
         $g = (array) ($input['gifts'] ?? []);
@@ -583,7 +652,11 @@ class BundleSchema
                 'bundle_type' => $config['bundle_type'],
                 'settings' => array_diff_key($s, array_flip(['products', 'collections', 'excluded', 'countries'])),
                 'offers' => array_values(array_filter($offers, fn ($o) => $o['visible'])),
-                'mix' => ['slots' => $config['mix']['slots'], 'pool' => $strip($config['mix']['pool']), 'tiers' => $config['mix']['tiers'], 'slot_text' => $config['mix']['slot_text']],
+                'mix' => ['slots' => $config['mix']['slots'], 'pool' => $strip($config['mix']['pool']), 'tiers' => $config['mix']['tiers'], 'slot_text' => $config['mix']['slot_text']]
+                    + ($config['bundle_type'] === 'byob' ? [
+                        'source' => $config['mix']['source'], 'collection' => array_map(fn ($c) => array_intersect_key($c, array_flip(['id', 'handle', 'title'])), $config['mix']['collection']),
+                        'min' => $config['mix']['min'], 'per_product' => $config['mix']['per_product'], 'pricing' => $config['mix']['pricing'], 'fixed_price' => $config['mix']['fixed_price'],
+                    ] : []),
                 'gifts' => $config['gifts'],
                 'upsells' => ['enabled' => $config['upsells']['enabled'], 'title' => $config['upsells']['title'], 'products' => $strip($config['upsells']['products']), 'discount_percent' => $config['upsells']['discount_percent']],
                 'summary' => $config['summary'],

@@ -1,4 +1,4 @@
-query CartInput {
+query CartInput($boxCollections: [ID!]! = []) {
   presentmentCurrencyRate
   cart {
     lines {
@@ -28,6 +28,10 @@ query CartInput {
         ... on ProductVariant {
           product {
             id
+            inCollections(ids: $boxCollections) {
+              collectionId
+              isMember
+            }
           }
         }
       }

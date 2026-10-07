@@ -24,7 +24,8 @@
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/3"
+                "id": "gid://shopify/Product/3",
+                "inCollections": []
               }
             },
             "sellingPlanAllocation": null
@@ -47,7 +48,8 @@
             "merchandise": {
               "__typename": "ProductVariant",
               "product": {
-                "id": "gid://shopify/Product/4"
+                "id": "gid://shopify/Product/4",
+                "inCollections": []
               }
             },
             "sellingPlanAllocation": null
