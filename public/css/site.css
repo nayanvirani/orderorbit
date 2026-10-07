@@ -428,7 +428,7 @@ table.compare { width: 100%; min-width: 760px; border-collapse: collapse; font-s
 /* Templates gallery */
 .tpl-card { padding: 0; gap: 0; overflow: hidden; }
 .tpl-card .thumb { aspect-ratio: 16 / 10; display: grid; place-items: center; padding: 18px; background: var(--c-bg-alt); border-bottom: 1px solid var(--c-line); overflow: hidden; }
-.tpl-card .body { padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.tpl-card .body { padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; }
 .tpl-card .feature { font-size: 13px; font-weight: 500; color: var(--c-accent); }
 .tpl-card .name { font: var(--fw-heading) 18px/1.3 var(--serif); color: var(--c-heading); }
 .tpl-card .actions { display: flex; gap: 8px; margin-top: auto; padding-top: 6px; }
@@ -568,9 +568,11 @@ table.compare { width: 100%; min-width: 760px; border-collapse: collapse; font-s
 .product-info > .mock-button { color: var(--c-surface); }
 .collage .c-pop { align-self: center; }
 /* Live template previews (gallery) */
-.tpl-card .thumb.live { aspect-ratio: auto; height: 340px; display: block; padding: 22px; overflow: hidden; position: relative; background: var(--c-bg-alt); }
-.tpl-card .thumb.live::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: linear-gradient(transparent, var(--c-bg-alt)); pointer-events: none; }
-.tpl-card .thumb.live .oo-preview { width: 100%; pointer-events: none; font-size: 14px; color: #1d1b33; text-align: left; }
+/* Live previews: the whole template, never cut off, on a white panel like a section of a product page.
+   The preview area takes the row's spare height so cards in a row stay aligned. */
+.tpl-card .thumb.live { aspect-ratio: auto; display: flex; flex-direction: column; justify-content: flex-start; flex: 1 0 auto; min-height: 260px; padding: 22px; position: relative; background: var(--c-bg-alt); }
+.tpl-card .thumb.live .oo-preview { width: 100%; box-sizing: border-box; padding: 22px 20px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(26, 26, 26, .07), 0 6px 18px -12px rgba(26, 26, 26, .35); pointer-events: none; font-size: 14px; color: #1d1b33; text-align: left; }
+.tpl-card .thumb.live .oo-preview:has(.tpl-loading) { padding: 0; background: none; box-shadow: none; }
 .tpl-loading { display: block; height: 100%; min-height: 220px; border-radius: 14px; background: linear-gradient(90deg, var(--c-surface), color-mix(in srgb, var(--c-surface) 60%, var(--c-bg-alt)), var(--c-surface)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
