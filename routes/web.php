@@ -364,6 +364,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/content/{key}/reset', 'reset')->where('key', '[a-z_]+\.[a-z0-9_-]+')->name('content.reset');
         });
 
+        Route::middleware('admin.can:finance')->controller(\App\Http\Controllers\Admin\FinanceController::class)->group(function () {
+            Route::get('/finance', 'show')->name('finance');
+            Route::post('/finance/entries', 'store')->name('finance.store');
+            Route::post('/finance/entries/{entry}', 'update')->whereNumber('entry')->name('finance.update');
+            Route::post('/finance/entries/{entry}/delete', 'destroy')->whereNumber('entry')->name('finance.destroy');
+            Route::post('/finance/settings', 'settings')->name('finance.settings');
+        });
+
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\CrawlersController::class)->group(function () {
             Route::get('/crawlers', 'show')->name('crawlers');
             Route::post('/crawlers', 'update')->name('crawlers.update');

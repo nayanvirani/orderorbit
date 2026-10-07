@@ -33,6 +33,7 @@ class AdminRoles
         'legal' => ['super_admin'],
         'email' => ['super_admin'],
         'team' => ['super_admin'],
+        'finance' => ['super_admin'],
     ];
 
     public static function can(?User $user, string $area): bool
