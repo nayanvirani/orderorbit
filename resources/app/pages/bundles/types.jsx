@@ -22,15 +22,6 @@ export default function BundleTypes({ types }) {
             </span>
           </a>
         ))}
-        <a className="bx-type bx-type-link" href={appUrl(route('app.features.show', { feature: 'free-gifts' }))}>
-          <span className="bx-type-body">
-            <span className="bx-pill on">Module</span>
-            <strong>Gift / discount with cart value</strong>
-            <span className="bx-muted">Receive a discount or gift depending on the cart amount.</span>
-            <span className="bx-hint">$50 = −10%. $100 = 1 gift.</span>
-            <span className="bx-cta">Open free gifts →</span>
-          </span>
-        </a>
       </div>
     </Page>
   );
