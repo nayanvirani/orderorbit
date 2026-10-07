@@ -15,7 +15,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const [name, setName] = useState(x.name);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(null);
-  const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-size', 'box-price', 'd-overall']));
+  const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-cards', 'box-size', 'box-price', 'd-overall']));
   const [device, setDevice] = useState('desktop');
   const [context, setContext] = useState({ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });
   const tabOf = (k) => (k.startsWith('offers') || k.startsWith('mix') || k.startsWith('upsells') ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
@@ -189,7 +189,7 @@ function SettingsPanel() {
           <F path="settings.button_text" label="Button text" max={40} />
           <F path="settings.after_add" label="After adding to cart" type="select" options={{ cart: 'Go to the cart', stay: 'Stay on the page', checkout: 'Skip cart and go to checkout' }} />
         </Row>
-        <F path="settings.show_variants" label="Show product variant selection" type="toggle" help="Shoppers choose a variant for each item (#1, #2 …)." />
+        {state.bundle_type !== 'byob' && <F path="settings.show_variants" label="Show product variant selection" type="toggle" help="Shoppers choose a variant for each item (#1, #2 …)." />}
         <F path="settings.hide_theme_form" label="Hide the theme’s product form" type="toggle" help="Hides your theme’s variant picker, quantity, add to cart, buy-now and subscription options where the bundle shows, so they don’t conflict." />
         {s.hide_theme_form && <F path="settings.hide_selectors" label="Extra elements to hide (CSS selectors)" placeholder=".my-theme-variant-picker, .my-subscriptions" help="Only needed if your theme uses a custom product form." />}
         <F path="behavior.priority" label="Priority" type="number" min={1} max={100} help="When several bundles match a product, the highest priority shows." />
@@ -277,12 +277,17 @@ function BoxPanel() {
           ? <Picker path="mix.collection" kind="collection" label="Collection" max={1} help="Products added to the collection later appear in the box automatically. Sold-out products can't be added." />
           : <Picker path="mix.pool" label="Products" max={100} />}
       </Section>
+      <Section id="box-cards" title="Product cards">
+        <F path="mix.show_quantity" label="Show quantity selector" type="toggle" help={m.show_quantity === false ? 'Each product has an Add button that turns into Remove once it’s in the box: one of each product.' : 'Shoppers choose how many of each product with − and +.'} />
+        {m.show_quantity === false && <Row><F path="mix.add_text" label="Add button text" max={24} /><F path="mix.remove_text" label="Remove button text" max={24} /></Row>}
+        <F path="settings.show_variants" label="Show variant picker" type="toggle" help={state.settings.show_variants ? 'Shoppers choose a variant for each product.' : 'The first variant in stock is added.'} />
+      </Section>
       <Section id="box-size" title="Box size and limits">
         <Row>
           <F path="mix.min" label="Minimum items" type="number" min={1} max={100} help="The box can't be added to the cart with fewer items." />
           <F path="mix.slots" label="Maximum items" type="number" min={1} max={100} help="Shoppers can't add more than this." />
         </Row>
-        <F path="mix.per_product" label="Most of one product (0 = no limit)" type="number" min={0} max={100} help="E.g. 2: shoppers can add up to 2 of each product." />
+        {m.show_quantity !== false && <F path="mix.per_product" label="Most of one product (0 = no limit)" type="number" min={0} max={100} help="E.g. 2: shoppers can add up to 2 of each product." />}
         <Help text="These limits are also checked at checkout, so the box price only applies to a box that respects them." />
       </Section>
       <Section id="box-price" title="Box price">

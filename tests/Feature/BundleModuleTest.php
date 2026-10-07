@@ -199,6 +199,18 @@ class BundleModuleTest extends TestCase
         $this->assertArrayHasKey('mix.per_product', $errors);
         $this->assertSame('A box price needs an exact box size: set the minimum and maximum to the same number.', $errors['mix.fixed_price']);
 
+        // Add / Remove buttons instead of quantities: one of each product, also at checkout.
+        $one = BundleSchema::defaults('byob-grid');
+        $one['mix'] = array_merge($one['mix'], ['pool' => [['id' => 'gid://shopify/Product/1', 'title' => 'A'], ['id' => 'gid://shopify/Product/2', 'title' => 'B']], 'min' => 2, 'per_product' => 5, 'show_quantity' => false, 'add_text' => 'Pick', 'tiers' => []]);
+        [$config, $errors] = BundleSchema::normalize($one);
+        $this->assertSame([], $errors);
+        $this->assertSame([false, 1, 'Pick', 'Remove'], [$config['mix']['show_quantity'], $config['mix']['per_product'], $config['mix']['add_text'], $config['mix']['remove_text']]);
+        $this->assertSame(1, \App\Services\Experiences\BundleSync::mixEntry($config)['pp']);
+        $this->assertFalse(BundleSchema::payload($config)['content']['mix']['show_quantity']);
+        $one['mix']['min'] = 3;
+        $this->assertSame('With one of each product, the box needs at least 3 products to choose from.', BundleSchema::normalize($one)[1]['mix.min']);
+        $this->assertTrue(BundleSchema::defaults('byob-grid')['mix']['show_quantity']);
+
         // A discount step bigger than the box can never be reached.
         $small = BundleSchema::defaults('byob-grid');
         $small['mix'] = array_merge($small['mix'], ['pool' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']], 'slots' => 8]);

@@ -768,7 +768,7 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-xprice { color: var(--b-muted, #6b6b6b); font-size: .92em; }
 .oo-xinfo .oo-variant { width: 100%; min-width: 0; }
 .oo-xstep { display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; border: 1px solid var(--b-line, #d4d4d4); border-radius: 999px; overflow: hidden; background: var(--b-bg, #fff); }
-.oo-xstep button { height: 34px; border: 0; background: none; color: var(--b-text, inherit); font: 600 18px/1 inherit; cursor: pointer; }
+.oo-xstep button { height: 34px; border: 0; background: none; color: var(--b-text, inherit); font-family: inherit; font-size: 18px; font-weight: 600; line-height: 1; cursor: pointer; }
 .oo-xstep button:hover:not(:disabled) { background: var(--b-sel, #f4f4f4); }
 .oo-xstep button:disabled { opacity: .3; cursor: not-allowed; }
 .oo-xstep b { text-align: center; font-variant-numeric: tabular-nums; }
@@ -794,3 +794,14 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-bk-boxdark .oo-xcard, .oo-bk-boxdark .oo-xstep { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .14); }
 .oo-bk-boxdark .oo-xcard.oo-xon { background: rgba(255, 255, 255, .12); border-color: var(--b-accent, #8b7bff); }
 .oo-bk-boxdark .oo-xchip { background: rgba(255, 255, 255, .1); }
+/* Box: Add / Remove instead of quantities */
+.oo-xone { display: flex; border: 0; border-radius: 0; background: none; overflow: visible; }
+.oo-xone button { flex: 1; height: auto; min-height: 36px; padding: 8px 12px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1.2; }
+.oo-xone .oo-xadd { background: var(--b-btn, var(--oo-primary)); color: var(--b-btnfg, #fff); border: 1px solid var(--b-btn, var(--oo-primary)); }
+.oo-xone .oo-xrem { background: transparent; color: var(--b-text, inherit); border: 1px solid var(--b-line, #d4d4d4); }
+.oo-xone .oo-xadd:disabled { opacity: .45; cursor: not-allowed; }
+.oo-xone [hidden] { display: none; }
+.oo-xstep.oo-xone .oo-xadd:hover:not(:disabled) { background: var(--b-btn, var(--oo-primary)); filter: brightness(1.08); }
+.oo-xstep.oo-xone .oo-xrem:hover { background: var(--b-sel, #f4f4f4); }
+.oo-bk-boxdark .oo-xone { background: none; border: 0; }
+.oo-bk-boxdark .oo-xone .oo-xrem { border-color: rgba(255, 255, 255, .3); }

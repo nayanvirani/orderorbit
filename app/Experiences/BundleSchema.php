@@ -333,6 +333,7 @@ class BundleSchema
             'min' => 3, 'slots' => 12, 'per_product' => 0,
             'pricing' => 'tiers', 'tiers' => [['count' => 6, 'discount' => 10], ['count' => 12, 'discount' => 20]], 'fixed_price' => 0,
             'slot_text' => 'Choose',
+            'show_quantity' => true, 'add_text' => 'Add', 'remove_text' => 'Remove',
         ];
     }
 
@@ -494,7 +495,14 @@ class BundleSchema
                 'per_product' => max(0, min(100, (int) ($m['per_product'] ?? 0))),
                 'pricing' => self::pick($m['pricing'] ?? null, ['tiers', 'fixed', 'none'], 'tiers'),
                 'fixed_price' => max(0, min(1000000, round((float) ($m['fixed_price'] ?? 0), 2))),
+                'show_quantity' => self::bool($m['show_quantity'] ?? true),
+                'add_text' => self::text($m['add_text'] ?? 'Add', 24) ?: 'Add',
+                'remove_text' => self::text($m['remove_text'] ?? 'Remove', 24) ?: 'Remove',
             ];
+            // Add / Remove buttons instead of quantities: one of each product, also at checkout.
+            if (! $mix['show_quantity']) {
+                $mix['per_product'] = 1;
+            }
             if ($mix['source'] === 'collection' && $mix['collection'] === []) {
                 $errors['mix.collection'] = 'Choose the collection shoppers fill the box from.';
             }
@@ -505,7 +513,11 @@ class BundleSchema
                 $errors['mix.min'] = 'The minimum can\'t be more than the maximum.';
             }
             if ($mix['per_product'] && $mix['per_product'] * max(1, $mix['source'] === 'products' ? count($mix['pool']) : 100) < $mix['min']) {
-                $errors['mix.per_product'] = 'With this limit per product, shoppers can\'t reach the minimum.';
+                if ($mix['show_quantity']) {
+                    $errors['mix.per_product'] = 'With this limit per product, shoppers can\'t reach the minimum.';
+                } else {
+                    $errors['mix.min'] = 'With one of each product, the box needs at least '.$mix['min'].' products to choose from.';
+                }
             }
             if ($mix['pricing'] === 'fixed' && $mix['min'] !== $mix['slots']) {
                 $errors['mix.fixed_price'] = 'A box price needs an exact box size: set the minimum and maximum to the same number.';
@@ -656,6 +668,7 @@ class BundleSchema
                     + ($config['bundle_type'] === 'byob' ? [
                         'source' => $config['mix']['source'], 'collection' => array_map(fn ($c) => array_intersect_key($c, array_flip(['id', 'handle', 'title'])), $config['mix']['collection']),
                         'min' => $config['mix']['min'], 'per_product' => $config['mix']['per_product'], 'pricing' => $config['mix']['pricing'], 'fixed_price' => $config['mix']['fixed_price'],
+                        'show_quantity' => $config['mix']['show_quantity'], 'add_text' => $config['mix']['add_text'], 'remove_text' => $config['mix']['remove_text'],
                     ] : []),
                 'gifts' => $config['gifts'],
                 'upsells' => ['enabled' => $config['upsells']['enabled'], 'title' => $config['upsells']['title'], 'products' => $strip($config['upsells']['products']), 'discount_percent' => $config['upsells']['discount_percent']],

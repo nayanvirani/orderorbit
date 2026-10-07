@@ -40,9 +40,13 @@
       '<span class="oo-ximg">' + h.productImage(p) + '</span>' +
       '<span class="oo-xinfo"><span class="oo-xname">' + h.esc(p.title) + '</span><span class="oo-xprice">' + B.money(p.price || 0, ctx) + '</span>' +
       (many ? B.select('m:' + j, p.variants, ctx) : '') + '</span>' +
-      '<span class="oo-xstep"><button type="button" class="oo-xminus" data-oo-unpick="" aria-label="Remove one ' + h.esc(p.title) + '" disabled>−</button>' +
-      '<b data-oo-xq aria-live="polite">0</b>' +
-      '<button type="button" class="oo-xplus" data-oo-pick="' + j + '" aria-label="Add one ' + h.esc(p.title) + '"' + (p.available === false ? ' disabled' : '') + '>+</button></span></div>';
+      (c.mix.show_quantity === false
+        // Add / Remove: one of each product.
+        ? '<span class="oo-xstep oo-xone"><button type="button" class="oo-xadd" data-oo-pick="' + j + '"' + (p.available === false ? ' disabled' : '') + '>' + h.esc(p.available === false ? 'Sold out' : c.mix.add_text || 'Add') + '</button>' +
+          '<button type="button" class="oo-xrem" data-oo-unpick="" hidden>' + h.esc(c.mix.remove_text || 'Remove') + '</button><b data-oo-xq hidden>0</b></span>'
+        : '<span class="oo-xstep"><button type="button" class="oo-xminus" data-oo-unpick="" aria-label="Remove one ' + h.esc(p.title) + '" disabled>−</button>' +
+          '<b data-oo-xq aria-live="polite">0</b>' +
+          '<button type="button" class="oo-xplus" data-oo-pick="' + j + '" aria-label="Add one ' + h.esc(p.title) + '"' + (p.available === false ? ' disabled' : '') + '>+</button></span>') + '</div>';
   }
 
   OrderOrbit.bundleBox = {
@@ -75,7 +79,15 @@
         minus.disabled = last < 0;
         minus.setAttribute('data-oo-unpick', last < 0 ? '' : last);
         // Full box, the product's limit, or sold out: no more of it.
-        el.querySelector('[data-oo-pick]').disabled = count >= max || (pp && q >= pp) || m.pool[j].available === false;
+        var plus = el.querySelector('[data-oo-pick]');
+        plus.disabled = count >= max || (pp && q >= pp) || m.pool[j].available === false;
+        if (m.show_quantity === false) {
+          plus.hidden = q > 0;
+          minus.hidden = !q;
+          // The variant is fixed once the product is in the box.
+          var sel = el.querySelector('select');
+          if (sel) sel.disabled = q > 0;
+        }
       });
 
       var total = picks.reduce(function (sum, p) { return sum + p.price; }, 0);
