@@ -399,6 +399,10 @@ class BundleSchema
                 'text' => self::text($s['timer']['text'] ?? 'Offer ends in', 60),
             ],
             'layout' => self::pick($s['layout'] ?? null, ['vertical', 'horizontal', 'grid'], $d['layout']),
+            // Columns of the horizontal and grid layouts per screen size (0 = automatic), to match the theme.
+            'columns_desktop' => max(0, min(6, (int) ($s['columns_desktop'] ?? 0))),
+            'columns_tablet' => max(0, min(4, (int) ($s['columns_tablet'] ?? 0))),
+            'columns_mobile' => max(0, min(3, (int) ($s['columns_mobile'] ?? 0))),
             'style' => self::pick($s['style'] ?? null, ['cards', 'compact', 'fbt', 'checklist'], 'cards'),
             'skin' => self::pick($s['skin'] ?? null, self::SKINS, 'classic'),
             'position' => self::pick($s['position'] ?? null, ['above_atc', 'below_atc', 'block'], 'above_atc'),

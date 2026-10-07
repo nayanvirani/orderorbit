@@ -182,6 +182,16 @@ function SettingsPanel() {
             ))}
           </div>
         </div>
+        {s.layout !== 'vertical' && s.style !== 'fbt' && (
+          <>
+            <Row>
+              <F path="settings.columns_desktop" label="Columns on desktop" type="select" options={{ 0: 'Automatic', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6' }} />
+              <F path="settings.columns_tablet" label="Columns on tablet" type="select" options={{ 0: 'Automatic', 1: '1', 2: '2', 3: '3', 4: '4' }} />
+              <F path="settings.columns_mobile" label="Columns on mobile" type="select" options={{ 0: 'Automatic', 1: '1', 2: '2', 3: '3' }} />
+            </Row>
+            <Help text="Desktop is 990px wide and up, tablet 750–989px, mobile under 750px, like Shopify themes. Applies to the offer cards and the product grid." />
+          </>
+        )}
         <Row>
           <F path="settings.style" label="Style" type="select" options={{ cards: 'Cards', compact: 'Compact list', fbt: 'Frequently bought together', checklist: 'Checklist' }} />
           <F path="settings.position" label="Bundle position" type="select" options={{ above_atc: 'Above the add to cart button', below_atc: 'Below the add to cart button', block: 'Only where I place the block' }} help="Above/below needs the OrderOrbit app embed turned on in the Theme Editor." />

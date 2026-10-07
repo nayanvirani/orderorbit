@@ -229,6 +229,13 @@ class BundleModuleTest extends TestCase
         $this->assertArrayNotHasKey('gp', \App\Services\Experiences\BundleSync::mixEntry($config));
         $this->assertSame(['Choose the gift product.'], array_values(array_filter(BundleSchema::normalize(['bundle_type' => 'quantity-gifts', 'offers' => [['kind' => 'quantity', 'title' => 'Two', 'quantity' => 2, 'gifts' => [['product' => []]]]]])[1], fn ($k) => str_contains($k, 'gifts'), ARRAY_FILTER_USE_KEY)));
 
+        // Columns per screen size: 0 = automatic, capped per screen.
+        $cols = BundleSchema::defaults('byob-grid');
+        $cols['settings'] = array_merge($cols['settings'], ['columns_desktop' => '4', 'columns_tablet' => 9, 'columns_mobile' => -1]);
+        $settings = BundleSchema::normalize($cols)[0]['settings'];
+        $this->assertSame([4, 4, 0], [$settings['columns_desktop'], $settings['columns_tablet'], $settings['columns_mobile']]);
+        $this->assertSame(4, BundleSchema::payload(BundleSchema::normalize($cols)[0])['content']['settings']['columns_desktop']);
+
         // A discount step bigger than the box can never be reached.
         $small = BundleSchema::defaults('byob-grid');
         $small['mix'] = array_merge($small['mix'], ['pool' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']], 'slots' => 8]);

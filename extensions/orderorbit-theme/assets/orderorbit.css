@@ -811,3 +811,7 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-bundle .oo-bboxgift .oo-bgifts { margin: 10px 0 6px; justify-content: flex-start; align-items: flex-start; }
 .oo-bboxgift:not(.oo-bgift-on) .oo-bgift { filter: grayscale(.8); opacity: .7; }
 .oo-bboxgift small { display: block; font-size: .85em; opacity: .85; }
+/* Bundle columns per screen size (set by the merchant; Shopify theme breakpoints) */
+@media (min-width: 990px) { .oo-bundle.oo-bcd:not(.oo-bl-vertical):not(.oo-bs-fbt) :is(.oo-boffers, .oo-mpool, .oo-xgrid) { grid-template-columns: repeat(var(--oo-cd), minmax(0, 1fr)); } }
+@media (min-width: 750px) and (max-width: 989px) { .oo-bundle.oo-bct:not(.oo-bl-vertical):not(.oo-bs-fbt) :is(.oo-boffers, .oo-mpool, .oo-xgrid) { grid-template-columns: repeat(var(--oo-ct), minmax(0, 1fr)); } }
+@media (max-width: 749px) { .oo-bundle.oo-bcm:not(.oo-bl-vertical):not(.oo-bs-fbt) :is(.oo-boffers, .oo-mpool, .oo-xgrid) { grid-template-columns: repeat(var(--oo-cm), minmax(0, 1fr)); } }

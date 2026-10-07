@@ -140,7 +140,10 @@
     var pre = 0;
     c.offers.forEach(function (o, i) { if (o.preselected) pre = i; });
     var s = c.settings;
-    return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + '" style="' + vars(exp.design || {}) + '">' + header(s, mix && c.mix) +
+    // Columns per screen size, when the merchant set them (oo-bcd / oo-bct / oo-bcm with --oo-cd / -ct / -cm).
+    var cols = '', colVars = '';
+    [['d', s.columns_desktop], ['t', s.columns_tablet], ['m', s.columns_mobile]].forEach(function (x) { if (x[1] > 0) { cols += ' oo-bc' + x[0]; colVars += '--oo-c' + x[0] + ':' + Number(x[1]) + ';'; } });
+    return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + cols + '" style="' + vars(exp.design || {}) + colVars + '">' + header(s, mix && c.mix) +
       (mix ? M(c).html(c, ctx, B) + (X() ? X().boxGifts(c) : '') : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
       (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + (X() ? X().upsells(c, ctx) : '') + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';
