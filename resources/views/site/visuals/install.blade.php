@@ -1,6 +1,6 @@
 <x-browser url="admin.shopify.com · Install app" aria-label="Installing Growvia from Shopify">
     <div style="display:flex;gap:14px;align-items:center">
-        <div style="width:56px;height:56px;border-radius:16px;background:#0e0b2b;display:grid;place-items:center"><svg style="width:36px;height:36px"><use href="#i-orbit"></use></svg></div>
+        <div style="width:56px;height:56px;border-radius:16px;background:#0e0b2b;display:grid;place-items:center"><svg style="width:36px;height:36px"><use href="#i-growvia"></use></svg></div>
         <div><b style="font:800 16px var(--font-head)">Install Growvia</b><div style="color:#6b6889;font-size:12px">Shopify CRO, Checkout &amp; Customer Experience</div></div>
     </div>
     <div class="oo-block" style="margin-top:16px">

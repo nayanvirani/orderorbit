@@ -42,7 +42,7 @@
         <h1>Coming soon</h1>
         <p>We build technology for online commerce. Our new website is on its way.</p>
         <a class="product" href="{{ $growvia }}">
-            <svg viewBox="0 0 100 100" aria-hidden="true"><g fill="currentColor"><ellipse cx="50" cy="50" rx="42" ry="9" transform="rotate(-24 50 50)" fill="none" stroke="currentColor" stroke-width="5.2"/><circle cx="50" cy="50" r="18"/><circle cx="72.95" cy="32.46" r="6.4"/></g></svg>
+            <svg viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(-1 1)" fill="currentColor"><rect x="22" y="72" width="56" height="8" rx="4"/><rect x="46.5" y="44.5" width="7" height="30"/><path d="M50 50 C 50 34, 38 24, 22 24 C 22 40, 34 50, 50 50 Z"/><path d="M50 44 C 50 28, 62 18, 80 18 C 80 34, 66 44, 50 44 Z" opacity=".8"/></g></svg>
             <span><strong>Growvia</strong><small>Bundles, upsells, gifts and checkout offers for Shopify stores.</small></span>
             <em>Visit →</em>
         </a>

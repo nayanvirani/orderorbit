@@ -15,13 +15,7 @@
         html, body { margin: 0; min-height: 100%; }
         body { display: grid; min-height: 100vh; place-items: center; padding: 24px 16px; background: var(--paper); color: var(--ink); font: var(--fs-body)/1.55 var(--f-body), system-ui, sans-serif; overflow-x: hidden; }
         main { position: relative; width: min(560px, 100%); text-align: center; }
-        .orbit { position: relative; width: 132px; height: 132px; margin: 0 auto 28px; }
-        .orbit span { position: absolute; inset: 0; border: 1px solid var(--line); border-radius: 50%; }
-        .orbit span:nth-child(2) { inset: 22px; border-color: var(--c-line-strong); }
-        .orbit b { position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--ink); }
-        .orbit i { position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--ink); transform-origin: 5px 71px; animation: spin 9s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (prefers-reduced-motion: reduce) { .orbit i { animation: none; } }
+        .mark { display: block; width: 88px; height: 88px; margin: 0 auto 28px; border-radius: 20px; box-shadow: 0 14px 30px -12px rgba(59, 31, 184, .55); }
         .eyebrow { font: 500 11px/1 var(--f-label), system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
         h1 { margin: 14px 0 12px; color: var(--c-heading); font: var(--fw-heading) clamp(40px, 9vw, 64px)/1 var(--f-heading), system-ui, sans-serif; letter-spacing: -.01em; }
         h1 .hl, h1 em { color: var(--c-accent); font-style: normal; text-decoration: underline; text-decoration-thickness: .05em; text-underline-offset: .12em; }
@@ -40,7 +34,7 @@
 </head>
 <body>
 <main>
-    <div class="orbit" aria-hidden="true"><span></span><span></span><b></b><i></i></div>
+    <img class="mark" src="/brand/growvia-icon.svg" alt="" width="88" height="88">
     @php($cs = \App\Support\SiteContent::page('coming_soon'))
     <span class="eyebrow">{{ site_md($cs['eyebrow']) }}</span>
     <h1>{{ site_md($cs['title']) }}</h1>

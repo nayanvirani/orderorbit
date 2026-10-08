@@ -31,7 +31,7 @@
     <header class="site-header" data-header>
         <div class="wrap header-inner">
             <a class="logo" href="{{ route('site.home') }}" aria-label="Growvia home">
-                <svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-orbit"></use></svg>Growvia
+                <svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-growvia"></use></svg>Growvia
             </a>
 
             <nav class="nav" aria-label="Main">
@@ -135,7 +135,7 @@
         <div class="wrap">
             <div class="top">
                 <div class="brand">
-                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-orbit"></use></svg>Growvia</a>
+                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-growvia"></use></svg>Growvia</a>
                     <p>{{ site_md($footer['tagline']) }}</p>
                     @if ($footer['button']['label'])<a class="btn light" href="{{ site_url($footer['button']['href']) }}" data-event="cta_install_clicked">{{ $footer['button']['label'] }}</a>@endif
                 </div>
