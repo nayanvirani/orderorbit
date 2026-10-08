@@ -1,4 +1,4 @@
-<x-browser url="admin.shopify.com · OrderOrbit Space › Audiences › Rules" :flush="true" aria-label="Personalization rule builder">
+<x-browser url="admin.shopify.com · Growvia › Audiences › Rules" :flush="true" aria-label="Personalization rule builder">
     <div class="rules">
         <div style="display:flex;justify-content:space-between;align-items:center"><b style="font:800 14px var(--font-head)">Premium upsell for returning shoppers</b><span class="pill green">● Live</span></div>
         <div class="rule"><span class="k">IF</span><span class="chip"><x-icon name="user" style="width:13px;height:13px"/> Customer is returning</span></div>

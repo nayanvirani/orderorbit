@@ -49,6 +49,7 @@ class ManagedPricingTest extends TestCase
     {
         $this->assertSame('growth', Billing::planKeyFromName('Growth'));
         $this->assertSame('growth', Billing::planKeyFromName('GROWTH'));
+        $this->assertSame('scale', Billing::planKeyFromName('Growvia Scale'));
         $this->assertSame('scale', Billing::planKeyFromName('OrderOrbit Scale'));
         $this->assertSame('free', Billing::planKeyFromName('Free'));
         $this->assertNull(Billing::planKeyFromName('Enterprise'));

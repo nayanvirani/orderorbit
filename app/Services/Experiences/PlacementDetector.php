@@ -8,7 +8,7 @@ use App\Models\Store;
 use App\Services\Shopify\AdminApi;
 
 /**
- * Checks the live theme for OrderOrbit blocks, so the app can warn about
+ * Checks the live theme for Growvia blocks, so the app can warn about
  * "Published but not placed" experiences (section D2) and a disabled app embed.
  */
 class PlacementDetector

@@ -1,4 +1,4 @@
-<x-browser url="admin.shopify.com · OrderOrbit Space › Analytics" :flush="true" aria-label="Analytics dashboard">
+<x-browser url="admin.shopify.com · Growvia › Analytics" :flush="true" aria-label="Analytics dashboard">
     <div class="dash">
         <div class="side">
             <div><x-icon name="layout"/>Dashboard</div><div class="on"><x-icon name="chart"/>Analytics</div><div><x-icon name="sparkle"/>Widgets</div><div><x-icon name="split"/>Experiments</div><div><x-icon name="flow"/>Automation</div><div><x-icon name="target"/>Audiences</div>

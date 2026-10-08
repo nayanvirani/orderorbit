@@ -100,7 +100,7 @@ class EmailController extends Controller
     {
         $provider = EmailProvider::findOrFail($provider);
         $to = $request->validate(['to' => ['required', 'email']])['to'];
-        $result = $sender->send(OutgoingEmail::fromText($to, 'Test email from OrderOrbit Space', "This is a test from the OrderOrbit Space super admin.\n\nIt was sent through {$provider->name} ({$provider->label()}). If you can read this, the key and sender address work.", ['category' => 'test']), $provider);
+        $result = $sender->send(OutgoingEmail::fromText($to, 'Test email from Growvia', "This is a test from the Growvia super admin.\n\nIt was sent through {$provider->name} ({$provider->label()}). If you can read this, the key and sender address work.", ['category' => 'test']), $provider);
 
         return $result->ok()
             ? back()->with('status', "Test email sent to {$to} through {$provider->name}. Check the inbox (and spam).")

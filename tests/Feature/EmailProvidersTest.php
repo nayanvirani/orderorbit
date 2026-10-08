@@ -26,7 +26,7 @@ class EmailProvidersTest extends TestCase
     {
         parent::setUp();
         $this->setUpShopify();
-        EmailSettings::save(['enabled' => true, 'strategy' => 'priority', 'from_email' => 'hello@orderorbit.space', 'from_name' => 'OrderOrbit Space', 'reply_to' => '']);
+        EmailSettings::save(['enabled' => true, 'strategy' => 'priority', 'from_email' => 'hello@orderorbit.space', 'from_name' => 'Growvia', 'reply_to' => '']);
     }
 
     private function provider(string $driver, array $attributes = []): EmailProvider
@@ -67,7 +67,7 @@ class EmailProvidersTest extends TestCase
         $this->assertSame($brevo->id, app(EmailSender::class)->candidates()->first()->id);
 
         // The request carried the sender, recipient and the escaped body.
-        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'resend') && $r['from'] === '"OrderOrbit Space" <hello@orderorbit.space>' && $r['to'] === ['shopper@example.com'] && str_contains($r['html'], 'Line &lt;two&gt;'));
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'resend') && $r['from'] === '"Growvia" <hello@orderorbit.space>' && $r['to'] === ['shopper@example.com'] && str_contains($r['html'], 'Line &lt;two&gt;'));
     }
 
     public function test_daily_limits_move_sending_on_before_the_provider_refuses_and_balance_spreads_it(): void
@@ -203,7 +203,7 @@ class EmailProvidersTest extends TestCase
         Http::fake(['api.brevo.com/*' => Http::response(['messageId' => 'x'], 201)]);
         $this->actingAs($admin)->post("/admin/email/providers/{$brevo->id}/test", ['to' => 'ava@orderorbit.space'])->assertSessionHas('status');
         $this->actingAs($admin)->get('/admin/email')->assertSee('Sent today')->assertSee('Next email goes through Brevo');
-        $this->actingAs($admin)->get('/admin/email/log')->assertOk()->assertSee('Test email from OrderOrbit Space');
+        $this->actingAs($admin)->get('/admin/email/log')->assertOk()->assertSee('Test email from Growvia');
 
         // Order, settings, switch off, remove.
         $this->actingAs($admin)->post('/admin/email/providers', ['driver' => 'smtp', 'name' => 'Zoho', 'credentials' => ['host' => 'smtp.zoho.com', 'port' => '587', 'username' => 'u', 'password' => 'p', 'encryption' => 'tls'], 'is_active' => '1'])->assertRedirect();

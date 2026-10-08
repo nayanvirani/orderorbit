@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * The OrderOrbit team: who can sign in to the Internal Admin, and with which role.
+ * The Growvia team: who can sign in to the Internal Admin, and with which role.
  */
 class TeamController extends Controller
 {

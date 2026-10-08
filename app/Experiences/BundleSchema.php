@@ -11,7 +11,7 @@ use Throwable;
  * gifts, upsells, savings summary and design.
  *
  * Pricing: offers of one product (quantity breaks, variant offers) get their
- * saving from the OrderOrbit discount function; offers of several products and
+ * saving from the Growvia discount function; offers of several products and
  * mix & match merge into one cart line through the cart transform. Gifts ride
  * along in the same group and are free when the offer qualifies.
  */

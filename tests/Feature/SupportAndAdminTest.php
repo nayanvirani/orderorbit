@@ -71,7 +71,7 @@ class SupportAndAdminTest extends TestCase
     public function test_admin_requires_a_team_login(): void
     {
         $this->get('/admin')->assertRedirect('/admin/login');
-        $this->get('/admin/login')->assertOk()->assertSee('For the OrderOrbit team only.');
+        $this->get('/admin/login')->assertOk()->assertSee('For the Growvia team only.');
         User::forceCreate(['name' => 'Merchant', 'email' => 'm@example.com', 'password' => 'password-123', 'is_admin' => false]);
         $this->post('/admin/login', ['email' => 'm@example.com', 'password' => 'password-123'])->assertSessionHasErrors('email');
         $this->admin();

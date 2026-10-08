@@ -91,7 +91,7 @@ export default function Segment(props) {
         <s-button onClick={() => setRules([...rules, { field: 'orders_count', op: 'gte', value: '' }])}>Add rule</s-button>
         <details className="au-help">
           <summary>Where the data comes from</summary>
-          <p className="oo-small">Orders, total spent, average order, days since last order, tags and purchased products come from the signed-in customer's account (guests have 0 orders). Market and device come from the visit. "Used a widget" is remembered on the shopper's device. Everything is worked out on your store; nothing about the shopper is sent to OrderOrbit Space.</p>
+          <p className="oo-small">Orders, total spent, average order, days since last order, tags and purchased products come from the signed-in customer's account (guests have 0 orders). Market and device come from the visit. "Used a widget" is remembered on the shopper's device. Everything is worked out on your store; nothing about the shopper is sent to Growvia.</p>
         </details>
       </s-section>
 

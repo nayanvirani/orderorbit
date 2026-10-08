@@ -42,7 +42,7 @@ class AnalyticsReportsController extends Controller
 
         return page('analytics/events', self::sharedProps($store, $days) + [
             'events' => collect($events)->map(fn ($e) => array_merge($e, ['trend' => Analytics::trend((float) $e['total'], $e['previous'] ? (float) $e['previous'] : null), 'daily' => array_values($e['daily'] ?? [])]))->keyBy('name'),
-            'catalogue' => ['Shopify storefront events' => Events::STANDARD, 'OrderOrbit Space events' => Events::ORDERORBIT],
+            'catalogue' => ['Shopify storefront events' => Events::STANDARD, 'Growvia events' => Events::ORDERORBIT],
             'dimensions' => Events::DIMENSIONS,
             'pageTypes' => Events::PAGE_TYPES,
             'filters' => (object) array_filter((array) $request->query('f', []), fn ($v) => is_string($v) && $v !== ''),
@@ -263,6 +263,6 @@ class AnalyticsReportsController extends Controller
         $standard = Events::STANDARD;
         unset($standard['session_started']);
 
-        return ['eventGroups' => ['Storefront' => $standard, 'OrderOrbit Space' => Events::ORDERORBIT], 'windows' => Funnels::WINDOWS];
+        return ['eventGroups' => ['Storefront' => $standard, 'Growvia' => Events::ORDERORBIT], 'windows' => Funnels::WINDOWS];
     }
 }

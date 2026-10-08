@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'seo_title' => 'Security & Privacy | OrderOrbit Space',
-    'seo_description' => 'How OrderOrbit Space protects your store and your customers: Shopify sign-in, minimal permissions, staff roles, audit logs, consent-aware analytics and data deletion.',
+    'seo_title' => 'Security & Privacy | Growvia',
+    'seo_description' => 'How Growvia protects your store and your customers: Shopify sign-in, minimal permissions, staff roles, audit logs, consent-aware analytics and data deletion.',
     'eyebrow' => 'Security & privacy',
     'title' => 'Security and privacy are *part of the product.*',
     'lead' => 'Here\'s how your store, your team and your customers are protected.',

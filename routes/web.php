@@ -28,7 +28,7 @@ $stateless = [
 ];
 
 Route::withoutMiddleware($stateless)->group(function () {
-// Storefront analytics from the OrderOrbit Space web pixel.
+// Storefront analytics from the Growvia web pixel.
 Route::post('/api/pixel', [\App\Http\Controllers\PixelController::class, 'collect'])->middleware('throttle:240,1')->name('pixel.collect');
 Route::options('/api/pixel', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'));
 // Post-purchase funnel, called by the orderorbit-post-purchase extension (token signed by Shopify).
@@ -49,7 +49,7 @@ Route::get('/site-access/lock', [SiteController::class, 'lock'])->name('site.loc
 Route::get('/robots.txt', [SiteController::class, 'robots'])->name('site.robots');
 
 // Public website (Part A)
-Route::controller(SiteController::class)->name('site.')->middleware([\App\Http\Middleware\BlockCrawlers::class, \App\Http\Middleware\SitePreviewGate::class])->group(function () {
+Route::controller(SiteController::class)->name('site.')->middleware([\App\Http\Middleware\CompanyDomain::class, \App\Http\Middleware\BlockCrawlers::class, \App\Http\Middleware\SitePreviewGate::class])->group(function () {
     Route::get('/', 'home')->name('home');
     Route::get('/how-it-works', 'how')->name('how');
     Route::get('/features', 'features')->name('features');

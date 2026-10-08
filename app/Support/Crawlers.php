@@ -242,7 +242,7 @@ class Crawlers
     public static function robotsTxt(string $sitemap): string
     {
         $s = self::settings();
-        $out = ["# OrderOrbit Space - crawler rules (set in the Internal Admin: Crawlers & SEO)", ''];
+        $out = ["# Growvia - crawler rules (set in the Internal Admin: Crawlers & SEO)", ''];
         $denied = [];
         $allowed = [];
         foreach (self::GROUPS as $key => $group) {

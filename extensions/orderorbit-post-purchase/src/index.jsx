@@ -1,6 +1,6 @@
 /**
- * OrderOrbit Space post-purchase funnel. Shown after payment and before the Thank You page:
- * one offer at a time, added to the paid order in one click. OrderOrbit Space decides the offer
+ * Growvia post-purchase funnel. Shown after payment and before the Thank You page:
+ * one offer at a time, added to the paid order in one click. Growvia decides the offer
  * and signs the order change, using the token Shopify signs for each purchase.
  */
 import React, { useEffect, useState } from 'react';
@@ -21,7 +21,7 @@ import {
   View,
 } from '@shopify/post-purchase-ui-extensions-react';
 
-const APP_URL = 'https://orderorbit.space';
+const APP_URL = 'https://growvia.orderorbit.space';
 
 function purchaseFacts(inputData) {
   const purchase = inputData.initialPurchase || {};

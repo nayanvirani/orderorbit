@@ -1,4 +1,4 @@
-/* OrderOrbit Space · countdown. Counts down to one real campaign deadline or a daily cutoff
+/* Growvia · countdown. Counts down to one real campaign deadline or a daily cutoff
    (e.g. same-day shipping) in the store's time zone; never resets per visitor. Eight layouts. */
 (function () {
   var h = OrderOrbit.h;

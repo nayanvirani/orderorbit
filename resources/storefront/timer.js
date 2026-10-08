@@ -1,4 +1,4 @@
-/* OrderOrbit Space · countdown timers (countdown and bundle timers). An element with
+/* Growvia · countdown timers (countdown and bundle timers). An element with
    data-oo-end="<epoch ms>" holds <b> children for days, hours, minutes and seconds
    (hours, minutes and seconds with data-oo-nodays). Each unit's parent gets --p (0–1)
    for ring layouts, "oo-tick" when its value changes (flip layouts), and the element

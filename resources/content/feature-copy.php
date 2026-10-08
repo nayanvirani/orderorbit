@@ -18,7 +18,7 @@ return [
         'status' => 'live',
         'summary' => 'Quantity breaks, mix & match, fixed packs and gift bundles that check out as one line.',
         'overview' => [
-            'Bundles are the fastest way to raise order value, as long as shoppers understand the offer in a second and it works with your theme. OrderOrbit Space gives you six bundle types — quantity breaks, quantity breaks with gifts, variant offers, mix & match, fixed bundles and fixed bundles with gifts — each with ready-made layouts you can restyle to match your store.',
+            'Bundles are the fastest way to raise order value, as long as shoppers understand the offer in a second and it works with your theme. Growvia gives you six bundle types — quantity breaks, quantity breaks with gifts, variant offers, mix & match, fixed bundles and fixed bundles with gifts — each with ready-made layouts you can restyle to match your store.',
             'Shoppers pick their offer, choose a variant for each item and add everything with one click. In the cart the bundle appears as a single line at the bundle price, and your orders still list every product, so Shopify deducts stock from each one. Where a bundle shows, it replaces your theme\'s own variant picker and add-to-cart so nothing conflicts.',
         ],
         'benefits' => [
@@ -63,7 +63,7 @@ return [
         'status' => 'live',
         'summary' => 'Countdowns for real deadlines, in eight layouts.',
         'overview' => [
-            'A countdown works when the deadline is real. OrderOrbit Space counts down to your campaign\'s end date, or to a daily cutoff such as "order within 3h 12m to ship today", in your store\'s time zone. Timers never reset per visitor.',
+            'A countdown works when the deadline is real. Growvia counts down to your campaign\'s end date, or to a daily cutoff such as "order within 3h 12m to ship today", in your store\'s time zone. Timers never reset per visitor.',
             'Choose from eight layouts — from a single line of text to a flip clock, progress rings or a banner with a button — show a discount code shoppers can copy, and switch to an urgent colour in the final hours.',
         ],
         'benefits' => [
@@ -93,7 +93,7 @@ return [
         'status' => 'live',
         'summary' => 'Take orders before stock arrives, with a ship date, progress bar and countdown.',
         'overview' => [
-            'A pre-order turns "out of stock" into a sale. OrderOrbit Space adds a pre-order widget to the products you choose, showing when the item ships, how close it is and how long is left — in months, weeks or days.',
+            'A pre-order turns "out of stock" into a sale. Growvia adds a pre-order widget to the products you choose, showing when the item ships, how close it is and how long is left — in months, weeks or days.',
             'Your theme\'s add-to-cart reads "Pre-order now", and each item gets a "Pre-order: Ships by …" line so you and your customer always know what\'s coming. Show it on every variant, or only when the selected variant is sold out.',
         ],
         'benefits' => [
@@ -138,7 +138,7 @@ return [
         'status' => 'live',
         'summary' => 'Blocks for checkout, Thank You and Order Status: reviews, trust, progress, cross-sells, reorders and more.',
         'overview' => [
-            'Shoppers hesitate at checkout, and after they buy the confirmation page is usually a dead end. OrderOrbit Space adds blocks to both: reviews, a real countdown, shipping progress, free gifts, promotions and trust inside checkout, and cross-sells, reorder, review requests, referrals, surveys, next-order codes and helpful messages on the Thank You and Order Status pages.',
+            'Shoppers hesitate at checkout, and after they buy the confirmation page is usually a dead end. Growvia adds blocks to both: reviews, a real countdown, shipping progress, free gifts, promotions and trust inside checkout, and cross-sells, reorder, review requests, referrals, surveys, next-order codes and helpful messages on the Thank You and Order Status pages.',
             'You place the blocks in Shopify\'s own checkout editor and they use your checkout branding. Shipping progress and free gifts follow your Progressive gifts campaign, so checkout and storefront always agree. Blocks inside checkout need Shopify Plus; Thank You and Order Status blocks work on every plan, and the app only offers what your store can use.',
         ],
         'benefits' => [
@@ -155,7 +155,7 @@ return [
         'status' => 'live',
         'summary' => 'My orders, tracking, reorder, rewards, reviews, products and support in customer accounts.',
         'overview' => [
-            'Your best customers sign in to their account, and most stores show them an order list and nothing else. OrderOrbit Space adds seven blocks to Shopify\'s new customer accounts: a summary of their orders, live shipment tracking, one-tap reorder, reward tiers by total spend, review requests for what they bought, a shelf of their products with buy again, and your support options and answers.',
+            'Your best customers sign in to their account, and most stores show them an order list and nothing else. Growvia adds seven blocks to Shopify\'s new customer accounts: a summary of their orders, live shipment tracking, one-tap reorder, reward tiers by total spend, review requests for what they bought, a shelf of their products with buy again, and your support options and answers.',
             'Each block reads the customer\'s own orders, so what they see is always theirs. You place the blocks in Shopify\'s customer accounts editor, give them your size, background, border and corners, and "Buy again" can also appear in every order\'s menu.',
         ],
         'benefits' => [
@@ -185,7 +185,7 @@ return [
         'status' => 'live',
         'summary' => 'Events, funnels, attribution and customer journeys, and how much came from your offers.',
         'overview' => [
-            'OrderOrbit Space measures what matters with a Shopify web pixel that respects your customers\' consent choices. You see store revenue, orders, average order value and conversion rate, and exactly how much revenue came from lines your bundles, gifts and upsells added.',
+            'Growvia measures what matters with a Shopify web pixel that respects your customers\' consent choices. You see store revenue, orders, average order value and conversion rate, and exactly how much revenue came from lines your bundles, gifts and upsells added.',
             'Every offer has its own numbers — views, adds to cart, orders and revenue — so you can keep what works and change what doesn\'t.',
             'Go deeper with the Event Explorer, funnels with drop-off at every step, revenue by traffic source under first-touch, last-touch and widget-assisted models, and a journey for each customer from first visit to repeat purchase.',
         ],

@@ -43,7 +43,7 @@ class Registry
     }
 
     /**
-     * Templates offered for new experiences: the OrderOrbit team can unpublish a template in the
+     * Templates offered for new experiences: the Growvia team can unpublish a template in the
      * Internal Admin. Experiences already using it keep working (template() still finds it).
      */
     public static function offered(string $type): array

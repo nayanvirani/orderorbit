@@ -28,7 +28,7 @@ return [
         'customer_tag_added' => ['label' => 'Customer tag added', 'group' => 'Customers', 'help' => 'When a customer gets a tag.', 'config' => [
             'tag' => ['type' => 'text', 'label' => 'Tag', 'required' => true],
         ]],
-        'custom_event' => ['label' => 'OrderOrbit event', 'group' => 'OrderOrbit', 'help' => 'When a shopper does something in an OrderOrbit Space offer.', 'config' => [
+        'custom_event' => ['label' => 'Growvia event', 'group' => 'Growvia', 'help' => 'When a shopper does something in a Growvia offer.', 'config' => [
             'event' => ['type' => 'select', 'label' => 'Event', 'required' => true, 'options' => [
                 'survey_answered' => 'Survey answered', 'reward_unlocked' => 'Reward unlocked', 'upsell_accepted' => 'Upsell accepted', 'added_to_cart' => 'Added to cart from an offer',
             ]],

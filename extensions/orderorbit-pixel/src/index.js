@@ -1,7 +1,7 @@
 import {register} from '@shopify/web-pixels-extension';
 
 /**
- * OrderOrbit Space analytics. Sends, with the shopper's analytics consent:
+ * Growvia analytics. Sends, with the shopper's analytics consent:
  *  - Shopify's standard storefront events (pages, products, collections, search, cart, checkout)
  *  - experience views, clicks and adds to cart (published by the storefront widgets and the
  *    checkout blocks), and post-purchase survey answers
@@ -11,7 +11,7 @@ import {register} from '@shopify/web-pixels-extension';
  * session's traffic source (UTM tags or the referring site), and the customer's numeric id when
  * they're signed in. No names, emails or addresses are sent.
  */
-const ENDPOINT = 'https://orderorbit.space/api/pixel';
+const ENDPOINT = 'https://growvia.orderorbit.space/api/pixel';
 const SESSION_MINUTES = 30;
 
 register(({analytics, browser, init, settings}) => {

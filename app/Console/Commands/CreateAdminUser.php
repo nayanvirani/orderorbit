@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
  */
 class CreateAdminUser extends Command
 {
-    protected $signature = 'orderorbit:admin-user {email} {--name=OrderOrbit team}';
+    protected $signature = 'orderorbit:admin-user {email} {--name=Growvia team}';
 
     protected $description = 'Create or reset an Internal Admin account';
 

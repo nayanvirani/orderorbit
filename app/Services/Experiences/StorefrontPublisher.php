@@ -123,7 +123,7 @@ class StorefrontPublisher
                 }
 
                 if ($e->type === 'sales-pop') {
-                    // Real recent purchases come from OrderOrbit's public feed for this store.
+                    // Real recent purchases come from Growvia's public feed for this store.
                     $config['content']['feed'] = route('sales-pop.feed', ['shop' => $store->shop_domain, 'days' => $config['content']['max_age_days'] ?? 7]);
                 }
 
@@ -249,7 +249,7 @@ class StorefrontPublisher
                   metafieldDefinitionCreate(definition: $definition) { createdDefinition { id } userErrors { code message } }
                 }
                 GQL, ['definition' => [
-                'name' => 'OrderOrbit Space account blocks', 'namespace' => self::CHECKOUT_NAMESPACE, 'key' => self::ACCOUNT_KEY,
+                'name' => 'Growvia account blocks', 'namespace' => self::CHECKOUT_NAMESPACE, 'key' => self::ACCOUNT_KEY,
                 'ownerType' => 'SHOP', 'type' => 'json', 'access' => ['customerAccount' => 'READ'],
             ]]);
             $error = $result['metafieldDefinitionCreate']['userErrors'][0] ?? null;

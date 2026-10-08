@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>OrderOrbit Space · Coming soon</title>
+    <title>Growvia · Coming soon</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -57,7 +57,7 @@
         @if ($failed)<p class="error" role="alert">{{ $cs['wrong'] }}</p>@endif
     </details>
 
-    <footer>&copy; {{ date('Y') }} OrderOrbit Space · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a> · <a href="{{ route('site.legal.index') }}">All policies</a></footer>
+    <footer>&copy; {{ date('Y') }} Growvia · <a href="{{ route('site.privacy') }}">Privacy</a> · <a href="{{ route('site.terms') }}">Terms</a> · <a href="{{ route('site.legal.index') }}">All policies</a></footer>
 </main>
 </body>
 </html>

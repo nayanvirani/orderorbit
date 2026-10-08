@@ -1,4 +1,4 @@
-<x-browser url="admin.shopify.com · OrderOrbit Space › Workflows › Review Request" :flush="true" aria-label="Automation workflow canvas">
+<x-browser url="admin.shopify.com · Growvia › Workflows › Review Request" :flush="true" aria-label="Automation workflow canvas">
     <div class="canvas">
         <div class="wf-node trigger"><span class="ic"><x-icon name="zap"/></span><div><small>Trigger</small><b>Order delivered</b></div></div>
         <div class="wf-link"></div>

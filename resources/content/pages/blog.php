@@ -3,7 +3,7 @@
 /* Blog page. Posts are under Lists → Blog posts. */
 
 return [
-    'seo_title' => 'Blog | Shopify Conversion, Explained | OrderOrbit Space',
+    'seo_title' => 'Blog | Shopify Conversion, Explained | Growvia',
     'seo_description' => 'Practical guides on bundles, gifts, upsells, checkout and retention for Shopify stores.',
     'eyebrow' => 'Blog',
     'title' => 'Shopify conversion, *explained.*',

@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>document.documentElement.classList.add('js');</script>
-    <title>@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')</title>
+    <title>@yield('title', 'Growvia | Shopify CRO, Checkout & Upsell App')</title>
     <meta name="description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <link rel="canonical" href="{{ url()->current() }}">
     {{-- Crawler rules from the Internal Admin (Crawlers & SEO), with /robots.txt. --}}
     <meta name="robots" content="{{ \App\Support\Crawlers::robotsTag() }}">
-    <meta property="og:site_name" content="OrderOrbit Space">
+    <meta property="og:site_name" content="Growvia">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="@yield('title', 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App')">
+    <meta property="og:title" content="@yield('title', 'Growvia | Shopify CRO, Checkout & Upsell App')">
     <meta property="og:description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
@@ -30,8 +30,8 @@
 
     <header class="site-header" data-header>
         <div class="wrap header-inner">
-            <a class="logo" href="{{ route('site.home') }}" aria-label="OrderOrbit Space home">
-                <svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-orbit"></use></svg>OrderOrbit Space
+            <a class="logo" href="{{ route('site.home') }}" aria-label="Growvia home">
+                <svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-orbit"></use></svg>Growvia
             </a>
 
             <nav class="nav" aria-label="Main">
@@ -135,7 +135,7 @@
         <div class="wrap">
             <div class="top">
                 <div class="brand">
-                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-orbit"></use></svg>OrderOrbit Space</a>
+                    <a class="logo" href="{{ route('site.home') }}"><svg aria-hidden="true" viewBox="0 0 100 100"><use href="#i-orbit"></use></svg>Growvia</a>
                     <p>{{ site_md($footer['tagline']) }}</p>
                     @if ($footer['button']['label'])<a class="btn light" href="{{ site_url($footer['button']['href']) }}" data-event="cta_install_clicked">{{ $footer['button']['label'] }}</a>@endif
                 </div>

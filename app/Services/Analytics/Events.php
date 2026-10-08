@@ -3,7 +3,7 @@
 namespace App\Services\Analytics;
 
 /**
- * The event catalogue: Shopify's standard storefront events (from the web pixel) and OrderOrbit
+ * The event catalogue: Shopify's standard storefront events (from the web pixel) and Growvia
  * Space's own events. Experience events are recorded under a specific name where the spec has one
  * (orderorbit:bundle_viewed) and fall back to the generic one (orderorbit:experience_viewed).
  */
@@ -66,7 +66,7 @@ class Events
         return self::all()[$name] ?? (string) $name;
     }
 
-    /** The catalogue name for an OrderOrbit event from an experience of the given type. */
+    /** The catalogue name for a Growvia event from an experience of the given type. */
     public static function nameFor(string $event, ?string $type): string
     {
         $type = (string) $type;

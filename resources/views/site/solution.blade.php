@@ -3,7 +3,7 @@
 @php($d = $page['detail'])
 @php($vars = ['name' => $solution['name']])
 
-@section('title', \App\Support\SiteContent::plain($solution['name']).' | OrderOrbit Space')
+@section('title', \App\Support\SiteContent::plain($solution['name']).' | Growvia')
 @section('description', \App\Support\SiteContent::plain($solution['seo_description']))
 
 @section('content')

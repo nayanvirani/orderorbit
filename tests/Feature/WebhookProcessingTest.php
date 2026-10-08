@@ -56,7 +56,7 @@ class WebhookProcessingTest extends TestCase
         $store = $this->installedStore();
 
         $this->webhook('app_subscriptions/update', ['app_subscription' => [
-            'admin_graphql_api_id' => 'gid://shopify/AppSubscription/1', 'name' => 'OrderOrbit Growth', 'status' => 'ACTIVE',
+            'admin_graphql_api_id' => 'gid://shopify/AppSubscription/1', 'name' => 'Growvia Growth', 'status' => 'ACTIVE',
         ]])->assertNoContent();
 
         $this->assertSame('growth', $store->fresh()->plan);

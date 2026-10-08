@@ -23,7 +23,7 @@ return [
         'lead' => 'Mix & match, fixed bundles, frequently bought together and gift boxes. Shoppers add the whole bundle in one click and the saving applies automatically at checkout.',
         'steps' => [
             'Pick the products, bundle type and saving.',
-            'Add the OrderOrbit Space block to your product page in the Theme Editor.',
+            'Add the Growvia block to your product page in the Theme Editor.',
             'Shoppers add the bundle in one click; the discount applies in cart and checkout.',
         ],
     ],
@@ -94,7 +94,7 @@ return [
         'lead' => 'A pre-order widget for the products you choose, with the ship date, a progress bar and the time left in months, weeks or days. It can relabel your add-to-cart and marks pre-order items on the order.',
         'steps' => [
             'Pick the products, the ship date and a layout.',
-            'Add the OrderOrbit Space block to your product template and choose "Pre-order".',
+            'Add the Growvia block to your product template and choose "Pre-order".',
             'Shoppers see the ship date and order; each item is marked "Pre-order" in the cart and on the order.',
         ],
     ],
@@ -108,7 +108,7 @@ return [
         'lead' => 'Reviews, countdowns, shipping progress, free gifts, promotions, trust and images, shown inside Shopify checkout. Blocks inside checkout need Shopify Plus; Shopify doesn\'t allow them on other plans.',
         'steps' => [
             'Create a block and pick a layout. Set its size, background, border, corners and text colour; colours come from your checkout branding.',
-            'In Shopify, open Settings → Checkout → Customize and add the OrderOrbit Space block where you want it.',
+            'In Shopify, open Settings → Checkout → Customize and add the Growvia block where you want it.',
             'Choose the block type in its settings. Shipping progress and free gifts follow your Progressive gifts campaign.',
         ],
     ],
@@ -122,7 +122,7 @@ return [
         'lead' => 'Cross-sells, reorder, review requests, referrals, surveys, next-order codes, images and helpful messages on the Thank You and Order Status pages. Works on every Shopify plan.',
         'steps' => [
             'Create a block and pick a layout.',
-            'In Shopify, open Settings → Checkout → Customize, switch to the Thank You or Order Status page and add the OrderOrbit Space block.',
+            'In Shopify, open Settings → Checkout → Customize, switch to the Thank You or Order Status page and add the Growvia block.',
             'Choose the block type in its settings. Survey answers appear in Analytics.',
         ],
     ],
@@ -136,7 +136,7 @@ return [
         'lead' => 'A one-click offer between payment and the Thank You page. Shoppers add it to the order they just paid for without entering their card again; if they decline, you can show a second offer.',
         'steps' => [
             'Choose when it shows, the offer and its discount, and an optional second offer.',
-            'In Shopify, open Settings → Checkout and choose OrderOrbit Space under Post-purchase page.',
+            'In Shopify, open Settings → Checkout and choose Growvia under Post-purchase page.',
             'After paying, shoppers see the offer; accepting adds it to their order and charges the same payment.',
         ],
     ],
@@ -150,7 +150,7 @@ return [
         'lead' => 'My orders, order tracking, one-tap reorder, rewards, reviews, purchased products and support, inside Shopify\'s customer accounts. Needs Shopify\'s new customer accounts.',
         'steps' => [
             'Create a block and pick a layout. Set its size, background, border and corners.',
-            'In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page and add the OrderOrbit Space account block.',
+            'In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page and add the Growvia account block.',
             'Choose the block type in its settings. Customers see it the next time they sign in.',
         ],
     ],

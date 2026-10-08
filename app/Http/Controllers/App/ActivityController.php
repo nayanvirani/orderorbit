@@ -10,12 +10,12 @@ use App\Support\Spa\Page;
 class ActivityController extends Controller
 {
     public const LABELS = [
-        'store.installed' => 'Installed OrderOrbit Space',
+        'store.installed' => 'Installed Growvia',
         'store.token_refreshed' => 'Shopify connection refreshed',
         'store.reconnected' => 'Reconnected Shopify',
         'store.capabilities_checked' => 'Re-checked store capabilities',
-        'store.uninstalled' => 'Uninstalled OrderOrbit Space',
-        'user.joined' => 'Joined OrderOrbit Space',
+        'store.uninstalled' => 'Uninstalled Growvia',
+        'user.joined' => 'Joined Growvia',
         'user.invited' => 'Invited a staff member',
         'user.invite_cancelled' => 'Cancelled an invite',
         'user.role_changed' => 'Changed a role',
@@ -31,7 +31,7 @@ class ActivityController extends Controller
         $logs = AuditLog::with('actor')->where('store_id', $store->id)->latest('id')->paginate(25);
         $logs->setCollection($logs->getCollection()->map(fn (AuditLog $log) => [
             'id' => $log->id, 'created_at' => $log->created_at,
-            'who' => $log->actor?->displayName() ?? 'OrderOrbit Space',
+            'who' => $log->actor?->displayName() ?? 'Growvia',
             'what' => self::LABELS[$log->action] ?? $log->action,
             'details' => collect($log->context ?? [])->map(fn ($v, $k) => str_replace('_', ' ', $k).': '.(is_array($v) ? implode(', ', array_map(fn ($x) => is_scalar($x) ? $x : json_encode($x), $v)) : $v))->implode(' · '),
             'request_id' => $log->request_id ? substr($log->request_id, 0, 8) : null,

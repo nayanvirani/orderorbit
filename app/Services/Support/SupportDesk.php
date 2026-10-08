@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Support tickets: merchants open them in the app (with their store's details attached), the
- * OrderOrbit team answers in the Internal Admin. Team-only notes never reach the merchant.
+ * Growvia team answers in the Internal Admin. Team-only notes never reach the merchant.
  */
 class SupportDesk
 {

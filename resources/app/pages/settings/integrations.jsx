@@ -6,7 +6,7 @@ const ok = (on, yes, no) => <s-badge tone={on ? 'success' : 'warning'}>{on ? yes
 const PLANNED = [
   ['Klaviyo', 'Send segments and events to your email flows.'],
   ['Judge.me and Yotpo', 'Real reviews in review blocks and requests.'],
-  ['Google Analytics 4', 'OrderOrbit events in GA4.'],
+  ['Google Analytics 4', 'Growvia events in GA4.'],
   ['Gorgias', 'Support tickets with order context.'],
 ];
 
@@ -24,7 +24,7 @@ export default function Integrations({ connection: c, webhooks }) {
       </s-section>
 
       <s-section heading="Webhooks · last 30 days">
-        <p className="oo-muted">Shopify tells OrderOrbit Space about these events. Each is verified with Shopify's signature and handled once.</p>
+        <p className="oo-muted">Shopify tells Growvia about these events. Each is verified with Shopify's signature and handled once.</p>
         <div className="oo-scroll">
           <table className="oo-table stack">
             <thead><tr><th>Event</th><th>Topic</th><th>Received</th><th>Last received</th><th>Status</th></tr></thead>
@@ -43,7 +43,7 @@ export default function Integrations({ connection: c, webhooks }) {
         </div>
       </s-section>
 
-      <s-section heading="OrderOrbit Space extensions">
+      <s-section heading="Growvia extensions">
         <ul className="oo-list">
           <li><strong>Theme app extension</strong>: storefront blocks and the app embed.</li>
           <li><strong>Web pixel</strong>: consent-aware analytics.</li>

@@ -22,8 +22,8 @@ class Legal
 
     /** Business details: key => [label, default, help, required before launch] */
     public const DETAILS = [
-        'legal_name' => ['Your full legal name', 'Nayan Virani', 'OrderOrbit Space is your own app, not a company, so merchants contract with you as an individual developer.', true],
-        'trading_name' => ['App name', 'OrderOrbit Space', null, false],
+        'legal_name' => ['Your full legal name', 'Nayan Virani', 'Growvia is your own app, not a company, so merchants contract with you as an individual developer.', true],
+        'trading_name' => ['App name', 'Growvia', null, false],
         'country' => ['Country you live in', '', 'Decides the governing law and courts, e.g. "India".', true],
         'city' => ['City and state (optional)', '', 'Narrows the courts, e.g. "Surat, Gujarat".', false],
         'contact_email' => ['Contact email', '', 'Shown in the policies for legal, billing and privacy questions. Use an app address (e.g. support@orderorbit.space), not a personal one. Empty: the contact page is used.', true],
@@ -92,7 +92,7 @@ class Legal
     public static function render(string $markdown, ?string $effective = null): array
     {
         $d = self::details();
-        $app = $d['trading_name'] ?: 'OrderOrbit Space';
+        $app = $d['trading_name'] ?: 'Growvia';
         $link = fn (string $email) => "[{$email}](mailto:{$email})";
         $contact = $d['contact_email'] !== '' ? $link($d['contact_email']) : '[our contact page]('.route('site.contact').')';
         $values = [

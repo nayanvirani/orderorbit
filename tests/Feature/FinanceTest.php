@@ -116,11 +116,11 @@ class FinanceTest extends TestCase
         Http::fake(function ($request) use ($p1, $p2, $usage) {
             $q = $request['query'];
             if (str_contains($q, 'project(id:')) {
-                return Http::response(['data' => ['project' => ['id' => $p1, 'name' => 'OrderOrbit', 'workspaceId' => 'w1']]]);
+                return Http::response(['data' => ['project' => ['id' => $p1, 'name' => 'Growvia', 'workspaceId' => 'w1']]]);
             }
             if (str_contains($q, 'workspace(workspaceId:')) {
                 return Http::response(['data' => ['workspace' => [
-                    'id' => 'w1', 'name' => 'My Projects', 'plan' => 'HOBBY', 'projects' => ['edges' => [['node' => ['id' => $p1, 'name' => 'OrderOrbit']], ['node' => ['id' => $p2, 'name' => 'SpeedPilot']]]],
+                    'id' => 'w1', 'name' => 'My Projects', 'plan' => 'HOBBY', 'projects' => ['edges' => [['node' => ['id' => $p1, 'name' => 'Growvia']], ['node' => ['id' => $p2, 'name' => 'SpeedPilot']]]],
                     'customer' => ['currentUsage' => 6.93, 'creditBalance' => 0, 'billingPeriod' => ['start' => '2026-09-19T03:03:04.000Z', 'end' => '2026-10-19T03:03:04.000Z'], 'invoices' => [
                         ['invoiceId' => 'in_3', 'periodStart' => '2026-09-19T03:03:04.000Z', 'periodEnd' => '2026-09-19T03:03:04.000Z', 'total' => 590, 'amountPaid' => 90, 'amountDue' => 90, 'status' => 'paid', 'hostedURL' => 'https://invoice.stripe.com/x'],
                         ['invoiceId' => 'in_1', 'periodStart' => '2026-07-31T12:15:38.000Z', 'periodEnd' => '2026-07-31T12:15:38.000Z', 'total' => 500, 'amountPaid' => 500, 'amountDue' => 500, 'status' => 'paid', 'hostedURL' => null],
@@ -140,7 +140,7 @@ class FinanceTest extends TestCase
             return Http::response(['errors' => [['message' => 'Not Authorized']]]);
         });
         $admin = $this->admin();
-        $this->actingAs($admin)->post('/admin/finance/railway', ['token' => 'secret-token'])->assertRedirect()->assertSessionHas('status', 'Railway connected: costs of the OrderOrbit project.');
+        $this->actingAs($admin)->post('/admin/finance/railway', ['token' => 'secret-token'])->assertRedirect()->assertSessionHas('status', 'Railway connected: costs of the Growvia project.');
         $this->assertStringNotContainsString('secret-token', (string) \Illuminate\Support\Facades\DB::table('platform_settings')->where('key', 'railway')->value('value'), 'The token is stored encrypted.');
         Finance::save([['name' => 'Railway (project base plan)', 'amount' => 5, 'from' => '2026-01', 'until' => null]], []);
 
@@ -153,7 +153,7 @@ class FinanceTest extends TestCase
         $this->assertSame(1.73, $oct['expenses']);
         $this->assertSame(['Railway (project base plan)'], array_column($oct['skipped'], 'name'), 'A typed-in Railway cost is not counted twice.');
 
-        $this->actingAs($admin)->get('/admin/finance')->assertOk()->assertSee('OrderOrbit')->assertSee('25%')->assertSee('Estimate')->assertSee('SpeedPilot');
+        $this->actingAs($admin)->get('/admin/finance')->assertOk()->assertSee('Growvia')->assertSee('25%')->assertSee('Estimate')->assertSee('SpeedPilot');
         $this->actingAs($admin)->get('/admin/finance?month=2026-09')->assertOk()->assertSee('25% of the Sep 19 invoice', false)->assertSee('$0.23');
         Http::assertSent(fn ($r) => $r->hasHeader('Authorization', 'Bearer secret-token'));
 

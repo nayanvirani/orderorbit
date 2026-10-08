@@ -167,7 +167,7 @@ export function RouterProvider({ initial, children }) {
       if (id !== seq.current) return { ok: false };
       return await handle(res, data, url, opts);
     } catch (e) {
-      toast('We couldn\'t reach OrderOrbit Space. Check your connection and try again.', true);
+      toast('We couldn\'t reach Growvia. Check your connection and try again.', true);
       return { ok: false };
     } finally {
       if (id === seq.current) {

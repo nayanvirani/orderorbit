@@ -16,7 +16,7 @@ export default function CroOverview({ counts, notPlaced, recent, activeLimit, ac
 
       {notPlaced > 0 && (
         <s-banner tone="warning">
-          <s-paragraph>{notPlaced} published {plural('experience', notPlaced)} {notPlaced === 1 ? 'isn\'t' : 'aren\'t'} placed in your theme yet. Add the OrderOrbit Space block in the Theme Editor.</s-paragraph>
+          <s-paragraph>{notPlaced} published {plural('experience', notPlaced)} {notPlaced === 1 ? 'isn\'t' : 'aren\'t'} placed in your theme yet. Add the Growvia block in the Theme Editor.</s-paragraph>
           <s-button slot="secondary-actions" href={appUrl(route('app.cro.experiences.index', { status: 'not_placed' }))}>View widgets</s-button>
         </s-banner>
       )}

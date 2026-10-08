@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 use Throwable;
 
 /**
- * Per-store access set by the OrderOrbit team: a complimentary plan, features switched on or off
+ * Per-store access set by the Growvia team: a complimentary plan, features switched on or off
  * on top of the plan and limit overrides; plus one-click support actions.
  */
 class StoreAccessController extends Controller

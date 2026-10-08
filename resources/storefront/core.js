@@ -69,7 +69,7 @@
     var detail = Object.assign({ event: 'orderorbit:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, exp.xv && { experiment_id: exp.x.id, variant: exp.xv }, extra || {});
     events.push(detail);
     try { document.dispatchEvent(new CustomEvent('orderorbit:event', { detail: detail })); } catch (e) { /* old browsers */ }
-    // Shopify's analytics bus: the OrderOrbit Space pixel records it (with the shopper's consent).
+    // Shopify's analytics bus: the Growvia pixel records it (with the shopper's consent).
     try { if (window.Shopify && Shopify.analytics && Shopify.analytics.publish) Shopify.analytics.publish('orderorbit_event', detail); } catch (e) { /* not a storefront */ }
   }
 
@@ -289,7 +289,7 @@
       } else if (state.ctx.designMode) {
         // Only merchants in the Theme Editor see this; shoppers see nothing.
         el.hidden = false;
-        el.innerHTML = '<div class="oo-editor-note">OrderOrbit Space: nothing published matches this block yet.</div>';
+        el.innerHTML = '<div class="oo-editor-note">Growvia: nothing published matches this block yet.</div>';
       } else {
         el.hidden = true;
       }

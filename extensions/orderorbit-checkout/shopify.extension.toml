@@ -1,10 +1,10 @@
-# OrderOrbit Space blocks for Shopify checkout, Thank You and Order Status.
+# Growvia blocks for Shopify checkout, Thank You and Order Status.
 # The app publishes live blocks to a shop metafield ($app:checkout); this extension renders them with
 # Shopify's own components, so they follow the store's checkout branding.
 api_version = "2026-07"
 
 [[extensions]]
-name = "OrderOrbit Space"
+name = "Growvia"
 handle = "orderorbit-checkout"
 type = "ui_extension"
 uid = "cd61b023-7839-5a03-51c7-cf3fe513464d43985708"
@@ -27,7 +27,7 @@ target = "customer-account.order-status.block.render"
 [extensions.capabilities]
 api_access = true
 
-# The blocks published by OrderOrbit Space.
+# The blocks published by Growvia.
 [[extensions.metafields]]
 namespace = "$app"
 key = "checkout"
@@ -37,7 +37,7 @@ key = "checkout"
   key = "block"
   type = "single_line_text_field"
   name = "Block type"
-  description = "Which OrderOrbit Space block to show here. Checkout: checkout-*. Thank You and Order Status: ty-*."
+  description = "Which Growvia block to show here. Checkout: checkout-*. Thank You and Order Status: ty-*."
     [[extensions.settings.fields.validations]]
     name = "choices"
     value = "[\"checkout-reviews\", \"checkout-countdown\", \"checkout-shipping\", \"checkout-gift\", \"checkout-promo\", \"checkout-trust\", \"checkout-upsell\", \"checkout-addon\", \"checkout-image\", \"ty-cross-sell\", \"ty-reorder\", \"ty-review\", \"ty-referral\", \"ty-survey\", \"ty-discount\", \"ty-message\", \"ty-image\"]"
@@ -46,4 +46,4 @@ key = "checkout"
   key = "experience_id"
   type = "single_line_text_field"
   name = "Widget ID (optional)"
-  description = "Show one specific block. Copy its ID from the block's page in OrderOrbit Space."
+  description = "Show one specific block. Copy its ID from the block's page in Growvia."

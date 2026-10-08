@@ -1,4 +1,4 @@
-/* OrderOrbit Space · sticky add to cart. Appears once the theme's own buy button scrolls out of
+/* Growvia · sticky add to cart. Appears once the theme's own buy button scrolls out of
    view. A tap scrolls back to the product form (so shoppers can pick options) or uses the theme's
    own button; the theme keeps its variant, quantity, selling plan and cart drawer logic. */
 (function () {

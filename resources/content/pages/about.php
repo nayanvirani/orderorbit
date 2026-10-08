@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'seo_title' => 'About | OrderOrbit Space',
-    'seo_description' => 'OrderOrbit Space helps Shopify stores raise order value with offers that respect the theme, measure honestly and stay in the merchant\'s control.',
+    'seo_title' => 'About | Growvia',
+    'seo_description' => 'Growvia helps Shopify stores raise order value with offers that respect the theme, measure honestly and stay in the merchant\'s control.',
     'eyebrow' => 'About',
     'title' => 'Growth tools that work with your store, *not against it.*',
     'paragraphs' => [
-        'OrderOrbit Space started with a simple frustration: most Shopify growth apps feel bolted on. They fight the theme\'s add-to-cart, ask shoppers to type discount codes, and leave merchants guessing whether they made any money.',
+        'Growvia started with a simple frustration: most Shopify growth apps feel bolted on. They fight the theme\'s add-to-cart, ask shoppers to type discount codes, and leave merchants guessing whether they made any money.',
         'Offers should look like part of your store, apply their prices where Shopify applies prices — at checkout — and report honestly on what they earned. One well-built app, with one design and one set of numbers, beats a stack of add-ons.',
     ],
     'principles_title' => 'What we won\'t compromise on',

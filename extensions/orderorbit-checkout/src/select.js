@@ -1,5 +1,5 @@
 /*
- * Pure helpers for the OrderOrbit Space checkout blocks (no Shopify APIs, so they can be tested
+ * Pure helpers for the Growvia checkout blocks (no Shopify APIs, so they can be tested
  * in Node): which published block to show, and progress toward a Progressive gifts milestone.
  */
 

@@ -14,7 +14,7 @@ return [
         'icon' => 'rocket',
         'sections' => [
             'install' => ['Install and connect', [
-                ['p', 'Install OrderOrbit Space from the Shopify App Store and approve the permissions. The app opens inside your Shopify admin. It reads your products and orders, adds blocks to your theme and checkout, and connects a consent-aware analytics pixel automatically.'],
+                ['p', 'Install Growvia from the Shopify App Store and approve the permissions. The app opens inside your Shopify admin. It reads your products and orders, adds blocks to your theme and checkout, and connects a consent-aware analytics pixel automatically.'],
                 ['note', 'If the app later asks for new permissions (for example after an update), open it once and approve them. Settings → Store shows any missing permissions.'],
             ]],
             'plan' => ['Choose a plan', [
@@ -35,7 +35,7 @@ return [
                 ]],
             ]],
             'embed' => ['Turn on the app embed', [
-                ['p', 'In Shopify go to **Online Store → Themes → Customize → App embeds** and turn on **OrderOrbit Space**. The embed loads the small storefront runtime, places widgets set to appear above or below the add-to-cart button, and shows site-wide widgets such as Sales pop and sticky add to cart.'],
+                ['p', 'In Shopify go to **Online Store → Themes → Customize → App embeds** and turn on **Growvia**. The embed loads the small storefront runtime, places widgets set to appear above or below the add-to-cart button, and shows site-wide widgets such as Sales pop and sticky add to cart.'],
                 ['note', 'Theme blocks need an Online Store 2.0 theme. The dashboard warns you if your theme doesn\'t support app blocks.'],
             ]],
             'next' => ['Where to go next', [
@@ -123,7 +123,7 @@ return [
                     ['Content', 'Text, products, deadlines and offers.'],
                     ['Design', 'Colours, corners, border, spacing, fonts, mobile and desktop visibility, and optional scoped custom CSS.'],
                     ['Behavior and targeting', 'Animation, dismissible, priority; page types, products, collections, cart value, device, new or returning shoppers, countries, UTM, schedule and segments.'],
-                    ['Publish and place', 'Add the OrderOrbit Space block in the Theme Editor. Widgets set to appear above or below add to cart are placed automatically by the app embed.'],
+                    ['Publish and place', 'Add the Growvia block in the Theme Editor. Widgets set to appear above or below add to cart are placed automatically by the app embed.'],
                 ]],
                 ['note', 'Countdowns only count to real deadlines; they never reset per visitor to fake urgency.'],
             ]],
@@ -148,11 +148,11 @@ return [
                     ['Create', 'CRO → Checkout blocks (or Thank You & Order Status) → create a block and pick a layout.'],
                     ['Style it', 'Width, height, background, border, corners and text tone. Shopify doesn\'t allow custom colours in checkout, so colours come from your checkout branding.'],
                     ['Publish', 'The app publishes the block for the checkout extension.'],
-                    ['Place it', 'In Shopify open **Settings → Checkout → Customize**, choose the page (Checkout, Thank You or Order Status), add the **OrderOrbit Space** block and set its type. To show one specific block, paste its Widget ID.'],
+                    ['Place it', 'In Shopify open **Settings → Checkout → Customize**, choose the page (Checkout, Thank You or Order Status), add the **Growvia** block and set its type. To show one specific block, paste its Widget ID.'],
                 ]],
             ]],
             'postpurchase' => ['Post-purchase offer', [
-                ['p', 'Create the funnel under CRO → Post-purchase, choose when it shows (products, order value), the offer and its discount, and an optional second offer if declined. Then in Shopify choose OrderOrbit Space under **Settings → Checkout → Post-purchase page**. Accepting adds the item to the paid order and charges the same payment method.'],
+                ['p', 'Create the funnel under CRO → Post-purchase, choose when it shows (products, order value), the offer and its discount, and an optional second offer if declined. Then in Shopify choose Growvia under **Settings → Checkout → Post-purchase page**. Accepting adds the item to the paid order and charges the same payment method.'],
             ]],
             'measure' => ['Measure and test', [
                 ['p', 'Blocks record views and clicks; survey answers appear on the survey\'s page. Checkout and Thank You blocks can be A/B tested (Thank You blocks by click-through rate).'],
@@ -182,7 +182,7 @@ return [
             'place' => ['Place a block', [
                 ['steps', [
                     ['Create and publish', 'CRO → Customer accounts → create a block, pick a layout, set its content and style, publish.'],
-                    ['Add it in Shopify', 'Settings → Checkout → Customize, switch to the **Orders**, **Profile** or **Order status** page, add the **OrderOrbit Space account** block and choose its type.'],
+                    ['Add it in Shopify', 'Settings → Checkout → Customize, switch to the **Orders**, **Profile** or **Order status** page, add the **Growvia account** block and choose its type.'],
                 ]],
                 ['note', 'Each block reads the signed-in customer\'s own orders, so everyone sees only their own data.'],
             ]],
@@ -196,7 +196,7 @@ return [
         'sections' => [
             'parts' => ['Triggers, conditions and actions', [
                 ['table', ['Part', 'Options'], [
-                    ['Triggers', 'Order created, paid, fulfilled, delivered, cancelled; refund created; customer created; customer tag added; product purchased; OrderOrbit events'],
+                    ['Triggers', 'Order created, paid, fulfilled, delivered, cancelled; refund created; customer created; customer tag added; product purchased; Growvia events'],
                     ['Conditions', 'Order total, quantity, product, variant, SKU, collection, new or returning, customer tag, country and province, shipping and payment method, fulfillment status, previous orders, LTV, days since order, ordered again, event properties, customer segment'],
                     ['Actions', 'Prepare an email, notify your team, create a task, add or remove order and customer tags, create a single-use discount, send a webhook, start another workflow'],
                     ['Flow', 'Waits (minutes, hours, days) and if/else branches'],
@@ -223,7 +223,7 @@ return [
         'icon' => 'chart',
         'sections' => [
             'collect' => ['What is collected', [
-                ['p', 'A Shopify web pixel records, only for shoppers who allow analytics: sessions, Shopify\'s storefront events (pages, products, collections, search, cart, checkout, payment, purchase) and every OrderOrbit Space view, click, add to cart and reward. Each event carries an anonymous visitor id, session, device, page type and traffic source (UTM tags, click ids or referrer). No names, emails or addresses are stored.'],
+                ['p', 'A Shopify web pixel records, only for shoppers who allow analytics: sessions, Shopify\'s storefront events (pages, products, collections, search, cart, checkout, payment, purchase) and every Growvia view, click, add to cart and reward. Each event carries an anonymous visitor id, session, device, page type and traffic source (UTM tags, click ids or referrer). No names, emails or addresses are stored.'],
             ]],
             'reports' => ['Reports', [
                 ['table', ['Report', 'Answers', 'Plan'], [
@@ -262,7 +262,7 @@ return [
             ]],
             'where' => ['Use segments everywhere', [
                 ['list', ['Widget targeting: Only these segments.', 'A/B test audiences.', 'Workflow condition: Customer segment (checks the order\'s customer).']],
-                ['note', 'Segments are worked out in the shopper\'s browser from their own account and visit; nothing about them is sent to OrderOrbit Space. Which targeting options you can use depends on your plan.'],
+                ['note', 'Segments are worked out in the shopper\'s browser from their own account and visit; nothing about them is sent to Growvia. Which targeting options you can use depends on your plan.'],
             ]],
         ],
     ],
@@ -272,7 +272,7 @@ return [
         'summary' => 'Set up, run and read A/B and A/B/C tests, and the statistics behind a winner.',
         'icon' => 'split',
         'h1' => 'Run A/B tests *you can trust.*',
-        'lead' => 'Everything about A/B and A/B/C testing in OrderOrbit Space: what you can test, each setup step, how visitors are split, how to read results and when a winner is real.',
+        'lead' => 'Everything about A/B and A/B/C testing in Growvia: what you can test, each setup step, how visitors are split, how to read results and when a winner is real.',
         'meta' => 'Available on the Growth and Scale plans · In the app: **A/B tests** in the left menu',
         'sections' => [
             'overview' => [
@@ -284,7 +284,7 @@ return [
                     ],
                     [
                         'p',
-                        'In OrderOrbit Space a test has a **control (A)**, which is your widget exactly as published, and one or two **variants (B, and optionally C)**. Each visitor is placed in one of them and always sees the same one. When the test has enough days, visitors and conversions, the app tells you whether a variant really did better, and you can apply it to everyone in one click.',
+                        'In Growvia a test has a **control (A)**, which is your widget exactly as published, and one or two **variants (B, and optionally C)**. Each visitor is placed in one of them and always sees the same one. When the test has enough days, visitors and conversions, the app tells you whether a variant really did better, and you can apply it to everyone in one click.',
                     ],
                     [
                         'list',
@@ -339,7 +339,7 @@ return [
                         [
                             '**Be on Growth or Scale.** You can build a test on any plan, but launching needs Growth or Scale.',
                             '**Publish the widget** you want to test, and make sure it shows on your store (its block is placed in the Theme Editor, or in Shopify\'s checkout editor for checkout blocks).',
-                            '**Check that Analytics is connected** (Analytics in the app). Tests are measured with the OrderOrbit Space web pixel.',
+                            '**Check that Analytics is connected** (Analytics in the app). Tests are measured with the Growvia web pixel.',
                             '**Make sure there\'s enough traffic.** A winner needs at least 1,000 visitors and 100 conversions in every variant. See the [sample size table](#practices) to estimate how long that takes for your store.',
                             '**Write down one idea to test**, and why you think it will help. Testing one change at a time makes the result easy to act on.',
                         ],
@@ -444,7 +444,7 @@ return [
                 [
                     [
                         'p',
-                        'Checkout, Thank You and Order Status blocks are tested inside Shopify\'s checkout by the OrderOrbit Space checkout extension, wherever the OrderOrbit Space block for that type is placed in the checkout editor.',
+                        'Checkout, Thank You and Order Status blocks are tested inside Shopify\'s checkout by the Growvia checkout extension, wherever the Growvia block for that type is placed in the checkout editor.',
                     ],
                     [
                         'list',
@@ -529,7 +529,7 @@ return [
             'method' => [
                 'The statistical method',
                 [
-                    ['p', 'OrderOrbit Space uses a fixed-horizon, frequentist test, the standard approach for e-commerce experiments:'],
+                    ['p', 'Growvia uses a fixed-horizon, frequentist test, the standard approach for e-commerce experiments:'],
                     [
                         'table',
                         ['Metric', 'Test'],
@@ -660,7 +660,7 @@ Lift:        (B − A) / A,  shown with its confidence interval',
 
     'developers' => [
         'title' => 'Developers: theme callbacks',
-        'summary' => 'Run your own theme code when shoppers use an OrderOrbit Space offer.',
+        'summary' => 'Run your own theme code when shoppers use a Growvia offer.',
         'icon' => 'tool',
         'sections' => [
             'hooks' => ['Callbacks', [
@@ -680,7 +680,7 @@ Lift:        (B − A) / A,  shown with its confidence interval',
             'drawer' => ['Open your cart drawer', [
                 ['p', 'Use afterAddToCart, redraw your theme\'s drawer and return false so the shopper stays on the page. For Dawn-based themes:'],
                 ['code', "window.OrderOrbitHooks = {\n  afterAddToCart: async function (detail) {\n    const drawer = document.querySelector('cart-drawer');\n    if (!drawer) return;\n    const ids = drawer.getSectionsToRender().map((s) => s.id);\n    const res = await fetch('/?sections=' + ids.join(','));\n    drawer.renderContents({ sections: await res.json() });\n    return false;\n  }\n};"],
-                ['note', 'OrderOrbit Space never opens or intercepts your cart drawer on its own; callbacks are how your theme takes over.'],
+                ['note', 'Growvia never opens or intercepts your cart drawer on its own; callbacks are how your theme takes over.'],
             ]],
         ],
     ],

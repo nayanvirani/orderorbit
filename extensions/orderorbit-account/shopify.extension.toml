@@ -1,11 +1,11 @@
-# OrderOrbit Space blocks for Shopify's customer accounts: My orders, Track order, Reorder,
+# Growvia blocks for Shopify's customer accounts: My orders, Track order, Reorder,
 # My rewards, My reviews, My products and Support. The app publishes live blocks to a shop
 # metafield ($app:account) that this extension reads through the Customer Account API, together
 # with the customer's own orders. Kept separate from the theme blocks and checkout extension.
 api_version = "2026-07"
 
 [[extensions]]
-name = "OrderOrbit Space account"
+name = "Growvia account"
 handle = "orderorbit-account"
 type = "ui_extension"
 uid = "91110eaa-ee9b-73fb-5082-960e02f83d521bc848a5"
@@ -43,7 +43,7 @@ api_access = true
   key = "block"
   type = "single_line_text_field"
   name = "Block type"
-  description = "Which OrderOrbit Space account block to show here."
+  description = "Which Growvia account block to show here."
     [[extensions.settings.fields.validations]]
     name = "choices"
     value = "[\"account-orders\", \"account-tracking\", \"account-reorder\", \"account-rewards\", \"account-reviews\", \"account-products\", \"account-support\"]"
@@ -52,4 +52,4 @@ api_access = true
   key = "experience_id"
   type = "single_line_text_field"
   name = "Widget ID (optional)"
-  description = "Show one specific block. Copy its ID from the block's page in OrderOrbit Space."
+  description = "Show one specific block. Copy its ID from the block's page in Growvia."

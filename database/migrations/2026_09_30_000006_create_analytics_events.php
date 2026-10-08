@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('web_pixel_id')->nullable();
         });
 
-        // Storefront analytics from the OrderOrbit Space web pixel (no personal data).
+        // Storefront analytics from the Growvia web pixel (no personal data).
         Schema::create('analytics_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('store_id')->constrained()->cascadeOnDelete();

@@ -1,4 +1,4 @@
-/* OrderOrbit Space · bundles: free gift tiles and add-on upsells (loaded only for bundles that use them). */
+/* Growvia · bundles: free gift tiles and add-on upsells (loaded only for bundles that use them). */
 (function () {
   var h = OrderOrbit.h;
   var money = function (v, ctx) { return h.esc(h.money(v, ctx.currency)); };

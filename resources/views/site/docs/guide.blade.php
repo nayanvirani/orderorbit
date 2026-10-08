@@ -5,7 +5,7 @@
 @php($prev = $i > 0 ? $keys[$i - 1] : null)
 @php($next = $i < count($keys) - 1 ? $keys[$i + 1] : null)
 
-@section('title', \App\Support\SiteContent::plain($guide['title']).' Guide | OrderOrbit Space Docs')
+@section('title', \App\Support\SiteContent::plain($guide['title']).' Guide | Growvia Docs')
 @section('description', \App\Support\SiteContent::plain($guide['summary']))
 
 @push('head')

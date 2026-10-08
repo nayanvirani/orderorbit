@@ -41,7 +41,7 @@ export default function FunnelForm({ funnel, action, eventGroups, windows, exper
           </li>
         ))}
       </ol>
-      <p className="oo-muted oo-small">"Any widget" applies to OrderOrbit events; pick one to follow a single bundle, gift or upsell.</p>
+      <p className="oo-muted oo-small">"Any widget" applies to Growvia events; pick one to follow a single bundle, gift or upsell.</p>
       <s-button type="submit" variant="primary" loading={busy || undefined}>{funnel ? 'Save funnel' : 'Create funnel'}</s-button>
     </Form>
   );

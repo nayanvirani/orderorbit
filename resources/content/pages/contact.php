@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'seo_title' => 'Contact | OrderOrbit Space',
-    'seo_description' => 'Questions about OrderOrbit Space, pricing or partnerships? We reply within one business day.',
+    'seo_title' => 'Contact | Growvia',
+    'seo_description' => 'Questions about Growvia, pricing or partnerships? We reply within one business day.',
     'eyebrow' => 'Contact',
     'title' => 'Talk to *a real person.*',
     'lead' => 'Questions before installing, help with setup, billing or a partnership idea — send a message and you\'ll get a reply within one business day.',

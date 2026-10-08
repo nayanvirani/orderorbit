@@ -1,5 +1,5 @@
 /*
- * OrderOrbit Space blocks for Shopify's customer accounts. The merchant places this block on the
+ * Growvia blocks for Shopify's customer accounts. The merchant places this block on the
  * Orders, Profile or Order status page in the customer accounts editor and picks a block type;
  * the live configuration and the customer's orders come from the Customer Account API.
  */

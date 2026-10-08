@@ -194,7 +194,7 @@ function SettingsPanel() {
         )}
         <Row>
           <F path="settings.style" label="Style" type="select" options={{ cards: 'Cards', compact: 'Compact list', fbt: 'Frequently bought together', checklist: 'Checklist' }} />
-          <F path="settings.position" label="Bundle position" type="select" options={{ above_atc: 'Above the add to cart button', below_atc: 'Below the add to cart button', block: 'Only where I place the block' }} help="Above/below needs the OrderOrbit app embed turned on in the Theme Editor." />
+          <F path="settings.position" label="Bundle position" type="select" options={{ above_atc: 'Above the add to cart button', below_atc: 'Below the add to cart button', block: 'Only where I place the block' }} help="Above/below needs the Growvia app embed turned on in the Theme Editor." />
         </Row>
         <Row>
           <F path="settings.button_text" label="Button text" max={40} />

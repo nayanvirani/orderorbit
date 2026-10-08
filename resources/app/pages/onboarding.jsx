@@ -17,8 +17,8 @@ export default function Onboarding({ goals, goal, steps, step, done, store, miss
   const to = (n) => appUrl(route('app.onboarding', { step: n }));
 
   return (
-    <Page heading="Welcome to OrderOrbit Space">
-      <Hero eyebrow="Get started" title="Welcome to <em>OrderOrbit Space.</em>" lead="Eight short steps from connecting your store to seeing your first results. You can leave at any time and pick up where you left off." />
+    <Page heading="Welcome to Growvia">
+      <Hero eyebrow="Get started" title="Welcome to <em>Growvia.</em>" lead="Eight short steps from connecting your store to seeing your first results. You can leave at any time and pick up where you left off." />
       <div className="oo-steps" aria-label="Onboarding progress">
         {steps.map((label, i) => {
           const n = i + 1;

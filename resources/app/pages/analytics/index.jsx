@@ -16,7 +16,7 @@ export default function AnalyticsOverview(props) {
 
       {!connected ? (
         <s-banner tone="warning" heading="Analytics isn't connected yet">
-          <s-paragraph>{error ? `Shopify said: ${error}` : 'Connect the OrderOrbit Space pixel to start recording visits and orders.'} If the app asks for permissions, approve them and try again.</s-paragraph>
+          <s-paragraph>{error ? `Shopify said: ${error}` : 'Connect the Growvia pixel to start recording visits and orders.'} If the app asks for permissions, approve them and try again.</s-paragraph>
           <ActionButton slot="secondary-actions" url={route('app.analytics.connect')}>Connect analytics</ActionButton>
         </s-banner>
       ) : !s.last_event_at && (
@@ -27,7 +27,7 @@ export default function AnalyticsOverview(props) {
 
       <AnalyticsNav {...props} locked={false} />
 
-      <s-section heading={`OrderOrbit Space impact · vs previous ${s.days} days`}>
+      <s-section heading={`Growvia impact · vs previous ${s.days} days`}>
         <div className="ob-kpis">
           <Kpi label="Revenue from offers" icon="sparkle" tone="analytics" value={m(s.influenced_revenue)} trend={t.influenced_revenue} sub="Lines added by bundles, gifts and upsells" spark={daily.map(([, v]) => v.influenced)} />
           <Kpi label="Orders with an offer" icon="cart" tone="bundles" value={number(s.influenced_orders)} trend={t.influenced_orders} sub={s.orders ? `${Math.round((s.influenced_orders / s.orders) * 100)}% of orders` : 'No orders yet'} />

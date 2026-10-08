@@ -6,7 +6,7 @@ import { PlanNote, WorkflowStatus } from './_shared.jsx';
 export default function Automation({ workflows, stats, automationOn, docsUrl }) {
   return (
     <Page heading="Automation">
-      <Hero eyebrow="Automation" title="Follow up <em>automatically.</em>" lead="Workflows react to orders, customers and OrderOrbit events: wait, check conditions, then tag, create codes, send emails, notify your team or call a webhook." icon="bolt" tone="default">
+      <Hero eyebrow="Automation" title="Follow up <em>automatically.</em>" lead="Workflows react to orders, customers and Growvia events: wait, check conditions, then tag, create codes, send emails, notify your team or call a webhook." icon="bolt" tone="default">
         <s-button variant="primary" href={appUrl(route('app.automation.templates'))}>Start from a template</s-button>
         <ActionButton url={route('app.automation.store')}>Blank workflow</ActionButton>
         <s-button href={docsUrl} target="_blank" variant="tertiary">View documentation</s-button>

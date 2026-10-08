@@ -1,10 +1,10 @@
 {%- comment -%}
-  Published experiences (app-owned metafield written by OrderOrbit) and the minimal
+  Published experiences (app-owned metafield written by Growvia) and the minimal
   page context the runtime needs for targeting. No names, emails or addresses are
   output. For a signed-in customer, segments (Audiences) also use their order count,
   total spent, tags, last order date and recently purchased products; this only
   appears on that customer's own pages. Cart lines carry only product, variant,
-  quantity, price and the OrderOrbit offer that added them.
+  quantity, price and the Growvia offer that added them.
   Duplicates across several blocks are harmless; the runtime reads the first.
 {%- endcomment -%}
 <script type="application/json" data-oo-data>{{ app.metafields.orderorbit.experiences.value | json }}</script>

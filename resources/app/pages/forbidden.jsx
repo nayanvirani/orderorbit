@@ -7,7 +7,7 @@ export default function Forbidden({ message, removed }) {
     <Page heading={removed ? 'Access removed' : 'Permission needed'}>
       <s-section>
         {removed ? (
-          <s-paragraph>Your access to OrderOrbit Space for this store was removed. Ask a store owner to restore it in Settings → Users &amp; roles.</s-paragraph>
+          <s-paragraph>Your access to Growvia for this store was removed. Ask a store owner to restore it in Settings → Users &amp; roles.</s-paragraph>
         ) : (
           <>
             <s-paragraph>{message || 'You don\'t have permission to perform this action.'}</s-paragraph>

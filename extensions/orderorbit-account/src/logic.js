@@ -1,5 +1,5 @@
 /*
- * Pure helpers for the OrderOrbit Space account blocks (no Shopify APIs, so they can be tested in
+ * Pure helpers for the Growvia account blocks (no Shopify APIs, so they can be tested in
  * Node): which block to show, reward tiers, purchased products, reorder links and box styles.
  */
 

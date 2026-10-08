@@ -1,11 +1,11 @@
 <?php
 
 return [
-    'seo_title' => 'How It Works | OrderOrbit Space',
-    'seo_description' => 'Install, pick a template, make it yours, publish and measure. How OrderOrbit Space works on your Shopify store.',
+    'seo_title' => 'How It Works | Growvia',
+    'seo_description' => 'Install, pick a template, make it yours, publish and measure. How Growvia works on your Shopify store.',
     'eyebrow' => 'How it works',
     'title' => 'Five steps from install *to measured results.*',
-    'lead' => 'OrderOrbit Space follows one simple loop: create an offer, publish it, and see what it earns. No theme code, no discount codes, no guesswork.',
+    'lead' => 'Growvia follows one simple loop: create an offer, publish it, and see what it earns. No theme code, no discount codes, no guesswork.',
     'steps' => [
         ['Install from the Shopify App Store', 'Approve the permissions and choose a plan. Billing runs through your Shopify invoice, so there\'s no separate card to add.'],
         ['Pick a feature and a template', 'Choose what you want to do — a quantity-break bundle, a gift bar, a countdown — then pick a ready-made layout. You can preview any template with one of your own products.'],

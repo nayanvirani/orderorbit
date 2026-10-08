@@ -166,11 +166,11 @@ class ExperienceController extends Controller
         }
         $surface = $type['surface'];
         $notPlacedText = match (true) {
-            $surface === 'global' => 'Shoppers can\'t see this yet. Turn on the OrderOrbit Space app embed in the Theme Editor (App embeds), then save.',
-            $surface === 'post-purchase' => 'Shoppers can\'t see this yet. In Shopify, open Settings → Checkout and choose OrderOrbit Space under Post-purchase page.',
-            $surface === 'account' => 'Customers can\'t see this yet. In Shopify\'s customer accounts editor, add the OrderOrbit Space account block and set its type to “'.$experience->type.'”.',
-            in_array($surface, Schema::CHECKOUT_SURFACES, true) => 'Shoppers can\'t see this yet. In Shopify\'s checkout editor, add the OrderOrbit Space block and set its type to “'.$experience->type.'”.',
-            default => 'Shoppers can\'t see this yet. Add the OrderOrbit Space block in the Theme Editor and choose “'.$type['singular'].'”.',
+            $surface === 'global' => 'Shoppers can\'t see this yet. Turn on the Growvia app embed in the Theme Editor (App embeds), then save.',
+            $surface === 'post-purchase' => 'Shoppers can\'t see this yet. In Shopify, open Settings → Checkout and choose Growvia under Post-purchase page.',
+            $surface === 'account' => 'Customers can\'t see this yet. In Shopify\'s customer accounts editor, add the Growvia account block and set its type to “'.$experience->type.'”.',
+            in_array($surface, Schema::CHECKOUT_SURFACES, true) => 'Shoppers can\'t see this yet. In Shopify\'s checkout editor, add the Growvia block and set its type to “'.$experience->type.'”.',
+            default => 'Shoppers can\'t see this yet. Add the Growvia block in the Theme Editor and choose “'.$type['singular'].'”.',
         };
         $salesPop = null;
         if ($experience->type === 'sales-pop') {
@@ -214,7 +214,7 @@ class ExperienceController extends Controller
                 'id' => $v->id, 'version' => $v->version, 'published_at' => $v->published_at, 'by' => $v->author?->displayName(), 'note' => $v->change_note, 'live' => $v->id === $experience->published_version_id,
             ]) : [],
             'activity' => $tab === 'history' ? AuditLog::with('actor')->where('store_id', $store->id)->where('entity_type', 'Experience')->where('entity_id', $experience->id)->latest('id')->limit(30)->get()->map(fn ($l) => [
-                'id' => $l->id, 'who' => $l->actor?->displayName() ?? 'OrderOrbit Space', 'what' => ($labels[$l->action] ?? $l->action).(isset($l->context['version']) ? ' v'.$l->context['version'] : ''), 'at' => $l->created_at,
+                'id' => $l->id, 'who' => $l->actor?->displayName() ?? 'Growvia', 'what' => ($labels[$l->action] ?? $l->action).(isset($l->context['version']) ? ' v'.$l->context['version'] : ''), 'at' => $l->created_at,
             ]) : [],
         ]);
     }
@@ -471,11 +471,11 @@ class ExperienceController extends Controller
             $notes[] = 'Savings apply automatically in cart and checkout. Publishing creates a Shopify automatic discount for this '.e(lower_label($type['singular'])).'; pausing or archiving it removes the discount. You\'ll see it under <strong>Discounts</strong> in Shopify admin.';
         }
         $notes[] = match (true) {
-            $type['surface'] === 'post-purchase' => 'After publishing, open Shopify\'s <strong>Settings → Checkout</strong> and choose <strong>OrderOrbit Space</strong> under Post-purchase page. Shopify shows this page after payments that support it (cards, Shop Pay and others); the offer is added to the same order and charged to the same payment.',
-            $type['surface'] === 'account' => 'After publishing, open Shopify\'s customer accounts editor (Settings → Checkout → Customize, then the Orders, Profile or Order status page), add the <strong>OrderOrbit Space account</strong> block and set its type to '.$code($experience->type).'. To show this exact one, put '.$code($experience->handle).' in its Widget ID setting.'.($experience->type === 'account-reorder' ? ' "Buy again" in each order\'s menu appears on its own.' : ''),
-            in_array($type['surface'], Schema::CHECKOUT_SURFACES, true) => 'After publishing, open Shopify\'s checkout editor'.($type['surface'] === 'thank-you' ? ' on the Thank You or Order Status page' : '').', add the <strong>OrderOrbit Space</strong> block and set its type to '.$code($experience->type).'. To show this exact one, put '.$code($experience->handle).' in its Widget ID setting.',
-            $type['surface'] === 'global' => 'No theme block needed: it shows on every page while the <strong>OrderOrbit Space app embed</strong> is on (Theme Editor → App embeds). Pops use your store\'s real recent orders — product, country and time only, never names — so it starts showing once orders come in.',
-            default => 'After publishing, add the <strong>OrderOrbit Space block</strong> in the Theme Editor and pick “'.e($type['singular']).'”, or pin it with ID '.$code($experience->handle).'.',
+            $type['surface'] === 'post-purchase' => 'After publishing, open Shopify\'s <strong>Settings → Checkout</strong> and choose <strong>Growvia</strong> under Post-purchase page. Shopify shows this page after payments that support it (cards, Shop Pay and others); the offer is added to the same order and charged to the same payment.',
+            $type['surface'] === 'account' => 'After publishing, open Shopify\'s customer accounts editor (Settings → Checkout → Customize, then the Orders, Profile or Order status page), add the <strong>Growvia account</strong> block and set its type to '.$code($experience->type).'. To show this exact one, put '.$code($experience->handle).' in its Widget ID setting.'.($experience->type === 'account-reorder' ? ' "Buy again" in each order\'s menu appears on its own.' : ''),
+            in_array($type['surface'], Schema::CHECKOUT_SURFACES, true) => 'After publishing, open Shopify\'s checkout editor'.($type['surface'] === 'thank-you' ? ' on the Thank You or Order Status page' : '').', add the <strong>Growvia</strong> block and set its type to '.$code($experience->type).'. To show this exact one, put '.$code($experience->handle).' in its Widget ID setting.',
+            $type['surface'] === 'global' => 'No theme block needed: it shows on every page while the <strong>Growvia app embed</strong> is on (Theme Editor → App embeds). Pops use your store\'s real recent orders — product, country and time only, never names — so it starts showing once orders come in.',
+            default => 'After publishing, add the <strong>Growvia block</strong> in the Theme Editor and pick “'.e($type['singular']).'”, or pin it with ID '.$code($experience->handle).'.',
         };
 
         return $notes;

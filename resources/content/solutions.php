@@ -17,7 +17,7 @@ return [
         'seo_description' => 'One Shopify app for bundles, progressive gifts, upsells, countdowns and trust — built for DTC brands.',
         'overview' => [
             'Most direct-to-consumer stores end up with a bundle app, a gift app, a timer app and a reviews widget. Each has its own settings, its own look and its own claim to the revenue — and each adds a little weight to your pages.',
-            'OrderOrbit Space replaces that stack with one app. Every offer shares your store\'s design, applies its price at checkout, and reports to the same analytics, so you can see which offer actually earned the money.',
+            'Growvia replaces that stack with one app. Every offer shares your store\'s design, applies its price at checkout, and reports to the same analytics, so you can see which offer actually earned the money.',
         ],
         'setup' => [
             ['Quantity-break bundle on your hero product', 'Buy 1, buy 2 (most popular), buy 3 — each with its own saving.'],
@@ -28,7 +28,7 @@ return [
         'later' => ['A/B test two bundle layouts', 'Review request emails after delivery'],
         'features' => ['bundles', 'progressive-gifts', 'cart-upsells', 'trust-social-proof', 'analytics'],
         'faqs' => [
-            ['Can I replace my current bundle app?', 'Yes. Recreate your bundles in OrderOrbit Space, check them on your store, then remove the old app.'],
+            ['Can I replace my current bundle app?', 'Yes. Recreate your bundles in Growvia, check them on your store, then remove the old app.'],
             ['Will it slow my store?', 'Each offer loads only on the pages where it appears, and there are no theme code edits.'],
         ],
     ],
@@ -43,7 +43,7 @@ return [
         'seo_description' => 'Routine bundles, multi-packs and gift rewards for Shopify beauty, food and supplement brands.',
         'overview' => [
             'When customers buy a product they use up, the best time to grow the order is the first purchase. A routine bundle or a three-pack turns one bottle into a month\'s supply, and a gift at the right threshold makes the bigger basket feel like the obvious choice.',
-            'With OrderOrbit Space you can offer mix & match routines, multi-packs with a per-unit saving, and progressive gifts — all priced at checkout, with inventory deducted per product.',
+            'With Growvia you can offer mix & match routines, multi-packs with a per-unit saving, and progressive gifts — all priced at checkout, with inventory deducted per product.',
         ],
         'setup' => [
             ['Mix & match routine bundle', 'Shoppers pick three products from your range and save as the bundle fills.'],
@@ -91,7 +91,7 @@ return [
         'hero' => 'Team roles, an audit log, checkout-level pricing and per-offer revenue for larger Shopify stores.',
         'seo_description' => 'Bundles, gifts and upsells with team roles, audit logs and per-offer revenue for Shopify Plus brands.',
         'overview' => [
-            'Larger stores need more than a widget. OrderOrbit Space gives your team owner, admin and staff roles, records every change in an audit log, and applies every saving through Shopify\'s own checkout functions.',
+            'Larger stores need more than a widget. Growvia gives your team owner, admin and staff roles, records every change in an audit log, and applies every saving through Shopify\'s own checkout functions.',
             'Analytics credit each order line to the offer that added it, so merchandising and growth teams can agree on what\'s working.',
         ],
         'setup' => [

@@ -1,4 +1,4 @@
-/* OrderOrbit Space · pre-order. Shows on the products the merchant picked, with the ship date,
+/* Growvia · pre-order. Shows on the products the merchant picked, with the ship date,
    a progress bar (time to shipping or units toward a goal) and the time left in months, weeks or
    days. On the storefront it can relabel the theme's add-to-cart and adds a "Pre-order" line
    property to the theme's own form, so the cart and order show it. */

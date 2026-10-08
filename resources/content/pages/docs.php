@@ -3,11 +3,11 @@
 /* Docs home and the labels on each guide. The guides themselves are under "Guides". */
 
 return [
-    'seo_title' => 'Documentation | OrderOrbit Space',
-    'seo_description' => 'Guides for every part of OrderOrbit Space: getting started, bundles, gifts, widgets, checkout, customer accounts, automation, analytics, personalization, A/B testing and developer callbacks.',
+    'seo_title' => 'Documentation | Growvia',
+    'seo_description' => 'Guides for every part of Growvia: getting started, bundles, gifts, widgets, checkout, customer accounts, automation, analytics, personalization, A/B testing and developer callbacks.',
     'eyebrow' => 'Docs',
     'title' => 'Everything you need to *get results.*',
-    'lead' => 'Step-by-step guides for every part of OrderOrbit Space, from your first widget to A/B tests and automation.',
+    'lead' => 'Step-by-step guides for every part of Growvia, from your first widget to A/B tests and automation.',
     'read' => 'Read the guide →',
     'on_this_page' => 'On this page',
     'all_guides' => 'All guides',

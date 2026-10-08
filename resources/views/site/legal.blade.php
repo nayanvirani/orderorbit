@@ -1,7 +1,7 @@
 @extends('layouts.site')
 @php($c = \App\Support\SiteContent::page('legal'))
 
-@section('title', $page->title.' | '.(\App\Support\Legal::details()['trading_name'] ?: 'OrderOrbit Space'))
+@section('title', $page->title.' | '.(\App\Support\Legal::details()['trading_name'] ?: 'Growvia'))
 @section('description', strip_tags((string) \App\Support\Legal::render((string) $page->summary)['html']) ?: $page->title)
 
 @push('head')

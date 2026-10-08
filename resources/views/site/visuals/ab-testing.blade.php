@@ -1,4 +1,4 @@
-<x-browser url="admin.shopify.com · OrderOrbit Space › Experiments › Bundle layout" :flush="true" aria-label="A/B test results">
+<x-browser url="admin.shopify.com · Growvia › Experiments › Bundle layout" :flush="true" aria-label="A/B test results">
     <div class="ab">
         <div class="ab-head"><div><b>Bundle layout: Tier Cards vs Radio Selector</b><div style="font-size:11px;color:#6b6889">Primary metric: revenue per visitor · Guardrail: cart abandonment</div></div><span class="pill green">● Winner found</span></div>
         <div style="font-size:10.5px;font-weight:700;color:#6b6889">Traffic allocation 50 / 50</div>

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Internal Admin: only signed-in OrderOrbit team members (users.is_admin).
+ * Internal Admin: only signed-in Growvia team members (users.is_admin).
  */
 class EnsureAdmin
 {

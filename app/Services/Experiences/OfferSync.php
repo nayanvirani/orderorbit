@@ -14,7 +14,7 @@ use RuntimeException;
 /**
  * Real savings at checkout. Every live experience that promises a saving
  * (quantity break, BOGO, upsell incentive, free gift, free shipping)
- * gets its own Shopify automatic discount powered by the OrderOrbit discount
+ * gets its own Shopify automatic discount powered by the Growvia discount
  * function (extensions/orderorbit-discounts). The discount's "offers" metafield
  * tells the function what to apply; Shopify handles the start and end dates,
  * and merchants see each offer in Shopify's Discounts list.
@@ -123,7 +123,7 @@ class OfferSync
     }
 
     /**
-     * Creates, updates or removes the store's OrderOrbit discounts to match its live experiences.
+     * Creates, updates or removes the store's Growvia discounts to match its live experiences.
      */
     public function sync(Store $store): void
     {
@@ -163,11 +163,11 @@ class OfferSync
         $input = [
             // The discount's name in Shopify (and at checkout): the offer's label. For Progressive gifts
             // "m" is the list of milestones and the label is "n".
-            'title' => \Illuminate\Support\Str::limit(collect([$offers[0]['m'] ?? null, $offers[0]['n'] ?? null, $experience->name])->first(fn ($v) => is_string($v) && trim($v) !== '') ?? 'OrderOrbit offer', 250, ''),
+            'title' => \Illuminate\Support\Str::limit(collect([$offers[0]['m'] ?? null, $offers[0]['n'] ?? null, $experience->name])->first(fn ($v) => is_string($v) && trim($v) !== '') ?? 'Growvia offer', 250, ''),
             'startsAt' => ($experience->starts_at ?? $experience->published_at ?? now())->toIso8601String(),
             'endsAt' => $experience->ends_at?->toIso8601String(),
             'discountClasses' => $classes,
-            // OrderOrbit product offers don't stack with each other; Shopify applies the best one.
+            // Growvia product offers don't stack with each other; Shopify applies the best one.
             'combinesWith' => ['productDiscounts' => $shipping || $offers[0]['k'] === 'pg', 'orderDiscounts' => true, 'shippingDiscounts' => ! $shipping],
         ];
         $value = json_encode(['offers' => $offers], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

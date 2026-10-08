@@ -8,7 +8,7 @@
 */
 
 return [
-    'seo_title' => 'Pricing | OrderOrbit Space',
+    'seo_title' => 'Pricing | Growvia',
     'eyebrow' => 'Pricing',
     'per_month' => '/mo',
     'free' => '$0',

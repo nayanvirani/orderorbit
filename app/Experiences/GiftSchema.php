@@ -8,7 +8,7 @@ use Throwable;
 /**
  * The Progressive Gifts module: one progress experience for free shipping, free
  * gifts and order discounts. Milestones unlock by cart value or item count; each
- * reward applies at checkout through the OrderOrbit discount function.
+ * reward applies at checkout through the Growvia discount function.
  */
 class GiftSchema
 {

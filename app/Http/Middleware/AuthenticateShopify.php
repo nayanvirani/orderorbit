@@ -120,7 +120,7 @@ class AuthenticateShopify
 
         if ($info !== null) {
             $user->fill(array_intersect_key($info, array_flip(['first_name', 'last_name', 'email', 'account_owner'])));
-            // The Shopify account owner is always an OrderOrbit owner.
+            // The Shopify account owner is always a Growvia owner.
             if ($info['account_owner']) {
                 $user->role = 'owner';
             }
@@ -166,7 +166,7 @@ class AuthenticateShopify
                 ->header('Content-Security-Policy', "frame-ancestors {$ancestors} https://admin.shopify.com;");
         }
 
-        return response()->json(['message' => 'Your session has expired. Please reopen OrderOrbit from Shopify admin.'], 401)
+        return response()->json(['message' => 'Your session has expired. Please reopen Growvia from Shopify admin.'], 401)
             ->header('X-Shopify-Retry-Invalid-Session-Request', '1');
     }
 }

@@ -63,7 +63,7 @@ return [
                 ['label' => 'Legal', 'href' => '/legal'],
             ]],
         ],
-        'copyright' => '© {year} OrderOrbit Space. Built for Shopify.',
+        'copyright' => '© {year} Growvia. Built for Shopify.',
         'note' => 'Placed in the Theme Editor · Prices applied at checkout · Consent-aware analytics',
     ],
 ];

@@ -7,7 +7,7 @@
 */
 
 return [
-    'seo_title' => 'OrderOrbit Space | Shopify CRO, Checkout & Upsell App',
+    'seo_title' => 'Growvia | Shopify CRO, Checkout & Upsell App',
     'seo_description' => 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
     'hero' => [
         'eyebrow' => '{tools} sales tools · one Shopify app',
@@ -72,7 +72,7 @@ return [
     'stack' => [
         'eyebrow' => 'One app, every job',
         'title' => 'Replace 5–10 apps with one.',
-        'text' => 'Most stores add a separate app for every job. Each one brings its own bill, its own script and its own look. OrderOrbit Space does all of these jobs in one place.',
+        'text' => 'Most stores add a separate app for every job. Each one brings its own bill, its own script and its own look. Growvia does all of these jobs in one place.',
         'link' => ['label' => 'See every feature →', 'href' => '/features'],
         'before' => 'Today · 10 separate apps',
         'apps' => [
@@ -136,8 +136,8 @@ return [
         'title' => 'Good to know.',
         'text' => 'More answers in the [Help Center](/help), or [ask us](/contact).',
         'faqs' => [
-            ['What is OrderOrbit Space?', 'A Shopify app that helps you raise order value and conversion with bundles, progressive gifts (free gifts, free shipping and discounts), cart upsells, countdowns, pre-orders, sales pop, sticky add-to-cart and trust blocks — with built-in analytics that show what each offer earns.'],
-            ['Can it replace the apps I already use?', 'For most stores, yes. If you run separate apps for bundles, free gifts, a shipping bar, upsells, timers, pre-orders, sales pops, a sticky add-to-cart or trust badges, you can recreate those offers in OrderOrbit Space, check them on your store, then uninstall the old apps.'],
+            ['What is Growvia?', 'A Shopify app that helps you raise order value and conversion with bundles, progressive gifts (free gifts, free shipping and discounts), cart upsells, countdowns, pre-orders, sales pop, sticky add-to-cart and trust blocks — with built-in analytics that show what each offer earns.'],
+            ['Can it replace the apps I already use?', 'For most stores, yes. If you run separate apps for bundles, free gifts, a shipping bar, upsells, timers, pre-orders, sales pops, a sticky add-to-cart or trust badges, you can recreate those offers in Growvia, check them on your store, then uninstall the old apps.'],
             ['Will it slow down or break my theme?', 'No. Offers load only on the pages where they appear, and each one is a small script. There are no theme code edits, and you can remove any block in one click.'],
             ['Do bundles work with my inventory?', 'Yes. A bundle shows as one line in the cart at the bundle price, but your orders keep each product, so Shopify deducts stock from every item as usual.'],
             ['Do shoppers need a discount code?', 'No. Bundle prices, gifts, free shipping and upsell incentives are applied automatically at checkout.'],

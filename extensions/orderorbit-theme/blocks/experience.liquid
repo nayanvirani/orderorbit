@@ -1,10 +1,10 @@
-{%- comment -%} An OrderOrbit experience, placed by the merchant in the Theme Editor. {%- endcomment -%}
+{%- comment -%} A Growvia experience, placed by the merchant in the Theme Editor. {%- endcomment -%}
 {%- render 'orderorbit-data' -%}
 <div class="oo-root" data-oo-block data-oo-type="{{ block.settings.experience_type | escape }}" data-oo-id="{{ block.settings.experience_id | strip | escape }}" {{ block.shopify_attributes }}></div>
 
 {% schema %}
 {
-  "name": "OrderOrbit Space block",
+  "name": "Growvia block",
   "target": "section",
   "stylesheet": "orderorbit.css",
   "javascript": "orderorbit.js",
@@ -64,7 +64,7 @@
         }
       ],
       "default": "shipping-bar",
-      "info": "Shows your highest-priority live OrderOrbit widget of this type that matches the shopper."
+      "info": "Shows your highest-priority live Growvia widget of this type that matches the shopper."
     },
     {
       "type": "text",

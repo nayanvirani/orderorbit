@@ -6,7 +6,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * The facts a run works with, taken from Shopify's webhook payloads when it starts: the order,
- * the customer and, for OrderOrbit events, the event. Only what conditions and actions need is
+ * the customer and, for Growvia events, the event. Only what conditions and actions need is
  * kept. Fields Shopify withholds (addresses and contact details need extra protected customer
  * data access) are simply missing, and conditions on them don't match.
  */

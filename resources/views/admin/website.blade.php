@@ -2,7 +2,7 @@
 @section('title', 'Website design')
 @section('content')
 <div class="ad-head">
-    <div><h1>Website design</h1><p>Colours, fonts and corners of the public website (orderorbit.space): every page, the coming-soon page and the error pages. Changes show in the preview as you edit and go live when you save.</p></div>
+    <div><h1>Website design</h1><p>Colours, fonts and corners of the public website (growvia.orderorbit.space): every page, the coming-soon page and the error pages. Changes show in the preview as you edit and go live when you save.</p></div>
     <div class="ad-actions"><a class="ad-btn" href="{{ route('site.home') }}" target="_blank" rel="noopener">View website ↗</a></div>
 </div>
 

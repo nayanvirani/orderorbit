@@ -135,7 +135,7 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
                       <F path="settings.placement" label="Pages" type="select" options={{ both: 'Product pages and cart', product: 'Product pages', cart: 'Cart page' }} />
                       <F path="settings.position" label="On product pages" type="select" options={{ below_atc: 'Below the add to cart button', above_atc: 'Above the add to cart button', block: 'Only where I place the block' }} />
                     </Row>
-                    <Help text="The cart page shows it where you add the OrderOrbit block in the Theme Editor." />
+                    <Help text="The cart page shows it where you add the Growvia block in the Theme Editor." />
                     <F path="settings.claim" label="Single gifts" type="select" options={{ auto: 'Add to the cart automatically', claim: 'Shopper claims the gift' }} />
                     <F path="settings.show_empty" label="Show when the cart is empty" type="toggle" />
                   </Card>

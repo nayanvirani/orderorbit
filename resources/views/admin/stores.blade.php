@@ -2,7 +2,7 @@
 @section('title', 'Stores')
 @section('content')
 <div class="ad-head">
-    <div><h1>Stores</h1><p>Every store that installed OrderOrbit Space. Open one to change its plan, modules or limits.</p></div>
+    <div><h1>Stores</h1><p>Every store that installed Growvia. Open one to change its plan, modules or limits.</p></div>
 </div>
 <form method="GET" class="ad-filters">
     <input type="search" name="q" value="{{ request('q') }}" placeholder="Search domain or name">

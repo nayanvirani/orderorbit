@@ -8,7 +8,7 @@
 <script type="application/ld+json">{!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'SoftwareApplication',
-    'name' => 'OrderOrbit Space',
+    'name' => 'Growvia',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Shopify',
     'description' => \App\Support\SiteContent::plain($c['seo_description']),

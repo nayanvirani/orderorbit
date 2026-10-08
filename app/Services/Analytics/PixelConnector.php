@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * Registers the OrderOrbit Space web pixel (extensions/orderorbit-pixel) on a store,
+ * Registers the Growvia web pixel (extensions/orderorbit-pixel) on a store,
  * with a per-store token the pixel sends back so the collector knows the store.
  */
 class PixelConnector

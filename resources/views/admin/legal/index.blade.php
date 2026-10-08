@@ -14,7 +14,7 @@
     @csrf
     <section class="ad-card">
         <header><h2>Your details</h2><span class="ad-muted">Used in every policy through placeholders such as <code>@{{operator}}</code>.</span></header>
-        <p class="ad-muted" style="margin-top:-4px">OrderOrbit Space is run by you as an individual developer, not a company, and the policies say so. No company registration is needed.</p>
+        <p class="ad-muted" style="margin-top:-4px">Growvia is run by you as an individual developer, not a company, and the policies say so. No company registration is needed.</p>
         <div class="ad-fields">
             @foreach (\App\Support\Legal::DETAILS as $key => [$label, , $help, $required])
                 <label><span>{{ $label }}@if ($required)<b class="ad-req" title="Needed before launch">*</b>@endif</span>

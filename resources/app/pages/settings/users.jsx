@@ -11,7 +11,7 @@ export default function Users({ users, assignable, roles, matrix }) {
   return (
     <Page heading="Settings">
       <s-section heading="Staff">
-        <s-paragraph>Everyone with access to OrderOrbit Space in Shopify admin appears here the first time they open the app. Give someone a role in advance by inviting their Shopify staff email.</s-paragraph>
+        <s-paragraph>Everyone with access to Growvia in Shopify admin appears here the first time they open the app. Give someone a role in advance by inviting their Shopify staff email.</s-paragraph>
         <div className="oo-scroll">
           <table className="oo-table stack">
             <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th /></tr></thead>
@@ -36,7 +36,7 @@ export default function Users({ users, assignable, roles, matrix }) {
                     {!u.locked && (u.disabled ? (
                       <ActionButton variant="tertiary" url={route('app.settings.users.restore', { user: u.id })}>Restore access</ActionButton>
                     ) : (
-                      <ActionButton variant="tertiary" tone="critical" url={route('app.settings.users.remove', { user: u.id })} confirm={u.pending ? 'Cancel this invite?' : `Remove ${u.name}'s access to OrderOrbit Space?`}>
+                      <ActionButton variant="tertiary" tone="critical" url={route('app.settings.users.remove', { user: u.id })} confirm={u.pending ? 'Cancel this invite?' : `Remove ${u.name}'s access to Growvia?`}>
                         {u.pending ? 'Cancel invite' : 'Remove'}
                       </ActionButton>
                     ))}
@@ -58,7 +58,7 @@ export default function Users({ users, assignable, roles, matrix }) {
           </Field>
           <s-button type="submit" variant="primary" loading={invite.processing || undefined}>Invite</s-button>
         </Form>
-        <s-paragraph><span className="oo-muted oo-small">They also need access to OrderOrbit Space in Shopify admin (Settings → Users). When they first open the app, they get this role.</span></s-paragraph>
+        <s-paragraph><span className="oo-muted oo-small">They also need access to Growvia in Shopify admin (Settings → Users). When they first open the app, they get this role.</span></s-paragraph>
       </s-section>
 
       <s-section heading="What each role can do">

@@ -104,7 +104,7 @@ class WebsiteContentTest extends TestCase
 
     public function test_placeholders_fill_in_from_plans_and_the_date(): void
     {
-        $this->assertSame('© '.date('Y').' OrderOrbit Space. Built for Shopify.', SiteContent::plain('© {year} OrderOrbit Space. Built for Shopify.'));
+        $this->assertSame('© '.date('Y').' Growvia. Built for Shopify.', SiteContent::plain('© {year} Growvia. Built for Shopify.'));
         $cheapest = number_format(min(array_filter(array_column(\App\Support\Plans::public(), 'price'))), 2);
         $this->assertSame('From $'.$cheapest, SiteContent::plain('From ${from_price}'));
         $this->assertSame('Try Bundles on your store', SiteContent::plain('Try {name} on your store', ['name' => 'Bundles']));

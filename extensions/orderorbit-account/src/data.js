@@ -3,7 +3,7 @@
  * customer's orders, both from the Customer Account API; product links from the Storefront API.
  */
 
-// The app's own namespace on the shop ($app:account, written by OrderOrbit Space).
+// The app's own namespace on the shop ($app:account, written by Growvia).
 const NAMESPACE = 'app--429536804865';
 const API = 'shopify://customer-account/api/2026-07/graphql.json';
 

@@ -28,7 +28,7 @@ class EmailSettings
             return $value ? (array) json_decode($value, true) : [];
         });
 
-        return array_merge(['enabled' => true, 'strategy' => 'priority', 'from_email' => '', 'from_name' => 'OrderOrbit Space', 'reply_to' => ''], $saved);
+        return array_merge(['enabled' => true, 'strategy' => 'priority', 'from_email' => '', 'from_name' => 'Growvia', 'reply_to' => ''], $saved);
     }
 
     public static function save(array $values): void

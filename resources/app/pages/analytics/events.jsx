@@ -93,7 +93,7 @@ export default function EventExplorer(props) {
               </div>
             </s-section>
           ))}
-          <p className="oo-muted oo-small">Events come from the OrderOrbit Space web pixel and only include shoppers who allow analytics. Trends compare with the previous {days} days.</p>
+          <p className="oo-muted oo-small">Events come from the Growvia web pixel and only include shoppers who allow analytics. Trends compare with the previous {days} days.</p>
         </>
       )}
     </Page>

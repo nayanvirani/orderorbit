@@ -7,7 +7,7 @@ return [
     'seo_description' => 'Terms of Service, Privacy Policy, Data Processing Addendum, billing and refunds, acceptable use, cookies, subprocessors and support.',
     'eyebrow' => 'Legal',
     'title' => 'Legal & policies',
-    'lead' => 'The terms that apply when you use OrderOrbit Space, and how data is handled.',
+    'lead' => 'The terms that apply when you use Growvia, and how data is handled.',
     'effective' => 'Effective',
     'version' => 'Version',
     'policies' => 'Policies',

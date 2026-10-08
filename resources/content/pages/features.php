@@ -6,7 +6,7 @@
 */
 
 return [
-    'seo_title' => 'Features | OrderOrbit Space — Bundles, Gifts, Upsells for Shopify',
+    'seo_title' => 'Features | Growvia — Bundles, Gifts, Upsells for Shopify',
     'seo_description' => 'Bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart, trust blocks and analytics for Shopify, in one app.',
     'breadcrumb' => 'Features',
     'title' => 'Everything that raises order value, *in one app.*',

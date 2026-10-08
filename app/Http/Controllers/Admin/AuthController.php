@@ -19,7 +19,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
         if (! Auth::attempt($credentials + ['is_admin' => true, fn ($q) => $q->whereNull('disabled_at')], $request->boolean('remember'))) {
-            return back()->withInput($request->only('email'))->withErrors(['email' => 'Those details don\'t match an OrderOrbit team account.']);
+            return back()->withInput($request->only('email'))->withErrors(['email' => 'Those details don\'t match a Growvia team account.']);
         }
         $request->session()->regenerate();
         $request->user()->forceFill(['last_login_at' => now()])->save();

@@ -10,7 +10,7 @@ export default function Privacy({ privacy, events, oldest, policies = [] }) {
   return (
     <Page heading="Settings">
       <s-section heading="Consent">
-        <s-paragraph>OrderOrbit Space analytics run in a Shopify web pixel, which follows your store's cookie banner and Shopify's Customer Privacy settings: events are only recorded for shoppers who allow analytics. Storefront widgets still show to everyone.</s-paragraph>
+        <s-paragraph>Growvia analytics run in a Shopify web pixel, which follows your store's cookie banner and Shopify's Customer Privacy settings: events are only recorded for shoppers who allow analytics. Storefront widgets still show to everyone.</s-paragraph>
         <s-paragraph>No names, emails or addresses are stored. Shoppers are an anonymous visitor id and, when signed in or after buying, a customer number. Shopify's customer data requests and deletion requests are handled automatically.</s-paragraph>
       </s-section>
 
@@ -37,7 +37,7 @@ export default function Privacy({ privacy, events, oldest, policies = [] }) {
             <ActionButton url={route('app.settings.privacy.delete')} tone="critical" variant="tertiary" confirm="Delete every analytics event for your store? Reports, funnels, journeys and A/B test results start again from zero. This can't be undone.">Delete all analytics data</ActionButton>
           </div>
         )}
-        <p className="oo-muted oo-small">When you uninstall, Shopify asks apps to delete store data 48 hours later; OrderOrbit Space deletes it then.</p>
+        <p className="oo-muted oo-small">When you uninstall, Shopify asks apps to delete store data 48 hours later; Growvia deletes it then.</p>
       </s-section>
 
       {policies.length > 0 && (

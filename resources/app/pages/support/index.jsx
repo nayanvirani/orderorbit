@@ -27,7 +27,7 @@ export default function Support({ tickets, categories, priorities, statuses, hel
 
   return (
     <Page heading="Support">
-      <Hero eyebrow="Support" icon="message" tone="analytics" title="We're here to <em>help.</em>" lead="Open a ticket and the OrderOrbit Space team replies here, usually within one business day. Your store's setup details are attached automatically, so you don't need to explain them.">
+      <Hero eyebrow="Support" icon="message" tone="analytics" title="We're here to <em>help.</em>" lead="Open a ticket and the Growvia team replies here, usually within one business day. Your store's setup details are attached automatically, so you don't need to explain them.">
         <s-button href={helpUrl} target="_blank">Help center</s-button>
         <s-button href={docsUrl} target="_blank" variant="tertiary">Documentation</s-button>
       </Hero>

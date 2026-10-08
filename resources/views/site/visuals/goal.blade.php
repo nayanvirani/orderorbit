@@ -1,4 +1,4 @@
-<x-browser url="admin.shopify.com · OrderOrbit Space › Welcome" aria-label="Choosing a goal during onboarding">
+<x-browser url="admin.shopify.com · Growvia › Welcome" aria-label="Choosing a goal during onboarding">
     <div style="display:flex;gap:6px;margin-bottom:14px">@for ($i = 0; $i < 8; $i++)<i style="flex:1;height:5px;border-radius:4px;background:{{ $i < 2 ? '#7a5cff' : '#efedf7' }}"></i>@endfor</div>
     <b style="font:800 16px var(--font-head)">What do you want to improve first?</b>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">

@@ -1,4 +1,4 @@
-/* OrderOrbit Space · bundles: mix & match slots and product pool (loaded only for mix & match). */
+/* Growvia · bundles: mix & match slots and product pool (loaded only for mix & match). */
 (function () {
   var h = OrderOrbit.h;
 

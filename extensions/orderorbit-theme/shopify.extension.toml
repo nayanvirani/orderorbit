@@ -1,9 +1,9 @@
-# OrderOrbit Space for Online Store themes: the app embed (orderorbit.js and the published widgets)
-# and the "OrderOrbit Space block" merchants place in the Theme Editor.
+# Growvia for Online Store themes: the app embed (orderorbit.js and the published widgets)
+# and the "Growvia block" merchants place in the Theme Editor.
 api_version = "2026-07"
 
 [[extensions]]
-name = "OrderOrbit Space"
+name = "Growvia"
 handle = "orderorbit-theme"
 type = "theme"
 uid = "ae2d2351-1ba6-a832-38f2-820c18740a92881de8bf"

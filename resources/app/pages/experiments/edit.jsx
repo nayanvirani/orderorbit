@@ -74,7 +74,7 @@ export default function ExperimentSetup(props) {
 
       <div className="xp-form">
         <s-section heading="1. Widget" id="step-experience">
-          <p className="oo-muted">Testing <strong>{experience.name}</strong> ({experience.type}). Variants can change its template, design and text; products, prices and discounts stay as published, so checkout always matches what shoppers saw.{checkoutBlock && ' The split happens in Shopify\'s checkout, so it shows wherever the OrderOrbit Space block for this type is placed.'}</p>
+          <p className="oo-muted">Testing <strong>{experience.name}</strong> ({experience.type}). Variants can change its template, design and text; products, prices and discounts stay as published, so checkout always matches what shoppers saw.{checkoutBlock && ' The split happens in Shopify\'s checkout, so it shows wherever the Growvia block for this type is placed.'}</p>
           {!experience.published && <s-banner tone="warning">This widget isn't published. Publish it before launching the test.</s-banner>}
           <div className="b-field"><label htmlFor="xp-name">Test name</label><input id="xp-name" type="text" value={form.name} onChange={(e) => set('name', e.target.value)} maxLength={120} /></div>
           <div className="b-field"><label htmlFor="xp-hypothesis">Hypothesis (optional)</label><textarea id="xp-hypothesis" rows={2} maxLength={1000} value={form.hypothesis} onChange={(e) => set('hypothesis', e.target.value)} placeholder="Showing the upsell as a slider instead of cards will raise add to cart, because…" /></div>

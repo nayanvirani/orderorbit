@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>@yield('title', 'Admin') · OrderOrbit Space Admin</title>
+    <title>@yield('title', 'Admin') · Growvia Admin</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -28,7 +28,7 @@
     @endphp
     <div class="ad-app">
         <aside class="ad-side">
-            <a class="ad-brand" href="{{ route('admin.home') }}"><img src="/brand/orderorbit-icon.svg" alt="" width="30" height="30"><span>OrderOrbit Space<small>Internal admin</small></span></a>
+            <a class="ad-brand" href="{{ route('admin.home') }}"><img src="/brand/orderorbit-icon.svg" alt="" width="30" height="30"><span>Growvia<small>Internal admin</small></span></a>
             @foreach ($nav as $group => $items)
                 @php($items = array_filter($items, fn ($i) => \App\Support\AdminRoles::can($me, $i[3])))
                 @continue(! $items)

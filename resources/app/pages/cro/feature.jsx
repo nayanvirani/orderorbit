@@ -29,7 +29,7 @@ export default function Feature({ feature, types, experiences, counts, discounts
       )}
       {notice === 'accounts' && (
         <s-banner tone="warning" heading="Your store uses classic customer accounts">
-          <s-paragraph>These blocks need Shopify's new customer accounts. Turn them on in Shopify under Settings → Customer accounts, then re-check your store in OrderOrbit Space Settings. You can set up blocks now.</s-paragraph>
+          <s-paragraph>These blocks need Shopify's new customer accounts. Turn them on in Shopify under Settings → Customer accounts, then re-check your store in Growvia Settings. You can set up blocks now.</s-paragraph>
           <s-button slot="secondary-actions" href={accountsUrl} target="_top">Customer account settings</s-button>
         </s-banner>
       )}
@@ -40,7 +40,7 @@ export default function Feature({ feature, types, experiences, counts, discounts
           <div className="ob-kpi"><small>Live</small><b>{counts.published}</b><span>Showing to shoppers</span></div>
           <div className="ob-kpi"><small>Drafts</small><b>{counts.draft}</b><span>Not live yet</span></div>
           <div className="ob-kpi"><small>Paused</small><b>{counts.paused}</b><span>Hidden from shoppers</span></div>
-          <div className="ob-kpi"><small>Checkout saving</small><b style={{ fontSize: 26 }}>{discounts ? 'Automatic' : 'Not needed'}</b><span>{discounts ? 'Applied by OrderOrbit Space in cart and checkout' : 'This feature doesn\'t change prices'}</span></div>
+          <div className="ob-kpi"><small>Checkout saving</small><b style={{ fontSize: 26 }}>{discounts ? 'Automatic' : 'Not needed'}</b><span>{discounts ? 'Applied by Growvia in cart and checkout' : 'This feature doesn\'t change prices'}</span></div>
         </div>
       </s-section>
 

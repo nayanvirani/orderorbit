@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 /**
- * Collects events from the OrderOrbit Space web pixel: sessions, Shopify's standard storefront
+ * Collects events from the Growvia web pixel: sessions, Shopify's standard storefront
  * events, experience views, clicks and adds to cart, and completed checkouts attributed to the
  * offers that added each line. Posts are plain text (no CORS preflight) and carry the store's
  * pixel token. Every event carries the anonymous visitor and session, device and traffic source.
@@ -50,7 +50,7 @@ class PixelController extends Controller
         }
         $data['e'] = str_replace('orderorbit:', '', (string) ($data['e'] ?? ''));
 
-        // OrderOrbit events can start workflows ("OrderOrbit event" trigger).
+        // Growvia events can start workflows ("Growvia event" trigger).
         if (($data['k'] ?? null) === 'e' && in_array($data['e'], ['survey_answered', 'reward_unlocked', 'upsell_accepted', 'added_to_cart'], true)) {
             $label = isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) : null;
             defer(fn () => app(\App\Automation\Triggers::class)->event($store, $data['e'], $label, self::handle($data['x'] ?? null)));
@@ -116,7 +116,7 @@ class PixelController extends Controller
         ]);
     }
 
-    /** OrderOrbit Space events from experiences. */
+    /** Growvia events from experiences. */
     private function experience(array $data, array $base): void
     {
         $code = Events::CODES[$data['e']] ?? null;

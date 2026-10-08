@@ -3,7 +3,7 @@
 /* Templates page. The templates themselves are under Lists → Template gallery. */
 
 return [
-    'seo_title' => 'Templates | OrderOrbit Space',
+    'seo_title' => 'Templates | Growvia',
     'seo_description' => 'Ready-made layouts for bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart and trust blocks. Pick one and make it yours.',
     'eyebrow' => 'Template library',
     'title' => 'Start from a template, *finish with your brand.*',
@@ -18,7 +18,7 @@ return [
     ],
     'locked' => [
         'title' => 'Want more? *{hidden} more layouts* are in the app',
-        'text' => 'This page shows one layout per feature. Install OrderOrbit Space free and open your app dashboard to browse all {total} ready-made templates and preview each one on your own products.',
+        'text' => 'This page shows one layout per feature. Install Growvia free and open your app dashboard to browse all {total} ready-made templates and preview each one on your own products.',
         'button' => 'Install free and see all layouts',
     ],
     'preview' => 'About this feature',

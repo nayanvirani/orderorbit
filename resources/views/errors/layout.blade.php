@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <title>{{ $e['title'] }} · OrderOrbit Space</title>
+    <title>{{ $e['title'] }} · Growvia</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -38,7 +38,7 @@
 </head>
 <body>
     <main>
-        <a class="logo" href="/"><img src="/brand/orderorbit-logo.svg" alt="OrderOrbit Space" width="190" height="34"></a>
+        <a class="logo" href="/"><img src="/brand/orderorbit-logo.svg" alt="Growvia" width="190" height="34"></a>
         <div class="orbit" aria-hidden="true"><span></span><b></b><i></i></div>
         <div class="code">{{ $e['code'] }}</div>
         <h1>{{ site_md($e['heading']) }}</h1>

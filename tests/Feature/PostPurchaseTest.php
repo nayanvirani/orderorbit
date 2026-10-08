@@ -150,6 +150,6 @@ class PostPurchaseTest extends TestCase
         $this->page('/app/cro/features/post-purchase', $owner)->assertOk()->assertJsonPath('props.editor.label', 'Open checkout settings')->assertJsonPath('props.types.0.singular', 'post-purchase funnel');
         $this->post('/app/cro/experiences', ['type' => 'post-purchase', 'template' => 'classic-offer'], $this->as($owner))->assertRedirectContains('/edit');
         $builder = $this->page('/app/cro/experiences/1/edit', $owner)->assertOk()->assertSee('Offer something else if they decline');
-        $this->assertStringContainsString('choose <strong>OrderOrbit Space</strong> under Post-purchase page', implode(' ', $builder->json('props.publishHelp')));
+        $this->assertStringContainsString('choose <strong>Growvia</strong> under Post-purchase page', implode(' ', $builder->json('props.publishHelp')));
     }
 }

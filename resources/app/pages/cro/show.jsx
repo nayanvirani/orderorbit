@@ -23,17 +23,17 @@ export default function ExperiencePage(props) {
       primary={canEdit && e.status !== 'archived' ? <s-button slot="primary-action" variant="primary" href={editHref}>Edit</s-button> : null}>
       {e.discountUrl && (
         <s-banner tone="success" heading="Saving applies automatically at checkout">
-          <s-paragraph>OrderOrbit Space created a Shopify automatic discount for this {e.singular}. It stays in step with this widget: pausing or archiving removes it.</s-paragraph>
+          <s-paragraph>Growvia created a Shopify automatic discount for this {e.singular}. It stays in step with this widget: pausing or archiving removes it.</s-paragraph>
           <s-button slot="secondary-actions" href={e.discountUrl} target="_top">View in Shopify</s-button>
         </s-banner>
       )}
       {salesPop && (
         <s-banner tone={salesPop.recent ? 'success' : salesPop.blocked ? 'warning' : 'info'} heading={salesPop.recent ? `${salesPop.recent} recent ${plural('purchase', salesPop.recent)} ready to show` : salesPop.blocked ? 'Shopify needs to approve order access' : 'No recent purchases to show yet'}>
           <s-paragraph>
-            {salesPop.blocked ? 'Shopify only lets apps read orders after the developer declares how order data is used. In the Shopify Partner Dashboard, open OrderOrbit Space → API access → Protected customer data, request access to order data (no names, emails or addresses are needed) and save. Then click Import recent orders again.'
+            {salesPop.blocked ? 'Shopify only lets apps read orders after the developer declares how order data is used. In the Shopify Partner Dashboard, open Growvia → API access → Protected customer data, request access to order data (no names, emails or addresses are needed) and save. Then click Import recent orders again.'
               : salesPop.recent ? `Pops cycle through products from your real orders in the last ${salesPop.days} days. New orders are added automatically.`
               : salesPop.canRead ? `Pops appear once your store has an order in the last ${salesPop.days} days. New orders are added automatically, or import your recent orders now.`
-              : 'Pops use your real orders. Reload OrderOrbit Space and approve the updated permissions (read orders) so new orders are added automatically.'}
+              : 'Pops use your real orders. Reload Growvia and approve the updated permissions (read orders) so new orders are added automatically.'}
           </s-paragraph>
           {salesPop.canRead && <ActionButton slot="secondary-actions" url={route('app.cro.experiences.import-orders', { experience: e.id })}>Import recent orders</ActionButton>}
         </s-banner>
@@ -81,7 +81,7 @@ export default function ExperiencePage(props) {
               <div className="ob-kpi"><small>Orders</small><b>{number(perf.orders)}</b></div>
               <div className="ob-kpi"><small>Revenue</small><b>{money(perf.revenue, currency)}</b></div>
             </div>
-            <s-paragraph><span className="oo-muted">From the OrderOrbit Space pixel, for shoppers who allow analytics. <s-link href={appUrl(route('app.analytics'))}>All analytics</s-link></span></s-paragraph>
+            <s-paragraph><span className="oo-muted">From the Growvia pixel, for shoppers who allow analytics. <s-link href={appUrl(route('app.analytics'))}>All analytics</s-link></span></s-paragraph>
           </s-section>
 
           {canEdit && (

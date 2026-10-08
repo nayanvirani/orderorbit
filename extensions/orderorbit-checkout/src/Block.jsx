@@ -1,5 +1,5 @@
 /*
- * OrderOrbit Space blocks for checkout, Thank You and Order Status. The merchant places this block
+ * Growvia blocks for checkout, Thank You and Order Status. The merchant places this block
  * in Shopify's checkout editor and picks a block type; the live configuration comes from the
  * $app:checkout shop metafield that the app publishes. Everything is drawn with Shopify's own
  * components, so it follows the store's checkout branding.
@@ -662,7 +662,7 @@ function Upsell({ exp, c }) {
   async function add(p) {
     setBusy(p.variant_id);
     setFailed(false);
-    // Tagged with this block, so the OrderOrbit discount applies the offer's saving.
+    // Tagged with this block, so the Growvia discount applies the offer's saving.
     const result = await shopify.applyCartLinesChange({
       type: 'addCartLine', merchandiseId: 'gid://shopify/ProductVariant/' + numericId(p.variant_id), quantity: 1,
       attributes: [{ key: '_oo_offer', value: exp.id }],
@@ -961,7 +961,7 @@ function Survey({ exp, c }) {
   if (sent) return <Frame exp={exp} as="banner" tone="success"><T>{c.thanks_message}</T></Frame>;
   const options = (c.options || []).map((o) => o.label).filter(Boolean);
   if (!options.length) return null;
-  // Answers reach Analytics through the OrderOrbit Space web pixel.
+  // Answers reach Analytics through the Growvia web pixel.
   const send = (value) => {
     track(exp, 'survey_answered', { answer: String(value).slice(0, 120) });
     setSent(true);

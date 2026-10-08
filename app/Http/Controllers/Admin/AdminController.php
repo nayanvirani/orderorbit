@@ -24,7 +24,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Internal Admin (section 33) for the OrderOrbit team: stores, subscriptions, usage, extension
+ * Internal Admin (section 33) for the Growvia team: stores, subscriptions, usage, extension
  * health, workflow failures, analytics processing, template publishing, feature flags, support
  * and audit logs. Separate from the merchant app, behind an email-and-password team login.
  */

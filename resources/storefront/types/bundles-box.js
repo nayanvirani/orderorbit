@@ -1,4 +1,4 @@
-/* OrderOrbit Space · bundles: build your own box (loaded only for build-your-own boxes).
+/* Growvia · bundles: build your own box (loaded only for build-your-own boxes).
    Shoppers set a quantity for each product. The box can't be added below its minimum, can't go
    past its maximum or a product's limit, and is priced by its discount steps or its box price.
    It shares the mix & match engine: each unit is a pick, and "slots" is the box maximum. */

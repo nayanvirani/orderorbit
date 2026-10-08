@@ -12,9 +12,9 @@ return [
         'icon' => 'rocket',
         'text' => 'Install the app, choose a plan and publish your first offer.',
         'articles' => [
-            ['How do I install OrderOrbit Space?', 'Open the listing in the Shopify App Store and click Install. Approve the permissions, choose a plan and you land on the app dashboard inside your Shopify admin.'],
+            ['How do I install Growvia?', 'Open the listing in the Shopify App Store and click Install. Approve the permissions, choose a plan and you land on the app dashboard inside your Shopify admin.'],
             ['What should I set up first?', 'Start with one bundle on your best-selling product and a progressive gifts bar with free shipping at your current free-shipping threshold. Together they usually give the quickest lift in order value.'],
-            ['Do I need to enable the app in my theme?', 'Yes, once. In your Shopify admin go to Online Store → Themes → Customize → App embeds and turn on OrderOrbit Space. The dashboard shows a reminder until it is on.'],
+            ['Do I need to enable the app in my theme?', 'Yes, once. In your Shopify admin go to Online Store → Themes → Customize → App embeds and turn on Growvia. The dashboard shows a reminder until it is on.'],
         ],
     ],
     [
@@ -23,7 +23,7 @@ return [
         'text' => 'Where offers appear and how to place blocks in your theme.',
         'articles' => [
             ['Where do bundles and gift bars appear?', 'Bundles and progressive gifts show on the product page next to your add-to-cart button automatically. You choose above or below the button in the offer settings.'],
-            ['How do I place a countdown, trust block or upsell?', 'Open the Theme Editor, go to the page you want, click Add block and choose the OrderOrbit Space block. Drag it where you want it and save.'],
+            ['How do I place a countdown, trust block or upsell?', 'Open the Theme Editor, go to the page you want, click Add block and choose the Growvia block. Drag it where you want it and save.'],
             ['Will the app change my theme code?', 'No. Everything runs through Shopify theme app extensions, so removing a block or uninstalling the app leaves your theme exactly as it was.'],
         ],
     ],
@@ -65,7 +65,7 @@ return [
         'articles' => [
             ['How do cart upsell incentives work?', 'If you add a discount to an upsell, it applies only to items added from that recommendation, automatically at checkout.'],
             ['Can a countdown reset for each visitor?', 'No. Countdowns only count to a real end date or a daily cutoff in your store\'s time zone. When the campaign ends the timer hides or shows your message.'],
-            ['How do pre-orders work?', 'Pick the products and the ship date, then add the OrderOrbit Space block to your product template and choose "Pre-order". Turn on "Continue selling when out of stock" for those products in Shopify. Each pre-order item gets a "Pre-order: Ships by …" line on the order.'],
+            ['How do pre-orders work?', 'Pick the products and the ship date, then add the Growvia block to your product template and choose "Pre-order". Turn on "Continue selling when out of stock" for those products in Shopify. Each pre-order item gets a "Pre-order: Ships by …" line on the order.'],
             ['Where does Sales pop get its purchases?', 'From your store\'s real recent orders: the product, the order\'s country and the time. No names are shown and nothing is invented. It shows on every page while the app embed is on.'],
             ['When does the sticky add-to-cart show?', 'After your theme\'s own buy button scrolls out of view, on the devices you choose. It disappears again when the button is back on screen.'],
         ],
@@ -89,7 +89,7 @@ return [
         'icon' => 'user',
         'text' => 'Orders, tracking, reorder, rewards, reviews, products and support in customer accounts.',
         'articles' => [
-            ['How do I add a customer account block?', 'Create the block in OrderOrbit Space and publish it. In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page, add the OrderOrbit Space account block and choose its type. Customers see it the next time they sign in.'],
+            ['How do I add a customer account block?', 'Create the block in Growvia and publish it. In Shopify, open Settings → Checkout → Customize, switch to the Orders, Profile or Order status page, add the Growvia account block and choose its type. Customers see it the next time they sign in.'],
             ['Which stores can use them?', 'Stores on Shopify\'s new customer accounts (Settings → Customer accounts). Classic accounts can\'t show app blocks. Which plans include them is shown on the Pricing page.'],
             ['How does "Buy again" work?', 'It adds the order\'s items to the cart on your store, with all items or the ones the customer picks. With the Reorder block published, "Buy again" also appears in each order\'s menu.'],
             ['How are reward tiers worked out?', 'From the customer\'s total spend across their recent orders (cancelled orders don\'t count). You set the tiers, thresholds and perks.'],
@@ -102,7 +102,7 @@ return [
         'text' => 'Segments, personalization rules and where segments can be used.',
         'articles' => [
             ['How do I create a segment?', 'Open Audiences → Segments and add a ready-made segment (new, returning, VIP, high-AOV, at-risk, lapsed and more) or a custom one. Combine rules for orders, total spent, average order, days since last order, tags, products bought, market, device and widgets used, with all or any matching.'],
-            ['How are segments worked out?', 'On your store, during the visit, from the signed-in customer\'s own account (guests have 0 orders) and the visit itself. "Used a widget" is remembered on the shopper\'s device. Nothing about the shopper is sent to OrderOrbit Space.'],
+            ['How are segments worked out?', 'On your store, during the visit, from the signed-in customer\'s own account (guests have 0 orders) and the visit itself. "Used a widget" is remembered on the shopper\'s device. Nothing about the shopper is sent to Growvia.'],
             ['What do personalization rules do?', 'A rule picks a widget and an audience (segments plus optional device, cart value and UTM conditions), then shows the widget only to them, shows it in another template, or hides it. Rules run top to bottom; for each widget the first match wins.'],
             ['Where else can I use segments?', 'In a widget\'s Targeting step (Only these segments), as an A/B test audience, and in workflow conditions (Customer segment), which check the order\'s customer.'],
             ['Why is there no member count?', 'Shopify can only count segments made of customer fields (orders, total spent, tags). Segments with browsing or purchase rules are only known during a visit.'],
@@ -111,13 +111,13 @@ return [
     [
         'name' => 'A/B testing',
         'icon' => 'split',
-        'text' => 'Split tests on live widgets, metrics and how winners are decided. Full guide: orderorbit.space/docs/ab-testing.',
+        'text' => 'Split tests on live widgets, metrics and how winners are decided. Full guide: growvia.orderorbit.space/docs/ab-testing.',
         'articles' => [
             ['How do I run a test?', 'Open A/B tests, choose a published widget and create a test. Change variant B (template, text or design, or hide it as a holdout), set the traffic split, audience, metrics and guardrails, preview, then launch.'],
             ['How are visitors split?', 'Each visitor is put in a variant by a stable hash of the test and a visitor id kept in their browser, so they see the same version every visit. Visitors outside the audience see the widget as published and aren\'t counted.'],
             ['When is a winner declared?', 'Only after the test has run at least 7 days and every variant has 1,000 visitors and 100 conversions, and the primary metric is significantly better at 95% confidence (Bonferroni-corrected for A/B/C) without breaking a guardrail. Until then the results say "Collecting data".'],
             ['What counts as a conversion?', 'A visitor places an order after first seeing the test. Revenue per visitor and AOV use those orders. Only shoppers who allow analytics are counted.'],
-            ['Can I test checkout and Thank You blocks?', 'Yes. The split happens inside Shopify\'s checkout, wherever the OrderOrbit Space block for that type is placed. Checkout tests can target cart value and country. Thank You and Order Status blocks are judged by click-through rate, since the order is already placed.'],
+            ['Can I test checkout and Thank You blocks?', 'Yes. The split happens inside Shopify\'s checkout, wherever the Growvia block for that type is placed. Checkout tests can target cart value and country. Thank You and Order Status blocks are judged by click-through rate, since the order is already placed.'],
             ['What does "Apply winner" do?', 'It publishes the winning variant\'s template, text and design to the widget for everyone and completes the test.'],
         ],
     ],
@@ -149,9 +149,9 @@ return [
     [
         'name' => 'Developers: callbacks',
         'icon' => 'tool',
-        'text' => 'Run your own theme code when shoppers use an OrderOrbit Space offer.',
+        'text' => 'Run your own theme code when shoppers use a Growvia offer.',
         'articles' => [
-            ['What are callbacks?', 'Callbacks let your theme run its own JavaScript at key moments, such as right after an OrderOrbit Space button adds to the cart. You write the code in your theme (for example in theme.liquid or a theme script file); nothing is stored in the app. Define functions on window.OrderOrbitHooks, or listen for the matching events on document. Both work, and you can use either.', <<<'JS'
+            ['What are callbacks?', 'Callbacks let your theme run its own JavaScript at key moments, such as right after a Growvia button adds to the cart. You write the code in your theme (for example in theme.liquid or a theme script file); nothing is stored in the app. Define functions on window.OrderOrbitHooks, or listen for the matching events on document. Both work, and you can use either.', <<<'JS'
             <script>
               window.OrderOrbitHooks = {
                 beforeAddToCart: function (detail) { /* runs before items are sent */ },
@@ -160,7 +160,7 @@ return [
               };
             </script>
             JS],
-            ['How do I open my cart drawer after an add?', 'Use afterAddToCart and return false. Returning false tells OrderOrbit Space you have handled it, so the shopper stays on the page instead of being sent to the cart. Then open your drawer the way your theme does. The example is for Dawn and themes based on it; other themes have their own way to open the drawer.', <<<'JS'
+            ['How do I open my cart drawer after an add?', 'Use afterAddToCart and return false. Returning false tells Growvia you have handled it, so the shopper stays on the page instead of being sent to the cart. Then open your drawer the way your theme does. The example is for Dawn and themes based on it; other themes have their own way to open the drawer.', <<<'JS'
             window.OrderOrbitHooks = {
               afterAddToCart: async function (detail) {
                 // Ask Shopify for the drawer's new HTML and let the theme redraw it.
@@ -174,7 +174,7 @@ return [
               }
             };
             JS],
-            ['What is in "detail"?', 'Every callback receives one object. detail.experience tells you which offer was used: its id, its type (bundles, cart-upsells, progressive-gifts and so on) and its template. detail.items is the list being added, each with a variant id, a quantity and line properties. detail.after is what OrderOrbit Space will do next: "cart", "checkout" or "stay". detail.element is the widget on the page. After a successful add, detail.response is Shopify\'s reply. detail.getCart() returns the live cart.', <<<'JS'
+            ['What is in "detail"?', 'Every callback receives one object. detail.experience tells you which offer was used: its id, its type (bundles, cart-upsells, progressive-gifts and so on) and its template. detail.items is the list being added, each with a variant id, a quantity and line properties. detail.after is what Growvia will do next: "cart", "checkout" or "stay". detail.element is the widget on the page. After a successful add, detail.response is Shopify\'s reply. detail.getCart() returns the live cart.', <<<'JS'
             window.OrderOrbitHooks = {
               afterAddToCart: async function (detail) {
                 console.log(detail.experience.type);   // e.g. "bundles"
@@ -216,7 +216,7 @@ return [
               console.log(event.detail.event, event.detail.experience_id);
             });
             JS],
-            ['Which buttons call the callbacks?', 'Every add-to-cart button that OrderOrbit Space draws: bundles, quantity breaks, cart upsells, gifts and add-ons. Sticky add to cart and Pre-order use your theme\'s own button, so your theme\'s normal behaviour applies there. If your callback has an error, the add still goes through and the error is written to the browser console.'],
+            ['Which buttons call the callbacks?', 'Every add-to-cart button that Growvia draws: bundles, quantity breaks, cart upsells, gifts and add-ons. Sticky add to cart and Pre-order use your theme\'s own button, so your theme\'s normal behaviour applies there. If your callback has an error, the add still goes through and the error is written to the browser console.'],
         ],
     ],
     [

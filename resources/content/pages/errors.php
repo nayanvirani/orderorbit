@@ -16,6 +16,6 @@ return [
         'links' => [['label' => 'Go to homepage', 'href' => '/']]],
     '500' => ['title' => 'Something went wrong', 'code' => 'Error 500', 'heading' => 'Something went *wrong.*', 'message' => 'An unexpected error happened on our side. Please try again in a moment, and contact us if it keeps happening.',
         'links' => [['label' => 'Go to homepage', 'href' => '/'], ['label' => 'Contact us', 'href' => '/contact']]],
-    '503' => ['title' => 'Back soon', 'code' => 'Maintenance', 'heading' => 'We\'ll be *right back.*', 'message' => 'OrderOrbit Space is being updated. Offers already live on your store keep showing. This page will be back in a few minutes.',
+    '503' => ['title' => 'Back soon', 'code' => 'Maintenance', 'heading' => 'We\'ll be *right back.*', 'message' => 'Growvia is being updated. Offers already live on your store keep showing. This page will be back in a few minutes.',
         'links' => [['label' => 'Try again', 'href' => 'javascript:location.reload()']]],
 ];

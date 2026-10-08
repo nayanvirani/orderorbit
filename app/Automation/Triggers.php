@@ -8,7 +8,7 @@ use App\Models\Store;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Turns Shopify webhooks and OrderOrbit events into workflow triggers. Each trigger carries a
+ * Turns Shopify webhooks and Growvia events into workflow triggers. Each trigger carries a
  * key unique to the event, so Shopify's retries and repeated updates never start a workflow twice.
  */
 class Triggers
@@ -60,7 +60,7 @@ class Triggers
         }
     }
 
-    /** OrderOrbit events from the web pixel (survey answers, unlocked rewards, accepted upsells…). */
+    /** Growvia events from the web pixel (survey answers, unlocked rewards, accepted upsells…). */
     public function event(Store $store, string $event, ?string $label, ?string $experience): void
     {
         if ($this->engine->available($store)) {

@@ -93,12 +93,13 @@ class Billing
 
     /**
      * Maps a Shopify plan display name to our plan key. Case-insensitive, and
-     * tolerates an "OrderOrbit " prefix. Unknown names (e.g. a free plan) map to null.
+     * tolerates an "Growvia " prefix. Unknown names (e.g. a free plan) map to null.
      */
     public static function planKeyFromName(?string $name): ?string
     {
         $needle = strtolower(trim((string) $name));
-        $needle = preg_replace('/^orderorbit\s+/', '', $needle);
+        // Plan names may carry the app's name (Growvia, or OrderOrbit before the rename): "Growvia Growth".
+        $needle = preg_replace('/^(growvia|orderorbit(\s+space)?)\s+/', '', $needle);
 
         foreach (config('shopify.billing.plans') as $key => $plan) {
             foreach ([$plan['shopify_name'] ?? null, $plan['name'], $key] as $candidate) {

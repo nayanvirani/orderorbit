@@ -2,7 +2,7 @@
 
 return [
     'eyebrow' => 'Shopify CRO · checkout · customer experience',
-    'title' => 'OrderOrbit Space is *coming soon.*',
+    'title' => 'Growvia is *coming soon.*',
     'text' => 'Bundles, progressive gifts and checkout widgets for Shopify stores, all in one app. The finishing touches are going on now.',
     'owner' => 'Owner access',
     'password' => 'Password',

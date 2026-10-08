@@ -20,8 +20,8 @@
 | on top of the type defaults.
 |
 | "discount" types apply real savings at checkout: bundles merge into one
-| cart line through the OrderOrbit cart transform (BundleSync); the others use
-| the OrderOrbit discount function, one Shopify automatic discount per
+| cart line through the Growvia cart transform (BundleSync); the others use
+| the Growvia discount function, one Shopify automatic discount per
 | experience (OfferSync).
 |
 */
@@ -109,7 +109,7 @@ return [
             'progress_message' => ['type' => 'text', 'label' => 'Progress message', 'default' => 'You\'re {remaining} away from {reward}'],
             'unlocked_message' => ['type' => 'text', 'label' => 'Unlocked message', 'default' => 'You\'ve unlocked {reward}!'],
             'empty_message' => ['type' => 'text', 'label' => 'Empty cart message', 'default' => 'Free shipping on orders over {threshold}'],
-            'free_shipping' => ['type' => 'toggle', 'label' => 'Give free shipping at the first threshold', 'default' => false, 'help' => 'Turn on if your shipping rates don\'t already include free shipping. OrderOrbit then applies it at checkout.'],
+            'free_shipping' => ['type' => 'toggle', 'label' => 'Give free shipping at the first threshold', 'default' => false, 'help' => 'Turn on if your shipping rates don\'t already include free shipping. Growvia then applies it at checkout.'],
             'checkout_label' => ['type' => 'text', 'label' => 'Discount name at checkout', 'default' => 'Free shipping', 'max' => 60, 'help' => 'Shoppers see this next to the saving in cart and checkout.'],
         ],
     ],
@@ -337,7 +337,7 @@ return [
     ],
 
     // Shown on every page by the app embed: no theme block to place. Purchases are real orders
-    // recorded by the OrderOrbit pixel (SalesPopController feed); nothing is invented.
+    // recorded by the Growvia pixel (SalesPopController feed); nothing is invented.
     'sales-pop' => [
         'label' => 'Sales pop',
         'singular' => 'Sales pop',

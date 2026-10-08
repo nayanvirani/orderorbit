@@ -1,4 +1,4 @@
-/* OrderOrbit Space · Sales pop. Small recent-purchase notifications on every page, mounted by the
+/* Growvia · Sales pop. Small recent-purchase notifications on every page, mounted by the
    app embed (no theme block). Purchases come from the store's real orders via OrderOrbit's feed:
    product, country and time only, never names. Auto closes, then waits a (randomised) gap. */
 (function () {

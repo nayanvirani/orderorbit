@@ -26,7 +26,7 @@ class DashboardApiController extends Controller
     {
         $first = $store->experiences()->oldest('id')->first();
         $steps = [
-            ['label' => 'Connect your store', 'done' => $store->isInstalled() && $store->missingScopes() === [], 'help' => 'Approve the permissions OrderOrbit Space needs.', 'action' => 'Review connection', 'href' => '/app/settings/store'],
+            ['label' => 'Connect your store', 'done' => $store->isInstalled() && $store->missingScopes() === [], 'help' => 'Approve the permissions Growvia needs.', 'action' => 'Review connection', 'href' => '/app/settings/store'],
             ['label' => 'Choose your goal', 'done' => $store->goal !== null, 'help' => 'We recommend where to start based on it.', 'action' => 'Choose a goal', 'href' => '/app/onboarding?step=2'],
             ['label' => 'Create your first widget', 'done' => (bool) $first, 'help' => 'A bundle, gift bar, countdown or trust badge.', 'action' => 'Create one', 'href' => '/app/onboarding?step=3'],
             ['label' => 'Publish and place it', 'done' => $first && $first->status === 'published' && in_array($first->placement_status, ['placed', 'external'], true), 'help' => 'Publish, then add its block in the Theme Editor.', 'action' => 'Publish and place', 'href' => '/app/onboarding?step=7'],

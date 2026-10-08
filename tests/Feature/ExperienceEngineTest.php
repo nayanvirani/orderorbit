@@ -347,7 +347,7 @@ class ExperienceEngineTest extends TestCase
 
     public function test_theme_callbacks_are_shipped_and_documented(): void
     {
-        // The shared cart helper calls the theme's callbacks around every OrderOrbit add to cart.
+        // The shared cart helper calls the theme's callbacks around every Growvia add to cart.
         $js = file_get_contents(base_path('extensions/orderorbit-theme/assets/oo-commerce.js'));
         foreach (['OrderOrbitHooks', 'beforeAddToCart', 'afterAddToCart', 'addToCartFailed', 'orderorbit:', 'before-add', 'added-to-cart', 'add-failed'] as $needle) {
             $this->assertStringContainsString($needle, $js);

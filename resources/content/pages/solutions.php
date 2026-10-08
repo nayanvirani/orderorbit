@@ -6,8 +6,8 @@
 */
 
 return [
-    'seo_title' => 'Solutions | OrderOrbit Space',
-    'seo_description' => 'How DTC, repeat-purchase, fashion and Shopify Plus brands use OrderOrbit Space to raise order value.',
+    'seo_title' => 'Solutions | Growvia',
+    'seo_description' => 'How DTC, repeat-purchase, fashion and Shopify Plus brands use Growvia to raise order value.',
     'eyebrow' => 'Solutions',
     'title' => 'A setup for *your kind of store.*',
     'lead' => 'Pick the model closest to yours to see which offers to start with and why.',
@@ -36,6 +36,6 @@ return [
         'learn_more' => 'Learn more →',
         'faq_title' => 'Questions',
         'cta_title' => 'Set it up on your store',
-        'cta_text' => 'Install OrderOrbit Space and publish your first offer in a few minutes.',
+        'cta_text' => 'Install Growvia and publish your first offer in a few minutes.',
     ],
 ];

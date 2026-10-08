@@ -76,7 +76,7 @@ class Actions
                 $code = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($p['prefix'] ?? '')) ?: 'OO').'-'.strtoupper(Str::random(6));
                 $value = (float) ($p['value'] ?? 10);
                 $input = [
-                    'title' => 'OrderOrbit Space · '.$run->workflow->name,
+                    'title' => 'Growvia · '.$run->workflow->name,
                     'code' => $code,
                     'startsAt' => now()->toIso8601String(),
                     'endsAt' => now()->addDays((int) ($p['expires_days'] ?? 30))->toIso8601String(),

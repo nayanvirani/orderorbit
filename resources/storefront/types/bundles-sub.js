@@ -1,4 +1,4 @@
-/* OrderOrbit Space · bundles: subscribe & save (loaded only for bundles with subscriptions on).
+/* Growvia · bundles: subscribe & save (loaded only for bundles with subscriptions on).
    Plans come from the store's subscription app: Shopify selling plans on each product. Shoppers
    choose one-time or a delivery frequency; each paid item is added on its product's plan for that
    frequency (matched by the plan's options, e.g. "1 month"). The bundle discount applies to the

@@ -1,7 +1,7 @@
 @extends('layouts.site')
 @php($c = \App\Support\SiteContent::page('legal'))
 
-@section('title', \App\Support\SiteContent::plain($c['seo_title']).' | '.(\App\Support\Legal::details()['trading_name'] ?: 'OrderOrbit Space'))
+@section('title', \App\Support\SiteContent::plain($c['seo_title']).' | '.(\App\Support\Legal::details()['trading_name'] ?: 'Growvia'))
 @section('description', \App\Support\SiteContent::plain($c['seo_description']))
 
 @section('content')

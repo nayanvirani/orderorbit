@@ -3,7 +3,7 @@ import { date, Hero, number, Page } from '../../components/ui.jsx';
 const price = (v) => (v > 0 ? `$${Number(v).toFixed(2)}` : 'Free');
 const STATUS = {
   PENDING: ['warning', 'Waiting for approval', 'Approve the plan on Shopify to activate it.'],
-  FROZEN: ['critical', 'Frozen', 'Your Shopify account has a billing issue. Resolve it in Shopify to reactivate OrderOrbit Space. Your data is kept.'],
+  FROZEN: ['critical', 'Frozen', 'Your Shopify account has a billing issue. Resolve it in Shopify to reactivate Growvia. Your data is kept.'],
   DECLINED: ['warning', 'Not approved', 'The plan wasn\'t approved. Choose a plan below to continue.'],
   EXPIRED: ['warning', 'Approval expired', 'The approval request expired. Choose a plan below to continue.'],
   CANCELLED: ['warning', 'Cancelled', 'Your plan was cancelled. Choose a plan below to continue. Your data is kept.'],

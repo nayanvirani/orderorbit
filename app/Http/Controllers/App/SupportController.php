@@ -59,7 +59,7 @@ class SupportController extends Controller
             ],
             'messages' => $ticket->messages()->where('internal', false)->with('attachments')->get()->map(fn ($m) => [
                 'id' => $m->id, 'team' => $m->author === 'team', 'created_at' => $m->created_at, 'body' => $m->body,
-                'author' => $m->author === 'team' ? 'OrderOrbit Space team'.($m->author_name ? ' · '.$m->author_name : '') : ($m->author_name ?: 'You'),
+                'author' => $m->author === 'team' ? 'Growvia team'.($m->author_name ? ' · '.$m->author_name : '') : ($m->author_name ?: 'You'),
                 'attachments' => $m->attachments->map(fn ($a) => ['id' => $a->id, 'filename' => $a->filename, 'kb' => (int) round($a->size / 1024)]),
             ]),
         ]);

@@ -1,4 +1,5 @@
-name = "orderorbit-pixel"
+name = "Growvia pixel"
+handle = "orderorbit-pixel"
 type = "web_pixel_extension"
 uid = "bef7df44-353b-8d6c-647f-9137f896306fb0848702"
 
@@ -15,7 +16,7 @@ type = "object"
 
 [settings.fields.token]
 name = "Store token"
-description = "Identifies the store to OrderOrbit Space analytics."
+description = "Identifies the store to Growvia analytics."
 type = "single_line_text_field"
 validations = [
   { name = "min", value = "16" }
