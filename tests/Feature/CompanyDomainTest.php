@@ -17,7 +17,7 @@ class CompanyDomainTest extends TestCase
 
     public function test_the_main_domain_shows_coming_soon_and_sends_old_links_to_growvia(): void
     {
-        $this->get('https://orderorbit.space/')->assertOk()->assertSee('Coming soon')->assertSee('https://growvia.orderorbit.space', false)
+        $this->get('https://orderorbit.space/')->assertOk()->assertSee('Coming soon')->assertSee('OrderOrbit Space')->assertSee('https://growvia.orderorbit.space', false)
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
         $this->get('https://www.orderorbit.space/')->assertOk()->assertSee('Coming soon');
         $this->get('https://orderorbit.space/pricing?ref=x')->assertStatus(301)->assertRedirect('https://growvia.orderorbit.space/pricing?ref=x');

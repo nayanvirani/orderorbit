@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>OrderOrbit · Coming soon</title>
-    <meta name="description" content="OrderOrbit builds technology for online commerce. A new website is on its way.">
+    <title>OrderOrbit Space · Coming soon</title>
+    <meta name="description" content="OrderOrbit Space builds technology for online commerce. A new website is on its way.">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -38,7 +38,7 @@
 <body>
     <main>
         <div class="orbit" aria-hidden="true"><span></span><span></span><b></b><i></i></div>
-        <div class="eyebrow">OrderOrbit</div>
+        <div class="eyebrow">OrderOrbit Space</div>
         <h1>Coming soon</h1>
         <p>We build technology for online commerce. Our new website is on its way.</p>
         <a class="product" href="{{ $growvia }}">
@@ -46,7 +46,7 @@
             <span><strong>Growvia</strong><small>Bundles, upsells, gifts and checkout offers for Shopify stores.</small></span>
             <em>Visit →</em>
         </a>
-        <footer>© {{ date('Y') }} OrderOrbit</footer>
+        <footer>© {{ date('Y') }} OrderOrbit Space</footer>
     </main>
 </body>
 </html>
