@@ -137,3 +137,6 @@
 .bx-type:hover .bx-cta { background: var(--ob-accent-soft, #eef2ff); }
 .bx-card { border-radius: 12px; }
 .bx-pill { font-weight: 600; }
+
+/* The box's sticky "Add to cart" sits in place inside the editor preview instead of floating over the cards. */
+.b-stage .oo-bundle:has(.oo-xbox) .oo-badd { position: static; }
