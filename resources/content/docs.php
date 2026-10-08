@@ -664,8 +664,8 @@ Lift:        (B − A) / A,  shown with its confidence interval',
         'icon' => 'tool',
         'sections' => [
             'hooks' => ['Callbacks', [
-                ['p', 'Define functions on **window.OrderOrbitHooks** in your theme, or listen for the matching events on document. Nothing is stored in the app.'],
-                ['code', "window.OrderOrbitHooks = {\n  beforeAddToCart: function (detail) { /* before items are sent */ },\n  afterAddToCart:  function (detail) { /* after a successful add; return false to stay on the page */ },\n  addToCartFailed: function (detail) { /* when Shopify refuses the add */ }\n};\n\ndocument.addEventListener('orderorbit:added-to-cart', (e) => console.log(e.detail));"],
+                ['p', 'Define functions on **window.GrowviaHooks** in your theme, or listen for the matching events on document. Nothing is stored in the app.'],
+                ['code', "window.GrowviaHooks = {\n  beforeAddToCart: function (detail) { /* before items are sent */ },\n  afterAddToCart:  function (detail) { /* after a successful add; return false to stay on the page */ },\n  addToCartFailed: function (detail) { /* when Shopify refuses the add */ }\n};\n\ndocument.addEventListener('growvia:added-to-cart', (e) => console.log(e.detail));"],
             ]],
             'detail' => ['The detail object', [
                 ['table', ['Field', 'Meaning'], [
@@ -679,7 +679,7 @@ Lift:        (B − A) / A,  shown with its confidence interval',
             ]],
             'drawer' => ['Open your cart drawer', [
                 ['p', 'Use afterAddToCart, redraw your theme\'s drawer and return false so the shopper stays on the page. For Dawn-based themes:'],
-                ['code', "window.OrderOrbitHooks = {\n  afterAddToCart: async function (detail) {\n    const drawer = document.querySelector('cart-drawer');\n    if (!drawer) return;\n    const ids = drawer.getSectionsToRender().map((s) => s.id);\n    const res = await fetch('/?sections=' + ids.join(','));\n    drawer.renderContents({ sections: await res.json() });\n    return false;\n  }\n};"],
+                ['code', "window.GrowviaHooks = {\n  afterAddToCart: async function (detail) {\n    const drawer = document.querySelector('cart-drawer');\n    if (!drawer) return;\n    const ids = drawer.getSectionsToRender().map((s) => s.id);\n    const res = await fetch('/?sections=' + ids.join(','));\n    drawer.renderContents({ sections: await res.json() });\n    return false;\n  }\n};"],
                 ['note', 'Growvia never opens or intercepts your cart drawer on its own; callbacks are how your theme takes over.'],
             ]],
         ],

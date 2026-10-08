@@ -23,8 +23,8 @@ class Funnels
     /** Ready-made funnels for the "Add a funnel" menu. */
     public const PRESETS = [
         'purchase' => ['name' => 'Store purchase funnel', 'steps' => ['product_viewed', 'product_added_to_cart', 'checkout_started', 'checkout_completed']],
-        'bundle' => ['name' => 'Bundle funnel', 'steps' => ['product_viewed', 'orderorbit:bundle_viewed', 'orderorbit:bundle_completed', 'checkout_started', 'checkout_completed']],
-        'upsell' => ['name' => 'Upsell funnel', 'steps' => ['orderorbit:upsell_viewed', 'orderorbit:upsell_accepted', 'checkout_completed']],
+        'bundle' => ['name' => 'Bundle funnel', 'steps' => ['product_viewed', 'growvia:bundle_viewed', 'growvia:bundle_completed', 'checkout_started', 'checkout_completed']],
+        'upsell' => ['name' => 'Upsell funnel', 'steps' => ['growvia:upsell_viewed', 'growvia:upsell_accepted', 'checkout_completed']],
         'checkout' => ['name' => 'Checkout funnel', 'steps' => ['cart_viewed', 'checkout_started', 'payment_info_submitted', 'checkout_completed']],
     ];
 

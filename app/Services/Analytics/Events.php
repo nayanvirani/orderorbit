@@ -5,7 +5,7 @@ namespace App\Services\Analytics;
 /**
  * The event catalogue: Shopify's standard storefront events (from the web pixel) and Growvia
  * Space's own events. Experience events are recorded under a specific name where the spec has one
- * (orderorbit:bundle_viewed) and fall back to the generic one (orderorbit:experience_viewed).
+ * (growvia:bundle_viewed) and fall back to the generic one (growvia:experience_viewed).
  */
 class Events
 {
@@ -25,28 +25,28 @@ class Events
     ];
 
     public const ORDERORBIT = [
-        'orderorbit:experience_viewed' => 'Widget viewed',
-        'orderorbit:experience_clicked' => 'Widget clicked',
-        'orderorbit:experience_closed' => 'Widget closed',
-        'orderorbit:bundle_viewed' => 'Bundle viewed',
-        'orderorbit:bundle_completed' => 'Bundle added to cart',
-        'orderorbit:shipping_progress_viewed' => 'Shipping progress viewed',
-        'orderorbit:shipping_threshold_reached' => 'Shipping threshold reached',
-        'orderorbit:free_gift_viewed' => 'Free gift viewed',
-        'orderorbit:free_gift_unlocked' => 'Free gift unlocked',
-        'orderorbit:upsell_viewed' => 'Upsell viewed',
-        'orderorbit:upsell_accepted' => 'Upsell accepted',
-        'orderorbit:upsell_declined' => 'Upsell declined',
-        'orderorbit:sticky_atc_viewed' => 'Sticky add to cart viewed',
-        'orderorbit:sticky_atc_clicked' => 'Sticky add to cart clicked',
-        'orderorbit:checkout_block_viewed' => 'Checkout block viewed',
-        'orderorbit:checkout_block_clicked' => 'Checkout block clicked',
-        'orderorbit:added_to_cart' => 'Added to cart from an offer',
-        'orderorbit:reward_unlocked' => 'Reward unlocked',
-        'orderorbit:survey_answered' => 'Survey answered',
-        'orderorbit:experiment_exposed' => 'A/B test exposure',
-        'orderorbit:automation_triggered' => 'Automation triggered',
-        'orderorbit:automation_completed' => 'Automation completed',
+        'growvia:experience_viewed' => 'Widget viewed',
+        'growvia:experience_clicked' => 'Widget clicked',
+        'growvia:experience_closed' => 'Widget closed',
+        'growvia:bundle_viewed' => 'Bundle viewed',
+        'growvia:bundle_completed' => 'Bundle added to cart',
+        'growvia:shipping_progress_viewed' => 'Shipping progress viewed',
+        'growvia:shipping_threshold_reached' => 'Shipping threshold reached',
+        'growvia:free_gift_viewed' => 'Free gift viewed',
+        'growvia:free_gift_unlocked' => 'Free gift unlocked',
+        'growvia:upsell_viewed' => 'Upsell viewed',
+        'growvia:upsell_accepted' => 'Upsell accepted',
+        'growvia:upsell_declined' => 'Upsell declined',
+        'growvia:sticky_atc_viewed' => 'Sticky add to cart viewed',
+        'growvia:sticky_atc_clicked' => 'Sticky add to cart clicked',
+        'growvia:checkout_block_viewed' => 'Checkout block viewed',
+        'growvia:checkout_block_clicked' => 'Checkout block clicked',
+        'growvia:added_to_cart' => 'Added to cart from an offer',
+        'growvia:reward_unlocked' => 'Reward unlocked',
+        'growvia:survey_answered' => 'Survey answered',
+        'growvia:experiment_exposed' => 'A/B test exposure',
+        'growvia:automation_triggered' => 'Automation triggered',
+        'growvia:automation_completed' => 'Automation completed',
     ];
 
     /** Short codes kept in the "event" column for the offer reports. */
@@ -97,7 +97,7 @@ class Events
             default => null,
         };
 
-        return 'orderorbit:'.($specific ?? $event);
+        return 'growvia:'.($specific ?? $event);
     }
 
     /** Page type from a storefront path. */

@@ -63,25 +63,25 @@
   }
 
   /**
-   * Theme callbacks. A theme can define functions on window.OrderOrbitHooks and/or listen for the
+   * Theme callbacks. A theme can define functions on window.GrowviaHooks and/or listen for the
    * matching document event. Returning false from the function, or calling preventDefault() on
-   * the event, changes what OrderOrbit does next. Errors in theme code never break the widget.
-   *   beforeAddToCart  / orderorbit:before-add      → false cancels the add
-   *   afterAddToCart   / orderorbit:added-to-cart   → false keeps the shopper on the page
-   *   addToCartFailed  / orderorbit:add-failed
+   * the event, changes what Growvia does next. Errors in theme code never break the widget.
+   *   beforeAddToCart  / growvia:before-add      → false cancels the add
+   *   afterAddToCart   / growvia:added-to-cart   → false keeps the shopper on the page
+   *   addToCartFailed  / growvia:add-failed
    * Resolves to false when the theme asked for the default to be skipped.
    */
   function hook(name, event, detail) {
     var go = true;
     try {
-      if (!document.dispatchEvent(new CustomEvent('orderorbit:' + event, { detail: detail, cancelable: true }))) go = false;
+      if (!document.dispatchEvent(new CustomEvent('growvia:' + event, { detail: detail, cancelable: true }))) go = false;
     } catch (e) { /* old browsers */ }
-    var fn = window.OrderOrbitHooks && window.OrderOrbitHooks[name];
+    var fn = window.GrowviaHooks && window.GrowviaHooks[name];
     if (typeof fn !== 'function') return Promise.resolve(go);
     return Promise.resolve().then(function () { return fn(detail); }).then(function (result) {
       return go && result !== false;
     }).catch(function (err) {
-      if (window.console) console.error('[OrderOrbit] ' + name + ' callback failed', err);
+      if (window.console) console.error('[Growvia] ' + name + ' callback failed', err);
       return go;
     });
   }
@@ -165,7 +165,7 @@
         if (after === 'checkout') { location.href = root() + 'checkout'; return true; }
         if (after === 'cart') { location.href = root() + 'cart'; return true; }
         status(rootEl, 'Added to your cart.');
-        document.dispatchEvent(new CustomEvent('orderorbit:cart-updated', { detail: { experience_id: exp.id } }));
+        document.dispatchEvent(new CustomEvent('growvia:cart-updated', { detail: { experience_id: exp.id } }));
         reset();
         themeCart();
         return OrderOrbit.refreshCart().then(function () { return true; });

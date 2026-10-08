@@ -67,7 +67,7 @@ class Engine
         if (! $test) {
             $this->usage->increment($store, 'automation_executions');
             $workflow->forceFill(['last_run_at' => now()])->save();
-            $this->record($run, 'orderorbit:automation_triggered');
+            $this->record($run, 'growvia:automation_triggered');
         }
 
         return $this->execute($run);
@@ -177,7 +177,7 @@ class Engine
         $run->forceFill(['status' => 'completed', 'results' => $results, 'resume_at' => null, 'finished_at' => now()])->save();
         $this->log($run, $run->step, 'end', 'ok', $run->test ? 'Test finished. Nothing was changed.' : 'Workflow finished.');
         if (! $run->test) {
-            $this->record($run, 'orderorbit:automation_completed');
+            $this->record($run, 'growvia:automation_completed');
         }
 
         return $run;

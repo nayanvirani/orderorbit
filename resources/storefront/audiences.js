@@ -18,9 +18,9 @@
   function interactions() {
     try { return JSON.parse(localStorage.getItem('oo_ix') || '{}'); } catch (e) { return {}; }
   }
-  document.addEventListener('orderorbit:event', function (e) {
+  document.addEventListener('growvia:event', function (e) {
     var d = e.detail || {};
-    var kind = { 'orderorbit:experience_viewed': 'v', 'orderorbit:experience_clicked': 'c', 'orderorbit:added_to_cart': 'a' }[d.event];
+    var kind = { 'growvia:experience_viewed': 'v', 'growvia:experience_clicked': 'c', 'growvia:added_to_cart': 'a' }[d.event];
     if (!kind || !d.experience_id) return;
     var all = interactions();
     (all[d.experience_id] = all[d.experience_id] || {})[kind] = Date.now();

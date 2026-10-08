@@ -3,7 +3,7 @@
         <div style="border-right:1px solid #ebe9f5;padding:12px;font-size:11.5px;background:#fbfaff">
             <b style="font:800 12px var(--font-head)">Product information</b>
             @foreach (['Title', 'Price', 'Variant picker'] as $b)<div style="padding:7px 8px;border-radius:7px;margin-top:6px;background:#fff;border:1px solid #ebe9f5">{{ $b }}</div>@endforeach
-            <div class="oo-block" style="padding:8px;margin-top:8px"><span class="oo-tag">ORDERORBIT</span><b style="font-size:11.5px">Growvia · Bundle</b></div>
+            <div class="oo-block" style="padding:8px;margin-top:8px"><span class="oo-tag">GROWVIA</span><b style="font-size:11.5px">Growvia · Bundle</b></div>
             @foreach (['Buy buttons', 'Description'] as $b)<div style="padding:7px 8px;border-radius:7px;margin-top:6px;background:#fff;border:1px solid #ebe9f5">{{ $b }}</div>@endforeach
             <div style="margin-top:10px;color:#7a5cff;font-weight:700">+ Add block</div>
         </div>

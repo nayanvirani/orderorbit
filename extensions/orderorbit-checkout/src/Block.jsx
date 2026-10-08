@@ -37,8 +37,8 @@ function money(amount) {
 
 function track(exp, event, extra) {
   try {
-    shopify.analytics?.publish('orderorbit_event', Object.assign({
-      event: 'orderorbit:' + event, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version,
+    shopify.analytics?.publish('growvia_event', Object.assign({
+      event: 'growvia:' + event, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version,
     }, exp.xv ? { experiment_id: exp.x.id, variant: exp.xv } : {}, extra || {}));
   } catch (e) {
     /* analytics not available on this page */

@@ -9,7 +9,7 @@
             <div class="line w90"></div><div class="line w70"></div>
             <div class="fake-btn" style="margin:12px 0 14px">Add to cart</div>
             <div class="oo-block">
-                <span class="oo-tag">ORDERORBIT UPSELL</span>
+                <span class="oo-tag">GROWVIA UPSELL</span>
                 <h5>Frequently added</h5>
                 <div class="upsell">
                     <div class="ph art"><div class="card-art"></div></div>

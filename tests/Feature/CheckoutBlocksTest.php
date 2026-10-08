@@ -134,7 +134,7 @@ class CheckoutBlocksTest extends TestCase
         $manager->publish($survey, null);
 
         $send = fn (string $answer) => $this->call('POST', '/api/pixel', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode([
-            't' => str_repeat('s', 40), 's' => $store->shop_domain, 'k' => 'e', 'e' => 'orderorbit:survey_answered', 'x' => $survey->handle, 'a' => $answer,
+            't' => str_repeat('s', 40), 's' => $store->shop_domain, 'k' => 'e', 'e' => 'growvia:survey_answered', 'x' => $survey->handle, 'a' => $answer,
         ]));
         $send('Instagram');
         $send('Instagram');

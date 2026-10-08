@@ -134,7 +134,7 @@ class ExperimentsTest extends TestCase
         $start = $experiment->started_at->copy()->addHour();
         for ($i = 0; $i < $visitors; $i++) {
             $vid = $variant.'-'.$i;
-            $rows[] = ['store_id' => $this->store->id, 'event' => 'expose', 'name' => 'orderorbit:experiment_exposed', 'visitor_id' => $vid, 'experiment_handle' => $experiment->handle, 'variant' => $variant,
+            $rows[] = ['store_id' => $this->store->id, 'event' => 'expose', 'name' => 'growvia:experiment_exposed', 'visitor_id' => $vid, 'experiment_handle' => $experiment->handle, 'variant' => $variant,
                 'experience_handle' => $experiment->experience->handle, 'device' => $device, 'occurred_at' => $start, 'quantity' => 1, 'value' => 0];
             if ($i < $buyers) {
                 $rows[] = ['store_id' => $this->store->id, 'event' => 'order', 'name' => 'checkout_completed', 'visitor_id' => $vid, 'experiment_handle' => null, 'variant' => null,
@@ -226,7 +226,7 @@ class ExperimentsTest extends TestCase
 
         // Pixel events carry the test and variant.
         $this->call('POST', '/api/pixel', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode(['t' => str_repeat('a', 40), 's' => $this->store->shop_domain, 'k' => 'e', 'e' => 'experiment_exposed', 'x' => $experience->handle, 'ty' => 'countdown', 'xp' => $experiment->handle, 'xv' => 'B', 'vid' => 'v1']));
-        $this->assertSame(['expose', 'orderorbit:experiment_exposed', $experiment->handle, 'B'], array_values(AnalyticsEvent::where('event', 'expose')->sole()->only(['event', 'name', 'experiment_handle', 'variant'])));
+        $this->assertSame(['expose', 'growvia:experiment_exposed', $experiment->handle, 'B'], array_values(AnalyticsEvent::where('event', 'expose')->sole()->only(['event', 'name', 'experiment_handle', 'variant'])));
     }
 
     public function test_checkout_and_thank_you_blocks_can_be_tested(): void
@@ -266,9 +266,9 @@ class ExperimentsTest extends TestCase
         $start = now()->subMinutes(30);
         foreach (['A' => 10, 'B' => 30] as $variant => $clicks) {
             for ($i = 0; $i < 40; $i++) {
-                AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'expose', 'name' => 'orderorbit:experiment_exposed', 'visitor_id' => $variant.$i, 'experiment_handle' => $test->handle, 'variant' => $variant, 'occurred_at' => $start]);
+                AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'expose', 'name' => 'growvia:experiment_exposed', 'visitor_id' => $variant.$i, 'experiment_handle' => $test->handle, 'variant' => $variant, 'occurred_at' => $start]);
                 if ($i < $clicks) {
-                    AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'click', 'name' => 'orderorbit:checkout_block_clicked', 'visitor_id' => $variant.$i, 'experience_handle' => $trust->handle, 'occurred_at' => $start->copy()->addMinute()]);
+                    AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'click', 'name' => 'growvia:checkout_block_clicked', 'visitor_id' => $variant.$i, 'experience_handle' => $trust->handle, 'occurred_at' => $start->copy()->addMinute()]);
                 }
             }
         }

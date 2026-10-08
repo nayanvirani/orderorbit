@@ -63,7 +63,7 @@ class Results
                     $e->event === 'close' => $p['closes']++,
                     default => null,
                 };
-                if ($e->name === 'orderorbit:bundle_completed') {
+                if ($e->name === 'growvia:bundle_completed') {
                     $p['bundle'] = true;
                 }
                 unset($p);

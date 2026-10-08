@@ -2,6 +2,7 @@
 
 client_id = "6c6351ce074785f2db1fee2ac2ee484c"
 name = "Growvia"
+handle = "growvia"
 application_url = "https://growvia.orderorbit.space/app"
 embedded = true
 

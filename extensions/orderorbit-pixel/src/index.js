@@ -121,9 +121,9 @@ register(({analytics, browser, init, settings}) => {
     return {p: p.id || undefined, va: v.id || undefined, lb: p.title || v.title || undefined};
   };
 
-  analytics.subscribe('orderorbit_event', (event) => {
+  analytics.subscribe('growvia_event', (event) => {
     const d = event.customData || {};
-    send(event, {k: 'e', e: String(d.event || '').replace('orderorbit:', ''), x: d.experience_id, ty: d.experience_type, tp: d.template_id, q: d.quantity || 1, a: d.answer || undefined,
+    send(event, {k: 'e', e: String(d.event || '').replace(/^(growvia|orderorbit):/, ''), x: d.experience_id, ty: d.experience_type, tp: d.template_id, q: d.quantity || 1, a: d.answer || undefined,
       // A/B test and variant, when the experience is in a running test.
       xp: d.experiment_id || undefined, xv: d.variant || undefined});
   });

@@ -38,7 +38,7 @@
 </head>
 <body>
     <main>
-        <a class="logo" href="/"><img src="/brand/orderorbit-logo.svg" alt="Growvia" width="190" height="34"></a>
+        <a class="logo" href="/"><img src="/brand/growvia-logo.svg" alt="Growvia" width="190" height="34"></a>
         <div class="orbit" aria-hidden="true"><span></span><b></b><i></i></div>
         <div class="code">{{ $e['code'] }}</div>
         <h1>{{ site_md($e['heading']) }}</h1>

@@ -1,5 +1,5 @@
 /* Product-screen mockups (storefront, admin and checkout screens drawn in HTML/CSS).
-   These are "screens", so they stay light on the dark site; the OrderOrbit block
+   These are "screens", so they stay light on the dark site; the Growvia block
    highlight inside them uses the brand gradient. */
 .visual, .tpl, .bento-screen, .sat { --ink: #0e0b2b; --indigo: var(--c-accent); --mint: #12b886; --font-head: var(--f-body), system-ui, sans-serif; --font-body: var(--f-body), system-ui, sans-serif; --shadow-lg: 0 40px 90px -30px rgba(0, 0, 0, .8), 0 12px 30px rgba(0, 0, 0, .35); }
 .visual .float-chip { border-color: #ececf3; }
@@ -32,7 +32,7 @@
 .line + .line { margin-top: 7px; }
 .w40 { width: 40%; } .w60 { width: 60%; } .w70 { width: 70%; } .w80 { width: 80%; } .w90 { width: 90%; }
 
-/* The OrderOrbit block highlight */
+/* The Growvia block highlight */
 .oo-block { position: relative; border-radius: 14px; padding: 12px; background: #fff; border: 1.5px solid transparent; background-image: linear-gradient(#fff, #fff), var(--grad); background-origin: border-box; background-clip: padding-box, border-box; box-shadow: 0 0 0 5px rgba(143,92,255,.12), 0 14px 30px -12px rgba(91,75,255,.45); }
 .oo-block .oo-tag { position: absolute; top: -10px; right: 12px; background: var(--grad); color: #fff; font: 700 10px/1 var(--font-head); letter-spacing: .06em; padding: 5px 8px; border-radius: 999px; box-shadow: 0 6px 14px -4px rgba(91,75,255,.6); }
 .oo-block h5 { margin: 0 0 8px; font: 800 13px/1.2 var(--font-head); }

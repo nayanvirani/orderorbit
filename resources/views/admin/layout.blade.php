@@ -28,7 +28,7 @@
     @endphp
     <div class="ad-app">
         <aside class="ad-side">
-            <a class="ad-brand" href="{{ route('admin.home') }}"><img src="/brand/orderorbit-icon.svg" alt="" width="30" height="30"><span>Growvia<small>Internal admin</small></span></a>
+            <a class="ad-brand" href="{{ route('admin.home') }}"><img src="/brand/growvia-icon.svg" alt="" width="30" height="30"><span>Growvia<small>Internal admin</small></span></a>
             @foreach ($nav as $group => $items)
                 @php($items = array_filter($items, fn ($i) => \App\Support\AdminRoles::can($me, $i[3])))
                 @continue(! $items)

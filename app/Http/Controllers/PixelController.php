@@ -48,7 +48,7 @@ class PixelController extends Controller
         if (! $store->privacy('journeys')) {
             unset($base['customer_id']);
         }
-        $data['e'] = str_replace('orderorbit:', '', (string) ($data['e'] ?? ''));
+        $data['e'] = preg_replace('/^(growvia|orderorbit):/', '', (string) ($data['e'] ?? ''));
 
         // Growvia events can start workflows ("Growvia event" trigger).
         if (($data['k'] ?? null) === 'e' && in_array($data['e'], ['survey_answered', 'reward_unlocked', 'upsell_accepted', 'added_to_cart'], true)) {
@@ -170,7 +170,7 @@ class PixelController extends Controller
             }
         }
         foreach ($credited as $who => $c) {
-            AnalyticsEvent::create($base + ['event' => 'attributed', 'name' => 'orderorbit:revenue_attributed', 'experience_handle' => $who, 'order_ref' => $ref, 'value' => round($c['value'], 2), 'quantity' => max(1, $c['quantity']), 'currency' => $currency, 'country' => $country]);
+            AnalyticsEvent::create($base + ['event' => 'attributed', 'name' => 'growvia:revenue_attributed', 'experience_handle' => $who, 'order_ref' => $ref, 'value' => round($c['value'], 2), 'quantity' => max(1, $c['quantity']), 'currency' => $currency, 'country' => $country]);
         }
 
         $this->purchases($store, $ref, $data);

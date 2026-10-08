@@ -151,9 +151,9 @@ return [
         'icon' => 'tool',
         'text' => 'Run your own theme code when shoppers use a Growvia offer.',
         'articles' => [
-            ['What are callbacks?', 'Callbacks let your theme run its own JavaScript at key moments, such as right after a Growvia button adds to the cart. You write the code in your theme (for example in theme.liquid or a theme script file); nothing is stored in the app. Define functions on window.OrderOrbitHooks, or listen for the matching events on document. Both work, and you can use either.', <<<'JS'
+            ['What are callbacks?', 'Callbacks let your theme run its own JavaScript at key moments, such as right after a Growvia button adds to the cart. You write the code in your theme (for example in theme.liquid or a theme script file); nothing is stored in the app. Define functions on window.GrowviaHooks, or listen for the matching events on document. Both work, and you can use either.', <<<'JS'
             <script>
-              window.OrderOrbitHooks = {
+              window.GrowviaHooks = {
                 beforeAddToCart: function (detail) { /* runs before items are sent */ },
                 afterAddToCart:  function (detail) { /* runs after a successful add */ },
                 addToCartFailed: function (detail) { /* runs when Shopify refuses the add */ }
@@ -161,7 +161,7 @@ return [
             </script>
             JS],
             ['How do I open my cart drawer after an add?', 'Use afterAddToCart and return false. Returning false tells Growvia you have handled it, so the shopper stays on the page instead of being sent to the cart. Then open your drawer the way your theme does. The example is for Dawn and themes based on it; other themes have their own way to open the drawer.', <<<'JS'
-            window.OrderOrbitHooks = {
+            window.GrowviaHooks = {
               afterAddToCart: async function (detail) {
                 // Ask Shopify for the drawer's new HTML and let the theme redraw it.
                 const drawer = document.querySelector('cart-drawer');
@@ -175,7 +175,7 @@ return [
             };
             JS],
             ['What is in "detail"?', 'Every callback receives one object. detail.experience tells you which offer was used: its id, its type (bundles, cart-upsells, progressive-gifts and so on) and its template. detail.items is the list being added, each with a variant id, a quantity and line properties. detail.after is what Growvia will do next: "cart", "checkout" or "stay". detail.element is the widget on the page. After a successful add, detail.response is Shopify\'s reply. detail.getCart() returns the live cart.', <<<'JS'
-            window.OrderOrbitHooks = {
+            window.GrowviaHooks = {
               afterAddToCart: async function (detail) {
                 console.log(detail.experience.type);   // e.g. "bundles"
                 console.log(detail.items);             // [{ id, quantity, properties }]
@@ -186,7 +186,7 @@ return [
             };
             JS],
             ['Can I change or cancel an add?', 'Yes, in beforeAddToCart. Change detail.items to alter what is added, for example to attach a line property. Return false to cancel the add completely. Keep the _oo_offer property that is already on each item: it is how the offer\'s price is applied at checkout.', <<<'JS'
-            window.OrderOrbitHooks = {
+            window.GrowviaHooks = {
               beforeAddToCart: function (detail) {
                 if (!document.querySelector('#terms').checked) {
                   alert('Please accept the terms first.');
@@ -199,20 +199,20 @@ return [
             };
             JS],
             ['Can I send shoppers somewhere else after an add?', 'Yes. Set detail.after in afterAddToCart to "cart", "checkout" or "stay" to override the offer\'s own setting, or return false and redirect yourself.', <<<'JS'
-            window.OrderOrbitHooks = {
+            window.GrowviaHooks = {
               afterAddToCart: function (detail) {
                 if (detail.experience.type === 'bundles') detail.after = 'checkout';
               }
             };
             JS],
-            ['Can I use events instead of functions?', 'Yes. The same three moments are sent as events on document: orderorbit:before-add, orderorbit:added-to-cart and orderorbit:add-failed. The event\'s detail is the same object, and calling preventDefault() does what returning false does. Events can\'t wait for asynchronous work, so use the functions when you need await. There is also orderorbit:event, which reports views, clicks and unlocked rewards for your own tracking.', <<<'JS'
-            document.addEventListener('orderorbit:added-to-cart', function (event) {
+            ['Can I use events instead of functions?', 'Yes. The same three moments are sent as events on document: growvia:before-add, growvia:added-to-cart and growvia:add-failed. The event\'s detail is the same object, and calling preventDefault() does what returning false does. Events can\'t wait for asynchronous work, so use the functions when you need await. There is also growvia:event, which reports views, clicks and unlocked rewards for your own tracking.', <<<'JS'
+            document.addEventListener('growvia:added-to-cart', function (event) {
               event.preventDefault();                  // stay on the page
               myTheme.openCart();
             });
 
-            document.addEventListener('orderorbit:event', function (event) {
-              // event.detail.event is e.g. "orderorbit:experience_viewed"
+            document.addEventListener('growvia:event', function (event) {
+              // event.detail.event is e.g. "growvia:experience_viewed"
               console.log(event.detail.event, event.detail.experience_id);
             });
             JS],

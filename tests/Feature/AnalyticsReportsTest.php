@@ -44,7 +44,7 @@ class AnalyticsReportsTest extends TestCase
         $code = match (true) {
             $name === 'checkout_completed' => 'order',
             $name === 'session_started' => 'session',
-            str_starts_with($name, 'orderorbit:') => $extra['event'] ?? 'view',
+            str_starts_with($name, 'growvia:') => $extra['event'] ?? 'view',
             default => 'std',
         };
         unset($extra['event']);
@@ -66,7 +66,7 @@ class AnalyticsReportsTest extends TestCase
         $this->pixel($ctx + ['k' => 'e', 'e' => 'reward_unlocked', 'x' => 'gift1', 'ty' => 'free-gifts']);
         $this->pixel($ctx + ['k' => 'o', 'id' => 'gid://shopify/Order/9', 'v' => 58, 'c' => 'USD', 'cc' => 'CA', 'oc' => 'gid://shopify/Customer/4321', 'l' => [['q' => 2, 'v' => 58, 'o' => 'bnd1']]]);
 
-        $this->assertSame(['session_started', 'product_viewed', 'search_submitted', 'collection_viewed', 'orderorbit:bundle_viewed', 'orderorbit:sticky_atc_clicked', 'orderorbit:free_gift_unlocked', 'checkout_completed', 'orderorbit:revenue_attributed'],
+        $this->assertSame(['session_started', 'product_viewed', 'search_submitted', 'collection_viewed', 'growvia:bundle_viewed', 'growvia:sticky_atc_clicked', 'growvia:free_gift_unlocked', 'checkout_completed', 'growvia:revenue_attributed'],
             AnalyticsEvent::orderBy('id')->pluck('name')->all());
 
         $product = AnalyticsEvent::where('name', 'product_viewed')->sole();
@@ -74,12 +74,12 @@ class AnalyticsReportsTest extends TestCase
             [$product->visitor_id, $product->session_id, $product->device, $product->source, $product->medium, $product->campaign, $product->page_type, $product->product_id, $product->variant_id, $product->label]);
         $this->assertSame('serum', AnalyticsEvent::where('name', 'search_submitted')->value('label'));
         $this->assertSame(['collection_id' => '9'], AnalyticsEvent::where('name', 'collection_viewed')->sole()->properties);
-        $this->assertSame(['bnd1', 'bundles', 'stacked-cards', 'view'], array_values(AnalyticsEvent::where('name', 'orderorbit:bundle_viewed')->sole()->only(['experience_handle', 'experience_type', 'template', 'event'])));
+        $this->assertSame(['bnd1', 'bundles', 'stacked-cards', 'view'], array_values(AnalyticsEvent::where('name', 'growvia:bundle_viewed')->sole()->only(['experience_handle', 'experience_type', 'template', 'event'])));
         $order = AnalyticsEvent::where('event', 'order')->sole();
         $this->assertSame(['4321', 'CA', 2, 'v-123'], [$order->customer_id, $order->country, $order->quantity, $order->visitor_id]);
 
-        $this->assertSame('orderorbit:checkout_block_viewed', Events::nameFor('experience_viewed', 'ty-survey'));
-        $this->assertSame('orderorbit:experience_viewed', Events::nameFor('experience_viewed', 'countdown'));
+        $this->assertSame('growvia:checkout_block_viewed', Events::nameFor('experience_viewed', 'ty-survey'));
+        $this->assertSame('growvia:experience_viewed', Events::nameFor('experience_viewed', 'countdown'));
         $this->assertSame('product', Events::pageType('/products/a'));
         $this->assertSame('index', Events::pageType('/fr/'));
     }
@@ -90,13 +90,13 @@ class AnalyticsReportsTest extends TestCase
         $this->event('a', 'product_viewed', '-2 days', ['device' => 'mobile', 'product_id' => '2', 'label' => 'Cream']);
         $this->event('b', 'product_viewed', '-1 day', ['device' => 'desktop', 'product_id' => '1', 'label' => 'Serum']);
         $this->event('c', 'product_viewed', '-40 days'); // previous period
-        $this->event('a', 'orderorbit:bundle_viewed', '-1 day', ['experience_handle' => 'bnd1']);
+        $this->event('a', 'growvia:bundle_viewed', '-1 day', ['experience_handle' => 'bnd1']);
 
         $explorer = app(Explorer::class);
         $events = collect($explorer->events($this->store, now()->subDays(30), now()))->keyBy('name');
         $this->assertSame([3, 2, 1, 1], [$events['product_viewed']['total'], $events['product_viewed']['visitors'], $events['product_viewed']['sessions'] - 1, $events['product_viewed']['previous']]);
         $this->assertSame(3, array_sum($events['product_viewed']['daily']));
-        $this->assertSame(1, $events['orderorbit:bundle_viewed']['total']);
+        $this->assertSame(1, $events['growvia:bundle_viewed']['total']);
 
         $byProduct = $explorer->breakdown($this->store, 'product_viewed', 'product_id', now()->subDays(30), now());
         $this->assertSame([['value' => '1', 'label' => 'Serum', 'total' => 2, 'visitors' => 2], ['value' => '2', 'label' => 'Cream', 'total' => 1, 'visitors' => 1]], $byProduct);
@@ -132,10 +132,10 @@ class AnalyticsReportsTest extends TestCase
     {
         // A visitor first came from Instagram, came back from Google and bought, after seeing a bundle.
         $this->event('v1', 'session_started', '-3 days', ['source' => 'instagram', 'session_id' => 's1']);
-        $this->event('v1', 'orderorbit:bundle_viewed', '-3 days', ['experience_handle' => 'bnd1', 'session_id' => 's1']);
+        $this->event('v1', 'growvia:bundle_viewed', '-3 days', ['experience_handle' => 'bnd1', 'session_id' => 's1']);
         $this->event('v1', 'session_started', '-1 day', ['source' => 'google', 'session_id' => 's2', 'campaign' => 'brand']);
         $this->event('v1', 'checkout_completed', '-1 day', ['source' => 'google', 'session_id' => 's2', 'campaign' => 'brand', 'value' => 100, 'order_ref' => 'o1', 'currency' => 'USD']);
-        AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'attributed', 'name' => 'orderorbit:revenue_attributed', 'experience_handle' => 'bnd1', 'order_ref' => 'o1', 'value' => 40, 'visitor_id' => 'v1', 'occurred_at' => now()->subDay()]);
+        AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'attributed', 'name' => 'growvia:revenue_attributed', 'experience_handle' => 'bnd1', 'order_ref' => 'o1', 'value' => 40, 'visitor_id' => 'v1', 'occurred_at' => now()->subDay()]);
         // Another visitor bought directly without any experience.
         $this->event('v2', 'session_started', '-1 day', ['source' => 'direct', 'session_id' => 'x']);
         $this->event('v2', 'checkout_completed', '-1 day', ['source' => 'direct', 'session_id' => 'x', 'value' => 50, 'order_ref' => 'o2']);
@@ -159,10 +159,10 @@ class AnalyticsReportsTest extends TestCase
     public function test_journeys_screens_and_privacy(): void
     {
         $this->event('v1', 'page_viewed', '-10 days', ['page_type' => 'index', 'source' => 'google']);
-        $this->event('v1', 'orderorbit:bundle_viewed', '-10 days', ['experience_handle' => 'bnd1']);
+        $this->event('v1', 'growvia:bundle_viewed', '-10 days', ['experience_handle' => 'bnd1']);
         $this->event('v1', 'checkout_completed', '-10 days', ['value' => 80, 'order_ref' => 'o1', 'customer_id' => '55', 'currency' => 'USD']);
         $this->event('v2', 'checkout_completed', '-2 days', ['value' => 30, 'order_ref' => 'o2', 'customer_id' => '55', 'session_id' => 'phone-1', 'currency' => 'USD']);
-        AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'auto', 'name' => 'orderorbit:automation_triggered', 'customer_id' => '55', 'label' => 'Win-back', 'properties' => ['run_id' => 7], 'occurred_at' => now()->subDay()]);
+        AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'auto', 'name' => 'growvia:automation_triggered', 'customer_id' => '55', 'label' => 'Win-back', 'properties' => ['run_id' => 7], 'occurred_at' => now()->subDay()]);
         $this->event('v3', 'page_viewed', '-1 day');
 
         $journeys = app(Journeys::class);
@@ -195,7 +195,7 @@ class AnalyticsReportsTest extends TestCase
 
         $this->page('/app/analytics', $owner)->assertOk()->assertJsonPath('shared.nav.section', 'analytics')->assertJsonPath('shared.nav.groups.0.items.2.label', 'Funnels');
         $this->page('/app/analytics/events', $owner)->assertOk()->assertJsonPath('props.events.product_viewed.total', 1)
-            ->assertJsonPath('props.catalogue.Shopify storefront events.payment_info_submitted', 'Payment info submitted')->assertSee('orderorbit:automation_completed');
+            ->assertJsonPath('props.catalogue.Shopify storefront events.payment_info_submitted', 'Payment info submitted')->assertSee('growvia:automation_completed');
         $this->page('/app/analytics/events?event=product_viewed&by=product_id', $owner)->assertOk()->assertJsonPath('props.breakdown.0.label', 'Serum');
         $this->page('/app/analytics/revenue?model=first&window=30', $owner)->assertOk()->assertJsonPath('props.model', 'first')->assertJsonPath('props.report.orders', 1);
 
@@ -207,9 +207,9 @@ class AnalyticsReportsTest extends TestCase
         $this->page('/app/analytics/funnels', $owner)->assertOk()->assertJsonPath('props.funnels.0.steps', 'Product viewed → Product added to cart → Checkout started → Checkout completed (purchase)');
 
         $this->post('/app/analytics/funnels', ['name' => 'Too short', 'steps' => [['event' => 'product_viewed'], ['event' => 'bogus']]], $this->as($owner))->assertRedirectContains('error=');
-        $this->post('/app/analytics/funnels/'.$funnel->id, ['name' => 'Bundle path', 'within' => 'session', 'steps' => [['event' => 'orderorbit:bundle_viewed', 'experience' => 'bnd1'], ['event' => 'checkout_completed'], ['event' => '']]], $this->as($owner))->assertRedirect();
+        $this->post('/app/analytics/funnels/'.$funnel->id, ['name' => 'Bundle path', 'within' => 'session', 'steps' => [['event' => 'growvia:bundle_viewed', 'experience' => 'bnd1'], ['event' => 'checkout_completed'], ['event' => '']]], $this->as($owner))->assertRedirect();
         $funnel->refresh();
-        $this->assertSame(['Bundle path', 'session', [['event' => 'orderorbit:bundle_viewed', 'experience' => 'bnd1'], ['event' => 'checkout_completed']]], [$funnel->name, $funnel->within, $funnel->steps]);
+        $this->assertSame(['Bundle path', 'session', [['event' => 'growvia:bundle_viewed', 'experience' => 'bnd1'], ['event' => 'checkout_completed']]], [$funnel->name, $funnel->within, $funnel->steps]);
         $this->post('/app/analytics/funnels/'.$funnel->id.'/delete', [], $this->as($owner))->assertRedirect();
         $this->assertSame(0, AnalyticsFunnel::count());
 

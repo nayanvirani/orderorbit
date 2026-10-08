@@ -118,7 +118,7 @@ class SupportAndAdminTest extends TestCase
             $this->get('/docs/'.$slug)->assertOk();
         }
         $this->get('/docs/bundles')->assertSee('How bundles reach checkout')->assertSee('Progressive gifts →');
-        $this->get('/docs/developers')->assertSee('orderorbit:added-to-cart');
+        $this->get('/docs/developers')->assertSee('growvia:added-to-cart');
         config(['site.preview_password' => '']);
         $this->get('/sitemap.xml')->assertSee('/docs/customer-accounts');
     }

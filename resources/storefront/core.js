@@ -66,11 +66,11 @@
     var a = exp.analytics || {};
     if (name === 'experience_viewed' ? a.track_views === false : a.track_clicks === false) return;
     // Events from an experience in an A/B test carry its experiment and variant.
-    var detail = Object.assign({ event: 'orderorbit:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, exp.xv && { experiment_id: exp.x.id, variant: exp.xv }, extra || {});
+    var detail = Object.assign({ event: 'growvia:' + name, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version, timestamp: new Date().toISOString() }, exp.xv && { experiment_id: exp.x.id, variant: exp.xv }, extra || {});
     events.push(detail);
-    try { document.dispatchEvent(new CustomEvent('orderorbit:event', { detail: detail })); } catch (e) { /* old browsers */ }
+    try { document.dispatchEvent(new CustomEvent('growvia:event', { detail: detail })); } catch (e) { /* old browsers */ }
     // Shopify's analytics bus: the Growvia pixel records it (with the shopper's consent).
-    try { if (window.Shopify && Shopify.analytics && Shopify.analytics.publish) Shopify.analytics.publish('orderorbit_event', detail); } catch (e) { /* not a storefront */ }
+    try { if (window.Shopify && Shopify.analytics && Shopify.analytics.publish) Shopify.analytics.publish('growvia_event', detail); } catch (e) { /* not a storefront */ }
   }
 
   // ---------------------------------------------------------------- targeting
@@ -324,7 +324,7 @@
     } catch (e) { /* unsupported */ }
   }
 
-  window.OrderOrbit = { version: '1.4.0', need: script, render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
+  window.Growvia = window.OrderOrbit = { version: '1.4.0', need: script, render: render, define: define, setAssets: setAssets, mountAll: mountAll, refreshCart: refreshCart, matches: matches, choose: choose, track: track, events: events, h: h };
 
   var self = document.currentScript;
   if (self) setAssets(self.src);

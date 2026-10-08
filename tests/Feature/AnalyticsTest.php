@@ -29,9 +29,9 @@ class AnalyticsTest extends TestCase
         $this->assertSame(0, AnalyticsEvent::count(), 'A wrong token records nothing.');
 
         $this->pixel($auth + ['k' => 's'])->assertNoContent()->assertHeader('Access-Control-Allow-Origin', '*');
-        $this->pixel($auth + ['k' => 'e', 'e' => 'orderorbit:experience_viewed', 'x' => 'bnd1']);
-        $this->pixel($auth + ['k' => 'e', 'e' => 'orderorbit:added_to_cart', 'x' => 'bnd1', 'q' => 2]);
-        $this->pixel($auth + ['k' => 'e', 'e' => 'orderorbit:experience_viewed', 'x' => 'gift1']);
+        $this->pixel($auth + ['k' => 'e', 'e' => 'growvia:experience_viewed', 'x' => 'bnd1']);
+        $this->pixel($auth + ['k' => 'e', 'e' => 'growvia:added_to_cart', 'x' => 'bnd1', 'q' => 2]);
+        $this->pixel($auth + ['k' => 'e', 'e' => 'growvia:experience_viewed', 'x' => 'gift1']);
         $this->pixel($auth + ['k' => 'e', 'e' => 'reward_unlocked', 'x' => 'gift1']);
         $this->pixel($auth + ['k' => 'e', 'e' => 'upsell_accepted', 'x' => 'bnd1:u']);
         $this->pixel($auth + ['k' => 'e', 'e' => 'upsell_declined', 'x' => 'bnd1']);

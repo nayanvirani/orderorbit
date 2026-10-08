@@ -1,6 +1,6 @@
 <x-browser url="northtrail.co/pages/summer-sale" aria-label="Countdown banner and product timer">
     <div class="oo-block" style="padding:0;margin-bottom:14px">
-        <span class="oo-tag">ORDERORBIT COUNTDOWN</span>
+        <span class="oo-tag">GROWVIA COUNTDOWN</span>
         <div class="sale-banner">
             <div><strong>Summer Sale · up to 30% off</strong><span>Ends Sunday 11:59 PM (your timezone)</span></div>
             <div class="timer" data-countdown>
