@@ -6,9 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>OrderOrbit Space · Coming soon</title>
     <meta name="description" content="OrderOrbit Space builds technology for online commerce. A new website is on its way.">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
-    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+    @include('partials.favicons', ['dir' => 'brand/orderorbit-space/'])
     @include('site.partials.theme')
     <style>
         :root { --ink: var(--c-text); --paper: var(--c-bg); --muted: var(--c-muted); --line: var(--c-line); }

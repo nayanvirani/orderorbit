@@ -8,9 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>{{ $e['title'] }} · Growvia</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
-    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+    @include('partials.favicons')
     @include('site.partials.theme')
     <style>
         :root { --ink: var(--c-text); --paper: var(--c-bg); --muted: var(--c-muted); --line: var(--c-line); }

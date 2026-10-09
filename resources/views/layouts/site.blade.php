@@ -16,9 +16,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="{{ \App\Support\SiteTheme::get()['header_bg'] }}">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png">
-    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+    @include('partials.favicons')
     <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ filemtime(public_path('css/site.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/mockups.css') }}?v={{ filemtime(public_path('css/mockups.css')) }}">
     @include('site.partials.theme')
