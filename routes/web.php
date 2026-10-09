@@ -61,6 +61,7 @@ Route::controller(SiteController::class)->name('site.')->middleware([\App\Http\M
     Route::get('/pricing', 'pricing')->name('pricing');
     Route::get('/resources', 'resources')->name('resources');
     Route::get('/blog', 'blog')->name('blog');
+    Route::get('/blog/{slug}', 'blogPost')->where('slug', '[a-z0-9-]+')->name('blog.post');
     Route::get('/help', 'help')->name('help');
     Route::get('/docs', 'docsIndex')->name('docs.index');
     Route::get('/docs/{slug}', 'docs')->whereIn('slug', \App\Http\Controllers\SiteController::DOCS)->name('docs');
@@ -408,6 +409,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/legal/{page}/preview', 'preview')->whereNumber('page')->name('legal.preview');
             Route::get('/legal/{page}/versions/{version}', 'version')->whereNumber(['page', 'version'])->name('legal.version');
             Route::post('/legal/{page}/versions/{version}/restore', 'restore')->whereNumber(['page', 'version'])->name('legal.restore');
+        });
+
+        Route::middleware('admin.can:content')->controller(\App\Http\Controllers\Admin\BlogController::class)->group(function () {
+            Route::get('/blog', 'index')->name('blog');
+            Route::get('/blog/new', 'create')->name('blog.create');
+            Route::post('/blog', 'store')->name('blog.store');
+            Route::post('/blog/preview', 'preview')->name('blog.preview');
+            Route::get('/blog/{post}', 'edit')->whereNumber('post')->name('blog.edit');
+            Route::post('/blog/{post}', 'update')->whereNumber('post')->name('blog.update');
+            Route::post('/blog/{post}/delete', 'destroy')->whereNumber('post')->name('blog.delete');
         });
 
         Route::middleware('admin.can:team')->controller(\App\Http\Controllers\Admin\TeamController::class)->group(function () {

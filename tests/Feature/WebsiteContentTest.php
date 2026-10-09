@@ -81,12 +81,6 @@ class WebsiteContentTest extends TestCase
         $help[0]['articles'][] = ['Can I edit this help article?', 'Yes, in Website content.'];
         $this->save('list.help', $help);
         $this->get('/help')->assertSee('Can I edit this help article?');
-
-        $blog = SiteContent::get('list.blog');
-        $blog[0]['badge'] = '';
-        $blog[0]['title'] = 'A published post';
-        $this->save('list.blog', $blog);
-        $this->get('/blog')->assertSee('A published post');
     }
 
     public function test_copy_is_escaped_and_unsafe_links_are_dropped(): void

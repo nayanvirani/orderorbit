@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogPost;
 use App\Models\ContactSubmission;
 use App\Support\Content;
 use Illuminate\Http\RedirectResponse;
@@ -134,7 +135,7 @@ class SiteController extends Controller
     public function resources(): View
     {
         return view('site.resources', [
-            'posts' => Content::posts(),
+            'posts' => BlogPost::live()->orderByDesc('published_at')->limit(3)->get(),
             'helpCategories' => Content::helpCategories(),
             'templateCount' => count(Content::templates()),
         ]);
@@ -142,7 +143,22 @@ class SiteController extends Controller
 
     public function blog(): View
     {
-        return view('site.blog', ['posts' => Content::posts()]);
+        return view('site.blog', ['posts' => BlogPost::live()->orderByDesc('featured')->orderByDesc('published_at')->get()]);
+    }
+
+    public function blogPost(string $slug): View
+    {
+        return self::postView(BlogPost::live()->where('slug', $slug)->firstOrFail());
+    }
+
+    /** One article, with up to three more from the same topic first. Also used for the admin preview. */
+    public static function postView(BlogPost $post, bool $preview = false): View
+    {
+        $more = BlogPost::live()->whereKeyNot($post->id ?? 0)
+            ->orderByRaw('CASE WHEN category = ? THEN 0 ELSE 1 END', [(string) $post->category])
+            ->orderByDesc('published_at')->limit(3)->get();
+
+        return view('site.blog-post', ['post' => $post, 'more' => $more, 'preview' => $preview] + $post->render());
     }
 
     /** Documentation guides, linked from the app ("View documentation"). */
@@ -262,6 +278,9 @@ class SiteController extends Controller
         }
         foreach (array_keys(Content::solutions()) as $slug) {
             $urls[] = route('site.solution', $slug);
+        }
+        foreach (BlogPost::live()->pluck('slug') as $slug) {
+            $urls[] = route('site.blog.post', $slug);
         }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';

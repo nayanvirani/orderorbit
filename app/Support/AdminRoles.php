@@ -11,7 +11,7 @@ class AdminRoles
 {
     public const ROLES = [
         'super_admin' => ['Super Admin', 'Everything, including plans, email providers, legal pages, website content and design, platform settings and the team.'],
-        'operations' => ['Operations Admin', 'Stores and their access, templates, flags, failures, support, audit and website content.'],
+        'operations' => ['Operations Admin', 'Stores and their access, templates, flags, failures, support, audit, website content and the blog.'],
         'support' => ['Support Agent', 'Support tickets, and read-only store details.'],
     ];
 

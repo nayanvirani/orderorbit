@@ -68,10 +68,6 @@ class Content
         return TemplateGallery::all();
     }
 
-    public static function posts(): array
-    {
-        return array_map(fn ($post) => $post + ['slug' => Str::slug($post['title'])], SiteContent::applyList('blog', self::base('blog')));
-    }
 
     /** Documentation guides (/docs). */
     public static function docs(): array

@@ -45,7 +45,6 @@ class SiteContent
 
     /** Whole-file lists. */
     public const LISTS = [
-        'blog' => ['Blog posts', '/blog'],
         'help' => ['Help topics & articles', '/help'],
         'pricing' => ['Pricing questions', '/pricing'],
     ];
