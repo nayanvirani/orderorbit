@@ -19,6 +19,8 @@ class PlatformSettings
         'warn_at' => ['shopify.billing.warn_at', 'Warn merchants when a usage limit reaches', 'percent', 'Shown in the app as "You\'re close to your plan\'s limit for …", for every limit (widgets, bundles, workflows, automation runs…).'],
         'test_shops' => ['shopify.test_shops', 'Test stores (full access without a subscription)', 'list', 'One myshopify.com domain per line. They get the test plan below for free.'],
         'test_shop_plan' => ['shopify.test_shop_plan', 'Plan for test stores', 'plan', null],
+        'install_url' => ['shopify.install_url', 'App Store listing link', 'url', 'Every "Install app" button on the website opens this link, e.g. https://apps.shopify.com/growvia. Leave it empty until Shopify approves the app: the buttons open the contact page instead.'],
+        'sign_in_url' => ['shopify.sign_in_url', 'Sign in link', 'url', 'The website\'s "Sign in" link. Empty uses Shopify admin, where merchants open Growvia.'],
     ];
 
     public static function boot(): void
@@ -34,7 +36,8 @@ class PlatformSettings
             return;
         }
         foreach ($values as $key => $value) {
-            if (isset(self::FIELDS[$key])) {
+            // An empty value keeps the default from config (e.g. no App Store link yet).
+            if (isset(self::FIELDS[$key]) && $value !== null && $value !== '') {
                 config([self::FIELDS[$key][0] => $value]);
             }
         }
@@ -44,6 +47,20 @@ class PlatformSettings
     {
         DB::table('platform_settings')->updateOrInsert(['key' => $key], ['value' => json_encode($value), 'updated_at' => now(), 'created_at' => now()]);
         Cache::forget(self::KEY);
-        config([self::FIELDS[$key][0] => $value]);
+        if ($value !== null && $value !== '') {
+            config([self::FIELDS[$key][0] => $value]);
+        }
+    }
+
+    /** The saved value itself (null when not set), for the settings form. */
+    public static function saved(string $key): mixed
+    {
+        try {
+            $value = DB::table('platform_settings')->where('key', $key)->value('value');
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $value === null ? null : json_decode($value, true);
     }
 }

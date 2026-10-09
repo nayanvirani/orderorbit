@@ -35,8 +35,9 @@ return [
 
     'api_version' => env('SHOPIFY_API_VERSION', '2026-07'),
 
-    // Public "Install on Shopify" CTA; the App Store listing once it is live.
-    'install_url' => env('SHOPIFY_INSTALL_URL', '#install'),
+    // Public "Install app" buttons: the App Store listing, set in Internal Admin → Platform settings
+    // once Shopify approves the app. Until then they open the contact page.
+    'install_url' => env('SHOPIFY_INSTALL_URL', '/contact'),
 
     // Header "Sign In": merchants authenticate through Shopify, not a separate password.
     'sign_in_url' => env('SHOPIFY_SIGN_IN_URL', 'https://admin.shopify.com'),

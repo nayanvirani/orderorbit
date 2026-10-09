@@ -1,9 +1,20 @@
 @extends('admin.layout')
 @section('title', 'Platform settings')
 @section('content')
-<div class="ad-head"><div><h1>Platform settings</h1><p>Usage warnings and test stores for the whole platform.</p></div></div>
+<div class="ad-head"><div><h1>Platform settings</h1><p>Usage warnings, test stores and the website's Shopify links.</p></div></div>
 <form method="POST" action="{{ route('admin.settings.update') }}" class="ad-form">
     @csrf
+    <section class="ad-card">
+        <h2>Shopify App Store</h2>
+        @php($install = config('shopify.install_url'))
+        <p class="ad-muted" style="margin-top:-4px">"Install app" buttons now open <b>{{ $install === '/contact' ? 'the contact page' : $install }}</b>{{ $links['install_url'] ? '' : ', because no App Store link is set yet' }}.</p>
+        <div class="ad-fields">
+            <label>{{ $fields['install_url'][1] }}<input type="url" name="install_url" value="{{ old('install_url', $links['install_url']) }}" placeholder="https://apps.shopify.com/growvia" maxlength="300"><small>{{ $fields['install_url'][3] }}</small></label>
+            <label>{{ $fields['sign_in_url'][1] }}<input type="url" name="sign_in_url" value="{{ old('sign_in_url', $links['sign_in_url']) }}" placeholder="https://admin.shopify.com" maxlength="300"><small>{{ $fields['sign_in_url'][3] }}</small></label>
+        </div>
+        @error('install_url')<p class="ad-note warn" style="margin-top:12px">{{ $message }}</p>@enderror
+        @error('sign_in_url')<p class="ad-note warn" style="margin-top:12px">{{ $message }}</p>@enderror
+    </section>
     <section class="ad-card">
         <h2>Usage limits</h2>
         <div class="ad-fields">
