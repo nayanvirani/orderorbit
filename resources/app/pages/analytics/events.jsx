@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Field, Form } from '../../components/form.jsx';
 import { number, Page } from '../../components/ui.jsx';
-import { appUrl, route, useRouter, useUrl, withQuery } from '../../router.jsx';
+import { appUrl, download, route, useRouter, useUrl, withQuery } from '../../router.jsx';
 import AnalyticsNav, { Spark, TrendPill } from './_nav.jsx';
 
 const DEVICES = { mobile: 'Mobile', tablet: 'Tablet', desktop: 'Desktop' };
@@ -40,7 +40,7 @@ export default function EventExplorer(props) {
             <Field label="UTM campaign"><input type="text" value={f.campaign} onChange={set('campaign')} maxLength={100} /></Field>
             <Field label="Experience"><select value={f.experience} onChange={set('experience')}><option value="">All</option>{Object.entries(experiences).map(([h, e]) => <option key={h} value={h}>{e.name}</option>)}</select></Field>
             <s-button type="submit">Apply</s-button>
-            <s-button href={appUrl(withQuery(url, { export: 'csv' }))} target="_blank" variant="tertiary">Export CSV</s-button>
+            <s-button onClick={() => download(withQuery(url, { export: 'csv' }))} variant="tertiary">Export CSV</s-button>
           </Form>
 
           {selected && (

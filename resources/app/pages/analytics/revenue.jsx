@@ -1,5 +1,5 @@
 import { Kpi, money, number, Page, plural } from '../../components/ui.jsx';
-import { appUrl, route, useUrl, withQuery } from '../../router.jsx';
+import { appUrl, download, route, useUrl, withQuery } from '../../router.jsx';
 import AnalyticsNav from './_nav.jsx';
 
 function RevenueTable({ rows, label, total, m }) {
@@ -38,7 +38,7 @@ export default function Revenue(props) {
             <nav className="bx-tabs">{Object.entries(models).map(([k, l]) => <a key={k} href={appUrl(withQuery(url, { model: k }))} className={model === k ? 'on' : ''}>{l}</a>)}</nav>
             <span className="oo-muted">Attribution window</span>
             <nav className="bx-tabs">{Object.entries(windows).map(([k, l]) => <a key={k} href={appUrl(withQuery(url, { window: k }))} className={String(win) === k ? 'on' : ''}>{l}</a>)}</nav>
-            <s-button href={appUrl(withQuery(url, { export: 'csv' }))} target="_blank" variant="tertiary">Export CSV</s-button>
+            <s-button onClick={() => download(withQuery(url, { export: 'csv' }))} variant="tertiary">Export CSV</s-button>
           </div>
 
           <s-section heading="Overview">

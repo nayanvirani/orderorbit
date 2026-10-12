@@ -89,6 +89,31 @@ async function request(url, { method = 'GET', body } = {}) {
   return { res, data };
 }
 
+/**
+ * Downloads a file (e.g. a CSV export) without leaving the page. Opening an export link in the embedded
+ * app would load the file into the app's frame, leaving it blank; this fetches it in the background
+ * (App Bridge adds the session token) and saves it.
+ */
+export async function download(url, fallbackName = 'export.csv') {
+  loading(true);
+  try {
+    const res = await fetch(appUrl(url), { headers: { 'X-OO-Download': '1' } });
+    if (!res.ok) throw new Error(String(res.status));
+    const name = (res.headers.get('Content-Disposition') || '').match(/filename="?([^";]+)"?/)?.[1] || fallbackName;
+    const href = URL.createObjectURL(await res.blob());
+    const link = Object.assign(document.createElement('a'), { href, download: name });
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 10000);
+    toast('Export downloaded.');
+  } catch (e) {
+    toast('We couldn\'t export that. Please try again.', true);
+  } finally {
+    loading(false);
+  }
+}
+
 export function toast(message, error = false) {
   if (message) window.shopify?.toast?.show(message, { isError: error });
 }

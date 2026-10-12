@@ -33,7 +33,7 @@ class AnalyticsReportsController extends Controller
         $locked = ! $store->planIncludes('advanced_analytics');
 
         $events = $locked ? [] : $explorer->events($store, $from, $to);
-        if (! $locked && $request->query('export') === 'csv') {
+        if (! $locked && self::wantsCsv($request)) {
             return $this->csv('events', ['Event', 'Name', 'Events', 'Unique visitors', 'Sessions', 'Previous period'],
                 array_map(fn ($e) => [$e['label'], $e['name'], $e['total'], $e['visitors'], $e['sessions'], $e['previous']], $events));
         }
@@ -131,7 +131,7 @@ class AnalyticsReportsController extends Controller
         $locked = ! $store->planIncludes('funnels_attribution');
 
         $report = $locked ? null : $attribution->report($store, $from, $to, $window, $model, $templates);
-        if ($report && $request->query('export') === 'csv') {
+        if ($report && self::wantsCsv($request)) {
             return $this->csv('revenue', ['Group', 'Name', 'Orders', 'Revenue'], array_merge(
                 array_map(fn ($k, $r) => ['Traffic source ('.Attribution::MODELS[$model].')', $k, $r['orders'], round($r['revenue'], 2)], array_keys($report['by_source']), $report['by_source']),
                 array_map(fn ($k, $r) => ['UTM campaign', $k, $r['orders'], round($r['revenue'], 2)], array_keys($report['by_campaign']), $report['by_campaign']),
@@ -191,6 +191,15 @@ class AnalyticsReportsController extends Controller
             'journey' => $journey,
             'pageTypes' => Events::PAGE_TYPES,
         ]);
+    }
+
+    /**
+     * A CSV only for the app's background download (X-OO-Download). A page load of an ?export=csv
+     * address shows the report instead, so the embedded app's frame is never left blank.
+     */
+    private static function wantsCsv(Request $request): bool
+    {
+        return $request->query('export') === 'csv' && $request->header('X-OO-Download') === '1';
     }
 
     private function csv(string $name, array $header, array $rows): \Symfony\Component\HttpFoundation\StreamedResponse

@@ -1,16 +1,16 @@
 {
-  "remaining": "{amount} to go",
+  "remaining": "{{amount}} to go",
   "copied": "Code applied",
   "codeFailed": "This code can't be used right now.",
   "giftAdded": "Gift added",
   "giftFailed": "The gift couldn't be added.",
   "share": "Share",
-  "reviews": "{count} reviews",
-  "slide": "{current} of {total}",
+  "reviews": "{{count}} reviews",
+  "slide": "{{current}} of {{total}}",
   "previous": "Previous",
   "next": "Next",
   "verified": "Verified buyer",
-  "endsIn": "Ends in {time}",
+  "endsIn": "Ends in {{time}}",
   "days": "Days",
   "hours": "Hours",
   "minutes": "Minutes",
@@ -21,8 +21,8 @@
   "freeGift": "Free gift",
   "exclusive": "Exclusive offer",
   "pickedForYou": "Picked for you",
-  "itemsInOrder": "{count} items from this order",
+  "itemsInOrder": "{{count}} items from this order",
   "review": "Review",
   "addFailed": "This item couldn't be added right now.",
-  "addonPrice": "Add for {price}"
+  "addonPrice": "Add for {{price}}"
 }

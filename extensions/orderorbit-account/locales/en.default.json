@@ -33,16 +33,16 @@
     "out": "Out for delivery",
     "delivered": "Delivered"
   },
-  "estimated": "Estimated delivery: {date}",
-  "latest": "{name} · {date}",
-  "orderTotal": "Total {total}",
-  "carrier": "{company} · {number}",
+  "estimated": "Estimated delivery: {{date}}",
+  "latest": "{{name}} · {{date}}",
+  "orderTotal": "Total {{total}}",
+  "carrier": "{{company}} · {{number}}",
   "chooseItems": "Choose what to add to your cart:",
-  "addItems": "Add {count} to cart",
+  "addItems": "Add {{count}} to cart",
   "cancel": "Cancel",
   "allItems": "These items will be added to your cart:",
   "unavailable": "Some items may no longer be available.",
-  "boughtTimes": "Bought {count} times",
+  "boughtTimes": "Bought {{count}} times",
   "email": "Email us",
   "call": "Call us",
   "helpCenter": "Help center",
@@ -53,7 +53,7 @@
     "spent": "Spent",
     "last": "Last order"
   },
-  "reorderItems": "Adds {count} items from this order to your cart",
+  "reorderItems": "Adds {{count}} items from this order to your cart",
   "member": "Member",
-  "nextTier": "Next: {tier}"
+  "nextTier": "Next: {{tier}}"
 }

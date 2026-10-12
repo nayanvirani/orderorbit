@@ -67,9 +67,12 @@ class PlatformTest extends TestCase
             AnalyticsEvent::create(['store_id' => $this->store->id, 'event' => 'std', 'name' => 'product_viewed', 'visitor_id' => 'v'.$i, 'device' => $device, 'country' => $country, 'occurred_at' => now()->subDay()]);
         }
         $this->page('/app/analytics/events?f[device]=mobile&f[country]=us', $owner)->assertOk()->assertJsonPath('props.filters', ['device' => 'mobile', 'country' => 'us'])->assertJsonPath('props.events.product_viewed.total', 1);
-        $csv = $this->get('/app/analytics/events?f[device]=mobile&export=csv', $this->as($owner))->assertOk()->streamedContent();
+        // Exports come from the app's background download; a page load of the same address shows the report.
+        $download = $this->as($owner) + ['X-OO-Download' => '1'];
+        $csv = $this->get('/app/analytics/events?f[device]=mobile&export=csv', $download)->assertOk()->streamedContent();
         $this->assertStringContainsString('"Product viewed",product_viewed,2,2', $csv);
-        $this->get('/app/analytics/revenue?export=csv', $this->as($owner))->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $this->get('/app/analytics/revenue?export=csv', $download)->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $this->assertStringNotContainsString('text/csv', (string) $this->get('/app/analytics/revenue?export=csv', $this->as($owner))->headers->get('content-type'));
 
         $a = Workflow::create(['store_id' => $this->store->id, 'handle' => 'wfa', 'name' => 'Alpha flow', 'status' => 'enabled', 'trigger' => 'order_paid', 'draft' => []]);
         $b = Workflow::create(['store_id' => $this->store->id, 'handle' => 'wfb', 'name' => 'Beta flow', 'status' => 'enabled', 'trigger' => 'order_paid', 'draft' => []]);
