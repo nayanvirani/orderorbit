@@ -91,6 +91,12 @@ class TokenExchange
         ]);
 
         if ($response->failed()) {
+            // Shopify rejected the refresh token (expired or revoked): drop it, so the next time the
+            // merchant opens the app a token exchange gets a new expiring token instead of failing again.
+            if (in_array($response->status(), [400, 401], true)) {
+                $store->forceFill(['refresh_token' => null, 'access_token_expires_at' => now()->subMinute()])->save();
+                AuditLog::record('store.token_refresh_rejected', $store, ['status' => $response->status()]);
+            }
             throw new RuntimeException("Token refresh failed for {$store->shop_domain}: HTTP {$response->status()}");
         }
 
