@@ -103,9 +103,9 @@ return [
         'icon' => 'checkout',
         'tone' => 'checkout',
         'label' => 'Checkout blocks',
-        'types' => ['checkout-countdown', 'checkout-shipping', 'checkout-gift', 'checkout-promo', 'checkout-trust', 'checkout-upsell', 'checkout-addon', 'checkout-image'],
+        'types' => ['checkout-shipping', 'checkout-gift', 'checkout-promo', 'checkout-trust', 'checkout-upsell', 'checkout-addon', 'checkout-image'],
         'tagline' => 'Keep selling <em>inside checkout.</em>',
-        'lead' => 'Countdowns, shipping progress, free gifts, promotions, trust and images, shown inside Shopify checkout. Blocks inside checkout need Shopify Plus; Shopify doesn\'t allow them on other plans.',
+        'lead' => 'Shipping progress, free gifts, promotions, trust, upsells, add-ons and images, shown inside Shopify checkout. Blocks inside checkout need Shopify Plus; Shopify doesn\'t allow them on other plans.',
         'steps' => [
             'Create a block and pick a layout. Set its size, background, border, corners and text colour; colours come from your checkout branding.',
             'In Shopify, open Settings → Checkout → Customize and add the Growvia block where you want it.',

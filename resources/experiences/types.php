@@ -429,7 +429,9 @@ return [
         ],
     ],
 
+    // Retired: Shopify doesn't allow countdown timers in checkout (App Store requirement 5.6.6).
     'checkout-countdown' => [
+        'retired' => true,
         'label' => 'Checkout countdown',
         'singular' => 'Checkout countdown',
         'icon' => 'clock',

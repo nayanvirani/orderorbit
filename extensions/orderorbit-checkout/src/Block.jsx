@@ -8,7 +8,7 @@ import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
 import { createContext } from 'preact';
 import { useContext, useEffect, useState } from 'preact/hooks';
-import { assign, boxStyle, choose, deadlineLeft, fill, imageStyle, numericId, pageFor, progress } from './select.js';
+import { assign, boxStyle, choose, fill, imageStyle, numericId, pageFor, progress } from './select.js';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -148,86 +148,6 @@ function Divided({ items }) {
 const columns = (n) => Array(Math.max(1, n)).fill('1fr').join(' ');
 
 // ------------------------------------------------------------------ checkout blocks
-
-function Countdown({ exp, c }) {
-  const [now, setNow] = useState(Date.now());
-  const [started, setStarted] = useState(null);
-  const timed = c.mode === 'hours' || c.mode === 'minutes';
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Hour and minute timers start when this shopper first reaches checkout; the start is kept in
-  // the extension's storage, so reloading the page doesn't restart the timer.
-  useEffect(() => {
-    if (!timed) return;
-    const key = 'oo_cd_' + exp.id + '_' + exp.version;
-    Promise.resolve(shopify.storage?.read(key))
-      .then((saved) => {
-        if (saved) return setStarted(Number(saved));
-        const first = Date.now();
-        setStarted(first);
-        return shopify.storage?.write(key, String(first));
-      })
-      .catch(() => setStarted(Date.now()));
-  }, [exp.id]);
-
-  const left = deadlineLeft(c, now, started);
-  if (left === null) return null; // waiting for the saved start
-  if (left <= 0) return c.ended === 'message' ? <Frame exp={exp}><T>{c.ended_message}</T></Frame> : null;
-
-  const pad = (n) => (n < 10 ? '0' : '') + n;
-  const days = Math.floor(left / 864e5);
-  const parts = [Math.floor((left % 864e5) / 36e5), Math.floor((left % 36e5) / 6e4), Math.floor((left % 6e4) / 1e3)].map(pad);
-  // Under an hour reads as 9:52, like a reservation timer.
-  const time = days ? days + 'd ' + parts.join(':') : parts[0] === '00' ? Number(parts[1]) + ':' + parts[2] : parts.join(':');
-
-  if (exp.style === 'reserved') {
-    return (
-      <Frame exp={exp} as="banner" tone="success">
-        <T type="strong">{c.headline} {time}</T>
-      </Frame>
-    );
-  }
-
-  if (exp.style === 'banner') {
-    return <Frame exp={exp} heading={c.headline} tone="warning"><T>{shopify.i18n.translate('endsIn', { time })}</T></Frame>;
-  }
-  if (exp.style === 'card') {
-    const units = (days ? [[days, 'days']] : []).concat([[parts[0], 'hours'], [parts[1], 'minutes'], [parts[2], 'seconds']]);
-    return (
-      <Frame exp={exp} heading={c.headline}>
-        <s-grid gridTemplateColumns={columns(units.length)} gap="small-300">
-          {units.map(([n, unit]) => <Tile center><s-heading>{String(n)}</s-heading><T color="subdued">{shopify.i18n.translate(unit)}</T></Tile>)}
-        </s-grid>
-      </Frame>
-    );
-  }
-  if (exp.style === 'premium') {
-    return (
-      <Frame exp={exp}>
-        <s-stack gap="small-200" alignItems="center">
-          <s-badge icon="clock" tone="critical">{shopify.i18n.translate('limitedTime')}</s-badge>
-          <s-heading><T tone="critical">{time}</T></s-heading>
-          <T color="subdued">{c.headline}</T>
-        </s-stack>
-      </Frame>
-    );
-  }
-  return (
-    <Frame exp={exp}>
-      <Row justify="space-between">
-        <s-stack direction="inline" gap="small-200" alignItems="center">
-          <s-icon type="clock" tone="critical" />
-          <T type="strong">{c.headline}</T>
-        </s-stack>
-        <T type="strong" tone="critical">{time}</T>
-      </Row>
-    </Frame>
-  );
-}
 
 function cartLines() {
   return (shopify.lines?.value || []).map((l) => ({
@@ -979,7 +899,7 @@ function ImageBlock({ exp, c }) {
 const BLOCKS = {
   // Retired: reviews typed in by the merchant aren't allowed (App Store requirement 1.1.4).
   'checkout-reviews': () => null,
-  'checkout-countdown': Countdown,
+  'checkout-countdown': () => null,
   'checkout-shipping': ShippingProgress,
   'checkout-gift': FreeGift,
   'checkout-promo': Promotion,

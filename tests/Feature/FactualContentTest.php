@@ -42,6 +42,9 @@ class FactualContentTest extends TestCase
         $this->assertArrayNotHasKey('review_count', $trust['content']);
 
         $this->assertArrayNotHasKey('checkout-reviews', Registry::creatable());
+        // No countdown timers in checkout (requirement 5.6.6).
+        $this->assertArrayNotHasKey('checkout-countdown', Registry::creatable());
+        $this->assertNotContains('checkout-countdown', Registry::feature('checkout')['types']);
         $this->assertNotContains('checkout-reviews', Registry::feature('checkout')['types']);
 
         $preorder = Registry::type('preorder');
@@ -86,7 +89,15 @@ class FactualContentTest extends TestCase
         $version = $preorder->fresh()->publishedVersion;
         $version->forceFill(['config' => array_replace_recursive($version->config, ['content' => ['progress' => 'goal', 'goal_target' => 100, 'goal_current' => 64]])])->save();
 
+        $checkoutTimer = $manager->create($store, 'checkout-countdown', 'compact', null);
+        $config = $checkoutTimer->draft_config;
+        $config['content']['ends_at'] = now()->addDays(2)->toIso8601String();
+        $manager->saveDraft($checkoutTimer, Schema::normalize('checkout-countdown', $config)[0], [], null);
+        $manager->publish($checkoutTimer->fresh(), null);
+
         $live = collect(app(StorefrontPublisher::class)->payload($store)['experiences']);
+        $checkout = collect(app(StorefrontPublisher::class)->checkoutPayload($store)['experiences']);
+        $this->assertNull($checkout->firstWhere('id', $checkoutTimer->handle), 'No countdown timers in checkout (requirement 5.6.6).');
 
         $this->assertNull($live->firstWhere('id', $reviews->handle), 'A review layout no longer shows.');
         $this->assertNull($live->firstWhere('id', $timer->handle), 'A timer that starts per visitor no longer shows.');

@@ -150,7 +150,7 @@ class CheckoutBlocksTest extends TestCase
     {
         $owner = $this->member($plus = $this->installedStore(['plan' => 'growth', 'capabilities' => ['checkout_blocks' => true]]), 'owner');
         $checkout = $this->page('/app/cro/features/checkout', $owner)->assertOk()->assertJsonPath('props.notice', null)->assertJsonPath('props.editor.label', 'Open checkout editor');
-        $this->assertContains('checkout countdown', array_column($checkout->json('props.types'), 'singular'));
+        $this->assertNotContains('checkout countdown', array_column($checkout->json('props.types'), 'singular'), 'No timers in checkout (5.6.6).');
         $this->assertNotContains('checkout reviews block', array_column($checkout->json('props.types'), 'singular'), 'Typed-in reviews are retired.');
         $this->assertStringContainsString('settings/checkout/editor', $checkout->json('props.editor.url'));
         $thankYou = $this->page('/app/cro/features/thank-you', $owner)->assertOk();

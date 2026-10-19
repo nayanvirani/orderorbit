@@ -13,7 +13,7 @@ namespace App\Experiences;
 class Factual
 {
     /** Types that only showed merchant-typed reviews. */
-    public const RETIRED_TYPES = ['checkout-reviews'];
+    public const RETIRED_TYPES = ['checkout-reviews', 'checkout-countdown'];
 
     /** Trust layouts that were made of typed reviews and ratings. */
     public const REVIEW_TEMPLATES = ['review-card', 'review-slider', 'rating-strip', 'customer-quote', 'avatar-testimonials'];

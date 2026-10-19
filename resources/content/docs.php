@@ -137,7 +137,7 @@ return [
         'sections' => [
             'blocks' => ['The blocks', [
                 ['table', ['Page', 'Blocks', 'Shopify plan'], [
-                    ['Checkout', 'Countdown, shipping progress, free gift, promotion, trust, upsell, add-on, image', 'Shopify Plus (development stores can preview)'],
+                    ['Checkout', 'Shipping progress, free gift, promotion, trust, upsell, add-on, image', 'Shopify Plus (development stores can preview)'],
                     ['Thank You and Order Status', 'Cross-sell, reorder, review request, referral, survey, next-order code, message and links, image', 'Every plan'],
                     ['Post-purchase', 'A one-click offer between payment and the Thank You page, with an optional second offer', 'Every plan'],
                 ]],
@@ -319,7 +319,7 @@ return [
                                 'Holdout isn\'t offered for widgets that apply a discount, so nobody gets a discount for a widget they couldn\'t see.',
                             ],
                             [
-                                'Checkout blocks (countdown, shipping progress, free gift, promotion, trust, upsell, add-on, image)',
+                                'Checkout blocks (shipping progress, free gift, promotion, trust, upsell, add-on, image)',
                                 'Yes',
                                 'Audience: cart value and country. See [Checkout and Thank You blocks](#checkout).',
                             ],

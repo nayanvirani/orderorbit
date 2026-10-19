@@ -208,10 +208,10 @@ return [
         'keyword' => 'Shopify checkout blocks',
         'problem' => ['Checkout is where doubt shows up.', 'Shoppers hesitate on price, delivery and trust. After they buy, the confirmation page is usually a dead end.'],
         'steps' => ['Growvia checks what your store supports.', 'Create a block and pick a layout.', 'Set its content, cart-value and country conditions.', 'Publish, then add the Growvia block in Shopify\'s checkout editor and choose its type.'],
-        'grid' => ['Countdown, shipping, free-gift, promotion, trust, upsell, add-on and image blocks', 'Post-purchase one-click offer, with a second offer if declined', 'Thank You and Order Status: cross-sell, reorder, review request, referral, survey, next-order code, image and messages', 'Width, height, background, border, corners and text colour for every block', 'Images upload straight to your Shopify Files', 'Only shows what your plan supports', 'Uses your checkout branding', 'Block view and click tracking'],
+        'grid' => ['Shipping, free-gift, promotion, trust, upsell, add-on and image blocks', 'Post-purchase one-click offer, with a second offer if declined', 'Thank You and Order Status: cross-sell, reorder, review request, referral, survey, next-order code, image and messages', 'Width, height, background, border, corners and text colour for every block', 'Images upload straight to your Shopify Files', 'Only shows what your plan supports', 'Uses your checkout branding', 'Block view and click tracking'],
         'note' => 'Blocks inside the checkout steps require Shopify Plus. Thank You and Order Status blocks are available on every Shopify plan.',
         'example' => ['title' => 'From doubt to the next order.', 'text' => 'A trust row and shipping progress in checkout, then a cross-sell and next-purchase discount on the Thank You page.', 'flow' => ['Checkout: trust row', 'Shipping progress', 'Purchase', 'Thank You cross-sell']],
-        'templates' => ['Countdown', 'Shipping Progress', 'Free Gift', 'Promotion', 'Trust Row', 'Complete Your Order'],
+        'templates' => ['Shipping Progress', 'Free Gift', 'Promotion', 'Trust Row', 'Complete Your Order', 'Shipping Protection'],
         'metrics' => [['Block views', '15,880'], ['Block clicks', '1,207'], ['Thank You offer accepts', '612'], ['Post-purchase revenue', '$18,340']],
         'faqs' => [
             ['Can I change the checkout layout?', 'No. We add blocks where Shopify allows them; Shopify controls the checkout itself, including its fonts and colours.'],
