@@ -427,7 +427,7 @@ On Shopify Plus, also consider:
 
 ## How Growvia handles checkout
 
-Growvia's checkout blocks include reviews, countdowns, shipping progress, free gifts, promotions, trust badges, upsells and images. Blocks for the Thank You and Order Status pages work on every plan. Blocks inside the checkout steps show on Shopify Plus, and the app tells you which is which, so you don't build something your plan can't show.
+Growvia's checkout blocks include countdowns, shipping progress, free gifts, promotions, trust badges, upsells and images. Blocks for the Thank You and Order Status pages work on every plan. Blocks inside the checkout steps show on Shopify Plus, and the app tells you which is which, so you don't build something your plan can't show.
 
 Bundle and gift pricing doesn't need Plus at all: it's applied through Shopify's discount functions on every plan.
 MD,

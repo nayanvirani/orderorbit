@@ -18,7 +18,7 @@ return [
         'status' => 'live',
         'summary' => 'Quantity breaks, mix & match, fixed packs and gift bundles that check out as one line.',
         'overview' => [
-            'Bundles are the fastest way to raise order value, as long as shoppers understand the offer in a second and it works with your theme. Growvia gives you six bundle types — quantity breaks, quantity breaks with gifts, variant offers, mix & match, fixed bundles and fixed bundles with gifts — each with ready-made layouts you can restyle to match your store.',
+            'Bundles are the fastest way to raise order value, as long as shoppers understand the offer in a second and it works with your theme. Growvia gives you seven bundle types — quantity breaks, quantity breaks with gifts, variant offers, mix & match, fixed bundles, fixed bundles with gifts and build-your-own boxes — each with ready-made layouts you can restyle to match your store.',
             'Shoppers pick their offer, choose a variant for each item and add everything with one click. In the cart the bundle appears as a single line at the bundle price, and your orders still list every product, so Shopify deducts stock from each one. Where a bundle shows, it replaces your theme\'s own variant picker and add-to-cart so nothing conflicts.',
         ],
         'benefits' => [
@@ -121,14 +121,14 @@ return [
 
     'trust-social-proof' => [
         'status' => 'live',
-        'summary' => 'Reviews, ratings, trust rows and guarantees that match your brand.',
+        'summary' => 'Trust rows and guarantees that match your brand.',
         'overview' => [
-            'Shoppers look for reassurance before they buy: what others say, how returns work, whether checkout is safe. Trust blocks put that information exactly where hesitation happens — next to the price, in the cart, on the home page.',
-            'Add your rating, a few reviews, trust badges or a guarantee, and pick one of seven layouts. Everything uses your store\'s colours and fonts.',
+            'Shoppers look for reassurance before they buy: how shipping and returns work, whether checkout is safe, what you promise. Trust blocks put that information exactly where hesitation happens — next to the price, in the cart, on the home page.',
+            'Add your trust points or a guarantee, and pick one of two layouts. Everything uses your store\'s colours and fonts.',
         ],
         'benefits' => [
             ['Two layouts', 'Trust row and guarantee card.'],
-            ['Your words', 'Add reviews, ratings and guarantees in minutes.'],
+            ['Your words', 'Add your shipping, returns and guarantee promises in minutes.'],
             ['Anywhere in your theme', 'Place it on product pages, the cart or the home page.'],
             ['On brand', 'Shares your colours and fonts with every other block.'],
         ],
@@ -136,13 +136,13 @@ return [
 
     'checkout' => [
         'status' => 'live',
-        'summary' => 'Blocks for checkout, Thank You and Order Status: reviews, trust, progress, cross-sells, reorders and more.',
+        'summary' => 'Blocks for checkout, Thank You and Order Status: trust, progress, gifts, cross-sells, reorders and more.',
         'overview' => [
-            'Shoppers hesitate at checkout, and after they buy the confirmation page is usually a dead end. Growvia adds blocks to both: reviews, a real countdown, shipping progress, free gifts, promotions and trust inside checkout, and cross-sells, reorder, review requests, referrals, surveys, next-order codes and helpful messages on the Thank You and Order Status pages.',
+            'Shoppers hesitate at checkout, and after they buy the confirmation page is usually a dead end. Growvia adds blocks to both: a real countdown, shipping progress, free gifts, promotions, trust, upsells, add-ons and images inside checkout, and cross-sells, reorder, review requests, referrals, surveys, next-order codes and helpful messages on the Thank You and Order Status pages.',
             'You place the blocks in Shopify\'s own checkout editor and they use your checkout branding. Shipping progress and free gifts follow your Progressive gifts campaign, so checkout and storefront always agree. Blocks inside checkout need Shopify Plus; Thank You and Order Status blocks work on every plan, and the app only offers what your store can use.',
         ],
         'benefits' => [
-            ['15 block types', 'Seven for checkout and eight for Thank You and Order Status, including images, each with ready-made layouts.'],
+            ['16 block types', 'Eight for checkout and eight for Thank You and Order Status, including images, each with ready-made layouts.'],
             ['Your size and shape', 'Set each block\'s width, height, background, border, corners and text colour, using your checkout branding\'s colours.'],
             ['Post-purchase funnel', 'A one-click offer right after payment, added to the same order without re-entering card details, with a second offer if declined.'],
             ['Only what your store supports', 'In-checkout blocks appear only on Shopify Plus and development stores; everything else works on every plan.'],

@@ -12,7 +12,7 @@
                 <div class="trust-row">
                     <div><x-icon name="shield"/>2-year guarantee</div>
                     <div><x-icon name="repeat"/>Free returns</div>
-                    <div><x-icon name="star"/>4.9 · 8k reviews</div>
+                    <div><x-icon name="lock"/>Secure payment</div>
                 </div>
             </div>
             <div class="fake-btn" style="margin-top:14px">Continue to shipping</div>

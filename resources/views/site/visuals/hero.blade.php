@@ -13,7 +13,6 @@
                     <div class="thumbs"><i class="art b"></i><i class="art c"></i><i class="art d"></i><i class="art"></i></div>
                 </div>
                 <div>
-                    <div class="stars">★★★★★<em>4.9 · 1,204 reviews</em></div>
                     <h4>The Daily Routine</h4>
                     <div class="price">$64.00 <s>$75.00</s></div>
                     <div class="oo-block">

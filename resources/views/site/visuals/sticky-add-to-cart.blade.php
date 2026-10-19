@@ -5,17 +5,11 @@
             <div class="notch"></div>
             <div class="content">
                 <div class="store-nav"><b>BREWHAUS</b><span>☰</span></div>
-                <div class="stars">★★★★★<em>Reviews (690)</em></div>
-                <div class="review" style="margin-top:10px">
-                    <div class="stars">★★★★★</div>
-                    <p>"Smoothest cold brew I've made at home. Ordering the 3-pack next time."</p>
-                    <div class="who"><span class="avatar">JM</span>Jamie M. · Verified</div>
-                </div>
-                <div class="review" style="margin-top:8px">
-                    <div class="stars">★★★★☆</div>
-                    <p>"Great flavour, super easy. Wish I'd found this sooner."</p>
-                    <div class="who"><span class="avatar b">AR</span>Alex R. · Verified</div>
-                </div>
+                <div class="ph art c" style="width:100%;height:120px;border-radius:12px"></div>
+                <b style="display:block;margin-top:10px;font:700 13px var(--font-head)">Cold Brew Concentrate</b>
+                <div class="line w90" style="margin-top:10px"></div><div class="line w80"></div><div class="line w60"></div>
+                <b style="display:block;margin-top:12px;font:700 11px var(--font-head)">How to brew</b>
+                <div class="line w90" style="margin-top:6px"></div><div class="line w70"></div>
                 <div class="line w90" style="margin-top:14px"></div><div class="line w70"></div><div class="line w80"></div><div class="line w60"></div>
             </div>
             <div class="scroll-hint"></div>

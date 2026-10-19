@@ -26,7 +26,7 @@ return [
     'how' => [
         'title' => 'How templates work',
         'steps' => [
-            ['Pick a feature', 'Bundles come in six types; progressive gifts combine free gifts, free shipping and discounts in one bar.'],
+            ['Pick a feature', 'Bundles come in seven types; progressive gifts combine free gifts, free shipping and discounts in one bar.'],
             ['Choose a template', 'Each feature has several layouts. Preview them with one of your own products before you start.'],
             ['Make it yours', 'Your theme\'s fonts are used by default. Colours, sizes, borders, text and custom CSS are all editable.'],
         ],

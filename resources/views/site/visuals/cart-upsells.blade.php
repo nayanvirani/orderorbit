@@ -3,7 +3,6 @@
     <div class="pdp">
         <div class="gallery art e"><div class="cam"></div></div>
         <div>
-            <div class="stars">★★★★★<em>4.9 · 312 reviews</em></div>
             <h4>Lumen X100 Camera</h4>
             <div class="price">$899.00</div>
             <div class="line w90"></div><div class="line w70"></div>

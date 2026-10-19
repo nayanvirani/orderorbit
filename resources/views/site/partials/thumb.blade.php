@@ -37,7 +37,7 @@
         @if ($v % 2)
             <div class="trust-row"><div><x-icon name="truck"/>Free shipping</div><div><x-icon name="repeat"/>Returns</div><div><x-icon name="lock"/>Secure</div></div>
         @else
-            <div class="review"><div class="stars">★★★★★</div><p>"Absolutely love it — ordering again."</p><div class="who"><span class="avatar {{ ['','b','c'][$v % 3] }}">AK</span>Verified buyer</div></div>
+            <div class="oo-block" style="padding:10px 12px"><div style="font:800 12px var(--font-head)">30-day money-back guarantee</div><div class="line w80" style="margin-top:8px"></div><div class="line w60"></div></div>
         @endif
         @break
     @case('promo')
