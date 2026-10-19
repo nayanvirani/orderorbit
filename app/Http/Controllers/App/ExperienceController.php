@@ -126,7 +126,8 @@ class ExperienceController extends Controller
     public function store(Request $request, Store $store): RedirectResponse
     {
         $type = (string) $request->input('type');
-        abort_unless(Registry::has($type), 404);
+        // Retired types (e.g. typed-in checkout reviews) keep working for old blocks but can't be created.
+        abort_unless(array_key_exists($type, Registry::creatable()), 404);
 
         $experience = $this->manager->create($store, $type, (string) $request->input('template'), $this->user($request), $request->input('name'));
 

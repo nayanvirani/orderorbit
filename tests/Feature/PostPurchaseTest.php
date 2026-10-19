@@ -139,12 +139,13 @@ class PostPurchaseTest extends TestCase
         $errors = Schema::normalize('post-purchase', array_replace_recursive(Schema::defaults('post-purchase'), ['content' => ['downsell' => true, 'offer_product' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']]]]))[1];
         $this->assertSame('Choose the second offer, or turn the second offer off.', $errors['content.downsell_product']);
 
-        // Checkout countdown: hour and minute timers don't need a date.
+        // Checkout countdown: only a real end date (no per-visitor or restarting timers, requirement 1.1.4).
         $cd = Schema::defaults('checkout-countdown');
         $cd['content']['mode'] = 'minutes';
-        $cd['content']['minutes'] = 10;
+        $this->assertArrayHasKey('content.mode', Schema::normalize('checkout-countdown', $cd)[1]);
+        $cd['content']['mode'] = 'date';
+        $cd['content']['ends_at'] = now()->addDay()->toIso8601String();
         $this->assertSame([], Schema::normalize('checkout-countdown', $cd)[1]);
-        $this->assertSame('restart', Schema::normalize('checkout-countdown', $cd)[0]['content']['repeat']);
 
         $owner = $this->member($this->installedStore(['plan' => 'growth']), 'owner');
         $this->page('/app/cro/features/post-purchase', $owner)->assertOk()->assertJsonPath('props.editor.label', 'Open checkout settings')->assertJsonPath('props.types.0.singular', 'post-purchase funnel');

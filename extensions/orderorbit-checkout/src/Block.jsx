@@ -128,12 +128,6 @@ function Sized({ size, children }) {
   return size.inlineSize || size.minBlockSize ? <s-box {...size}>{children}</s-box> : children;
 }
 
-function Stars({ rating }) {
-  const n = Math.round(Number(rating) || 0);
-  return <T tone="warning">{'★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n)}</T>;
-}
-
-/** A subdued tile inside a grid. */
 function Tile({ center, children }) {
   return (
     <s-box background="subdued" borderRadius="base" padding="base">
@@ -154,108 +148,6 @@ function Divided({ items }) {
 const columns = (n) => Array(Math.max(1, n)).fill('1fr').join(' ');
 
 // ------------------------------------------------------------------ checkout blocks
-
-function Reviews({ exp, c }) {
-  // Only rows with a quote are shown; the stars fall back to the average of the reviews, never a made-up 5.
-  const reviews = (c.reviews || []).filter((r) => r && String(r.quote || '').trim());
-  const average = reviews.length ? Math.round((reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviews.length) * 10) / 10 : 0;
-  const [i, setI] = useState(0);
-  if (!reviews.length) return null;
-  const count = c.review_count ? ' · ' + shopify.i18n.translate('reviews', { count: Number(c.review_count).toLocaleString() }) : '';
-  const summary = c.rating ? (
-    <s-stack direction="inline" gap="small-200" alignItems="center">
-      {c.summary_label ? <T type="strong">{c.summary_label}</T> : null}
-      <Stars rating={c.rating} />
-      <T type="strong">{c.rating}</T>
-      {count ? <T>{count}</T> : null}
-    </s-stack>
-  ) : null;
-  const quote = (r) => (
-    <s-stack gap="small-100">
-      <Stars rating={r.rating} />
-      {r.title ? <T type="strong">{r.title}</T> : null}
-      <T>“{r.quote}”</T>
-      <T color="subdued">{[r.author, r.date].filter(Boolean).join(', ')}</T>
-    </s-stack>
-  );
-  const footer = c.footer ? <T color="subdued">{c.footer}</T> : null;
-
-  if (exp.style === 'carousel') {
-    const r = reviews[i % reviews.length];
-    return (
-      <Frame exp={exp} as="plain">
-        <s-stack direction="inline" gap="small-200" alignItems="center" justifyContent="center">
-          {c.summary_label ? <s-heading>{c.summary_label}</s-heading> : null}
-          {c.rating || average ? <Stars rating={c.rating || average} /> : null}
-        </s-stack>
-        <s-box border="base" borderRadius="base" padding="base">{quote(r)}</s-box>
-        {reviews.length > 1 ? (
-          <s-stack direction="inline" gap="small-300" justifyContent="center">
-            <s-button variant="tertiary" accessibilityLabel={shopify.i18n.translate('previous')} onClick={() => setI((i + reviews.length - 1) % reviews.length)}>←</s-button>
-            <s-button variant="tertiary" accessibilityLabel={shopify.i18n.translate('next')} onClick={() => setI(i + 1)}>→</s-button>
-          </s-stack>
-        ) : null}
-        {footer ? <s-stack alignItems="center">{footer}</s-stack> : null}
-      </Frame>
-    );
-  }
-
-  if (exp.style === 'card') {
-    return (
-      <Frame exp={exp} heading={c.headline}>
-        {summary}
-        <s-grid gridTemplateColumns="1fr 1fr" gap="base">{reviews.map((r) => <Tile>{quote(r)}</Tile>)}</s-grid>
-        {footer}
-      </Frame>
-    );
-  }
-  if (exp.style === 'slider') {
-    const r = reviews[i % reviews.length];
-    return (
-      <Frame exp={exp}>
-        <s-stack gap="small-200" alignItems="center">{quote(r)}</s-stack>
-        {reviews.length > 1 ? (
-          <s-stack direction="inline" gap="small-200" alignItems="center" justifyContent="center">
-            <s-button variant="secondary" accessibilityLabel={shopify.i18n.translate('previous')} onClick={() => setI((i + reviews.length - 1) % reviews.length)}>‹</s-button>
-            <T color="subdued">{shopify.i18n.translate('slide', { current: (i % reviews.length) + 1, total: reviews.length })}</T>
-            <s-button variant="secondary" accessibilityLabel={shopify.i18n.translate('next')} onClick={() => setI(i + 1)}>›</s-button>
-          </s-stack>
-        ) : null}
-      </Frame>
-    );
-  }
-  if (exp.style === 'premium') {
-    const r = reviews[0];
-    return (
-      <Frame exp={exp}>
-        <Row>
-          {c.rating ? <s-heading>{c.rating}</s-heading> : null}
-          <s-stack gap="small-100">
-            <Stars rating={c.rating || r.rating} />
-            <T color="subdued">{c.headline}{count}</T>
-          </s-stack>
-        </Row>
-        <s-divider />
-        <T>“{r.quote}”</T>
-        <Row>
-          <T color="subdued">{r.author}</T>
-          <s-badge icon="check-circle">{shopify.i18n.translate('verified')}</s-badge>
-        </Row>
-      </Frame>
-    );
-  }
-  // Classic: an open list, reviews separated by dividers.
-  return (
-    <Frame exp={exp} as="plain">
-      <Row justify="space-between">
-        {c.headline ? <T type="strong">{c.headline}</T> : null}
-        {summary}
-      </Row>
-      <Divided items={reviews.map(quote)} />
-      {footer}
-    </Frame>
-  );
-}
 
 function Countdown({ exp, c }) {
   const [now, setNow] = useState(Date.now());
@@ -1085,7 +977,8 @@ function ImageBlock({ exp, c }) {
 }
 
 const BLOCKS = {
-  'checkout-reviews': Reviews,
+  // Retired: reviews typed in by the merchant aren't allowed (App Store requirement 1.1.4).
+  'checkout-reviews': () => null,
   'checkout-countdown': Countdown,
   'checkout-shipping': ShippingProgress,
   'checkout-gift': FreeGift,

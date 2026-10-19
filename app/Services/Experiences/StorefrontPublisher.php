@@ -3,6 +3,7 @@
 namespace App\Services\Experiences;
 
 use App\Experiences\BundleSchema;
+use App\Experiences\Factual;
 use App\Experiences\GiftSchema;
 use App\Experiences\Registry;
 use App\Experiences\Schema;
@@ -114,8 +115,10 @@ class StorefrontPublisher
             ->filter(fn (Experience $e) => $e->publishedVersion !== null && Registry::has($e->type))
             // A feature removed from the plan (or from this store) stops showing at once.
             ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion->config))
+            // Only factual content reaches shoppers (App Store requirement 1.1.4).
+            ->filter(fn (Experience $e) => Factual::allowed($e->type, $e->publishedVersion->template_key, $e->publishedVersion->config))
             ->map(function (Experience $e) use ($store, $tests) {
-                $config = $e->publishedVersion->config;
+                $config = Factual::clean($e->type, $e->publishedVersion->config);
                 if ($e->type === 'bundles') {
                     $config = BundleSchema::payload(BundleSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
                 } elseif ($e->type === 'progressive-gifts') {
@@ -228,10 +231,12 @@ class StorefrontPublisher
             'variants' => $test->variants->values()->map(fn ($v, $i) => array_filter([
                 'key' => $v->key,
                 'alloc' => $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation,
-                'hidden' => $v->hidden ?: null,
+                // A variant that would show made-up content shows nothing instead (requirement 1.1.4).
+                'hidden' => $v->hidden || ! Factual::allowed($experience->type, $v->key !== 'A' && $v->template_key ? $v->template_key : $experience->publishedVersion?->template_key,
+                    ['content' => array_merge($experience->publishedVersion?->config['content'] ?? [], $v->content ?: [])]) ? true : null,
                 'template' => $v->key !== 'A' ? $v->template_key : null,
                 'style' => $v->key !== 'A' && $v->template_key ? (Registry::template($experience->type, $v->template_key)['style'] ?? null) : null,
-                'content' => $v->content ?: null,
+                'content' => $v->content ? (Factual::clean($experience->type, ['content' => $v->content])['content'] ?: null) : null,
                 'design' => $v->design ?: null,
             ], fn ($x) => $x !== null))->values()->all(),
         ];

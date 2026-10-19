@@ -136,7 +136,7 @@ class ExperienceEngineTest extends TestCase
         // Free (trust pinned to 1 for this store): one live of each kind; cart upsells aren't included.
         $store->forceFill(['entitlements' => ['limits' => ['trust' => 1]]])->save();
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
-        $refused($manager->create($store, 'trust', 'review-card', null), 'The Free plan includes 1 live trust block. Pause or archive one that\'s live, or upgrade for more.');
+        $refused($manager->create($store, 'trust', 'trust-row', null), 'The Free plan includes 1 live trust block. Pause or archive one that\'s live, or upgrade for more.');
         $refused($ready('cart-upsells', 'grid'), 'Cart upsells & cross-sell isn\'t included in your plan. Upgrade to publish it.');
 
         // Starter: more of each, plus cart upsells.
@@ -262,7 +262,7 @@ class ExperienceEngineTest extends TestCase
         $this->fakeShopify();
         $store = $this->installedStore(['plan' => 'growth']);
         $manager = app(ExperienceManager::class);
-        $experience = $manager->create($store, 'trust', 'review-card', null);
+        $experience = $manager->create($store, 'trust', 'trust-row', null);
         $v1 = $manager->publish($experience, null);
 
         $config = $experience->fresh()->draft_config;
@@ -271,7 +271,7 @@ class ExperienceEngineTest extends TestCase
         $manager->publish($experience->fresh(), null);
 
         $manager->restoreVersion($experience->fresh(), $v1, null);
-        $this->assertSame('Loved by our customers', $experience->fresh()->draft_config['content']['headline']);
+        $this->assertSame('Why shop with us', $experience->fresh()->draft_config['content']['headline']);
         $this->assertTrue($experience->fresh()->has_unpublished_changes);
 
         $manager->discardChanges($experience->fresh());

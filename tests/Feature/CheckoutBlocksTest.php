@@ -150,7 +150,8 @@ class CheckoutBlocksTest extends TestCase
     {
         $owner = $this->member($plus = $this->installedStore(['plan' => 'growth', 'capabilities' => ['checkout_blocks' => true]]), 'owner');
         $checkout = $this->page('/app/cro/features/checkout', $owner)->assertOk()->assertJsonPath('props.notice', null)->assertJsonPath('props.editor.label', 'Open checkout editor');
-        $this->assertContains('checkout reviews block', array_column($checkout->json('props.types'), 'singular'));
+        $this->assertContains('checkout countdown', array_column($checkout->json('props.types'), 'singular'));
+        $this->assertNotContains('checkout reviews block', array_column($checkout->json('props.types'), 'singular'), 'Typed-in reviews are retired.');
         $this->assertStringContainsString('settings/checkout/editor', $checkout->json('props.editor.url'));
         $thankYou = $this->page('/app/cro/features/thank-you', $owner)->assertOk();
         $this->assertContains('survey', array_column($thankYou->json('props.types'), 'singular'));
@@ -169,7 +170,7 @@ class CheckoutBlocksTest extends TestCase
         $this->page('/app/cro/features/thank-you', $owner)->assertOk()->assertJsonPath('props.notice', 'plan');
     }
 
-    public function test_older_blocks_pick_up_new_settings_and_storefront_countdown_has_three_types(): void
+    public function test_older_blocks_pick_up_new_settings_and_timers_only_count_to_real_deadlines(): void
     {
         $owner = $this->member($store = $this->installedStore(['plan' => 'growth', 'capabilities' => ['checkout_blocks' => true]]), 'owner');
         $experience = app(ExperienceManager::class)->create($store, 'checkout-countdown', 'compact', null);
@@ -179,13 +180,14 @@ class CheckoutBlocksTest extends TestCase
         $experience->forceFill(['draft_config' => $config])->save();
 
         $this->get('/app/cro/experiences/'.$experience->id.'/edit', $this->as($owner))->assertOk()
-            ->assertSee('Timer type')->assertSee('Minutes, from when the shopper reaches checkout')->assertSee('Timer length (minutes)')->assertSee('Start again (e.g. every 10 minutes)');
+            ->assertSee('Timer type')->assertSee('Count down to a date')->assertDontSee('Start again (e.g. every 10 minutes)');
 
+        // Only real deadlines: a sale end date or a daily shipping cutoff (requirement 1.1.4).
         $options = Registry::type('countdown')['content']['mode']['options'];
-        $this->assertSame(['date', 'hours', 'minutes', 'daily'], array_keys($options));
+        $this->assertSame(['date', 'daily'], array_keys($options));
         $storefront = Schema::defaults('countdown');
         $storefront['content']['mode'] = 'hours';
-        $this->assertSame([], Schema::normalize('countdown', $storefront)[1], 'Hour timers need no end date.');
+        $this->assertArrayHasKey('content.mode', Schema::normalize('countdown', $storefront)[1], 'Per-visitor timers are no longer accepted.');
     }
 
     public function test_image_blocks_and_box_styles_reach_the_extension(): void

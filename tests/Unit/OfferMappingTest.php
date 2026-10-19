@@ -65,7 +65,8 @@ class OfferMappingTest extends TestCase
         $design = Schema::fields('checkout-countdown')['design'];
         $this->assertSame(['auto', 'banner', 'box', 'plain'], array_keys($design['ck_frame']['options']));
         $this->assertSame(['auto', 'info', 'success', 'warning', 'critical'], array_keys($design['ck_banner_tone']['options']));
-        $this->assertArrayHasKey('cart-reservation', \App\Experiences\Registry::templates('checkout-countdown'));
+        // "Cart reservation" claimed a reservation Growvia doesn't make (requirement 1.1.4).
+        $this->assertArrayNotHasKey('cart-reservation', \App\Experiences\Registry::templates('checkout-countdown'));
         $this->assertArrayNotHasKey('payment_methods', Schema::fields('checkout-trust')['content']);
     }
 

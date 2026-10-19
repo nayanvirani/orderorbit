@@ -112,7 +112,7 @@ return [
                     ['Cart upsells', 'One last add-on in the cart, with an optional discount on items added from it.', 'Cart page block'],
                     ['Countdown timer', 'A real deadline: a date, a daily cutoff in your time zone, or hour and minute timers.', 'Any page block'],
                     ['Sticky add to cart', 'Keeps the buy button in reach after the theme\'s button scrolls away.', 'Product pages (app embed)'],
-                    ['Trust badges', 'Reviews, rating strips, trust rows and guarantees.', 'Any page block'],
+                    ['Trust badges', 'Trust rows and guarantees.', 'Any page block'],
                     ['Sales pop', 'Small notifications of real recent purchases (product, country, time; never names).', 'Every page (app embed)'],
                     ['Pre-orders', 'Sell out-of-stock products with a ship date and progress.', 'Product page block'],
                 ]],

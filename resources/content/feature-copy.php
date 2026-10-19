@@ -99,8 +99,8 @@ return [
         'benefits' => [
             ['Only on the products you pick', 'Choose the products, and optionally show it only when a variant is out of stock.'],
             ['Ship date and countdown', 'A fixed date or a number of days after the order, with time left in months, weeks or days.'],
-            ['Progress bars', 'Show time until shipping or units reserved toward a goal.'],
-            ['Eight layouts', 'Classic card, minimal line, timeline steps, countdown tiles, goal tracker, premium dark, banner and badge pill.'],
+            ['Progress bar', 'Show the time until shipping.'],
+            ['Seven layouts', 'Classic card, minimal line, timeline steps, countdown tiles, premium dark, banner and badge pill.'],
         ],
     ],
 
@@ -127,7 +127,7 @@ return [
             'Add your rating, a few reviews, trust badges or a guarantee, and pick one of seven layouts. Everything uses your store\'s colours and fonts.',
         ],
         'benefits' => [
-            ['Seven layouts', 'Review cards, slider, rating strip, quote, avatars, trust row and guarantee card.'],
+            ['Two layouts', 'Trust row and guarantee card.'],
             ['Your words', 'Add reviews, ratings and guarantees in minutes.'],
             ['Anywhere in your theme', 'Place it on product pages, the cart or the home page.'],
             ['On brand', 'Shares your colours and fonts with every other block.'],

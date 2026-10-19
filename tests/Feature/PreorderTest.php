@@ -85,9 +85,9 @@ class PreorderTest extends TestCase
         $feature = $this->page('/app/cro/features/preorder', $owner)->assertOk()->assertJsonPath('props.editor.label', 'Open Theme Editor');
         $this->assertStringContainsString('template=product', $feature->json('props.editor.url'));
         $this->page('/app/cro/experiences/new?type=preorder', $owner)->assertOk()
-            ->assertSee('Classic card')->assertSee('Timeline steps')->assertSee('Countdown tiles')->assertSee('Goal tracker')->assertSee('Badge pill');
+            ->assertSee('Classic card')->assertSee('Timeline steps')->assertSee('Countdown tiles')->assertDontSee('Goal tracker')->assertSee('Badge pill');
         $this->post('/app/cro/experiences', ['type' => 'preorder', 'template' => 'timeline'], $this->as($owner))->assertRedirectContains('/edit');
         $this->page('/app/cro/experiences/1/edit', $owner)->assertOk()
-            ->assertSee('Pre-order products')->assertSee('Time left shown as')->assertSee('Units reserved toward a goal')->assertSee('Mark pre-order items in the cart and order');
+            ->assertSee('Pre-order products')->assertSee('Time left shown as')->assertDontSee('Units reserved toward a goal')->assertSee('Mark pre-order items in the cart and order');
     }
 }
