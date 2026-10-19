@@ -2,7 +2,8 @@
 @php($page = \App\Support\SiteContent::page('features'))
 @php($d = $page['detail'])
 @php($names = collect($templates)->pluck('name')->unique()->values())
-@php($vars = ['name' => $feature['name'], 'count' => $names->count()])
+{{-- Every template counts, as on the Templates page (checkout and Thank You layouts can share a name). --}}
+@php($vars = ['name' => $feature['name'], 'count' => count($templates)])
 @php($benefitIcons = ['check-circle', 'layers', 'target', 'sparkle', 'zap', 'shield', 'chart', 'heart'])
 
 @section('title', \App\Support\SiteContent::plain($feature['seo_title']))
