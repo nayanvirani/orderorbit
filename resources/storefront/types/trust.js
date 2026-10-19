@@ -22,7 +22,7 @@
     if (style === 'compact') return '<div class="oo-body oo-inline">' + rating + '</div>';
     var badges = (c.badges || []).length ? '<ul class="oo-badges">' + c.badges.map(function (b) { return '<li>' + h.icon(ICONS[b.icon] || ICONS.guarantee) + '<span>' + h.esc(b.label) + '</span></li>'; }).join('') + '</ul>' : '';
     if (style === 'row') return '<div class="oo-body">' + badges + '</div>';
-    var reviews = (c.reviews || []).map(function (r) {
+    var reviews = (c.reviews || []).filter(function (r) { return r && r.quote; }).map(function (r) {
       return '<figure class="oo-review">' + stars(h, r.rating) + '<blockquote>' + h.esc(r.quote) + '</blockquote><figcaption><span class="oo-avatar" aria-hidden="true">' + h.esc(String(r.author || '?').charAt(0)) + '</span>' + h.esc(r.author) + '</figcaption></figure>';
     });
     if (style === 'premium') reviews = reviews.slice(0, 1);

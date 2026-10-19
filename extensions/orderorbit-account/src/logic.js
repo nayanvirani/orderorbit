@@ -147,14 +147,16 @@ export function boxStyle(style, design, as) {
   // "Show as" in the Design step picks the frame; the banner colour is one of Shopify's banner tones.
   const frame = d.ck_frame && d.ck_frame !== 'auto' ? d.ck_frame : null;
   const tone = d.ck_banner_tone && d.ck_banner_tone !== 'auto' ? d.ck_banner_tone : undefined;
-  if (frame === 'banner' || (!frame && !custom && (as === 'banner' || BANNER.indexOf(style) !== -1))) return { kind: 'banner', tone, props: {}, size: sized };
+  // Shopify draws its own status icon on every banner and it can't be hidden, so a banner is used only when
+  // the merchant picks "Coloured banner"; banner-style layouts otherwise show as a tinted box without an icon.
+  if (frame === 'banner') return { kind: 'banner', tone, props: {}, size: sized };
   if (frame === 'plain' || (!frame && !custom && (as === 'plain' || PLAIN.indexOf(style) !== -1))) return { kind: 'plain', props: {}, size: sized };
   const plain = !frame && (as === 'plain' || PLAIN.indexOf(style) !== -1);
   const border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
   return {
     kind: 'box',
     props: {
-      background: set('ck_background') ? d.ck_background : as === 'subdued' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
+      background: set('ck_background') ? d.ck_background : as === 'subdued' || as === 'banner' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
       border: BORDERS.indexOf(border) !== -1 ? border + ' base ' + (d.ck_border_style || 'solid') : 'none',
       borderRadius: set('ck_radius') ? d.ck_radius : plain ? 'none' : 'base',
       padding: set('ck_padding') ? d.ck_padding : plain ? 'none' : 'base',

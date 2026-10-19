@@ -156,7 +156,9 @@ const columns = (n) => Array(Math.max(1, n)).fill('1fr').join(' ');
 // ------------------------------------------------------------------ checkout blocks
 
 function Reviews({ exp, c }) {
-  const reviews = c.reviews || [];
+  // Only rows with a quote are shown; the stars fall back to the average of the reviews, never a made-up 5.
+  const reviews = (c.reviews || []).filter((r) => r && String(r.quote || '').trim());
+  const average = reviews.length ? Math.round((reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviews.length) * 10) / 10 : 0;
   const [i, setI] = useState(0);
   if (!reviews.length) return null;
   const count = c.review_count ? ' · ' + shopify.i18n.translate('reviews', { count: Number(c.review_count).toLocaleString() }) : '';
@@ -184,7 +186,7 @@ function Reviews({ exp, c }) {
       <Frame exp={exp} as="plain">
         <s-stack direction="inline" gap="small-200" alignItems="center" justifyContent="center">
           {c.summary_label ? <s-heading>{c.summary_label}</s-heading> : null}
-          <Stars rating={c.rating || 5} />
+          {c.rating || average ? <Stars rating={c.rating || average} /> : null}
         </s-stack>
         <s-box border="base" borderRadius="base" padding="base">{quote(r)}</s-box>
         {reviews.length > 1 ? (

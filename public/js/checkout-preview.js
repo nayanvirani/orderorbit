@@ -99,13 +99,13 @@
     var custom = set('ck_background') || set('ck_border') || set('ck_radius') || set('ck_padding');
     // "Show as" and "Banner colour" from the Design step (Shopify's four banner tones).
     var forced = d.ck_frame && d.ck_frame !== 'auto' ? d.ck_frame : null;
-    var kind = forced || (!custom && (opts.as === 'banner' || BANNER.indexOf(style) !== -1) ? 'banner'
-      : !custom && (opts.as === 'plain' || PLAIN.indexOf(style) !== -1) ? 'plain' : 'box');
+    // A banner only when picked in the Design step: Shopify adds its own status icon to banners, which can't be hidden.
+    var kind = forced || (!custom && (opts.as === 'plain' || PLAIN.indexOf(style) !== -1) ? 'plain' : 'box');
     if (set('ck_banner_tone')) opts = Object.assign({}, opts, { tone: d.ck_banner_tone });
     var css = [];
     if (kind === 'box') {
       var plain = !forced && (PLAIN.indexOf(style) !== -1 || opts.as === 'plain');
-      var bg = set('ck_background') ? d.ck_background : opts.as === 'subdued' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : 'base';
+      var bg = set('ck_background') ? d.ck_background : opts.as === 'subdued' || opts.as === 'banner' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : 'base';
       var border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
       css.push('background:' + (bg === 'subdued' ? '#f4f4f4' : bg === 'transparent' ? 'transparent' : '#fff'));
       css.push('border:' + (BORDER[border] || '0') + ' ' + (d.ck_border_style || 'solid') + ' #dedede');
@@ -120,7 +120,7 @@
     var head = opts.heading ? (kind === 'plain' ? title(opts.heading) : heading(opts.heading)) : '';
     if (kind === 'banner') {
       var tone = opts.tone || 'info';
-      return '<div class="' + cls + ' ck-tone-' + tone + '" style="' + css.join(';') + '">' + icon(opts.bannerIcon || { info: 'info', success: 'check', warning: 'alert', critical: 'alert' }[tone], tone) +
+      return '<div class="' + cls + ' ck-tone-' + tone + '" style="' + css.join(';') + '">' + icon({ info: 'info', success: 'check', warning: 'alert', critical: 'alert' }[tone], tone) +
         '<div class="ck-stack">' + head + body + '</div></div>';
     }
     return '<div class="' + cls + '" style="' + css.join(';') + '">' + head + body + '</div>';
@@ -152,17 +152,21 @@
   var R = {
     'checkout-reviews': function (exp) {
       var c = exp.content;
-      var sample = !(c.reviews && c.reviews.length);
-      var list = sample ? SAMPLE_REVIEWS : c.reviews;
-      var rating = c.rating || (sample ? 4.9 : null), count = c.review_count || (sample ? 1240 : null);
+      // Only rows with a quote are reviews; a row still being filled in doesn't replace the samples.
+      var real = (c.reviews || []).filter(function (r) { return r && String(r.quote || '').trim(); });
+      var sample = !real.length;
+      var list = sample ? SAMPLE_REVIEWS : real;
+      // No made-up rating: the merchant's average, else the average of the stars they entered.
+      var avg = list.reduce(function (s, r) { return s + (Number(r.rating) || 0); }, 0) / list.length;
+      var rating = c.rating || (sample ? 4.9 : (avg ? Math.round(avg * 10) / 10 : null)), count = c.review_count || (sample ? 1240 : null);
       var summary = rating ? row(stars(rating, 'warning') + '<span class="ck-text"><b>' + h.esc(rating) + '</b>' + (count ? ' · ' + h.esc(Number(count).toLocaleString()) + ' reviews' : '') + '</span>') : '';
       var quote = function (r) { return col(stars(r.rating, 'warning') + (r.title ? '<p class="ck-text"><b>' + h.esc(r.title) + '</b></p>' : '') + para('“' + r.quote + '”') + muted(h.esc([r.author, r.date].filter(Boolean).join(', '))), 'ck-tight'); };
       var foot = c.footer ? muted(h.esc(c.footer)) : '';
-      if (c.summary_label) summary = row('<span class="ck-text"><b>' + h.esc(c.summary_label) + '</b></span>' + stars(rating || 5, 'warning') + (count ? '<span class="ck-muted">' + h.esc(Number(count).toLocaleString()) + ' reviews</span>' : ''));
+      if (c.summary_label) summary = row('<span class="ck-text"><b>' + h.esc(c.summary_label) + '</b></span>' + (rating ? stars(rating, 'warning') : '') + (count ? '<span class="ck-muted">' + h.esc(Number(count).toLocaleString()) + ' reviews</span>' : ''));
       if (exp.style === 'carousel') {
         var cur = list[0];
         if (sample) cur = { author: 'Sample: Deborah W.', rating: 5, title: 'Smooches to us!', quote: 'Your reviews appear here. Add real ones in the Content step.', date: 'Jun 5, 2026' };
-        return frame(exp, { as: 'plain' }, row('<p class="ck-heading">' + h.esc(c.summary_label || 'Excellent') + '</p>' + stars(5, 'warning'), 'ck-center-row') +
+        return frame(exp, { as: 'plain' }, row('<p class="ck-heading">' + h.esc(c.summary_label || 'Excellent') + '</p>' + (rating ? stars(rating, 'warning') : ''), 'ck-center-row') +
           '<div class="ck-review-card">' + quote(cur) + '</div>' + row(button('←', false) + button('→', false), 'ck-center-row') + (foot ? col(foot, 'ck-center') : ''));
       }
       if (exp.style === 'card') {
@@ -175,7 +179,7 @@
       }
       if (exp.style === 'premium') {
         var top = list[0];
-        return frame(exp, {}, row(col('<p class="ck-big">' + h.esc(rating || 5) + '</p>', 'ck-shrink') + col(stars(rating || 5, 'warning') + muted(h.esc(c.headline) + (count ? ' · ' + h.esc(Number(count).toLocaleString()) + ' reviews' : '')))) +
+        return frame(exp, {}, row((rating ? col('<p class="ck-big">' + h.esc(rating) + '</p>', 'ck-shrink') : '') + col((rating ? stars(rating, 'warning') : '') + muted(h.esc(c.headline) + (count ? ' · ' + h.esc(Number(count).toLocaleString()) + ' reviews' : '')))) +
           '<hr class="ck-divider">' + para('“' + top.quote + '”', 'ck-lead') + row(muted(h.esc(top.author)) + badge('Verified buyer', 'check')));
       }
       return frame(exp, { as: 'plain' }, row(title(c.headline) + summary, 'ck-between') + divided(list.map(quote)) + foot);

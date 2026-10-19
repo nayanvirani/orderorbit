@@ -88,8 +88,8 @@ class Schema
         return [
             // Checkout blocks can't use custom colours: Shopify gives banners four colours (info blue,
             // success green, warning yellow, critical red) and boxes the checkout's own colours.
-            'ck_frame' => ['type' => 'select', 'label' => 'Show as', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'banner' => 'Coloured banner', 'box' => 'Box', 'plain' => 'Plain (no frame)']],
-            'ck_banner_tone' => ['type' => 'select', 'label' => 'Banner colour', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'info' => 'Blue (info)', 'success' => 'Green (success)', 'warning' => 'Yellow (warning)', 'critical' => 'Red (critical)'], 'help' => 'For banner layouts. Exact shades follow your checkout branding.'],
+            'ck_frame' => ['type' => 'select', 'label' => 'Show as', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'banner' => 'Coloured banner (with Shopify\'s status icon)', 'box' => 'Box', 'plain' => 'Plain (no frame)'], 'help' => 'Shopify adds its own icon to coloured banners and it can\'t be removed. Box and Plain have no icon.'],
+            'ck_banner_tone' => ['type' => 'select', 'label' => 'Banner colour', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'info' => 'Blue (info)', 'success' => 'Green (success)', 'warning' => 'Yellow (warning)', 'critical' => 'Red (critical)'], 'when' => ['ck_frame' => ['banner']], 'help' => 'Exact shades follow your checkout branding.'],
             'ck_background' => ['type' => 'select', 'label' => 'Background', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'transparent' => 'None (transparent)', 'base' => 'Checkout background', 'subdued' => 'Subtle tint']],
             'ck_border' => ['type' => 'select', 'label' => 'Border', 'default' => 'auto', 'options' => ['auto' => 'Layout default', 'none' => 'No border', 'base' => 'Thin', 'large' => 'Medium', 'large-100' => 'Thick', 'large-200' => 'Extra thick']],
             'ck_border_style' => ['type' => 'select', 'label' => 'Border style', 'default' => 'solid', 'when' => ['ck_border' => $borders], 'options' => ['solid' => 'Solid', 'dashed' => 'Dashed', 'dotted' => 'Dotted']],
@@ -205,15 +205,26 @@ class Schema
                 if ($error !== null) {
                     $errors["{$section}.{$key}"] = $error;
                 } elseif (is_array($value) && ($field['type'] === 'list')) {
+                    // A row the merchant added but never filled in is dropped, not an error. Error keys keep the
+                    // row's position in the form so the editor can show each one under its own box.
+                    $kept = [];
                     foreach ($value as $i => $row) {
-                        $config[$section][$key][$i] = [];
+                        if (self::blankRow($field['fields'], $row)) {
+                            continue;
+                        }
+                        $clean = [];
                         foreach ($field['fields'] as $sub => $subField) {
-                            [$v, $e] = self::field($subField + ['required' => in_array($subField['type'], ['number', 'money'], true)], $row[$sub] ?? null, $timezone);
-                            $config[$section][$key][$i][$sub] = $v;
+                            [$v, $e] = self::field($subField + ['required' => $subField['required'] ?? in_array($subField['type'], ['number', 'money'], true)], $row[$sub] ?? null, $timezone);
+                            $clean[$sub] = $v;
                             if ($e !== null) {
                                 $errors["{$section}.{$key}.{$i}.{$sub}"] = $e;
                             }
                         }
+                        $kept[] = $clean;
+                    }
+                    $config[$section][$key] = $kept;
+                    if ($kept === [] && ($field['required'] ?? false)) {
+                        $errors["{$section}.{$key}"] = "Add at least one row to {$field['label']}.";
                     }
                 }
             }
@@ -222,6 +233,30 @@ class Schema
         $errors += self::crossFieldErrors($type, $config);
 
         return [$config, $errors];
+    }
+
+    /**
+     * Whether a list row still holds only the values a new row starts with in the editor
+     * (first option for selects, the field default or empty otherwise).
+     */
+    private static function blankRow(array $fields, mixed $row): bool
+    {
+        if (! is_array($row)) {
+            return true;
+        }
+        foreach ($fields as $sub => $f) {
+            $value = $row[$sub] ?? null;
+            $value = is_string($value) ? trim($value) : $value;
+            $start = $f['type'] === 'select' ? array_key_first($f['options'] ?? []) : ($f['default'] ?? (in_array($f['type'], ['number', 'money'], true) ? null : ''));
+            if ($value === null || $value === '') {
+                continue;
+            }
+            if ((string) $value !== (string) $start) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

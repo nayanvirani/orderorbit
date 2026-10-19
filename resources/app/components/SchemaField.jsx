@@ -58,10 +58,12 @@ function mapPicked(picked, current) {
   });
 }
 
-export default function SchemaField({ name, field, value, onChange, error, rowErrors = [], currency = 'USD', timezone = 'UTC', tzOffset = '+00:00', segments = [] }) {
+export default function SchemaField({ name, field, value, onChange, error, rowErrors = {}, currency = 'USD', timezone = 'UTC', tzOffset = '+00:00', segments = [] }) {
   const id = useId();
   const t = field.type;
-  const cls = `b-field${t === 'toggle' ? ' b-toggle' : ''}${error || rowErrors.length ? ' b-has-error' : ''}`;
+  // List rows: errors keyed "<row>.<sub-field>", shown under the box they belong to.
+  const cellErrors = rowErrors;
+  const cls = `b-field${t === 'toggle' ? ' b-toggle' : ''}${error || Object.keys(cellErrors).length ? ' b-has-error' : ''}`;
   const footer = error ? <p className="b-error" role="alert">{error}</p> : field.help ? <p className="b-help">{field.help}</p> : null;
   let control;
 
@@ -162,7 +164,7 @@ export default function SchemaField({ name, field, value, onChange, error, rowEr
       control = <ResourceField field={field} value={value} onChange={onChange} />;
       break;
     case 'list':
-      control = <ListField field={field} value={value} onChange={onChange} />;
+      control = <ListField field={{ ...field, key: name }} value={value} onChange={onChange} errors={cellErrors} />;
       break;
     default:
       control = (
@@ -176,7 +178,6 @@ export default function SchemaField({ name, field, value, onChange, error, rowEr
   return (
     <div className={cls} data-field={name}>
       {control}
-      {rowErrors.map((m) => <p className="b-error" key={m}>{m}</p>)}
       {footer}
     </div>
   );
@@ -213,38 +214,85 @@ function ResourceField({ field, value, onChange }) {
   );
 }
 
-function ListField({ field, value, onChange }) {
+/** The value a new list row starts with for one sub-field (the server treats a row still at these values as blank). */
+export function rowDefault(f) {
+  if (f.type === 'select') return Object.keys(f.options)[0];
+  if (f.type === 'number' || f.type === 'money') return f.default ?? null;
+  return f.default ?? '';
+}
+
+// Whole numbers in a short range (e.g. 1–5 stars) are picked from a list rather than typed.
+const smallRange = (f) => f.type === 'number' && Number.isInteger(f.min) && Number.isInteger(f.max) && f.max - f.min <= 10 && !f.step;
+// Long text gets a full-width box with several lines.
+const longText = (f) => f.type === 'textarea' || (f.type === 'text' && (f.max ?? 0) >= 120);
+
+function ListField({ field, value, onChange, errors = {} }) {
   const rows = Array.isArray(value) ? value : [];
   const max = field.max_items ?? 10;
   const fields = field.fields || {};
+  const item = field.item_label || 'Row';
   const setCell = (i, key, v) => onChange(rows.map((r, j) => (j === i ? { ...r, [key]: v } : r)));
-  const add = () => onChange([...rows, Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, f.type === 'select' ? Object.keys(f.options)[0] : '']))]);
+  const add = () => onChange([...rows, Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, rowDefault(f)]))]);
+  const move = (i, d) => {
+    const next = rows.slice();
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    onChange(next);
+  };
   return (
     <>
       <span className="b-label">{field.label}</span>
       <div className="b-list">
         {rows.map((row, i) => (
           <div className="b-row" key={i}>
-            {Object.entries(fields).map(([key, f]) => {
-              const number = f.type === 'number' || f.type === 'money';
-              return (
-                <label className="b-row-field" key={key}>
-                  {f.label}
-                  {f.type === 'select' ? (
-                    <select value={String(row[key] ?? '')} onChange={(e) => setCell(i, key, e.target.value)}>
-                      {Object.entries(f.options).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            <div className="b-row-head">
+              <strong>{item} {i + 1}</strong>
+              <span className="b-row-actions">
+                <button type="button" className="b-icon-btn" aria-label={`Move ${item.toLowerCase()} ${i + 1} up`} disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
+                <button type="button" className="b-icon-btn" aria-label={`Move ${item.toLowerCase()} ${i + 1} down`} disabled={i === rows.length - 1} onClick={() => move(i, 1)}>↓</button>
+                <button type="button" className="b-icon-btn" aria-label={`Remove ${item.toLowerCase()} ${i + 1}`} onClick={() => onChange(rows.filter((_, j) => j !== i))}>×</button>
+              </span>
+            </div>
+            <div className="b-row-fields">
+              {Object.entries(fields).map(([key, f]) => {
+                const number = f.type === 'number' || f.type === 'money';
+                const error = errors[`${i}.${key}`];
+                const id = `${field.key || 'list'}-${i}-${key}`;
+                let control;
+                if (f.type === 'select' || smallRange(f)) {
+                  const options = f.type === 'select' ? Object.entries(f.options)
+                    : Array.from({ length: f.max - f.min + 1 }, (_, n) => f.max - n).map((v) => [String(v), key === 'rating' ? `${'★'.repeat(v)} ${v}` : String(v)]);
+                  control = (
+                    <select id={id} value={String(row[key] ?? '')} aria-invalid={error ? true : undefined}
+                      onChange={(e) => setCell(i, key, f.type === 'select' ? e.target.value : Number(e.target.value))}>
+                      {f.type !== 'select' && row[key] == null && <option value="">Choose</option>}
+                      {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
-                  ) : (
-                    <input type={number ? 'number' : 'text'} step={f.type === 'money' ? '0.01' : undefined} min={f.min} max={number ? f.max : undefined} maxLength={!number ? f.max : undefined}
-                      value={row[key] ?? ''} onChange={(e) => setCell(i, key, number ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value)} />
-                  )}
-                </label>
-              );
-            })}
-            <button type="button" className="b-icon-btn" aria-label="Remove row" onClick={() => onChange(rows.filter((_, j) => j !== i))}>×</button>
+                  );
+                } else if (longText(f)) {
+                  control = <textarea id={id} rows={3} maxLength={f.max} placeholder={f.placeholder} value={row[key] ?? ''} aria-invalid={error ? true : undefined} onChange={(e) => setCell(i, key, e.target.value)} />;
+                } else {
+                  control = (
+                    <input id={id} type={number ? 'number' : 'text'} step={f.type === 'money' ? '0.01' : undefined} min={f.min} max={number ? f.max : undefined} maxLength={!number ? f.max : undefined}
+                      placeholder={f.placeholder} value={row[key] ?? ''} aria-invalid={error ? true : undefined}
+                      onChange={(e) => setCell(i, key, number ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value)} />
+                  );
+                }
+                return (
+                  <div className={`b-row-field${longText(f) ? ' b-row-wide' : ''}`} key={key}>
+                    <label htmlFor={id}>{f.label}{f.required ? ' *' : ''}</label>
+                    {control}
+                    {error && <span className="b-error">{error}</span>}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
-        {rows.length < max && <button type="button" className="b-btn" onClick={add}>Add row</button>}
+        {rows.length < max ? (
+          <button type="button" className="b-btn b-add" onClick={add}>{field.add_label || `Add ${item.toLowerCase()}`}</button>
+        ) : (
+          <p className="b-help">You've added the most {item.toLowerCase()}s this allows ({max}).</p>
+        )}
       </div>
     </>
   );

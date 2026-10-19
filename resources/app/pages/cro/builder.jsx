@@ -105,7 +105,7 @@ export default function Builder(props) {
                   {section === 'schedule' && <p className="b-muted">Optional. Leave empty to go live as soon as you publish.</p>}
                   {Object.entries(fields[section] || {}).filter(([, f]) => visible(f, config[section])).map(([key, f]) => (
                     <SchemaField key={key} name={key} field={f} value={config[section]?.[key] ?? null} onChange={(v) => set(section, key, v)}
-                      error={errors[`${section}.${key}`]} rowErrors={Object.entries(errors).filter(([k]) => k.startsWith(`${section}.${key}.`)).map(([, m]) => m)}
+                      error={errors[`${section}.${key}`]} rowErrors={Object.fromEntries(Object.entries(errors).filter(([k]) => k.startsWith(`${section}.${key}.`)).map(([k, m]) => [k.slice(`${section}.${key}.`.length), m]))}
                       currency={currency} timezone={timezone} tzOffset={tzOffset} segments={segments} />
                   ))}
                 </div>
