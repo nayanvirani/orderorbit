@@ -7,6 +7,7 @@ use App\Models\Automation\InboxItem;
 use App\Models\Automation\Workflow;
 use App\Models\Automation\WorkflowRun;
 use App\Services\Shopify\AdminApi;
+use App\Support\PublicUrl;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -96,7 +97,11 @@ class Actions
                 return ['ok', "Created discount code {$code}.", ['discount_code' => $code]];
 
             case 'webhook':
-                $response = Http::timeout(10)->acceptJson()->post($p['url'], [
+                // Only public addresses, connected to exactly as checked, with no redirects.
+                $target = PublicUrl::resolve((string) $p['url']);
+                $response = Http::timeout(10)->connectTimeout(5)->withoutRedirecting()
+                    ->withOptions(['curl' => [CURLOPT_RESOLVE => ["{$target['host']}:443:{$target['ip']}"]]])
+                    ->acceptJson()->post($p['url'], [
                     'source' => 'orderorbit-space', 'shop' => $run->store->shop_domain,
                     'workflow' => ['id' => $run->workflow->handle, 'name' => $run->workflow->name], 'run_id' => $run->id,
                     'trigger' => $run->trigger, 'order' => $order, 'customer' => $customer ? array_diff_key($customer, ['email' => 1]) : null,

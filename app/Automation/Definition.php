@@ -131,8 +131,8 @@ class Definition
                             $errors["{$p}.params.{$key}"] = $error;
                         }
                     }
-                    if ($step['action'] === 'webhook' && $params['url'] !== '' && ! preg_match('#^https://[^\s"\'<>]+$#', $params['url'])) {
-                        $errors["{$p}.params.url"] = 'Use a full https:// address.';
+                    if ($step['action'] === 'webhook' && $params['url'] !== '' && ! \App\Support\PublicUrl::looksValid($params['url'])) {
+                        $errors["{$p}.params.url"] = 'Use a full, public https:// address.';
                     }
                     $out[] = ['type' => 'action', 'action' => $step['action'], 'params' => $params];
                     break;

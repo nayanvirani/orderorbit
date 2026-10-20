@@ -157,13 +157,13 @@ class AuthenticateShopify
     {
         if ($request->isMethod('GET') && ! $request->expectsJson()) {
             $shop = $request->query('shop');
-            $ancestors = ShopDomain::isValid($shop) ? "https://{$shop}" : 'https://*.myshopify.com';
+            $ancestors = ShopDomain::isValid($shop) ? "https://{$shop}" : null;
 
             // A token that still fails after one bounce will never succeed; stop the loop.
             $view = $request->query('bounced') ? 'app.session-error' : 'app.bounce';
 
             return response()->view($view, [], $view === 'app.bounce' ? 200 : 401)
-                ->header('Content-Security-Policy', "frame-ancestors {$ancestors} https://admin.shopify.com;");
+                ->header('Content-Security-Policy', 'frame-ancestors '.($ancestors ? $ancestors.' ' : '').'https://admin.shopify.com;');
         }
 
         return response()->json(['message' => 'Your session has expired. Please reopen Growvia from Shopify admin.'], 401)

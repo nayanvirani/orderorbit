@@ -7,6 +7,7 @@ use App\Models\AnalyticsEvent;
 use App\Models\Experience;
 use App\Models\Store;
 use App\Services\Shopify\AdminApi;
+use App\Services\Shopify\ShopDomain;
 use App\Support\Jwt;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -32,8 +33,9 @@ class PostPurchase
     public function context(string $token, string $shop, array $sent): array
     {
         $claims = Jwt::decode($token, (string) config('shopify.api_secret'));
-        $domain = strtolower($shop);
-        if (isset($claims['dest']) && ! str_contains(strtolower((string) $claims['dest']), $domain)) {
+        // The shop comes from the signed token only; the shop the extension sends must be the same one.
+        $domain = self::tokenShop($claims);
+        if ($domain === null || $domain !== strtolower($shop)) {
             throw new RuntimeException('The token belongs to another shop.');
         }
         $store = Store::where('shop_domain', $domain)->whereNull('uninstalled_at')->firstOrFail();
@@ -46,6 +48,15 @@ class PostPurchase
         ] : $sent;
 
         return [$store, $facts];
+    }
+
+    /** The shop a purchase token was signed for: its `dest` claim, or the shop in its input data. */
+    private static function tokenShop(array $claims): ?string
+    {
+        $dest = strtolower(trim((string) ($claims['dest'] ?? '')));
+        $domain = $dest !== '' ? (parse_url(str_contains($dest, '://') ? $dest : 'https://'.$dest, PHP_URL_HOST) ?: '') : strtolower((string) ($claims['input_data']['shop']['domain'] ?? ''));
+
+        return ShopDomain::isValid($domain) ? $domain : null;
     }
 
     /**

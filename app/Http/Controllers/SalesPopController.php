@@ -22,7 +22,7 @@ class SalesPopController extends Controller
         $shop = strtolower((string) $request->query('shop', ''));
         $days = max(1, min(RecentPurchase::MAX_DAYS, (int) $request->query('days', 7)));
 
-        $items = preg_match('/^[a-z0-9][a-z0-9\-]*\.myshopify\.com$/', $shop)
+        $items = \App\Services\Shopify\ShopDomain::isValid($shop)
             ? Cache::remember("sales-pop:{$shop}:{$days}", 60, fn () => $this->items($shop, $days))
             : [];
 

@@ -84,6 +84,12 @@ class PostPurchaseTest extends TestCase
         $this->offer('not.a.token')->assertOk()->assertJson(['funnel' => null]);
         $forged = Jwt::encode(['input_data' => []], 'someone-elses-secret');
         $this->offer($forged)->assertOk()->assertJson(['funnel' => null]);
+        // A real token for another shop can't be used for this one, even when its domain ends the same way.
+        $secret = (string) config('shopify.api_secret');
+        $purchase = ['initialPurchase' => ['referenceId' => 'r', 'totalPriceSet' => ['shopMoney' => ['amount' => '80']], 'lineItems' => [['product' => ['id' => 'gid://shopify/Product/1']]]]];
+        $this->offer(Jwt::encode(['dest' => 'https://other-'.$this->shop, 'exp' => time() + 600, 'input_data' => $purchase], $secret))->assertOk()->assertJson(['funnel' => null]);
+        $this->offer(Jwt::encode(['exp' => time() + 600, 'input_data' => $purchase], $secret))->assertOk()->assertJson(['funnel' => null]);
+        $this->postJson('/api/post-purchase/sign', ['token' => Jwt::encode(['dest' => 'other-'.$this->shop, 'exp' => time() + 600, 'input_data' => $purchase], $secret), 'shop' => $this->shop, 'experience_id' => 'x', 'step' => 0])->assertStatus(422);
 
         // Above it: the offer and the second offer, with live variants (the sold-out one skipped).
         $res = $this->offer($this->purchaseToken(['gid://shopify/Product/1'], 80))->assertOk()

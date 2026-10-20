@@ -30,6 +30,8 @@ class AutomationTest extends TestCase
     {
         parent::setUp();
         $this->setUpShopify();
+        // Webhook hosts resolve to a public address without a real DNS lookup.
+        \App\Support\PublicUrl::$resolver = fn () => ['93.184.215.14'];
         Http::fake(function (Request $request) {
             $query = $request['query'] ?? '';
             if (str_contains($request->url(), '/admin/oauth/access_token')) {
@@ -257,7 +259,7 @@ class AutomationTest extends TestCase
         $bad = $workflow->draft;
         $bad['steps'][] = ['type' => 'action', 'action' => 'webhook', 'params' => ['url' => 'ftp://nope']];
         $this->send('/app/automation/workflows/'.$workflow->id, ['name' => 'Reviews', 'action' => 'publish', 'definition' => $bad], $owner)
-            ->assertStatus(422)->assertJsonPath('props.banner', 'Draft saved. Fix the highlighted steps before you publish.')->assertSee('Use a full https:\/\/ address.', false);
+            ->assertStatus(422)->assertJsonPath('props.banner', 'Draft saved. Fix the highlighted steps before you publish.')->assertSee('Use a full, public https:\/\/ address.', false);
         $this->assertSame('Reviews', $workflow->fresh()->name);
 
         $good = $workflow->draft;
