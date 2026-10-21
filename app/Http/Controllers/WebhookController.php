@@ -56,6 +56,8 @@ class WebhookController extends Controller
     {
         if ($created) {
             $orders->fromWebhook($store, $payload);
+            // Subscription renewals never reach checkout, so the pixel can't count them.
+            app(\App\Services\Analytics\RenewalRevenue::class)->record($store, $payload);
         }
         $this->automation($store, $created ? 'orders/create' : (string) request()->header('X-Shopify-Topic'), $payload);
     }
