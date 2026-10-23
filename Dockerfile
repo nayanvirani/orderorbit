@@ -1,9 +1,9 @@
 # Production image for Railway (web and worker services). Replaces Railpack, whose PHP install
 # step depends on a plugin repository that no longer exists (github.com/jdx/vfox-php).
-# Same runtime as before: FrankenPHP (Caddy) with PHP 8.3, app in /app.
-# Pinned to PHP 8.3.36, the 21 Oct 2026 security release (CVE-2026-109618, CVE-2026-109619), so a
-# cached base image can't keep an older PHP. Raise this tag for each PHP security release.
-FROM dunglas/frankenphp:1.13.2-php8.3.36
+# FrankenPHP (Caddy) with PHP 8.5, app in /app. Pinned to an exact PHP release (8.5.12 includes the
+# 21 Oct 2026 fixes for CVE-2026-109618 and CVE-2026-109619) so a cached base image can't keep an
+# older PHP. Dependabot opens a pull request when a newer image is published.
+FROM dunglas/frankenphp:1.13.2-php8.5.12
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends unzip \

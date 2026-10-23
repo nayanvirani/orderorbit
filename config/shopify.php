@@ -33,6 +33,10 @@ return [
 
     'api_secret' => env('SHOPIFY_API_SECRET'),
 
+    // While rotating the client secret: the old one, still accepted for incoming webhooks, session
+    // tokens and post-purchase tokens until it's revoked in the Dev Dashboard. Remove after revoking.
+    'api_secret_previous' => env('SHOPIFY_API_SECRET_PREVIOUS'),
+
     'api_version' => env('SHOPIFY_API_VERSION', '2026-07'),
 
     // Public "Install app" buttons: the App Store listing, set in Internal Admin → Platform settings

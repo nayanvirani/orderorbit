@@ -32,7 +32,18 @@ class PostPurchase
      */
     public function context(string $token, string $shop, array $sent): array
     {
-        $claims = Jwt::decode($token, (string) config('shopify.api_secret'));
+        $claims = null;
+        foreach (\App\Services\Shopify\Secrets::verifying() as $secret) {
+            try {
+                $claims = Jwt::decode($token, $secret);
+                break;
+            } catch (RuntimeException $e) {
+                $failure = $e;
+            }
+        }
+        if ($claims === null) {
+            throw $failure ?? new RuntimeException('Invalid token signature.');
+        }
         // The shop comes from the signed token only; the shop the extension sends must be the same one.
         $domain = self::tokenShop($claims);
         if ($domain === null || $domain !== strtolower($shop)) {

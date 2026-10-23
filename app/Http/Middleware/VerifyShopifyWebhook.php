@@ -11,9 +11,10 @@ class VerifyShopifyWebhook
     public function handle(Request $request, Closure $next): Response
     {
         $hmac = (string) $request->header('X-Shopify-Hmac-Sha256');
-        $expected = base64_encode(hash_hmac('sha256', $request->getContent(), (string) config('shopify.api_secret'), true));
+        $valid = $hmac !== '' && collect(\App\Services\Shopify\Secrets::verifying())
+            ->contains(fn (string $secret) => hash_equals(base64_encode(hash_hmac('sha256', $request->getContent(), $secret, true)), $hmac));
 
-        if ($hmac === '' || ! hash_equals($expected, $hmac)) {
+        if (! $valid) {
             return response('Unauthorized', 401);
         }
 

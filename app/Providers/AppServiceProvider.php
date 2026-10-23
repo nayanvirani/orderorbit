@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SessionToken::class, fn () => new SessionToken(
             (string) config('shopify.api_key'),
             (string) config('shopify.api_secret'),
+            (string) config('shopify.api_secret_previous') ?: null,
         ));
     }
 

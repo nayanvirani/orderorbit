@@ -1,4 +1,4 @@
-# Weekly checks for security updates to PHP and JavaScript dependencies.
+# Weekly checks for security updates to PHP and JavaScript dependencies and the PHP server image.
 version: 2
 updates:
   - package-ecosystem: composer
@@ -11,3 +11,7 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

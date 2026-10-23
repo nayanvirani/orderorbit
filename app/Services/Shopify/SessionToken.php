@@ -16,6 +16,7 @@ class SessionToken
     public function __construct(
         private readonly string $apiKey,
         private readonly string $apiSecret,
+        private readonly ?string $previousSecret = null,
     ) {}
 
     /**
@@ -37,9 +38,9 @@ class SessionToken
             throw new InvalidSessionToken('Unsupported algorithm.');
         }
 
-        $expected = hash_hmac('sha256', "{$header64}.{$payload64}", $this->apiSecret, true);
-
-        if (! hash_equals($expected, self::base64UrlDecode($signature64))) {
+        $signature = self::base64UrlDecode($signature64);
+        $signedBy = fn (?string $secret) => $secret !== null && $secret !== '' && hash_equals(hash_hmac('sha256', "{$header64}.{$payload64}", $secret, true), $signature);
+        if (! $signedBy($this->apiSecret) && ! $signedBy($this->previousSecret)) {
             throw new InvalidSessionToken('Invalid signature.');
         }
 
