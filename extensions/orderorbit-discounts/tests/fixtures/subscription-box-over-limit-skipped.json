@@ -37,7 +37,8 @@
             },
             "offer": {
               "value": "b1"
-            }
+            },
+            "version": null
           }
         ]
       },

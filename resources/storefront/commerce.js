@@ -147,7 +147,7 @@
     var detail = {
       experience: { id: exp.id, type: exp.type, template: exp.template },
       // Theme code may change these before they are sent (e.g. add a line property).
-      items: items.map(function (i) { return Object.assign({ id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, i.properties || {}) }, i.selling_plan ? { selling_plan: i.selling_plan } : {}); }),
+      items: items.map(function (i) { return Object.assign({ id: Number(h.numericId(i.id)), quantity: i.quantity, properties: Object.assign({ _oo_offer: exp.id }, exp.pv ? { _oo_v: exp.pv } : {}, i.properties || {}) }, i.selling_plan ? { selling_plan: i.selling_plan } : {}); }),
       after: (exp.behavior && exp.behavior.after_add) || 'cart',
       element: rootEl || null,
       getCart: cart

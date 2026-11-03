@@ -1,0 +1,145 @@
+{
+  "payload": {
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 2,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|1|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/5",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null,
+            "version": {
+              "value": "B"
+            }
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 2,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|1|g2"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/5",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null,
+            "version": null
+          }
+        ]
+      },
+      "discount": {
+        "discountClasses": [
+          "PRODUCT",
+          "ORDER"
+        ],
+        "metafield": {
+          "jsonValue": {
+            "offers": [
+              {
+                "k": "bq",
+                "id": "b1",
+                "o": [
+                  null,
+                  {
+                    "q": 2,
+                    "t": "percentage",
+                    "v": 10
+                  }
+                ],
+                "m": "Bundle & save"
+              },
+              {
+                "k": "bq",
+                "id": "b1",
+                "v": "B",
+                "o": [
+                  null,
+                  {
+                    "q": 2,
+                    "t": "percentage",
+                    "v": 20
+                  }
+                ],
+                "m": "Bundle & save"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "productDiscountsAdd": {
+            "candidates": [
+              {
+                "message": "Bundle & save",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/1"
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 10
+                  }
+                }
+              },
+              {
+                "message": "Bundle & save",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/0"
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 20
+                  }
+                }
+              }
+            ],
+            "selectionStrategy": "ALL"
+          }
+        }
+      ]
+    }
+  }
+}

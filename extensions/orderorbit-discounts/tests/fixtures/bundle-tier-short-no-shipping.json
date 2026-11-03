@@ -23,7 +23,8 @@
               "amountPerQuantity": {
                 "amount": "10"
               }
-            }
+            },
+            "version": null
           },
           {
             "quantity": 1,
@@ -39,7 +40,8 @@
               "amountPerQuantity": {
                 "amount": "10"
               }
-            }
+            },
+            "version": null
           },
           {
             "quantity": 5,
@@ -53,7 +55,8 @@
               "amountPerQuantity": {
                 "amount": "10"
               }
-            }
+            },
+            "version": null
           }
         ],
         "deliveryGroups": [

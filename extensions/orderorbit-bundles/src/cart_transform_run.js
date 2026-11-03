@@ -81,6 +81,7 @@ export function cartTransformRun(input) {
       id: line.id,
       qty: line.quantity,
       gift: !!line.gift?.value,
+      v: line.version?.value || 'A',
       sub: !!line.sellingPlanAllocation,
       variant: line.merchandise.id,
       product: numericId(line.merchandise.product.id),
@@ -92,7 +93,8 @@ export function cartTransformRun(input) {
   const operations = [];
   for (let [tag, lines] of Object.entries(groups)) {
     const [bundleId, index] = tag.split('|');
-    const bundle = bundles.find((b) => b.id === bundleId);
+    // A/B tests (G39): a test version's lines (_oo_v) use that version's entry (v).
+    const bundle = bundles.find((b) => b.id === bundleId && (b.v || 'A') === lines[0].v);
     if (!bundle) continue;
 
     if (lines.some((line) => line.sub)) continue;
@@ -130,7 +132,7 @@ export function cartTransformRun(input) {
         parentVariantId: main.variant,
         // Keeps the bundle's tag on the merged line so orders are attributed to it.
         // _oo_tier tells the shipping discount which tier this pack is (free shipping as a tier reward).
-        attributes: [{key: '_oo_offer', value: bundle.id}, {key: '_oo_tier', value: `${bundle.id}|${index}`}],
+        attributes: [{key: '_oo_offer', value: bundle.id}, {key: '_oo_tier', value: `${bundle.id}|${index}`}, ...(bundle.v ? [{key: '_oo_v', value: bundle.v}] : [])],
         ...(title ? {title} : {}),
         ...(bundle.image ? {image: {url: bundle.image}} : {}),
         ...(percent > 0 ? {price: {percentageDecrease: {value: Math.round(percent * 100) / 100}}} : {}),

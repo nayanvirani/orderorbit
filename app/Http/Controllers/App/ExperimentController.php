@@ -158,6 +158,39 @@ class ExperimentController extends Controller
         return redirect()->to(app_route('app.experiments.show', ['experiment' => $experiment->id, 'notice' => 'experiment_'.$action]));
     }
 
+    /** Version B or C of a priced offer test, in the bundle editor (G39). */
+    public function version(Request $request, Store $store, int $experiment, string $key): Page|RedirectResponse
+    {
+        $experiment = $this->find($store, $experiment);
+        abort_unless(ExperimentManager::priced($experiment->experience) && in_array($key, ['B', 'C'], true), 404);
+        $experience = $experiment->experience;
+        $config = $experiment->variants->firstWhere('key', $key)?->config
+            ?? \App\Experiences\BundleSchema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $store->timezone ?? 'UTC')[0];
+
+        return app(BundleController::class)->versionEditor($store, $experience, $config, [], $this->versionMeta($experiment, $key));
+    }
+
+    public function saveVersion(Request $request, Store $store, int $experiment, string $key): Page|RedirectResponse
+    {
+        $experiment = $this->find($store, $experiment);
+        abort_unless(ExperimentManager::priced($experiment->experience) && in_array($key, ['B', 'C'], true), 404);
+        $input = $request->input('config');
+        $input = is_string($input) ? json_decode($input, true) : $input;
+        $errors = $this->manager->saveVersion($experiment, $key, is_array($input) ? $input : []);
+        if ($errors) {
+            $config = $experiment->fresh('variants')->variants->firstWhere('key', $key)?->config ?? (is_array($input) ? $input : []);
+
+            return app(BundleController::class)->versionEditor($store, $experiment->experience, \App\Experiences\BundleSchema::normalize($config, $store->timezone ?? 'UTC')[0], $errors, $this->versionMeta($experiment, $key));
+        }
+
+        return redirect()->to(app_route('app.experiments.edit', ['experiment' => $experiment->id, 'notice' => 'saved']));
+    }
+
+    private function versionMeta(Experiment $experiment, string $key): array
+    {
+        return ['experiment' => $experiment->id, 'key' => $key, 'name' => $experiment->name, 'editable' => in_array($experiment->status, ['draft', 'paused'], true)];
+    }
+
     public function duplicate(Request $request, Store $store, int $experiment): RedirectResponse
     {
         $copy = $this->manager->duplicate($this->find($store, $experiment), $this->user($request));
@@ -208,7 +241,7 @@ class ExperimentController extends Controller
                 'min_days' => $experiment->min_days, 'min_visitors' => $experiment->min_visitors, 'min_conversions' => $experiment->min_conversions,
                 'ends_at' => $experiment->ends_at?->toDateString(),
                 'variants' => $experiment->variants->map(fn ($v) => ['key' => $v->key, 'name' => $v->name, 'allocation' => $v->allocation, 'hidden' => (bool) $v->hidden,
-                    'template_key' => $v->template_key, 'content' => (object) ($v->content ?? []), 'design' => (object) ($v->design ?? [])])->keyBy('key'),
+                    'template_key' => $v->template_key, 'content' => (object) ($v->content ?? []), 'design' => (object) ($v->design ?? []), 'changes' => $v->changes ?? []])->keyBy('key'),
             ],
             'experience' => ['name' => $experience->name, 'type' => $type['label'] ?? $experience->type, 'published' => $experience->status === 'published', 'template_key' => $experience->template_key],
             'config' => ['content' => (object) ($config['content'] ?? []), 'design' => (object) ($config['design'] ?? [])],
@@ -218,6 +251,9 @@ class ExperimentController extends Controller
             'audienceFields' => array_intersect_key(Schema::shared()['targeting'], array_flip(ExperimentManager::audienceFor($experience))),
             'checkoutBlock' => in_array($type['surface'] ?? '', ['checkout', 'thank-you'], true),
             'canHoldout' => ExperimentManager::canHoldout($experience),
+            // G39: versions of a priced offer are full offers, edited in the bundle editor.
+            'priced' => ExperimentManager::priced($experience),
+            'tiers' => ExperimentManager::priced($experience) ? $this->tierSummary($experiment, $store) : null,
             'problems' => $this->manager->launchProblems($experiment),
             'fieldErrors' => (object) $errors,
             'banner' => $banner,
@@ -229,10 +265,35 @@ class ExperimentController extends Controller
         ], $errors ? 422 : 200);
     }
 
+    /** Each version's tiers in words ("10% off · 1 gift"), for comparing versions of a priced offer. */
+    private function tierSummary(Experiment $experiment, Store $store): array
+    {
+        $experience = $experiment->experience;
+        $base = \App\Experiences\BundleSchema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $store->timezone ?? 'UTC')[0];
+        $money = fn ($v) => number_format((float) $v, 2).' '.($store->currency ?? '');
+        $describe = function (array $c) use ($money) {
+            if ($c['bundle_type'] === 'mix-tiers') {
+                return array_map(fn ($t) => [$t['count'].' items', match ($c['mt']['rule']) { 'free' => $t['value'].' free', 'percent' => $t['value'].'% off', default => $money($t['value']).' for the set' }], $c['mt']['tiers']);
+            }
+
+            return array_map(fn ($o) => [$o['title'] ?: 'Offer', trim(match ($o['discount_type']) {
+                'percentage' => $o['discount_value'].'% off', 'amount' => $money($o['discount_value']).' off', 'fixed_price' => $money($o['discount_value']).' total', default => 'Full price',
+            }.(count($o['gifts']) ? ' · '.count($o['gifts']).' '.(count($o['gifts']) === 1 ? 'gift' : 'gifts') : ''))], array_values(array_filter($c['offers'], fn ($o) => $o['visible'])));
+        };
+
+        return ['A' => $describe($base)] + $experiment->variants->where('key', '!=', 'A')->mapWithKeys(fn ($v) => [$v->key => $v->config ? $describe(\App\Experiences\BundleSchema::normalize($v->config)[0]) : $describe($base)])->all();
+    }
+
     /** Each variant as the storefront renders it, for side-by-side previews. */
     private function previews(Experiment $experiment): array
     {
         $experience = $experiment->experience;
+        if (ExperimentManager::priced($experience)) {
+            $base = $experience->publishedVersion?->config ?? $experience->draft_config ?? [];
+
+            return $experiment->variants->mapWithKeys(fn ($v) => [$v->key => $v->hidden ? null : ['id' => $experience->handle.'-'.$v->key, 'type' => 'bundles', 'template' => 'editor', 'style' => 'vertical', 'version' => 0, 'priority' => 50]
+                + \App\Services\Experiences\TemplateLibrary::bundlePreviewFrom(\App\Experiences\BundleSchema::normalize($v->config ?? $base)[0])])->all();
+        }
         $config = $experience->publishedVersion?->config ?? $experience->draft_config;
         $control = $experience->publishedVersion?->template_key ?? $experience->template_key;
 

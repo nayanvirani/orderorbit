@@ -9,7 +9,7 @@ import ExperienceStatus from '../cro/_status.jsx';
 import TieredPanel, { usesTiered } from './_tiered.jsx';
 import MixTiersPanel from './_mixtiers.jsx';
 
-export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts }) {
+export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts, testVersion }) {
   const { submit } = useRouter();
   const { currency } = useShared();
   const ready = useRuntime();
@@ -48,7 +48,9 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
 
   const save = async (action) => {
     setBusy(action);
-    await submit(route('app.bundles.update', { bundle: x.id }), { action, name, config: state });
+    // A/B test version (G39): saved to the test, never to the live bundle.
+    if (testVersion) await submit(route('app.experiments.version.save', { experiment: testVersion.experiment, key: testVersion.key }), { config: state });
+    else await submit(route('app.bundles.update', { bundle: x.id }), { action, name, config: state });
     setBusy(null);
     setDirty(false);
   };
@@ -92,9 +94,15 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const ctx = { state, set, update, errors, meta: { ...meta, subscriptionLayouts }, open, toggle, expand, currency };
 
   return (
-    <Page heading={x.name} back={route('app.bundles.index')} backLabel="Bundles">
+    <Page heading={testVersion ? `${x.name} · Version ${testVersion.key}` : x.name}
+      back={testVersion ? route('app.experiments.edit', { experiment: testVersion.experiment }) : route('app.bundles.index')} backLabel={testVersion ? 'A/B test' : 'Bundles'}>
+      {testVersion && (
+        <s-banner tone="info" heading={`Editing version ${testVersion.key} of the test "${testVersion.name}"`}>
+          <s-paragraph>Change prices, gifts, products, layout, text or design. Version A stays your live bundle, and where the bundle shows stays the same. Checkout charges each shopper the price of the version they saw.</s-paragraph>
+        </s-banner>
+      )}
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'critical'}>{banner}</s-banner>}
-      {x.status === 'published' && x.unpublished && <s-banner tone="info">This bundle has changes that aren't live yet. Publish to update your store.</s-banner>}
+      {!testVersion && x.status === 'published' && x.unpublished && <s-banner tone="info">This bundle has changes that aren't live yet. Publish to update your store.</s-banner>}
       {steps.length > 0 && (
         <s-banner tone="info" heading={`Almost ready: ${steps.length} ${steps.length === 1 ? 'step' : 'steps'} left`}>
           <ol className="bx-steps">
@@ -115,10 +123,10 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
 
           <div className="bx-layout">
             <div className="bx-panel-col">
-              <div className="bx-card bx-inline-card">
+              {!testVersion && <div className="bx-card bx-inline-card">
                 <div className="bx-inline"><strong>Schedule</strong><span className="bx-muted">Optional start and end. Shopify applies the bundle pricing only in this window.</span></div>
                 <Row><F path="schedule.starts_at" label={`Start (${meta.timezone})`} type="datetime" /><F path="schedule.ends_at" label={`End (${meta.timezone})`} type="datetime" /></Row>
-              </div>
+              </div>}
 
               <nav className="bx-tabbar" role="tablist" aria-label="Bundle editor">
                 {[['settings', 'Settings'], ['offers', ['mix-match', 'byob', 'mix-tiers'].includes(state.bundle_type) ? 'Products' : usesTiered(state) ? 'Tiers' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
@@ -152,8 +160,14 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
               </div>
               <div className="bx-savebar">
                 {dirty && <span className="b-dirty">Unsaved changes</span>}
-                <button type="button" className="b-btn" disabled={!!busy} onClick={() => save('save')}>{busy === 'save' ? 'Saving…' : 'Save as draft'}</button>
-                <button type="button" className="b-btn b-primary" disabled={!!busy} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : x.status === 'published' ? 'Publish changes' : 'Publish'}</button>
+                {testVersion ? (
+                  <button type="button" className="b-btn b-primary" disabled={!!busy || !testVersion.editable} onClick={() => save('save')}>{busy ? 'Saving…' : `Save version ${testVersion.key}`}</button>
+                ) : (
+                  <>
+                    <button type="button" className="b-btn" disabled={!!busy} onClick={() => save('save')}>{busy === 'save' ? 'Saving…' : 'Save as draft'}</button>
+                    <button type="button" className="b-btn b-primary" disabled={!!busy} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : x.status === 'published' ? 'Publish changes' : 'Publish'}</button>
+                  </>
+                )}
               </div>
             </aside>
           </div>

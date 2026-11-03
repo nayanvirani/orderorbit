@@ -10,6 +10,9 @@ query CartInput($boxCollections: [ID!]! = []) {
       bundle: attribute(key: "_oo_bundle") {
         value
       }
+      version: attribute(key: "_oo_v") {
+        value
+      }
       gift: attribute(key: "_oo_gift") {
         value
       }

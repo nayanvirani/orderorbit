@@ -168,6 +168,27 @@ class TemplateLibrary
             + BundleSchema::payload($config);
     }
 
+    /** A saved bundle config as the storefront renders it, with sample products where none are picked. */
+    public static function bundlePreviewFrom(array $config): array
+    {
+        $samples = array_slice(self::samples(), 0, 3);
+        foreach ($config['offers'] as $i => $offer) {
+            if ($offer['kind'] === 'multi' && $offer['products'] === []) {
+                $config['offers'][$i]['products'] = $samples;
+            }
+            foreach ($offer['gifts'] as $g => $gift) {
+                if ($gift['product'] === []) {
+                    $config['offers'][$i]['gifts'][$g]['product'] = [self::samples()[3]];
+                }
+            }
+        }
+        if (($config['mt']['pool'] ?? null) === []) {
+            $config['mt']['pool'] = $samples;
+        }
+
+        return BundleSchema::payload($config);
+    }
+
     /**
      * A progressive gifts model with sample gifts, in the storefront payload shape.
      */

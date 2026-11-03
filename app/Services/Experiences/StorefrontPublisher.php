@@ -244,7 +244,12 @@ class StorefrontPublisher
         return [
             'id' => $test->handle,
             'audience' => (object) $audience,
-            'variants' => $test->variants->values()->map(fn ($v, $i) => array_filter([
+            'variants' => $test->variants->values()->map(fn ($v, $i) => $v->key !== 'A' && $v->config && ! $v->hidden ? [
+                // A priced version (G39): its whole offer, and "pv" so its cart lines carry _oo_v.
+                'key' => $v->key,
+                'alloc' => $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation,
+                'pv' => $v->key,
+            ] + array_intersect_key(BundleSchema::payload(BundleSchema::normalize($v->config)[0]), array_flip(['content', 'design'])) : array_filter([
                 'key' => $v->key,
                 'alloc' => $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation,
                 // A variant that would show made-up content shows nothing instead (requirement 1.1.4).

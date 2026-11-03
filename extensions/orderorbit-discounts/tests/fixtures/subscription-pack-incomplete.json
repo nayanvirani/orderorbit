@@ -32,7 +32,8 @@
               "sellingPlan": {
                 "id": "gid://shopify/SellingPlan/7"
               }
-            }
+            },
+            "version": null
           }
         ]
       },

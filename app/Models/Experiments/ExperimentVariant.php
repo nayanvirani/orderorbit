@@ -9,11 +9,11 @@ class ExperimentVariant extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['experiment_id', 'key', 'name', 'allocation', 'hidden', 'template_key', 'content', 'design'];
+    protected $fillable = ['experiment_id', 'key', 'name', 'allocation', 'hidden', 'template_key', 'content', 'design', 'config', 'changes'];
 
     protected function casts(): array
     {
-        return ['content' => 'array', 'design' => 'array', 'hidden' => 'boolean', 'allocation' => 'integer'];
+        return ['content' => 'array', 'design' => 'array', 'config' => 'array', 'changes' => 'array', 'hidden' => 'boolean', 'allocation' => 'integer'];
     }
 
     public function experiment(): BelongsTo

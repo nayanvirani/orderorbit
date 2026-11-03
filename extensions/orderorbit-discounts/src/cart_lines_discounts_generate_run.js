@@ -30,11 +30,15 @@ import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionS
  *   upsell { id, v }          lines added by the widget carry _oo_offer = id
  *   gift   { id, th: [amounts] } lines added by the widget carry _oo_offer = id
  *
+ * A/B tests on bundles (G39): lines added from a test version carry _oo_v = "B" or "C"; that version's
+ * entries have v = "B" or "C" and apply only to its lines (lines without _oo_v are version A).
+ *
  * @typedef {import("../generated/api").CartInput} RunInput
  * @typedef {import("../generated/api").CartLinesDiscountsGenerateRunResult} CartLinesDiscountsGenerateRunResult
  */
 
 const numericId = (gid) => String(gid || '').split('/').pop();
+const sameVersion = (line, offer) => (line.v || 'A') === (offer.v || 'A');
 
 function percent(value) {
   return {percentage: {value: Math.min(100, Math.max(0, Number(value) || 0))}};
@@ -78,7 +82,7 @@ const RULES = {
   mt(offer, lines, rate) {
     const groups = {};
     lines.forEach((line) => {
-      if (line.bundle && line.bundle.indexOf(offer.id + '|t|') === 0 && !line.gift && (offer.p || []).includes(line.product)) {
+      if (line.bundle && line.bundle.indexOf(offer.id + '|t|') === 0 && !line.gift && sameVersion(line, offer) && (offer.p || []).includes(line.product)) {
         (groups[line.bundle] = groups[line.bundle] || []).push(line);
       }
     });
@@ -142,7 +146,7 @@ const RULES = {
   bq(offer, lines, rate) {
     const groups = {};
     lines.forEach((line) => {
-      if (line.bundle && line.bundle.indexOf(offer.id + '|') === 0) (groups[line.bundle] = groups[line.bundle] || []).push(line);
+      if (line.bundle && line.bundle.indexOf(offer.id + '|') === 0 && sameVersion(line, offer)) (groups[line.bundle] = groups[line.bundle] || []).push(line);
     });
     const found = [];
     for (const [tag, group] of Object.entries(groups)) {
@@ -239,6 +243,7 @@ export function cartLinesDiscountsGenerateRun(input) {
       collections: (line.merchandise.product.inCollections || []).filter((c) => c.isMember).map((c) => c.collectionId),
       offer: line.offer?.value || null,
       bundle: line.bundle?.value || null,
+      v: line.version?.value || null,
       gift: !!line.gift?.value,
       giftIndex: line.gift?.value ?? null,
       sub: !!line.sellingPlanAllocation,

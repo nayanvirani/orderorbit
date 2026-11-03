@@ -24,7 +24,8 @@
                 "inCollections": []
               }
             },
-            "sellingPlanAllocation": null
+            "sellingPlanAllocation": null,
+            "version": null
           },
           {
             "id": "gid://shopify/CartLine/1",
@@ -44,7 +45,8 @@
                 "inCollections": []
               }
             },
-            "sellingPlanAllocation": null
+            "sellingPlanAllocation": null,
+            "version": null
           }
         ]
       },

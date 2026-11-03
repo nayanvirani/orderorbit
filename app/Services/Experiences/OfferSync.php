@@ -157,7 +157,7 @@ class OfferSync
                 && $store->allowsExperience($experience->type, $experience->publishedVersion->config)
                 && Registry::has($experience->type)
                 && ($experience->ends_at === null || $experience->ends_at->isFuture());
-            $offers = $live ? self::offersFor($experience, $experience->publishedVersion->config) : [];
+            $offers = $live ? array_merge(self::offersFor($experience, $experience->publishedVersion->config), self::versionOffers($experience, $store)) : [];
 
             if ($offers !== []) {
                 $this->upsert($store, $experience, $offers);
@@ -165,6 +165,22 @@ class OfferSync
                 $this->remove($store, $experience);
             }
         }
+    }
+
+    /**
+     * A/B test versions of a bundle (G39): each version's own entries, marked v = "B" or "C", for
+     * the lines its shoppers add (they carry _oo_v).
+     */
+    public static function versionOffers(Experience $experience, Store $store): array
+    {
+        if (! $store->planIncludes('ab_testing') || ! \App\Services\Experiments\ExperimentManager::priced($experience)) {
+            return [];
+        }
+        $test = \App\Models\Experiments\Experiment::with('variants')->where('experience_id', $experience->id)->where('status', 'running')->first();
+
+        return collect($test?->variants ?? [])->filter(fn ($v) => $v->key !== 'A' && $v->config && ! $v->hidden)
+            ->flatMap(fn ($v) => array_map(fn ($o) => $o + ['v' => $v->key], self::offersFor($experience, $v->config)))
+            ->values()->all();
     }
 
     private function upsert(Store $store, Experience $experience, array $offers): void

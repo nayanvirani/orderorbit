@@ -21,7 +21,8 @@
               }
             },
             "bundle": null,
-            "tier": null
+            "tier": null,
+            "version": null
           }
         ],
         "deliveryGroups": [

@@ -31,11 +31,13 @@ export function cartDeliveryOptionsDiscountsGenerateRun(input) {
       ? paid.reduce((sum, line) => sum + line.quantity, 0)
       : paid.reduce((sum, line) => sum + Number(line.cost.amountPerQuantity.amount) * line.quantity, 0);
   };
-  const tierBought = (offer) => (input.cart.lines || []).some((line) => {
+  // Only lines of the offer's A/B test version (_oo_v; none = A).
+  const ofVersion = (offer) => (input.cart.lines || []).filter((line) => (line.version?.value || 'A') === (offer.v || 'A'));
+  const tierBought = (offer) => ofVersion(offer).some((line) => {
     const tier = line.tier?.value;
     if (tier && tier.indexOf(offer.id + '|') === 0) return Object.prototype.hasOwnProperty.call(offer.t || {}, tier.split('|')[1]);
     return false;
-  }) || Object.entries((input.cart.lines || []).reduce((groups, line) => {
+  }) || Object.entries(ofVersion(offer).reduce((groups, line) => {
     const tag = line.bundle?.value;
     if (tag && tag.indexOf(offer.id + '|') === 0 && line.gift?.value == null) groups[tag] = (groups[tag] || 0) + line.quantity;
     return groups;

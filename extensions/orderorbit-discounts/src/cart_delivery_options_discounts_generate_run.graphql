@@ -20,6 +20,9 @@ query DeliveryInput {
       tier: attribute(key: "_oo_tier") {
         value
       }
+      version: attribute(key: "_oo_v") {
+        value
+      }
       cost {
         amountPerQuantity {
           amount

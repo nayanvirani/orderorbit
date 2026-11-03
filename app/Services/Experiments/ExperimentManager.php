@@ -18,9 +18,11 @@ use Throwable;
 
 /**
  * A/B tests on published storefront experiences. Variants can change the template, the design
- * and the text, never the offer itself (products, prices, discounts and thresholds stay as
- * published, so checkout always gives what the widget promised). A holdout variant hides the
- * experience to measure its overall effect; it isn't offered for types that apply discounts.
+ * and the text. For priced offers (bundles, with the ab_every_offer flag; G39) a variant is a full
+ * alternative offer: its own prices, gifts, products and layout. Checkout charges each version's
+ * own price: the storefront tags its cart lines with _oo_v and the Growvia discount and cart
+ * transform carry an entry per version. A holdout variant hides the experience to measure its
+ * overall effect.
  */
 class ExperimentManager
 {
@@ -61,11 +63,23 @@ class ExperimentManager
 
     public function __construct(private readonly StorefrontPublisher $publisher, private readonly ExperienceManager $experiences) {}
 
+    /** Offer types whose versions carry their own prices (G39). */
+    public const PRICED = ['bundles'];
+
+    /** Whether versions of this experience are full alternative offers with their own prices. */
+    public static function priced(Experience $experience): bool
+    {
+        return in_array($experience->type, self::PRICED, true) && \App\Support\Features::enabled('ab_every_offer', $experience->store);
+    }
+
     /** Why an experience can't be tested, or null. */
     public static function unsupported(Experience $experience): ?string
     {
         if (! Registry::has($experience->type)) {
             return 'This widget type no longer exists.';
+        }
+        if (self::priced($experience)) {
+            return null;
         }
         if (in_array($experience->type, ['bundles', 'progressive-gifts'], true)) {
             return 'Bundles and Progressive gifts set prices at checkout, so they can\'t be split-tested yet.';
@@ -83,7 +97,8 @@ class ExperimentManager
 
     public static function canHoldout(Experience $experience): bool
     {
-        return ! (Registry::type($experience->type)['discount'] ?? false);
+        // A hidden bundle adds nothing to the cart, so nothing is discounted: safe to hold out.
+        return self::priced($experience) || ! (Registry::type($experience->type)['discount'] ?? false);
     }
 
     /** Text fields a variant may change. */
@@ -162,7 +177,9 @@ class ExperimentManager
                 $errors['ends_at'] = 'The end date must leave at least the minimum duration ('.$experiment->min_days.' days).';
             }
 
-            $errors += $this->saveVariants($experiment, (array) ($input['variants'] ?? []), $type);
+            $errors += self::priced($experience)
+                ? $this->savePricedVariants($experiment, (array) ($input['variants'] ?? []))
+                : $this->saveVariants($experiment, (array) ($input['variants'] ?? []), $type);
         }
 
         $experiment->save();
@@ -230,6 +247,111 @@ class ExperimentManager
         return $errors;
     }
 
+    /**
+     * Versions of a priced offer: each non-control version is a full bundle config, checked like the
+     * bundle editor. Where the bundle shows (products, collections, markets) always stays as published.
+     */
+    private function savePricedVariants(Experiment $experiment, array $input): array
+    {
+        $errors = [];
+        $experience = $experiment->experience;
+        $keys = array_values(array_intersect(['A', 'B', 'C'], array_keys($input)));
+        if (count($keys) < 2 || $keys[0] !== 'A') {
+            return ['variants' => 'A test needs the control (A) and at least one variant.'];
+        }
+        $total = 0;
+        $experiment->variants()->whereNotIn('key', $keys)->delete();
+        foreach ($keys as $key) {
+            $v = (array) $input[$key];
+            $allocation = (int) ($v['allocation'] ?? 0);
+            $total += $allocation;
+            if ($allocation < 1) {
+                $errors["variants.{$key}.allocation"] = 'Give every version at least 1% of traffic.';
+            }
+            $data = ['name' => mb_substr(trim(strip_tags((string) ($v['name'] ?? ''))), 0, 80) ?: ($key === 'A' ? 'Version A (live offer)' : 'Version '.$key),
+                'allocation' => max(0, min(100, $allocation)), 'template_key' => $experience->publishedVersion?->template_key ?? $experience->template_key, 'content' => null, 'design' => null];
+            if ($key === 'A') {
+                $data += ['hidden' => false, 'config' => null, 'changes' => null];
+            } else {
+                $data['hidden'] = ! empty($v['hidden']);
+                $config = null;
+                $changes = [];
+                $existing = $experiment->variants->firstWhere('key', $key);
+                if (! $data['hidden'] && is_array($v['config'] ?? null)) {
+                    [$config, $configErrors, $changes] = $this->version($experiment, $v['config']);
+                    foreach ($configErrors as $field => $message) {
+                        $errors["variants.{$key}.config.{$field}"] = $message;
+                    }
+                } elseif (! $data['hidden'] && $existing?->config) {
+                    // Edited in the bundle editor; the setup form only keeps it.
+                    [$config, , $changes] = [$existing->config, [], $existing->changes ?? []];
+                }
+                $data['config'] = $changes ? $config : null;
+                $data['changes'] = $data['hidden'] ? ['hide'] : ($changes ?: null);
+            }
+            $experiment->variants()->updateOrCreate(['key' => $key], $data);
+        }
+        if ($total !== 100) {
+            $errors['variants.allocation'] = "Traffic must add up to 100% (now {$total}%).";
+        }
+
+        return $errors;
+    }
+
+    /**
+     * A version's offer checked like the bundle editor: [config, errors, changes]. It can't change what
+     * kind of bundle it is or where it shows (products, collections, markets, schedule).
+     */
+    public function version(Experiment $experiment, array $input): array
+    {
+        $experience = $experiment->experience;
+        $tz = $experiment->store->timezone ?? 'UTC';
+        [$base] = \App\Experiences\BundleSchema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $tz);
+        $input['bundle_type'] = $base['bundle_type'];
+        foreach (['visibility', 'products', 'collections', 'excluded', 'countries'] as $k) {
+            $input['settings'][$k] = $base['settings'][$k];
+        }
+        $input['schedule'] = $base['schedule'] ?? [];
+        [$config, $errors] = \App\Experiences\BundleSchema::normalize($input, $tz);
+
+        return [$config, $errors, self::changes($base, $config)];
+    }
+
+    /** Saves one version edited in the bundle editor. Returns the errors (the edit is kept either way). */
+    public function saveVersion(Experiment $experiment, string $key, array $input): array
+    {
+        if (! in_array($key, ['B', 'C'], true) || ! in_array($experiment->status, ['draft', 'paused'], true)) {
+            return ['version' => 'Only versions B and C of a test that isn\'t running can be edited.'];
+        }
+        [$config, $errors, $changes] = $this->version($experiment, $input);
+        $experiment->variants()->updateOrCreate(['key' => $key], ['config' => $changes ? $config : null, 'changes' => $changes ?: null, 'hidden' => false]
+            + ($experiment->variants->firstWhere('key', $key) ? [] : ['name' => 'Version '.$key, 'allocation' => 0, 'template_key' => $experiment->experience->template_key]));
+
+        return $errors;
+    }
+
+    /** What a version changes compared with the live offer: price, rewards, products, layout, text, design. */
+    public static function changes(array $base, array $version): array
+    {
+        $pick = fn (array $c, array $keys) => array_map(fn ($o) => array_intersect_key($o, array_flip($keys)), $c['offers'] ?? []);
+        $ids = fn ($list) => array_map(fn ($p) => [$p['id'] ?? null, $p['quantity'] ?? 1], (array) $list);
+        $gifts = fn (array $c) => array_map(fn ($o) => array_map(fn ($g) => [$g['product'][0]['id'] ?? null, $g['quantity'] ?? 1], $o['gifts'] ?? []), $c['offers'] ?? []);
+        $products = fn (array $c) => [array_map(fn ($o) => [$o['kind'], $o['quantity'], $ids($o['products']), $ids($o['product'])], $c['offers'] ?? []), $ids($c['mt']['pool'] ?? []), $ids($c['mix']['pool'] ?? [])];
+
+        return array_keys(array_filter([
+            'price' => $pick($base, ['discount_type', 'discount_value']) != $pick($version, ['discount_type', 'discount_value'])
+                || [$base['mt']['rule'] ?? null, $base['mt']['tiers'] ?? null, $base['mix']['tiers'] ?? null] != [$version['mt']['rule'] ?? null, $version['mt']['tiers'] ?? null, $version['mix']['tiers'] ?? null],
+            'rewards' => $gifts($base) != $gifts($version)
+                || ($base['tiers']['free_shipping'] ?? '') !== ($version['tiers']['free_shipping'] ?? '') || ($base['gifts']['enabled'] ?? false) !== ($version['gifts']['enabled'] ?? false),
+            'products' => $products($base) != $products($version),
+            'layout' => [$base['settings']['layout'], $base['settings']['style'], $base['settings']['skin'], $base['mt']['layout'] ?? null, $base['mt']['tier_style'] ?? null]
+                != [$version['settings']['layout'], $version['settings']['style'], $version['settings']['skin'], $version['mt']['layout'] ?? null, $version['mt']['tier_style'] ?? null],
+            'text' => [$pick($base, ['title', 'subtitle', 'label', 'badge']), $base['settings']['title'], $base['settings']['subtitle'], $base['settings']['button_text']]
+                != [$pick($version, ['title', 'subtitle', 'label', 'badge']), $version['settings']['title'], $version['settings']['subtitle'], $version['settings']['button_text']],
+            'design' => ($base['design'] ?? []) != ($version['design'] ?? []) || ($base['tiers'] ?? []) != ($version['tiers'] ?? []),
+        ]));
+    }
+
     /** Problems that block launching, or []. */
     public function launchProblems(Experiment $experiment): array
     {
@@ -266,7 +388,7 @@ class ExperimentManager
         if ($variants->count() < 2 || $variants->sum('allocation') !== 100) {
             $problems[] = 'Traffic must add up to 100% across at least two variants.';
         }
-        if ($variants->where('key', '!=', 'A')->every(fn (ExperimentVariant $v) => ! $v->hidden && ! $v->content && ! $v->design && $v->template_key === $variants->firstWhere('key', 'A')?->template_key)) {
+        if ($variants->where('key', '!=', 'A')->every(fn (ExperimentVariant $v) => ! $v->hidden && ! $v->config && ! $v->content && ! $v->design && $v->template_key === $variants->firstWhere('key', 'A')?->template_key)) {
             $problems[] = 'Change at least one variant: a different template, text or design, or hide it.';
         }
 
@@ -325,7 +447,11 @@ class ExperimentManager
             throw new RuntimeException('Only a visible variant can be applied.');
         }
         $experience = $experiment->experience;
-        if ($key !== 'A') {
+        if ($key !== 'A' && $variant->config) {
+            // A priced version is a whole offer: it becomes the live bundle.
+            $this->experiences->saveDraft($experience, $variant->config, ['template_key' => $experience->template_key], $user);
+            $this->experiences->publish($experience->fresh(), $user, 'Applied version '.$key.' from A/B test “'.$experiment->name.'”');
+        } elseif ($key !== 'A') {
             $config = $experience->publishedVersion?->config ?? $experience->draft_config;
             $config['content'] = array_merge($config['content'] ?? [], $variant->content ?? []);
             $config['design'] = array_merge($config['design'] ?? [], $variant->design ?? []);
@@ -345,7 +471,7 @@ class ExperimentManager
             $copy = $experiment->replicate(['handle', 'status', 'started_at', 'ended_at', 'result', 'winner_key']);
             $copy->fill(['handle' => 'x'.Str::lower(Str::random(10)), 'status' => 'draft', 'name' => mb_substr($experiment->name.' (copy)', 0, 120)])->save();
             foreach ($experiment->variants as $variant) {
-                $copy->variants()->create($variant->only(['key', 'name', 'allocation', 'hidden', 'template_key', 'content', 'design']));
+                $copy->variants()->create($variant->only(['key', 'name', 'allocation', 'hidden', 'template_key', 'content', 'design', 'config', 'changes']));
             }
             $copy->log('Draft created from “'.$experiment->name.'”.', $user);
 

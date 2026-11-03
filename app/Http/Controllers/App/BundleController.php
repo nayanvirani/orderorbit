@@ -183,7 +183,13 @@ class BundleController extends Controller
         return redirect()->to(app_route('app.bundles.index', ['notice' => $notice]));
     }
 
-    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): Page
+    /** The bundle editor on an A/B test version (G39): it saves to the test, never to the live bundle. */
+    public function versionEditor(Store $store, Experience $experience, array $config, array $errors, array $testVersion): Page
+    {
+        return $this->editor($store, $experience, $config, $errors, $errors ? 'Version saved. Fix the highlighted fields before you launch the test.' : null, ['testVersion' => $testVersion]);
+    }
+
+    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null, array $extra = []): Page
     {
         $type = BundleSchema::TYPES[$config['bundle_type']];
         $tiered = self::tiered($store);
@@ -206,7 +212,7 @@ class BundleController extends Controller
                 'discounts' => BundleSchema::DISCOUNTS,
                 'presets' => BundleSchema::PRESETS,
             ],
-        ], $errors ? 422 : 200);
+        ] + $extra, $errors ? 422 : 200);
     }
 
     private function find(Store $store, int $id): Experience

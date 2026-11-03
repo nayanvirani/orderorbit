@@ -36,6 +36,17 @@ class BundleSync
             ->filter(fn ($pair) => self::merges($pair[1]))
             ->map(fn ($pair) => self::entry(...$pair))
             ->values()->all();
+        // A/B test versions (G39): an entry per version, marked v, for the packs its shoppers add.
+        foreach (\App\Models\Experiments\Experiment::with(['variants', 'experience'])->where('store_id', $store->id)->where('status', 'running')->get() as $test) {
+            if (! $test->experience || $test->experience->type !== 'bundles' || ! $store->planIncludes('ab_testing') || ! \App\Services\Experiments\ExperimentManager::priced($test->experience)) {
+                continue;
+            }
+            foreach ($test->variants as $v) {
+                if ($v->key !== 'A' && $v->config && ! $v->hidden && self::merges($version = BundleSchema::normalize($v->config)[0])) {
+                    $config[] = self::entry($test->experience, $version) + ['v' => $v->key];
+                }
+            }
+        }
 
         if ($config === [] && ! $store->cart_transform_id) {
             return;

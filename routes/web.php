@@ -228,6 +228,8 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
                 Route::post('/', 'store')->name('store');
                 Route::get('/{experiment}/edit', 'edit')->whereNumber('experiment')->name('edit');
                 Route::post('/{experiment}', 'update')->whereNumber('experiment')->name('update');
+                Route::get('/{experiment}/versions/{key}', 'version')->whereNumber('experiment')->whereIn('key', ['B', 'C'])->name('version');
+                Route::post('/{experiment}/versions/{key}', 'saveVersion')->whereNumber('experiment')->whereIn('key', ['B', 'C'])->name('version.save');
                 Route::post('/{experiment}/duplicate', 'duplicate')->whereNumber('experiment')->name('duplicate');
                 Route::post('/{experiment}/delete', 'destroy')->whereNumber('experiment')->name('destroy');
                 Route::post('/{experiment}/{action}', 'action')->whereNumber('experiment')->whereIn('action', ['pause', 'resume', 'stop', 'apply'])->name('action');

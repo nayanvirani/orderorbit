@@ -24,7 +24,8 @@
                 "inCollections": []
               }
             },
-            "sellingPlanAllocation": null
+            "sellingPlanAllocation": null,
+            "version": null
           }
         ]
       },

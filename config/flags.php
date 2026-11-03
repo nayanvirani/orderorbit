@@ -24,7 +24,7 @@ return [
         'profit' => ['Profit module', 'Profit dashboard, costs, ad expenses, breakdowns, ROAS and POAS.', 'Profit', 'Phase 3', false],
         'sales_insights' => ['Sales insights and reports', 'Sales page, weekly email and Monthly Business Report.', 'Insights', 'Phase 3', false],
         'protect' => ['Protect module', 'Alerts, stock, product data, URL monitor, Health Score, Action Center.', 'Protect', 'Phase 4', false],
-        'ab_every_offer' => ['A/B tests for every offer', 'Tests for bundles, gifts, post-purchase and account blocks.', 'Offers', 'Phase 5', false],
+        'ab_every_offer' => ['A/B tests for every offer', 'Bundle tests where versions change prices, gifts, products, layout, text or design; checkout charges each version\'s price. Gifts, post-purchase and account blocks follow.', 'Offers', 'Phase 2', true],
         'tiered_gifts' => ['Tiered gift bundle upgrade', 'Sale header, open tiers with what\'s inside, gifts row, free shipping reward, delivery bar and price in the button for gift bundles, plus the Berry and Sage models.', 'Offers', 'Phase 2', true],
         'design_tab' => ['Design tab for every offer', 'Element colours, text and layout per screen size for all offers.', 'Offers', 'Phase 5', false],
         'mix_match_tiers' => ['Mix and match quantity tiers', 'Buy X get Y, % off and set price tiers with price per unit: its own card on the bundle page.', 'Offers', 'Phase 2', true],

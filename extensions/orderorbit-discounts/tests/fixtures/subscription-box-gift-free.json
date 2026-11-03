@@ -37,7 +37,8 @@
             },
             "offer": {
               "value": "b1"
-            }
+            },
+            "version": null
           },
           {
             "id": "gid://shopify/CartLine/1",
@@ -70,7 +71,8 @@
             },
             "offer": {
               "value": "b1"
-            }
+            },
+            "version": null
           },
           {
             "id": "gid://shopify/CartLine/9",
@@ -101,7 +103,8 @@
             "sellingPlanAllocation": null,
             "offer": {
               "value": "b1"
-            }
+            },
+            "version": null
           }
         ]
       },

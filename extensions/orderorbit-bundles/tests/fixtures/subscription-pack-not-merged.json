@@ -30,7 +30,8 @@
               "sellingPlan": {
                 "id": "gid://shopify/SellingPlan/7"
               }
-            }
+            },
+            "version": null
           },
           {
             "id": "gid://shopify/CartLine/1",
@@ -56,7 +57,8 @@
               "sellingPlan": {
                 "id": "gid://shopify/SellingPlan/7"
               }
-            }
+            },
+            "version": null
           },
           {
             "id": "gid://shopify/CartLine/2",
@@ -76,7 +78,8 @@
                 "inCollections": []
               }
             },
-            "sellingPlanAllocation": null
+            "sellingPlanAllocation": null,
+            "version": null
           }
         ]
       },

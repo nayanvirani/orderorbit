@@ -50,7 +50,9 @@
       style: v.style || exp.style,
       content: Object.assign({}, exp.content, v.content || {}),
       design: Object.assign({}, exp.design, v.design || {}),
-      xv: v.key
+      xv: v.key,
+      // A priced version (bundles, G39): its cart lines carry _oo_v so checkout charges its prices.
+      pv: v.pv
     });
 
     try {
