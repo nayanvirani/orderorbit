@@ -15,12 +15,15 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const [name, setName] = useState(x.name);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(null);
-  const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-cards', 'box-size', 'box-price', 'd-overall']));
+  // Offers whose gift product isn't chosen yet: a new bundle from a template only needs these.
+  const giftless = (s) => s.gifts?.enabled ? s.offers.map((o, i) => ((o.gifts || []).some((g) => !g.product?.length) ? i : null)).filter((i) => i !== null) : [];
+  const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-cards', 'box-size', 'box-price', 'd-overall', ...giftless(config).map((i) => `offer-${i}`)]));
   const [device, setDevice] = useState('desktop');
   const [context, setContext] = useState({ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });
   const tabOf = (k) => (/^(offers|mix|upsells|gifts|subscription|summary)/.test(k) ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
   const errorTabs = Object.keys(errors).map(tabOf);
-  const [tab, setTab] = useState(errorTabs[0] || 'settings');
+  const [tab, setTab] = useState(errorTabs[0] || (giftless(config).length ? 'offers' : 'settings'));
+  const missingGifts = giftless(state);
 
   const update = (fn) => { setState((s) => fn(clone(s))); setDirty(true); };
   const set = (path, value) => { setState((s) => setIn(s, path, value)); setDirty(true); };
@@ -82,6 +85,11 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     <Page heading={x.name} back={route('app.bundles.index')} backLabel="Bundles">
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'critical'}>{banner}</s-banner>}
       {x.status === 'published' && x.unpublished && <s-banner tone="info">This bundle has changes that aren't live yet. Publish to update your store.</s-banner>}
+      {missingGifts.length > 0 && (
+        <s-banner tone="info" heading="Last step: choose your free gifts">
+          <s-paragraph>Everything else is set up. Pick the gift product in {missingGifts.map((i) => `"${state.offers[i].title || `Offer ${i + 1}`}"`).join(' and ')} under Offers, then Publish.</s-paragraph>
+        </s-banner>
+      )}
 
       <Ctx.Provider value={ctx}>
         <div className="bx-editor">

@@ -127,8 +127,8 @@ class BundleSchema
             'qb-compact' => ['type' => 'quantity-breaks', 'name' => 'Compact selector', 'description' => 'A slim radio list that fits tight product pages.', 'layout' => 'vertical', 'style' => 'compact', 'skin' => 'minimal', 'design' => ['preset' => 'black', 'radius' => 8, 'border_width' => 1, 'offer_title_size' => 15, 'price_size' => 16]],
 
             'qg-classic' => ['type' => 'quantity-gifts', 'name' => 'Quantity breaks + gifts', 'description' => 'Each tier unlocks more free gifts, shown under the offers.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'pink', 'radius' => 18]],
-            'qg-tiered' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Sale price on top, pictures in each tier, the chosen tier opens to list what\'s inside, a gifts row and the price in the button.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'berry', 'radius' => 12]],
-            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'sage', 'radius' => 12]],
+            'qg-tiered' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Ready to publish: Buy 1, Buy 2 + 1 gift, Buy 3 + 2 gifts and free shipping. Just choose your gift products.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'berry', 'radius' => 12]] + self::tieredTemplate(),
+            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The same ready-made tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'sage', 'radius' => 12]] + self::tieredTemplate(),
             'qg-horizontal' => ['type' => 'quantity-gifts', 'name' => 'Gift tiers side by side', 'description' => 'Horizontal tiers with the gifts each one unlocks.', 'layout' => 'horizontal', 'skin' => 'ribbon', 'design' => ['preset' => 'yellow', 'radius' => 12]],
 
             'vo-classic' => ['type' => 'variant-offers', 'name' => 'Classic variant offers', 'description' => 'One card per pack size or variant, each with its own price.', 'layout' => 'vertical', 'skin' => 'soft', 'design' => ['preset' => 'blue', 'radius' => 22, 'border_width' => 1]],
@@ -174,6 +174,30 @@ class BundleSchema
                 'mix' => ['min' => 4], 'subscription' => ['enabled' => true, 'layout' => 'cards', 'default' => 'subscribe']],
 
             'fg-classic' => ['type' => 'fixed-gifts', 'name' => 'Fixed bundle + gifts', 'description' => 'A pack that unlocks free gifts, shown as gift tiles.', 'layout' => 'vertical', 'skin' => 'luxe', 'design' => ['preset' => 'luxe', 'radius' => 6]],
+        ];
+    }
+
+    /**
+     * The tiered gift bundle template (G36), complete so a merchant only picks the gift products:
+     * three tiers with ribbons, gifts and short descriptions, the sale header, gifts row, free
+     * shipping from the top tier, the delivery bar and the price in the button.
+     */
+    private static function tieredTemplate(): array
+    {
+        $note = [['desc' => 'Our best seller', 'value' => null]];
+        $gift = fn (string $desc) => ['product' => [], 'quantity' => 1, 'desc' => $desc, 'value' => null];
+
+        return [
+            'settings' => ['title' => 'LIMITED-TIME BUNDLE', 'subtitle' => 'Pick your bundle and unlock free gifts', 'button_text' => 'ADD TO CART'],
+            'offers' => [
+                ['id' => 'tier1', 'notes' => $note] + self::quantityOffer(1, 'none', 0, 'Buy One', 'You save {saving}'),
+                ['id' => 'tier2', 'notes' => $note, 'label_style' => 'filled'] + self::quantityOffer(2, 'percentage', 10, 'Buy 2, Get 1 Free Gift', 'You save {saving}', [$gift('Free with this bundle')], 'Most Popular', true),
+                ['id' => 'tier3', 'notes' => $note, 'label_style' => 'outlined'] + self::quantityOffer(3, 'percentage', 15, 'Buy 3, Get 2 Free Gifts', 'You save {saving}', [$gift('Free with this bundle'), $gift('A little extra, on us')], 'Best Value', false, true),
+            ],
+            'gifts' => ['enabled' => true, 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked'],
+            'summary' => ['enabled' => false],
+            'tiers' => ['sale_badge' => 'SALE · Save {saving}', 'free_shipping' => 'tier3', 'gifts_title' => 'Unlock free gifts', 'unlocked_title' => 'All gifts unlocked',
+                'delivery' => ['enabled' => true, 'text' => 'Order now for delivery by: {date}', 'min_days' => 3, 'max_days' => 5, 'cutoff' => '14:00', 'skip_weekends' => true, 'holidays' => '', 'timezone' => 'UTC']],
         ];
     }
 
@@ -300,7 +324,7 @@ class BundleSchema
             'behavior' => ['priority' => 50],
         ];
 
-        foreach (['settings', 'offers', 'mix', 'gifts', 'upsells', 'summary', 'subscription'] as $section) {
+        foreach (['settings', 'offers', 'mix', 'gifts', 'upsells', 'summary', 'subscription', 'tiers'] as $section) {
             if (isset($model[$section])) {
                 $config[$section] = $section === 'offers' ? $model[$section] : array_merge($config[$section], $model[$section]);
             }

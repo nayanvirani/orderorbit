@@ -151,7 +151,8 @@ class TemplateLibrary
             }
             foreach ($offer['gifts'] as $g => $gift) {
                 if ($gift['product'] === []) {
-                    $config['offers'][$i]['gifts'][$g]['product'] = [self::samples()[3]];
+                    // A second gift shows as a different product, so the gifts row has more than one.
+                    $config['offers'][$i]['gifts'][$g]['product'] = [self::samples()[$g === 0 ? 3 : 2]];
                 }
             }
         }

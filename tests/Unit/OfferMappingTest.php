@@ -130,4 +130,21 @@ class OfferMappingTest extends TestCase
         $offers = OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $config);
         $this->assertSame(['k' => 'bship', 'id' => 'b-1', 't' => ['1' => 2, '2' => 3], 'm' => 'Free shipping'], collect($offers)->firstWhere('k', 'bship'));
     }
+
+    public function test_the_tiered_gift_template_only_needs_the_gift_products(): void
+    {
+        $schema = \App\Experiences\BundleSchema::class;
+        $c = $schema::defaults('qg-tiered');
+        $this->assertSame(['Buy One', 'Buy 2, Get 1 Free Gift', 'Buy 3, Get 2 Free Gifts'], array_column($c['offers'], 'title'));
+        $this->assertSame([['Most Popular', 'filled'], ['Best Value', 'outlined']], [[$c['offers'][1]['label'], $c['offers'][1]['label_style']], [$c['offers'][2]['label'], $c['offers'][2]['label_style']]]);
+        $this->assertSame(['tier3', true, true], [$c['tiers']['free_shipping'], $c['tiers']['delivery']['enabled'], $c['offers'][2]['preselected']]);
+
+        // Before the gifts are chosen, those are the only errors.
+        $this->assertSame(['offers.1.gifts.0.product', 'offers.2.gifts.0.product', 'offers.2.gifts.1.product'], array_keys($schema::normalize($c)[1]));
+        $c['offers'][1]['gifts'][0]['product'] = $c['offers'][2]['gifts'][0]['product'] = $this->products(9);
+        $c['offers'][2]['gifts'][1]['product'] = $this->products(8);
+        [$ready, $errors] = $schema::normalize($c);
+        $this->assertSame([], $errors);
+        $this->assertSame('bship', collect(OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $ready))->last()['k']);
+    }
 }
