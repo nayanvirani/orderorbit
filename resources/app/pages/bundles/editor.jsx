@@ -225,7 +225,7 @@ function offerTitle(o) {
 }
 
 function Extras() {
-  const { state, update, errors } = useContext(Ctx);
+  const { state, update, errors, meta } = useContext(Ctx);
   const box = state.bundle_type === 'byob' || state.bundle_type === 'mix-match';
   const items = state.gifts.items || [];
   return (
@@ -256,7 +256,7 @@ function Extras() {
         <Picker path="upsells.products" label="Add-on products" max={4} />
         <F path="upsells.discount_percent" label="Add-on discount (%)" type="number" min={0} max={100} step={0.01} help="Applies only to add-ons ticked in this bundle." />
       </Section>
-      {GIFT_TYPES.includes(state.bundle_type) && state.tiers && <TierOptions />}
+      {GIFT_TYPES.includes(state.bundle_type) && state.tiers && (meta.tiered || tiersPayload(state.tiers).on) && <TierOptions />}
       <Subscription />
       <Section id="summary" title="Savings summary" toggle="summary.enabled">
         <F path="summary.text" label="Text" max={80} help="Use {saving} for the amount saved." />

@@ -88,7 +88,7 @@ class BundleController extends Controller
         return page('bundles/models', [
             'typeKey' => $type,
             'type' => ['label' => BundleSchema::TYPES[$type]['label'], 'lead' => BundleSchema::TYPES[$type]['lead']],
-            'models' => collect(BundleSchema::models())->filter(fn ($model) => ($model['group'] ?? $model['type']) === $type)->map(fn ($model, $key) => [
+            'models' => collect(BundleSchema::models())->filter(fn ($model, $key) => ($model['group'] ?? $model['type']) === $type && (self::tiered($store) || ! str_starts_with($key, 'qg-tiered')))->map(fn ($model, $key) => [
                 'key' => $key, 'name' => $model['name'], 'description' => $model['description'], 'layout' => $model['layout'],
                 'previews' => collect(BundleSchema::PRESETS)->keys()->mapWithKeys(fn ($preset) => [$preset => TemplateLibrary::bundlePreview($key, $branding, $preset)])->all(),
             ])->values(),
@@ -99,12 +99,16 @@ class BundleController extends Controller
     public function store(Request $request, Store $store): RedirectResponse
     {
         $model = (string) $request->input('model');
-        abort_unless(BundleSchema::model($model), 404);
+        abort_unless(BundleSchema::model($model) && (self::tiered($store) || ! str_starts_with($model, 'qg-tiered')), 404);
         $preset = array_key_exists($request->input('preset'), BundleSchema::PRESETS) ? $request->input('preset') : 'black';
 
         $experience = $this->manager->create($store, 'bundles', $model, $request->attributes->get('storeUser'), BundleSchema::model($model)['name']);
         $config = $experience->draft_config;
         $config['design'] = array_merge($config['design'], BundleSchema::designDefaults($preset));
+        // The tier options (G36) start on only once the tiered_gifts flag is on for this store.
+        if (! self::tiered($store)) {
+            $config['tiers'] = BundleSchema::tierDefaults(false);
+        }
         $experience->update(['draft_config' => $config]);
 
         return redirect()->to(app_route('app.bundles.edit', ['bundle' => $experience->id]));
@@ -176,6 +180,9 @@ class BundleController extends Controller
     private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): Page
     {
         $type = BundleSchema::TYPES[$config['bundle_type']];
+        $tiered = self::tiered($store);
+        // Before release, gift tiers stay one product unless the bundle already has a pack tier.
+        $kinds = $tiered || $config['bundle_type'] !== 'quantity-gifts' || collect($config['offers'])->contains('kind', 'multi') ? $type['offer_kinds'] : ['quantity'];
 
         return page('bundles/editor', [
             'experience' => ExperienceController::row($experience),
@@ -188,7 +195,8 @@ class BundleController extends Controller
                 'samples' => TemplateLibrary::samples(),
                 'timezone' => $store->timezone ?? 'UTC',
                 'tzOffset' => now($store->timezone ?? 'UTC')->format('P'),
-                'offerKinds' => array_intersect_key(BundleSchema::OFFER_KINDS, array_flip($type['offer_kinds'])),
+                'offerKinds' => array_intersect_key(BundleSchema::OFFER_KINDS, array_flip($kinds)),
+                'tiered' => $tiered,
                 'discounts' => BundleSchema::DISCOUNTS,
                 'presets' => BundleSchema::PRESETS,
             ],
@@ -198,5 +206,11 @@ class BundleController extends Controller
     private function find(Store $store, int $id): Experience
     {
         return $store->experiences()->where('type', 'bundles')->findOrFail($id);
+    }
+
+    /** The tiered gift bundle upgrade (G36), released with the tiered_gifts flag. */
+    private static function tiered(Store $store): bool
+    {
+        return \App\Support\Features::enabled('tiered_gifts', $store);
     }
 }

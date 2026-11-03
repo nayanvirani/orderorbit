@@ -25,6 +25,7 @@ return [
         'sales_insights' => ['Sales insights and reports', 'Sales page, weekly email and Monthly Business Report.', 'Insights', 'Phase 3', false],
         'protect' => ['Protect module', 'Alerts, stock, product data, URL monitor, Health Score, Action Center.', 'Protect', 'Phase 4', false],
         'ab_every_offer' => ['A/B tests for every offer', 'Tests for bundles, gifts, post-purchase and account blocks.', 'Offers', 'Phase 5', false],
+        'tiered_gifts' => ['Tiered gift bundle upgrade', 'Sale header, open tiers with what\'s inside, gifts row, free shipping reward, delivery bar and price in the button for gift bundles, plus the Berry and Sage models.', 'Offers', 'Phase 2', true],
         'design_tab' => ['Design tab for every offer', 'Element colours, text and layout per screen size for all offers.', 'Offers', 'Phase 5', false],
         'mix_match_tiers' => ['Mix and match quantity tiers', 'Buy X get Y, % off and set price tiers with price per unit.', 'Offers', 'Phase 5', false],
         'product_documents' => ['Product documents in emails', 'Certificates and PDFs attached by product.', 'Automation', 'Phase 5', false],

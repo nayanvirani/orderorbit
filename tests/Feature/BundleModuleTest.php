@@ -71,6 +71,27 @@ class BundleModuleTest extends TestCase
         $this->page('/app/cro/bundles', $owner)->assertOk()->assertJsonPath('props.bundles.0.name', 'Quantity inversion offer')->assertSee('All products');
     }
 
+    public function test_the_tiered_gift_upgrade_is_released_with_its_flag(): void
+    {
+        $store = $this->installedStore();
+        $owner = $this->member($store, 'owner');
+        $models = fn () => array_column($this->page('/app/cro/bundles/new/quantity-gifts', $owner)->assertOk()->json('props.models'), 'key');
+        $this->assertNotContains('qg-tiered', $models());
+        $this->post('/app/cro/bundles', ['model' => 'qg-tiered'], $this->as($owner))->assertNotFound();
+        $this->post('/app/cro/bundles', ['model' => 'qg-classic'], $this->as($owner))->assertRedirect();
+        $before = Experience::where('type', 'bundles')->sole();
+        $this->assertFalse($before->draft_config['tiers']['details'], 'Before release, new gift bundles look as they always did.');
+        $this->page("/app/cro/bundles/{$before->id}", $owner)->assertJsonPath('props.meta.tiered', false)->assertJsonPath('props.meta.offerKinds', ['quantity' => \App\Experiences\BundleSchema::OFFER_KINDS['quantity']]);
+
+        \App\Models\FeatureFlag::create(['key' => 'tiered_gifts', 'mode' => 'stores', 'store_ids' => [$store->id], 'enabled' => true]);
+        \App\Support\Features::forget();
+        $this->assertContains('qg-tiered', $models());
+        $this->post('/app/cro/bundles', ['model' => 'qg-tiered'], $this->as($owner))->assertRedirect();
+        $after = Experience::where('type', 'bundles')->latest('id')->first();
+        $this->assertTrue($after->draft_config['tiers']['details']);
+        $this->page("/app/cro/bundles/{$after->id}", $owner)->assertJsonPath('props.meta.tiered', true);
+    }
+
     public function test_save_validate_publish_and_toggle(): void
     {
         $store = $this->installedStore();
