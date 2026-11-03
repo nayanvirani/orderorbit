@@ -75,8 +75,9 @@ class BundleModuleTest extends TestCase
     {
         $store = $this->installedStore();
         $owner = $this->member($store, 'owner');
-        $models = fn () => array_column($this->page('/app/cro/bundles/new/quantity-gifts', $owner)->assertOk()->json('props.models'), 'key');
-        $this->assertNotContains('qg-tiered', $models());
+        $models = fn () => array_column($this->page('/app/cro/bundles/new/tiered-gifts', $owner)->json('props.models') ?? [], 'key');
+        $this->assertNotContains('Tiered gift bundle', array_column($this->page('/app/cro/bundles/new', $owner)->json('props.types'), 'label'));
+        $this->get('/app/cro/bundles/new/tiered-gifts', $this->as($owner))->assertNotFound();
         $this->post('/app/cro/bundles', ['model' => 'qg-tiered'], $this->as($owner))->assertNotFound();
         $this->post('/app/cro/bundles', ['model' => 'qg-classic'], $this->as($owner))->assertRedirect();
         $before = Experience::where('type', 'bundles')->sole();
@@ -85,12 +86,13 @@ class BundleModuleTest extends TestCase
 
         \App\Models\FeatureFlag::create(['key' => 'tiered_gifts', 'mode' => 'stores', 'store_ids' => [$store->id], 'enabled' => true]);
         \App\Support\Features::forget();
-        $this->assertContains('qg-tiered', $models());
+        $this->assertContains('Tiered gift bundle', array_column($this->page('/app/cro/bundles/new', $owner)->json('props.types'), 'label'));
+        $this->assertSame(['qg-tiered', 'qg-tiered-sage'], $models(), 'Its own card leads straight to Berry and Sage.');
         $this->post('/app/cro/bundles', ['model' => 'qg-tiered'], $this->as($owner))->assertRedirect();
         $after = Experience::where('type', 'bundles')->latest('id')->first();
         $this->assertTrue($after->draft_config['tiers']['details']);
         $this->assertSame(['#7d1420', 'tiered'], [$after->draft_config['design']['accent'], $after->draft_config['settings']['skin']], 'Without a colour picked, the template keeps its own Berry colours.');
-        $this->assertArrayHasKey('default', $this->page('/app/cro/bundles/new/quantity-gifts', $owner)->json('props.models.0.previews'));
+        $this->assertArrayHasKey('default', $this->page('/app/cro/bundles/new/tiered-gifts', $owner)->json('props.models.0.previews'));
         $this->page("/app/cro/bundles/{$after->id}", $owner)->assertJsonPath('props.meta.tiered', true);
     }
 

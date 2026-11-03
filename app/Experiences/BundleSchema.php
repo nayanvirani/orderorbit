@@ -33,6 +33,16 @@ class BundleSchema
             // A tier can also be a mix of products (2x serum + 1x cream): priced by the cart transform.
             'offer_kinds' => ['quantity', 'multi'],
         ],
+        // A catalog entry: the tiered gift bundle templates (G36), released with the tiered_gifts flag.
+        'tiered-gifts' => [
+            'label' => 'Tiered gift bundle',
+            'lead' => 'Buy more, unlock free gifts and free shipping.',
+            'example' => 'Buy 2 = 1 gift. Buy 3 = 2 gifts and free shipping.',
+            'goal' => 'Raise order value with a sale-style bundle.',
+            'offer_kinds' => [],
+            'catalog' => true,
+            'flag' => 'tiered_gifts',
+        ],
         'variant-offers' => [
             'label' => 'Variant offers',
             'lead' => 'Choose a variant and get a better price.',
@@ -126,8 +136,8 @@ class BundleSchema
             'qb-compact' => ['type' => 'quantity-breaks', 'name' => 'Compact selector', 'description' => 'A slim radio list that fits tight product pages.', 'layout' => 'vertical', 'style' => 'compact', 'skin' => 'minimal', 'design' => ['preset' => 'black', 'radius' => 8, 'border_width' => 1, 'offer_title_size' => 15, 'price_size' => 16]],
 
             'qg-classic' => ['type' => 'quantity-gifts', 'name' => 'Quantity breaks + gifts', 'description' => 'Each tier unlocks more free gifts, shown under the offers.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'pink', 'radius' => 18]],
-            'qg-tiered' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Ready to publish: Buy 1, Buy 2 + 1 gift, Buy 3 + 2 gifts and free shipping. Just choose your gift products.', 'layout' => 'vertical', 'skin' => 'tiered', 'design' => ['preset' => 'berry', 'radius' => 12, 'accent' => '#7d1420', 'selected_background' => '#f5e6e8', 'button_background' => '#7d1420', 'label_background' => '#7d1420', 'background' => '#ffffff', 'border' => '#e2b8bf', 'gift_background' => '#f6eaec', 'summary_background' => '#f3f2ea', 'summary_text' => '#15181c']] + self::tieredTemplate(),
-            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The same ready-made tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'tiered', 'design' => ['preset' => 'sage', 'radius' => 12, 'accent' => '#1f5446', 'selected_background' => '#e6f2ec', 'button_background' => '#1f5446', 'label_background' => '#1f5446', 'background' => '#ffffff', 'border' => '#b9d3c7', 'gift_background' => '#eef4f1', 'summary_background' => '#f3f2ea', 'summary_text' => '#15181c']] + self::tieredTemplate(),
+            'qg-tiered' => ['type' => 'quantity-gifts', 'group' => 'tiered-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Ready to publish: Buy 1, Buy 2 + 1 gift, Buy 3 + 2 gifts and free shipping. Just choose your gift products.', 'layout' => 'vertical', 'skin' => 'tiered', 'design' => ['preset' => 'berry', 'radius' => 12, 'accent' => '#7d1420', 'selected_background' => '#f5e6e8', 'button_background' => '#7d1420', 'label_background' => '#7d1420', 'background' => '#ffffff', 'border' => '#e2b8bf', 'gift_background' => '#f6eaec', 'summary_background' => '#f3f2ea', 'summary_text' => '#15181c']] + self::tieredTemplate(),
+            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'group' => 'tiered-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The same ready-made tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'tiered', 'design' => ['preset' => 'sage', 'radius' => 12, 'accent' => '#1f5446', 'selected_background' => '#e6f2ec', 'button_background' => '#1f5446', 'label_background' => '#1f5446', 'background' => '#ffffff', 'border' => '#b9d3c7', 'gift_background' => '#eef4f1', 'summary_background' => '#f3f2ea', 'summary_text' => '#15181c']] + self::tieredTemplate(),
             'qg-horizontal' => ['type' => 'quantity-gifts', 'name' => 'Gift tiers side by side', 'description' => 'Horizontal tiers with the gifts each one unlocks.', 'layout' => 'horizontal', 'skin' => 'ribbon', 'design' => ['preset' => 'yellow', 'radius' => 12]],
 
             'vo-classic' => ['type' => 'variant-offers', 'name' => 'Classic variant offers', 'description' => 'One card per pack size or variant, each with its own price.', 'layout' => 'vertical', 'skin' => 'soft', 'design' => ['preset' => 'blue', 'radius' => 22, 'border_width' => 1]],

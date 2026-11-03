@@ -74,7 +74,8 @@ class BundleController extends Controller
         $branding = CroSetting::brandingFor($store);
 
         return page('bundles/types', [
-            'types' => collect(BundleSchema::TYPES)->map(fn ($type, $key) => ['key' => $key, 'label' => $type['label'], 'lead' => $type['lead'], 'example' => $type['example'], 'goal' => $type['goal'],
+            // Types still behind a release flag stay hidden until it's on for this store.
+            'types' => collect(BundleSchema::TYPES)->filter(fn ($type) => empty($type['flag']) || \App\Support\Features::enabled($type['flag'], $store))->map(fn ($type, $key) => ['key' => $key, 'label' => $type['label'], 'lead' => $type['lead'], 'example' => $type['example'], 'goal' => $type['goal'],
                 'preview' => TemplateLibrary::bundlePreview(BundleSchema::firstModel($key), $branding),
             ])->values(),
         ]);
@@ -82,7 +83,7 @@ class BundleController extends Controller
 
     public function models(Store $store, string $type): Page
     {
-        abort_unless(array_key_exists($type, BundleSchema::TYPES), 404);
+        abort_unless(array_key_exists($type, BundleSchema::TYPES) && (empty(BundleSchema::TYPES[$type]['flag']) || \App\Support\Features::enabled(BundleSchema::TYPES[$type]['flag'], $store)), 404);
         $branding = CroSetting::brandingFor($store);
 
         return page('bundles/models', [
