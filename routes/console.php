@@ -16,3 +16,7 @@ Schedule::command('orderorbit:send-emails')->everyMinute()->withoutOverlapping(1
 
 // Analytics, order totals and Sales pop purchases past their retention window.
 Schedule::command('orderorbit:prune-analytics')->dailyAt('03:15');
+
+// Ops alerts for the Growvia team (G26): checks every 5 minutes, a summary every morning.
+Schedule::command('orderorbit:ops-check')->everyFiveMinutes()->withoutOverlapping(10);
+Schedule::command('orderorbit:ops-check --digest')->dailyAt('03:30'); // 09:00 in India

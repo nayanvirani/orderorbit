@@ -314,6 +314,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/stores/{store}', 'store')->whereNumber('store')->name('store');
             });
             Route::get('/failures', 'failures')->middleware('admin.can:failures')->name('failures');
+            Route::get('/ops', [\App\Http\Controllers\Admin\OpsController::class, 'index'])->middleware('admin.can:failures')->name('ops');
+            Route::post('/ops/{alert}/resolve', [\App\Http\Controllers\Admin\OpsController::class, 'resolve'])->whereNumber('alert')->middleware('admin.can:failures')->name('ops.resolve');
             Route::get('/analytics', 'analytics')->middleware('admin.can:analytics')->name('analytics');
             Route::middleware('admin.can:templates')->group(function () {
                 Route::get('/templates', 'templates')->name('templates');
