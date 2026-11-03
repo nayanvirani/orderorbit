@@ -184,11 +184,17 @@ class AdminController extends Controller
         ]);
     }
 
-    public function ticket(int $ticket): View
+    public function ticket(Request $request, int $ticket): View
     {
         $ticket = Ticket::with(['store', 'requester', 'messages.attachments'])->findOrFail($ticket);
+        $suggestions = null;
+        if ($request->boolean('suggest')) {
+            $last = $ticket->messages->where('author', 'merchant')->where('internal', false)->last();
+            $suggestions = app(\App\Support\ReplySuggester::class)->suggest($ticket->subject.' '.($last?->body ?? ''),
+                \App\Support\ReplySuggester::context(trim(($ticket->requester?->first_name ?? '')) ?: null, $ticket->store));
+        }
 
-        return view('admin.ticket', ['ticket' => $ticket, 'team' => User::where('is_admin', true)->orderBy('name')->get()]);
+        return view('admin.ticket', ['ticket' => $ticket, 'team' => User::where('is_admin', true)->orderBy('name')->get(), 'suggestions' => $suggestions]);
     }
 
     public function replyTicket(Request $request, int $ticket, SupportDesk $desk): RedirectResponse
@@ -196,6 +202,9 @@ class AdminController extends Controller
         $ticket = Ticket::findOrFail($ticket);
         $request->validate(['body' => ['required', 'string', 'max:10000']] + SupportDesk::ATTACHMENT_RULES);
         $desk->reply($ticket, 'team', $request->input('body'), (array) $request->file('attachments', []), $request->boolean('internal'), $request->user());
+        if (! $request->boolean('internal')) {
+            SavedReplyController::used($request->input('saved_reply_id'));
+        }
 
         return redirect()->route('admin.ticket', $ticket->id)->with('status', $request->boolean('internal') ? 'Note added.' : 'Reply sent.');
     }

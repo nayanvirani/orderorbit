@@ -18,7 +18,7 @@
         $newContacts = \App\Support\AdminRoles::can($me, 'support') ? \App\Models\ContactSubmission::where('status', 'new')->count() : 0;
         $nav = [
             null => [['admin.home', 'Dashboard', 'home', 'dashboard']],
-            'Customers' => [['admin.stores', 'Stores', 'store', 'stores'], ['admin.tickets', 'Support', 'message', 'support'], ['admin.contact', 'Contact inbox', 'mail', 'support']],
+            'Customers' => [['admin.stores', 'Stores', 'store', 'stores'], ['admin.tickets', 'Support', 'message', 'support'], ['admin.contact', 'Contact inbox', 'mail', 'support'], ['admin.replies', 'Saved replies', 'doc', 'support']],
             'Billing' => [['admin.plans', 'Plans & features', 'card', 'plans'], ['admin.finance', 'Finance', 'chart', 'finance']],
             'Product' => [['admin.templates', 'Templates', 'palette', 'templates'], ['admin.flags', 'Feature flags', 'flag', 'flags']],
             'Operations' => [['admin.failures', 'Workflow failures', 'alert', 'failures'], ['admin.analytics', 'Event processing', 'chart', 'analytics'], ['admin.audit', 'Audit log', 'list', 'audit']],

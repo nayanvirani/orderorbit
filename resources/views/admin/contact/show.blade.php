@@ -12,8 +12,10 @@
         @if ($m->reply)
             <div class="ad-msg team"><div class="ad-muted"><b>Our reply</b> · {{ $m->replier?->name ?? $m->replier?->email }} · {{ $m->replied_at?->toDayDateTimeString() }}</div><div>{!! nl2br(e($m->reply)) !!}</div></div>
         @endif
+        @include('admin._suggestions', ['suggestUrl' => route('admin.contact.show', ['message' => $m->id, 'suggest' => 1]), 'suggestions' => $suggestions])
         <form method="POST" action="{{ route('admin.contact.reply', $m->id) }}" class="ad-form">
             @csrf
+            <input type="hidden" name="saved_reply_id" value="">
             <label>{{ $m->reply ? 'Send another reply' : 'Reply' }} to {{ $m->email }}<textarea name="body" rows="8" required>{{ old('body') }}</textarea></label>
             <button class="ad-btn primary" type="submit">Send reply</button>
         </form>

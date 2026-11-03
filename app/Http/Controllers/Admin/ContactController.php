@@ -31,7 +31,7 @@ class ContactController extends Controller
         ]);
     }
 
-    public function show(int $message): View
+    public function show(Request $request, int $message): View
     {
         $m = ContactSubmission::with(['store', 'replier'])->findOrFail($message);
         if ($m->status === 'new') {
@@ -40,6 +40,7 @@ class ContactController extends Controller
 
         return view('admin.contact.show', [
             'm' => $m,
+            'suggestions' => $request->boolean('suggest') ? app(\App\Support\ReplySuggester::class)->suggest($m->topic.' '.$m->message, \App\Support\ReplySuggester::context($m->name, $m->store)) : null,
             'earlier' => ContactSubmission::where('email', $m->email)->whereKeyNot($m->id)->latest()->limit(5)->get(),
         ]);
     }
@@ -52,6 +53,7 @@ class ContactController extends Controller
         if (! $result->ok()) {
             return back()->withInput()->with('error', 'Not sent: '.($result->error ?? 'no email provider is available.'));
         }
+        SavedReplyController::used($request->input('saved_reply_id'));
         $m->forceFill(['status' => 'replied', 'reply' => $data['body'], 'replied_at' => now(), 'replied_by' => $request->user()->id, 'read_at' => $m->read_at ?? now()])->save();
         AuditLog::record('admin.contact_replied', null, ['message' => $m->id, 'by' => $request->user()->email]);
 

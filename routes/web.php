@@ -337,6 +337,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('/contact/{message}/reply', 'reply')->whereNumber('message')->name('contact.reply');
                 Route::post('/contact/{message}/status', 'status')->whereNumber('message')->name('contact.status');
             });
+            Route::middleware('admin.can:support')->controller(\App\Http\Controllers\Admin\SavedReplyController::class)->group(function () {
+                Route::get('/replies', 'index')->name('replies');
+                Route::post('/replies', 'save')->name('replies.store');
+                Route::get('/replies/{reply}', 'edit')->whereNumber('reply')->name('replies.edit');
+                Route::post('/replies/{reply}', 'save')->whereNumber('reply')->name('replies.update');
+                Route::post('/replies/{reply}/delete', 'delete')->whereNumber('reply')->name('replies.delete');
+            });
             Route::get('/audit', 'audit')->middleware('admin.can:audit')->name('audit');
         });
 

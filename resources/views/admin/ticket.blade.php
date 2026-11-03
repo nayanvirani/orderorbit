@@ -14,8 +14,10 @@
                 @foreach ($m->attachments as $a)<div><a href="{{ route('admin.attachment', $a->id) }}" target="_blank">📎 {{ $a->filename }}</a> <span class="ad-muted">{{ round($a->size / 1024) }} KB</span></div>@endforeach
             </div>
         @endforeach
+        @include('admin._suggestions', ['suggestUrl' => route('admin.ticket', ['ticket' => $ticket->id, 'suggest' => 1]), 'suggestions' => $suggestions])
         <form method="POST" action="{{ route('admin.ticket.reply', $ticket->id) }}" enctype="multipart/form-data" class="ad-form">
             @csrf
+            <input type="hidden" name="saved_reply_id" value="">
             <label>Reply<textarea name="body" rows="5" required></textarea></label>
             <input type="file" name="attachments[]" multiple>
             <label class="ad-check"><input type="checkbox" name="internal" value="1"> Internal note (the merchant doesn't see it)</label>
