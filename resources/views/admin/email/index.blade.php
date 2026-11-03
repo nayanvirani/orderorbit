@@ -93,6 +93,7 @@
             <label>From email<input type="email" name="from_email" value="{{ old('from_email', $settings['from_email']) }}" placeholder="hello@orderorbit.space"><small>Must be verified with each provider (or set per provider). Use your own domain, not Gmail, for good delivery.</small></label>
             <label>From name<input name="from_name" value="{{ old('from_name', $settings['from_name']) }}" maxlength="120"><small>Workflow emails use the store's name instead.</small></label>
             <label>Reply-to (optional)<input type="email" name="reply_to" value="{{ old('reply_to', $settings['reply_to']) }}"><small>Workflow emails reply to the store's email.</small></label>
+            <label>Team alerts go to<input type="email" name="team_email" value="{{ old('team_email', $settings['team_email'] ?? '') }}" placeholder="team@yourcompany.com"><small>New contact messages and ops alerts are emailed here. Empty: the reply-to address, else the sender address.</small></label>
         </div>
         <div class="ad-actions" style="margin-top:16px"><button class="ad-btn primary" type="submit">Save settings</button></div>
     </section>

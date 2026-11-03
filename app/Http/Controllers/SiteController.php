@@ -210,7 +210,13 @@ class SiteController extends Controller
         ]);
 
         try {
-            ContactSubmission::create($data + ['ip' => $request->ip()]);
+            $submission = ContactSubmission::create($data + ['ip' => $request->ip(), 'store_id' => ContactSubmission::matchStore($data['store_url'] ?? null)]);
+            // Tell the team after the visitor's page has been answered.
+            defer(fn () => \App\Support\TeamAlert::send(
+                "New contact message: {$submission->topic} from {$submission->name}",
+                "{$submission->name} <{$submission->email}>".($submission->store_url ? " · {$submission->store_url}" : '')."\n\n{$submission->message}\n\nOpen it in the Internal Admin: ".route('admin.contact.show', $submission->id),
+                replyTo: $submission->email,
+            ));
         } catch (Throwable $e) {
             report($e);
 

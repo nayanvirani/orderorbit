@@ -331,6 +331,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
                 Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
             });
+            Route::middleware('admin.can:support')->controller(\App\Http\Controllers\Admin\ContactController::class)->group(function () {
+                Route::get('/contact', 'index')->name('contact');
+                Route::get('/contact/{message}', 'show')->whereNumber('message')->name('contact.show');
+                Route::post('/contact/{message}/reply', 'reply')->whereNumber('message')->name('contact.reply');
+                Route::post('/contact/{message}/status', 'status')->whereNumber('message')->name('contact.status');
+            });
             Route::get('/audit', 'audit')->middleware('admin.can:audit')->name('audit');
         });
 

@@ -48,6 +48,7 @@ class EmailController extends Controller
             'from_email' => ['nullable', 'email', 'max:190'],
             'from_name' => ['nullable', 'string', 'max:120'],
             'reply_to' => ['nullable', 'email', 'max:190'],
+            'team_email' => ['nullable', 'email', 'max:190'],
         ]);
         EmailSettings::save(['enabled' => $request->boolean('enabled')] + array_map(fn ($v) => (string) $v, $data));
         AuditLog::record('admin.email_settings_saved', null, ['by' => $request->user()->email]);
