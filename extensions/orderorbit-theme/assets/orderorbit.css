@@ -905,3 +905,7 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-bk-tiered .oo-tdate { font-weight: 800; }
 .oo-bk-tiered .oo-badd { min-height: 58px; margin-top: 14px; border-radius: 10px; font-size: 17px; font-weight: 800; letter-spacing: .02em; }
 .oo-bk-tiered .oo-tbtn s { opacity: .7; font-weight: 600; }
+/* Tier options in the other styles: pictures on their own line under the title, no "+" between gifts. */
+.oo-bundle:not(.oo-bk-tiered) .oo-ttier .oo-brow { flex-wrap: wrap; }
+.oo-bundle:not(.oo-bk-tiered) .oo-ttier .oo-tpics { order: 5; flex: 1 0 100%; padding-left: 30px; }
+.oo-bundle:not(.oo-bk-tiered) .oo-tg-plus { display: none; }

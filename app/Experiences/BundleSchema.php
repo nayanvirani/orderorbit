@@ -319,8 +319,8 @@ class BundleSchema
             'upsells' => ['enabled' => false, 'title' => 'Complete your order', 'products' => [], 'discount_percent' => 10],
             'summary' => ['enabled' => true, 'text' => 'You save {saving}'],
             'subscription' => self::subscriptionDefaults(),
-            // Tiered gift bundle options (G36): on for new gift bundles, off for ones saved before.
-            'tiers' => self::tierDefaults(in_array($type, ['quantity-gifts', 'fixed-gifts'], true)),
+            // Tiered gift bundle options (G36): on only for the tiered templates; every other model keeps its look.
+            'tiers' => self::tierDefaults(isset($model['tiers'])),
             'design' => array_merge(self::designDefaults($model['design']['preset'] ?? 'black'), $model['design'] ?? [], array_intersect_key($branding, array_flip(['font']))),
             'schedule' => ['starts_at' => null, 'ends_at' => null],
             'analytics' => ['track_views' => true, 'track_clicks' => true],
