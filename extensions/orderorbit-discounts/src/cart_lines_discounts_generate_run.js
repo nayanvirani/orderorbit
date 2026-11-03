@@ -30,8 +30,10 @@ import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionS
  *   upsell { id, v }          lines added by the widget carry _oo_offer = id
  *   gift   { id, th: [amounts] } lines added by the widget carry _oo_offer = id
  *
- * A/B tests on bundles (G39): lines added from a test version carry _oo_v = "B" or "C"; that version's
- * entries have v = "B" or "C" and apply only to its lines (lines without _oo_v are version A).
+ * A/B tests (G39): lines added from a test version carry _oo_v = "B" or "C"; that version's entries
+ * have v = "B" or "C" and apply only to its lines (lines without _oo_v are version A). Progressive
+ * gifts rewards that aren't lines (order discounts) follow the cart attribute _oo_x = "<id>:B;<id>:C",
+ * the shopper's versions: an entry applies only when it is the shopper's version of that offer.
  *
  * @typedef {import("../generated/api").CartInput} RunInput
  * @typedef {import("../generated/api").CartLinesDiscountsGenerateRunResult} CartLinesDiscountsGenerateRunResult
@@ -39,6 +41,12 @@ import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionS
 
 const numericId = (gid) => String(gid || '').split('/').pop();
 const sameVersion = (line, offer) => (line.v || 'A') === (offer.v || 'A');
+// The shopper's version of each test (cart attribute _oo_x), A when not in a test.
+function testVersions(value) {
+  const map = {};
+  String(value || '').split(';').forEach((pair) => { const [id, v] = pair.split(':'); if (id && v) map[id] = v; });
+  return map;
+}
 
 function percent(value) {
   return {percentage: {value: Math.min(100, Math.max(0, Number(value) || 0))}};
@@ -184,7 +192,8 @@ const RULES = {
     return found;
   },
 
-  pg(offer, lines, rate, all, out) {
+  pg(offer, lines, rate, all, out, versions) {
+    if ((versions[offer.id] || 'A') !== (offer.v || 'A')) return [];
     const isGift = (line) => line.offer === offer.id && line.giftIndex !== null;
     const paid = all.filter((line) => !isGift(line));
     const progress = offer.by === 'count' ? units(paid) : paid.reduce((sum, line) => sum + line.unit * line.qty, 0);
@@ -250,6 +259,7 @@ export function cartLinesDiscountsGenerateRun(input) {
       unit: Number(line.cost.amountPerQuantity.amount),
     }));
 
+  const versions = testVersions(input.cart.tests?.value);
   const used = new Set();
   const candidates = [];
   const out = {order: []};
@@ -257,7 +267,7 @@ export function cartLinesDiscountsGenerateRun(input) {
     const rule = RULES[offer.k];
     if (!rule) continue;
     const open = all.filter((line) => !used.has(line.id));
-    for (const found of rule(offer, open, rate, all, out) || []) {
+    for (const found of rule(offer, open, rate, all, out, versions) || []) {
       found.targets.forEach((target) => used.add(target.cartLine.id));
       candidates.push(found);
     }

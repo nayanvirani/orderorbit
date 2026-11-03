@@ -29,7 +29,7 @@ function TierList({ rows, compare }) {
 }
 
 export default function ExperimentSetup(props) {
-  const { experiment: x, experience, config, templates, textFields, designFields, audienceFields, checkoutBlock, canHoldout, problems, fieldErrors: errors, banner, previews, labels, segments, currency, docsUrl, priced, tiers } = props;
+  const { experiment: x, experience, config, templates, textFields, designFields, audienceFields, checkoutBlock, canHoldout, problems, fieldErrors: errors, banner, previews, labels, segments, currency, docsUrl, priced, tiers, offerFields = {} } = props;
   const { submit, visit } = useRouter();
   const ready = useRuntime({ checkout: checkoutBlock });
   const control = x.variants.A?.template_key || experience.template_key;
@@ -96,7 +96,7 @@ export default function ExperimentSetup(props) {
       <div className="xp-form">
         <s-section heading="1. Widget" id="step-experience">
           {priced
-            ? <p className="oo-muted">Testing <strong>{experience.name}</strong> ({experience.type}). Version A is your live bundle; other versions can change prices, gifts, products, layout, text or design. Each shopper keeps one version from the product page to checkout, and checkout charges that version's price.</p>
+            ? <p className="oo-muted">Testing <strong>{experience.name}</strong> ({experience.type}). Version A is your live offer; other versions can change prices, thresholds, gifts, products, layout, text or design. Each shopper keeps one version from the product page to checkout, and checkout charges that version's price.</p>
             : <p className="oo-muted">Testing <strong>{experience.name}</strong> ({experience.type}). Variants can change its template, design and text; products, prices and discounts stay as published, so checkout always matches what shoppers saw.{checkoutBlock && ' The split happens in Shopify\'s checkout, so it shows wherever the Growvia block for this type is placed.'}</p>}
           {!experience.published && <s-banner tone="warning">This widget isn't published. Publish it before launching the test.</s-banner>}
           <div className="b-field"><label htmlFor="xp-name">Test name</label><input id="xp-name" type="text" value={form.name} onChange={(e) => set('name', e.target.value)} maxLength={120} /></div>
@@ -119,21 +119,21 @@ export default function ExperimentSetup(props) {
                       <div className="b-field"><label>Name</label><input type="text" value={v.name} maxLength={80} onChange={(e) => setVariant(key, 'name', e.target.value)} /></div>
                       {key === 'A' && priced ? (
                         <>
-                          <p className="oo-muted oo-small">Your live bundle, unchanged.</p>
+                          <p className="oo-muted oo-small">Your live offer, unchanged.</p>
                           <TierList rows={tiers.A} />
                         </>
                       ) : key === 'A' ? (
                         <p className="oo-muted oo-small">The experience exactly as published ({templates.find((t) => t.key === control)?.name || control}).</p>
                       ) : priced ? (
                         <>
-                          <label className="xp-toggle"><input type="checkbox" checked={!!v.hidden} onChange={(e) => setVariant(key, 'hidden', e.target.checked)} /> Hidden (holdout): shoppers in this version see the product page without the bundle, to measure what it adds</label>
+                          <label className="xp-toggle"><input type="checkbox" checked={!!v.hidden} onChange={(e) => setVariant(key, 'hidden', e.target.checked)} /> Hidden (holdout): shoppers in this version see your store without this offer, to measure what it adds</label>
                           {!v.hidden && (
                             <>
                               <p className="xp-changes">{(v.changes || []).filter((c) => c !== 'hide').length
                                 ? (v.changes || []).filter((c) => c !== 'hide').map((c) => <span key={c} className="xp-chip">{CHANGES[c] || c}</span>)
                                 : <span className="oo-muted oo-small">No changes yet: this version is the same as A.</span>}</p>
                               <TierList rows={tiers[key] || tiers.A} compare={tiers.A} />
-                              <s-button onClick={() => editVersion(key)} loading={busy === 'save' || undefined}>Edit version {key}: prices, gifts, products, layout…</s-button>
+                              <s-button onClick={() => editVersion(key)} loading={busy === 'save' || undefined}>Edit version {key}: prices, gifts, layout…</s-button>
                             </>
                           )}
                         </>
@@ -160,6 +160,16 @@ export default function ExperimentSetup(props) {
                                   </div>
                                 );
                               })}
+                            </details>
+                          )}
+                          {Object.keys(offerFields).length > 0 && (
+                            <details open={Object.keys(offerFields).some((f) => f in (v.content || {})) || undefined}>
+                              <summary>Offer: products, discounts and rewards</summary>
+                              <p className="oo-muted oo-small">Each order (after payment) or signed-in customer (account pages) keeps one version, and the order is charged that version's price.</p>
+                              {Object.entries(offerFields).map(([fKey, f]) => (
+                                <SchemaField key={fKey} name={fKey} field={f} currency={currency} error={err(`variants.${key}.content.${fKey}`)}
+                                  value={v.content?.[fKey] ?? config.content?.[fKey] ?? f.default ?? null} onChange={(val) => setVariantField(key, 'content', fKey, val)} />
+                              ))}
                             </details>
                           )}
                           {Object.keys(designFields).length > 0 && (

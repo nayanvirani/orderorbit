@@ -44,6 +44,10 @@ class ExperimentController extends Controller
                     'visitors' => $s ? collect($s['variants'])->map(fn ($m) => number_format($m['visitors']))->implode(' / ') : null,
                     'progress' => $s ? round($s['decision']['progress'] * 100) : null,
                     'days' => $x->started_at ? (int) floor($x->daysRunning()) : null,
+                    'changes' => $this->changeLabels($x),
+                    // The version most likely to beat A on the primary metric so far.
+                    'leader' => $s ? collect($s['comparisons'])->map(fn ($c, $k) => ['key' => $k, 'chance' => $c[Results::primaryKey($x)]['chance'] ?? null])
+                        ->filter(fn ($l) => $l['chance'] !== null)->sortByDesc('chance')->first() : null,
                     'result' => $s ? match ($s['decision']['state'] ?? null) {
                         'winner' => 'Winner: '.$s['decision']['winner'], 'control' => 'Control wins', 'no_winner' => 'No clear winner', 'guardrail' => 'Guardrail breached', default => 'Running',
                     } : null,
@@ -51,6 +55,10 @@ class ExperimentController extends Controller
             }),
             'counts' => (object) Experiment::where('store_id', $store->id)->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status')->all(),
             'testable' => $this->testable($store)->map(fn ($e) => ['id' => $e->id, 'label' => $e->name.' · '.Registry::type($e->type)['label']])->values(),
+            // G39: every published offer, with "Test this offer" or the test it's in.
+            'offers' => Experience::where('store_id', $store->id)->where('status', 'published')->orderBy('type')->orderBy('name')->get()
+                ->map(fn ($e) => ['id' => $e->id, 'name' => $e->name, 'type' => Registry::has($e->type) ? Registry::type($e->type)['label'] : $e->type, 'test' => ExperienceController::row($e)['test'], 'why' => ExperimentManager::unsupported($e)])->values(),
+            'limit' => ['live' => Experiment::where('store_id', $store->id)->where('status', 'running')->count(), 'max' => $store->planLimit('running_tests')],
             'abTesting' => $store->planIncludes('ab_testing'),
             'docsUrl' => route('site.docs', 'ab-testing'),
             'error' => $request->query('error'),
@@ -164,10 +172,11 @@ class ExperimentController extends Controller
         $experiment = $this->find($store, $experiment);
         abort_unless(ExperimentManager::priced($experiment->experience) && in_array($key, ['B', 'C'], true), 404);
         $experience = $experiment->experience;
+        $schema = ExperimentManager::schema($experience);
         $config = $experiment->variants->firstWhere('key', $key)?->config
-            ?? \App\Experiences\BundleSchema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $store->timezone ?? 'UTC')[0];
+            ?? $schema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $store->timezone ?? 'UTC')[0];
 
-        return app(BundleController::class)->versionEditor($store, $experience, $config, [], $this->versionMeta($experiment, $key));
+        return $this->versionEditor($store, $experience, $config, [], $this->versionMeta($experiment, $key));
     }
 
     public function saveVersion(Request $request, Store $store, int $experiment, string $key): Page|RedirectResponse
@@ -179,11 +188,19 @@ class ExperimentController extends Controller
         $errors = $this->manager->saveVersion($experiment, $key, is_array($input) ? $input : []);
         if ($errors) {
             $config = $experiment->fresh('variants')->variants->firstWhere('key', $key)?->config ?? (is_array($input) ? $input : []);
+            $schema = ExperimentManager::schema($experiment->experience);
 
-            return app(BundleController::class)->versionEditor($store, $experiment->experience, \App\Experiences\BundleSchema::normalize($config, $store->timezone ?? 'UTC')[0], $errors, $this->versionMeta($experiment, $key));
+            return $this->versionEditor($store, $experiment->experience, $schema::normalize($config, $store->timezone ?? 'UTC')[0], $errors, $this->versionMeta($experiment, $key));
         }
 
         return redirect()->to(app_route('app.experiments.edit', ['experiment' => $experiment->id, 'notice' => 'saved']));
+    }
+
+    private function versionEditor(Store $store, Experience $experience, array $config, array $errors, array $meta): Page
+    {
+        return $experience->type === 'progressive-gifts'
+            ? app(GiftController::class)->versionEditor($store, $experience, $config, $errors, $meta)
+            : app(BundleController::class)->versionEditor($store, $experience, $config, $errors, $meta);
     }
 
     private function versionMeta(Experiment $experiment, string $key): array
@@ -247,6 +264,8 @@ class ExperimentController extends Controller
             'config' => ['content' => (object) ($config['content'] ?? []), 'design' => (object) ($config['design'] ?? [])],
             'templates' => collect($type['templates'] ?? [])->map(fn ($t, $k) => ['key' => $k, 'name' => $t['name']])->values(),
             'textFields' => Registry::has($experience->type) ? ExperimentManager::textFields($experience->type) : [],
+            // After payment and account blocks (G39): the offer's own fields (products, discounts, rewards).
+            'offerFields' => (object) array_filter(ExperimentManager::offerFields($experience), fn ($f) => ! in_array($f['type'], ['text', 'textarea'], true)),
             'designFields' => Registry::has($experience->type) ? (Schema::fields($experience->type)['design'] ?? []) : [],
             'audienceFields' => array_intersect_key(Schema::shared()['targeting'], array_flip(ExperimentManager::audienceFor($experience))),
             'checkoutBlock' => in_array($type['surface'] ?? '', ['checkout', 'thank-you'], true),
@@ -269,9 +288,16 @@ class ExperimentController extends Controller
     private function tierSummary(Experiment $experiment, Store $store): array
     {
         $experience = $experiment->experience;
-        $base = \App\Experiences\BundleSchema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $store->timezone ?? 'UTC')[0];
+        $schema = ExperimentManager::schema($experience);
+        $base = $schema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $store->timezone ?? 'UTC')[0];
         $money = fn ($v) => number_format((float) $v, 2).' '.($store->currency ?? '');
         $describe = function (array $c) use ($money) {
+            if (isset($c['milestones'])) {
+                $at = fn ($m) => ($c['settings']['unlock'] ?? 'value') === 'count' ? 'At '.(int) $m['threshold'].' items' : 'At '.$money($m['threshold']);
+
+                return array_map(fn ($m) => [$at($m), (\App\Experiences\GiftSchema::REWARDS[$m['reward']] ?? $m['reward'])
+                    .match ($m['reward']) { 'percent' => ': '.$m['value'].'%', 'amount' => ': '.$money($m['value']), 'gift', 'choice' => ' ('.count($m['products'] ?? []).')', default => '' }], $c['milestones']);
+            }
             if ($c['bundle_type'] === 'mix-tiers') {
                 return array_map(fn ($t) => [$t['count'].' items', match ($c['mt']['rule']) { 'free' => $t['value'].' free', 'percent' => $t['value'].'% off', default => $money($t['value']).' for the set' }], $c['mt']['tiers']);
             }
@@ -281,13 +307,19 @@ class ExperimentController extends Controller
             }.(count($o['gifts']) ? ' · '.count($o['gifts']).' '.(count($o['gifts']) === 1 ? 'gift' : 'gifts') : ''))], array_values(array_filter($c['offers'], fn ($o) => $o['visible'])));
         };
 
-        return ['A' => $describe($base)] + $experiment->variants->where('key', '!=', 'A')->mapWithKeys(fn ($v) => [$v->key => $v->config ? $describe(\App\Experiences\BundleSchema::normalize($v->config)[0]) : $describe($base)])->all();
+        return ['A' => $describe($base)] + $experiment->variants->where('key', '!=', 'A')->mapWithKeys(fn ($v) => [$v->key => $v->config ? $describe($schema::normalize($v->config)[0]) : $describe($base)])->all();
     }
 
     /** Each variant as the storefront renders it, for side-by-side previews. */
     private function previews(Experiment $experiment): array
     {
         $experience = $experiment->experience;
+        if (ExperimentManager::priced($experience) && $experience->type === 'progressive-gifts') {
+            $base = $experience->publishedVersion?->config ?? $experience->draft_config ?? [];
+
+            return $experiment->variants->mapWithKeys(fn ($v) => [$v->key => $v->hidden ? null : ['id' => $experience->handle.'-'.$v->key, 'type' => 'progressive-gifts', 'template' => 'editor', 'style' => 'classic', 'version' => 0, 'priority' => 50]
+                + \App\Services\Experiences\TemplateLibrary::giftPreviewFrom(\App\Experiences\GiftSchema::normalize($v->config ?? $base)[0])])->all();
+        }
         if (ExperimentManager::priced($experience)) {
             $base = $experience->publishedVersion?->config ?? $experience->draft_config ?? [];
 
@@ -303,6 +335,17 @@ class ExperimentController extends Controller
             'content' => array_merge($config['content'] ?? [], $v->content ?? []), 'design' => array_merge($config['design'] ?? [], $v->design ?? []),
             'behavior' => $config['behavior'] ?? [], 'targeting' => [], 'analytics' => ['track_views' => false, 'track_clicks' => false],
         ]])->all();
+    }
+
+    /** What a test's versions change, in words. */
+    private function changeLabels(Experiment $x): string
+    {
+        $names = ['price' => 'Price', 'rewards' => 'Rewards', 'products' => 'Products', 'layout' => 'Layout', 'text' => 'Text', 'design' => 'Design', 'hide' => 'Hidden'];
+        $control = $x->variants->firstWhere('key', 'A')?->template_key;
+
+        return $x->variants->where('key', '!=', 'A')->flatMap(fn ($v) => $v->changes ?? array_keys(array_filter([
+            'hide' => $v->hidden, 'layout' => $v->template_key && $v->template_key !== $control, 'text' => (bool) $v->content, 'design' => (bool) $v->design,
+        ])))->unique()->map(fn ($k) => $names[$k] ?? $k)->implode(' · ') ?: '—';
     }
 
     private function testable(Store $store)

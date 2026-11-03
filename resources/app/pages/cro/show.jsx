@@ -93,7 +93,7 @@ export default function ExperiencePage(props) {
                 <s-button href={editor.url} target="_top">{editor.label}</s-button>
                 <ActionButton url={route('app.cro.experiences.placement', { experience: e.id })}>Re-check placement</ActionButton>
                 {test ? <s-button href={appUrl(test.href)}>{test.draft ? 'Continue A/B test setup' : 'View A/B test'}</s-button>
-                  : testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: e.id }}>Create A/B test</ActionButton>}
+                  : testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: e.id }}>Test this offer</ActionButton>}
                 <ActionButton url={route('app.cro.experiences.duplicate', { experience: e.id })}>Duplicate</ActionButton>
                 {e.status === 'archived'
                   ? <ActionButton url={life('unarchive')}>Restore from archive</ActionButton>
@@ -131,7 +131,7 @@ export default function ExperiencePage(props) {
           {test ? <s-paragraph><s-link href={appUrl(test.href)}>{test.draft ? 'Continue the A/B test setup' : 'View the A/B test on this widget'}</s-link></s-paragraph> : (
             <>
               <s-paragraph>No test is running on this widget.</s-paragraph>
-              {canEdit && testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: e.id }}>Create A/B test</ActionButton>}
+              {canEdit && testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: e.id }}>Test this offer</ActionButton>}
             </>
           )}
         </s-section>

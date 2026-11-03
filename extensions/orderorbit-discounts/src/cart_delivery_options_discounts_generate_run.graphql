@@ -1,6 +1,9 @@
 query DeliveryInput {
   presentmentCurrencyRate
   cart {
+    tests: attribute(key: "_oo_x") {
+      value
+    }
     cost {
       subtotalAmount {
         amount

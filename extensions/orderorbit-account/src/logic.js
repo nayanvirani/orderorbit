@@ -27,6 +27,29 @@ export function choose(payload, settings, ctx) {
     .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0] || null;
 }
 
+/**
+ * A running A/B test (G39): each signed-in customer gets one version (a stable share of the test id
+ * and their id), with its content and design. Null when their version hides the block.
+ */
+export function pickVersion(x, who) {
+  let h = 2166136261;
+  const text = x.id + ':' + who;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+  const bucket = (h >>> 0) % 100;
+  let sum = 0;
+  return x.variants.find((variant) => { sum += variant.alloc; return bucket < sum; }) || x.variants[0];
+}
+
+export function applyTest(exp, v) {
+  if (v.hidden) return null;
+  return Object.assign({}, exp, {
+    template: v.template || exp.template,
+    content: Object.assign({}, exp.content, v.content || {}),
+    design: Object.assign({}, exp.design, v.design || {}),
+    xv: v.key,
+  });
+}
+
 /** "gid://shopify/ProductVariant/123" → "123". */
 export function numericId(gid) {
   const m = String(gid || '').match(/(\d+)$/);

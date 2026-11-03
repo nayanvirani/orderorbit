@@ -117,7 +117,13 @@ class GiftController extends Controller
         return redirect()->to(app_route('app.gifts.index', ['notice' => $notice]));
     }
 
-    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null): Page
+    /** The gift campaign editor on an A/B test version (G39): it saves to the test, never to the live campaign. */
+    public function versionEditor(Store $store, Experience $experience, array $config, array $errors, array $testVersion): Page
+    {
+        return $this->editor($store, $experience, $config, $errors, $errors ? 'Version saved. Fix the highlighted fields before you launch the test.' : null, ['testVersion' => $testVersion]);
+    }
+
+    private function editor(Store $store, Experience $experience, array $config, array $errors, ?string $banner = null, array $extra = []): Page
     {
         return page('gifts/editor', [
             'experience' => ExperienceController::row($experience),
@@ -130,7 +136,7 @@ class GiftController extends Controller
                 'rewards' => GiftSchema::REWARDS,
                 'layouts' => GiftSchema::LAYOUTS,
             ],
-        ], $errors ? 422 : 200);
+        ] + $extra, $errors ? 422 : 200);
     }
 
     private function find(Store $store, int $id): Experience

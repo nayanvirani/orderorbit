@@ -1,6 +1,9 @@
 query CartInput($boxCollections: [ID!]! = []) {
   presentmentCurrencyRate
   cart {
+    tests: attribute(key: "_oo_x") {
+      value
+    }
     lines {
       id
       quantity

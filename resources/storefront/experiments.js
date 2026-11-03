@@ -31,6 +31,21 @@
     return (h >>> 0) % 100;
   }
 
+  // Priced tests (G39): the shopper's versions go to the cart attribute _oo_x ("<id>:B;<id>:H"), so
+  // checkout applies the rewards of the version they saw (H = hidden: none).
+  function remember(id, key) {
+    try {
+      var map = JSON.parse(localStorage.getItem('oo_pv') || '{}');
+      if (map[id] === key) return;
+      map[id] = key;
+      localStorage.setItem('oo_pv', JSON.stringify(map));
+      var value = Object.keys(map).filter(function (k) { return map[k] !== 'A'; }).map(function (k) { return k + ':' + map[k]; }).join(';');
+      fetch(((window.Shopify && Shopify.routes && Shopify.routes.root) || '/') + 'cart/update.js', {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ attributes: { _oo_x: value } })
+      }).catch(function () {});
+    } catch (e) { /* storage blocked */ }
+  }
+
   OrderOrbit.assign = function (exp, ctx) {
     var x = exp.x;
     var id = visitor();
@@ -54,6 +69,8 @@
       // A priced version (bundles, G39): its cart lines carry _oo_v so checkout charges its prices.
       pv: v.pv
     });
+
+    if (x.priced && !ctx.preview) remember(exp.id, v.hidden ? 'H' : v.key);
 
     try {
       if (sessionStorage.getItem('oo_xp_' + x.id) !== v.key) {

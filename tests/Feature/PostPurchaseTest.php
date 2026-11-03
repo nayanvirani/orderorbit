@@ -159,4 +159,32 @@ class PostPurchaseTest extends TestCase
         $builder = $this->page('/app/cro/experiences/1/edit', $owner)->assertOk()->assertSee('Offer something else if they decline');
         $this->assertStringContainsString('choose <strong>Growvia</strong> under Post-purchase page', implode(' ', $builder->json('props.publishHelp')));
     }
+
+    public function test_an_ab_test_gives_each_order_one_version_with_its_own_discount(): void
+    {
+        $store = $this->installedStore(['plan' => 'scale']);
+        \App\Models\FeatureFlag::create(['key' => 'ab_every_offer', 'mode' => 'all', 'enabled' => true]);
+        \App\Support\Features::forget();
+        $funnel = $this->funnel(['trigger' => 'any', 'offer_product' => [['id' => 'gid://shopify/Product/70', 'title' => 'Lip balm']], 'discount_percent' => 15, 'downsell' => false]);
+        $manager = app(\App\Services\Experiments\ExperimentManager::class);
+        $test = $manager->create($store, $funnel, null);
+        $this->assertSame([], $manager->save($test, ['variants' => ['A' => ['allocation' => 50], 'B' => ['allocation' => 50, 'content' => ['discount_percent' => 30]]]]));
+        $manager->launch($test->fresh(['variants', 'experience']), null);
+
+        $seen = [];
+        foreach (range(1, 30) as $n) {
+            $seen['ref-'.$n] = $this->offer($this->purchaseToken(['gid://shopify/Product/1'], 80, 'ref-'.$n))->json('funnel.offers.0.discount_percent');
+        }
+        $this->assertEqualsCanonicalizing([15, 30], array_values(array_unique($seen)), 'Orders are split between the versions.');
+        $this->assertSame($seen['ref-7'], $this->offer($this->purchaseToken(['gid://shopify/Product/1'], 80, 'ref-7'))->json('funnel.offers.0.discount_percent'), 'A retry sees the same version.');
+
+        $exposed = \App\Models\AnalyticsEvent::where('event', 'expose')->where('experiment_handle', $test->handle)->where('visitor_id', 'pp:ref-7')->get();
+        $this->assertSame([$seen['ref-7'] === 30 ? 'B' : 'A'], $exposed->pluck('variant')->unique()->values()->all());
+
+        // Signing charges the order's version.
+        $ref = array_search(30, $seen, true);
+        $token = $this->postJson('/api/post-purchase/sign', ['token' => $this->purchaseToken(['gid://shopify/Product/1'], 80, $ref), 'shop' => $this->shop, 'experience_id' => $funnel->handle, 'step' => 0])->json('token');
+        $this->assertSame(30, \App\Support\Jwt::decode($token, (string) config('shopify.api_secret'))['changes'][0]['discount']['value']);
+        $this->assertSame(1, app(\App\Services\Experiments\Results::class)->for($test->fresh())['variants']['B']['orders'], 'The accepted offer counts for version B.');
+    }
 }

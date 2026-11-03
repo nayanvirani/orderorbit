@@ -20,9 +20,13 @@ class PostPurchaseController extends Controller
     {
         try {
             [$store, $facts] = $this->funnels->context((string) $request->input('token'), (string) $request->input('shop'), $this->sent($request));
-            $funnel = $this->funnels->funnel($store, $facts['products'], $facts['total']);
+            $funnel = $this->funnels->funnel($store, $facts['products'], $facts['total'], $facts['reference_id']);
+            if ($test = $this->funnels->lastTest) {
+                // The order joins the test in its version (a holdout version shows nothing).
+                $this->funnels->record($store, $test[2], 'expose', 0, $facts['reference_id'], $test);
+            }
             if ($funnel) {
-                $this->funnels->record($store, $funnel['experience_id'], 'view');
+                $this->funnels->record($store, $funnel['experience_id'], 'view', 0, $facts['reference_id'], $this->funnels->lastTest);
             }
 
             return $this->json(['funnel' => $funnel]);
@@ -52,8 +56,9 @@ class PostPurchaseController extends Controller
     public function decline(Request $request): JsonResponse
     {
         try {
-            [$store] = $this->funnels->context((string) $request->input('token'), (string) $request->input('shop'), $this->sent($request));
-            $this->funnels->record($store, (string) $request->input('experience_id'), 'decline');
+            [$store, $facts] = $this->funnels->context((string) $request->input('token'), (string) $request->input('shop'), $this->sent($request));
+            $this->funnels->funnel($store, $facts['products'], $facts['total'], $facts['reference_id']);
+            $this->funnels->record($store, (string) $request->input('experience_id'), 'decline', 0, $facts['reference_id'], $this->funnels->lastTest);
         } catch (Throwable) {
             // Analytics only.
         }

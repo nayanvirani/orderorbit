@@ -56,7 +56,8 @@
             "sellingPlanAllocation": null,
             "version": null
           }
-        ]
+        ],
+        "tests": null
       },
       "discount": {
         "discountClasses": [

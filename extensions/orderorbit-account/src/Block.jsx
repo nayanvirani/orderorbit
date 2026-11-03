@@ -6,7 +6,7 @@
 import '@shopify/ui-extensions/preact';
 import { createContext, render } from 'preact';
 import { useContext, useEffect, useState } from 'preact/hooks';
-import { boxStyle, cartLink, choose, fill, link, pageFor, purchasedProducts, reviewLink, rewardTier, shipmentStep, totalSpent, activeOrders } from './logic.js';
+import { applyTest, boxStyle, cartLink, choose, pickVersion, fill, link, pageFor, purchasedProducts, reviewLink, rewardTier, shipmentStep, totalSpent, activeOrders } from './logic.js';
 import { loadCustomer, loadOrder, loadPayload, loadProducts, track } from './data.js';
 
 export default async () => {
@@ -39,7 +39,7 @@ function Extension() {
     let alive = true;
     (async () => {
       const payload = await loadPayload();
-      const exp = choose(payload, shopify.settings && shopify.settings.value, { country: shopify.localization && shopify.localization.country && shopify.localization.country.value && shopify.localization.country.value.isoCode });
+      let exp = choose(payload, shopify.settings && shopify.settings.value, { country: shopify.localization && shopify.localization.country && shopify.localization.country.value && shopify.localization.country.value.isoCode });
       if (!exp) return alive && setState({ exp: null });
       let customer = { firstName: '', orders: [] };
       let order = null;
@@ -49,6 +49,12 @@ function Extension() {
         order = current ? (customer.orders.find((o) => o.id === current) || await loadOrder(current)) : activeOrders(customer.orders)[0] || null;
       } catch (e) {
         /* signed out or the API is unavailable: blocks that need orders hide */
+      }
+      // A/B test: this customer's version; a hidden version shows nothing (and is counted).
+      if (exp && exp.x && exp.x.variants && customer.id) {
+        const version = pickVersion(exp.x, customer.id);
+        track(exp, 'experiment_exposed', { experiment_id: exp.x.id, variant: version.key });
+        exp = applyTest(exp, version);
       }
       if (alive) setState({ exp, payload, customer, order });
     })();

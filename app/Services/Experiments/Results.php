@@ -21,6 +21,8 @@ class Results
         $from = $experiment->started_at ?? now();
         $to = $experiment->ended_at ?? now();
         $handle = $experiment->experience->handle;
+        // After payment (G39) the order is the visitor, and an accepted offer is the revenue it adds.
+        $afterPayment = $experiment->experience->type === 'post-purchase';
 
         $empty = fn () => ['visitors' => 0, 'conversions' => 0, 'orders' => 0, 'revenue' => 0.0, 'units' => 0, 'rpv' => ['n' => 0, 'sum' => 0.0, 'sumsq' => 0.0], 'aov' => ['n' => 0, 'sum' => 0.0, 'sumsq' => 0.0],
             'add_to_cart' => 0, 'checkout_started' => 0, 'clickers' => 0, 'accepts' => 0, 'declines' => 0, 'closes' => 0, 'bundles' => 0, 'abandoned' => 0, 'devices' => [], 'daily' => []];
@@ -58,7 +60,7 @@ class Results
                     $e->name === 'product_added_to_cart' || $e->event === 'add' => $p['atc'] = true,
                     $e->name === 'checkout_started' => $p['checkout'] = true,
                     $e->event === 'click' => $p['clicked'] = true,
-                    $e->event === 'accept' => $p['accepts']++,
+                    $e->event === 'accept' => [$p['accepts']++, $afterPayment ? $p['orders'][] = (float) $e->value : null],
                     $e->event === 'decline' => $p['declines']++,
                     $e->event === 'close' => $p['closes']++,
                     default => null,

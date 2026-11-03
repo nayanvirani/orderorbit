@@ -494,6 +494,9 @@ class ExperienceController extends Controller
             'paused_by_plan' => $e->status === 'paused' && $e->paused_by_plan,
             'unpublished' => $e->published_version_id && $e->has_unpublished_changes && $e->status !== 'archived',
             'updated_at' => $e->updated_at,
+            // G39: "Test this offer", or the test this offer is already in.
+            'test' => ($t = \App\Models\Experiments\Experiment::where('experience_id', $e->id)->whereIn('status', ['draft', 'running', 'paused'])->latest('id')->first(['id', 'status'])) ? ['id' => $t->id, 'status' => $t->status] : null,
+            'testable' => $e->status === 'published' && \App\Services\Experiments\ExperimentManager::unsupported($e) === null,
         ];
     }
 

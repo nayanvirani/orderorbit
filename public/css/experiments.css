@@ -32,3 +32,8 @@
 .xp-tiers td { padding: 6px 8px; border-bottom: 1px solid #ececec; }
 .xp-tiers td:last-child { text-align: right; font-weight: 600; }
 .xp-tiers tr.xp-diff td { background: #fff8e6; }
+.xp-good { color: #047b5d; }
+.xp-bad { color: #c70a24; }
+.xp-offers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.xp-offer { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; padding: 12px 14px; border: 1px solid #e3e3e3; border-radius: 12px; background: #fff; }
+.xp-offer strong { font-size: 14px; }

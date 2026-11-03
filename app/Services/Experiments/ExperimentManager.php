@@ -64,7 +64,13 @@ class ExperimentManager
     public function __construct(private readonly StorefrontPublisher $publisher, private readonly ExperienceManager $experiences) {}
 
     /** Offer types whose versions carry their own prices (G39). */
-    public const PRICED = ['bundles'];
+    public const PRICED = ['bundles', 'progressive-gifts'];
+
+    /** The schema that checks a priced offer's config. */
+    public static function schema(Experience $experience): string
+    {
+        return $experience->type === 'progressive-gifts' ? \App\Experiences\GiftSchema::class : \App\Experiences\BundleSchema::class;
+    }
 
     /** Whether versions of this experience are full alternative offers with their own prices. */
     public static function priced(Experience $experience): bool
@@ -78,7 +84,7 @@ class ExperimentManager
         if (! Registry::has($experience->type)) {
             return 'This widget type no longer exists.';
         }
-        if (self::priced($experience)) {
+        if (self::priced($experience) || self::offerFields($experience)) {
             return null;
         }
         if (in_array($experience->type, ['bundles', 'progressive-gifts'], true)) {
@@ -97,7 +103,11 @@ class ExperimentManager
 
     public static function canHoldout(Experience $experience): bool
     {
-        // A hidden bundle adds nothing to the cart, so nothing is discounted: safe to hold out.
+        if (self::offerFields($experience)) {
+            return true; // no offer for this order or customer
+        }
+        // A hidden bundle or gift campaign adds nothing, and checkout gives its rewards only to the
+        // shopper's version (_oo_v lines, _oo_x attribute): safe to hold out.
         return self::priced($experience) || ! (Registry::type($experience->type)['discount'] ?? false);
     }
 
@@ -105,6 +115,21 @@ class ExperimentManager
     public static function textFields(string $type): array
     {
         return array_filter(Schema::fields($type)['content'] ?? [], fn ($f) => in_array($f['type'], ['text', 'textarea'], true));
+    }
+
+    /**
+     * G39: the after-payment offer and customer account blocks can test the offer itself (products,
+     * discounts, rewards), not only its text: every content field except when it shows. Empty when
+     * the type or the store doesn't have it.
+     */
+    public static function offerFields(Experience $experience): array
+    {
+        $surface = Registry::has($experience->type) ? Registry::type($experience->type)['surface'] ?? '' : '';
+        if (! in_array($surface, ['post-purchase', 'account'], true) || ! \App\Support\Features::enabled('ab_every_offer', $experience->store)) {
+            return [];
+        }
+
+        return array_filter(Schema::fields($experience->type)['content'] ?? [], fn ($f, $k) => ! str_starts_with($k, 'trigger') && $k !== 'min_total', ARRAY_FILTER_USE_BOTH);
     }
 
     public function create(Store $store, Experience $experience, ?StoreUser $user): Experiment
@@ -192,6 +217,7 @@ class ExperimentManager
         $errors = [];
         $templates = Registry::type($type)['templates'] ?? [];
         $text = self::textFields($type);
+        $offer = self::offerFields($experiment->experience);
         $design = Schema::fields($type)['design'] ?? [];
         $holdout = self::canHoldout($experiment->experience);
         // Variant fields start from the published experience; only changes are kept.
@@ -222,6 +248,18 @@ class ExperimentManager
                     $value = isset($v['content'][$field]) ? trim(strip_tags((string) $v['content'][$field])) : '';
                     if ($value !== '' && $value !== (string) ($base['content'][$field] ?? '')) {
                         $content[$field] = mb_substr($value, 0, $def['max'] ?? 255);
+                    }
+                }
+                // Offer fields (products, discounts, rewards) for the after-payment offer and account blocks.
+                foreach ($offer as $field => $def) {
+                    if (isset($text[$field]) || ! array_key_exists($field, (array) ($v['content'] ?? []))) {
+                        continue;
+                    }
+                    [$value, $error] = Schema::field($def, $v['content'][$field], 'UTC');
+                    if ($error) {
+                        $errors["variants.{$key}.content.{$field}"] = $error;
+                    } elseif ($value !== ($base['content'][$field] ?? null) && $value !== null && $value !== '') {
+                        $content[$field] = $value;
                     }
                 }
                 $data['content'] = $content ?: null;
@@ -306,15 +344,23 @@ class ExperimentManager
     {
         $experience = $experiment->experience;
         $tz = $experiment->store->timezone ?? 'UTC';
-        [$base] = \App\Experiences\BundleSchema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $tz);
-        $input['bundle_type'] = $base['bundle_type'];
-        foreach (['visibility', 'products', 'collections', 'excluded', 'countries'] as $k) {
-            $input['settings'][$k] = $base['settings'][$k];
+        $schema = self::schema($experience);
+        [$base] = $schema::normalize($experience->publishedVersion?->config ?? $experience->draft_config ?? [], $tz);
+        if ($experience->type === 'bundles') {
+            $input['bundle_type'] = $base['bundle_type'];
+            foreach (['visibility', 'products', 'collections', 'excluded', 'countries'] as $k) {
+                $input['settings'][$k] = $base['settings'][$k];
+            }
+        } else {
+            // A gift campaign version keeps where it shows and how progress is counted.
+            foreach (['placement', 'unlock'] as $k) {
+                $input['settings'][$k] = $base['settings'][$k];
+            }
         }
         $input['schedule'] = $base['schedule'] ?? [];
-        [$config, $errors] = \App\Experiences\BundleSchema::normalize($input, $tz);
+        [$config, $errors] = $schema::normalize($input, $tz);
 
-        return [$config, $errors, self::changes($base, $config)];
+        return [$config, $errors, $experience->type === 'bundles' ? self::changes($base, $config) : self::giftChanges($base, $config)];
     }
 
     /** Saves one version edited in the bundle editor. Returns the errors (the edit is kept either way). */
@@ -328,6 +374,22 @@ class ExperimentManager
             + ($experiment->variants->firstWhere('key', $key) ? [] : ['name' => 'Version '.$key, 'allocation' => 0, 'template_key' => $experiment->experience->template_key]));
 
         return $errors;
+    }
+
+    /** What a gift campaign version changes: thresholds and discounts (price), gifts (rewards), layout, text, design. */
+    public static function giftChanges(array $base, array $version): array
+    {
+        $m = fn (array $c, array $keys) => array_map(fn ($x) => array_intersect_key($x, array_flip($keys)), $c['milestones'] ?? []);
+        $gifts = fn (array $c) => array_map(fn ($x) => [$x['reward'], array_column($x['products'] ?? [], 'id'), $x['quantity'] ?? 1], $c['milestones'] ?? []);
+
+        return array_keys(array_filter([
+            'price' => $m($base, ['threshold', 'value']) != $m($version, ['threshold', 'value']),
+            'rewards' => $gifts($base) != $gifts($version),
+            'layout' => ($base['settings']['layout'] ?? null) !== ($version['settings']['layout'] ?? null),
+            'text' => [$base['settings']['title'] ?? '', $base['settings']['progress_message'] ?? '', $base['settings']['unlocked_message'] ?? '', $m($base, ['label'])]
+                != [$version['settings']['title'] ?? '', $version['settings']['progress_message'] ?? '', $version['settings']['unlocked_message'] ?? '', $m($version, ['label'])],
+            'design' => ($base['design'] ?? []) != ($version['design'] ?? []),
+        ]));
     }
 
     /** What a version changes compared with the live offer: price, rewards, products, layout, text, design. */

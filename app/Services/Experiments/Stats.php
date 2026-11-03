@@ -68,6 +68,8 @@ class Stats
             'lift_high' => $control != 0.0 ? ($diff + $crit * $se) / $control * 100 : null,
             'p' => max(0.0, min(1.0, $p)),
             'stat' => $stat,
+            // G39: the chance (%) this version beats the control, from the same normal approximation.
+            'chance' => round(self::normalCdf($stat) * 100, 1),
         ];
     }
 

@@ -76,8 +76,12 @@ class PostPurchase
      *
      * @param  list<string>  $productIds  products in the order (numeric ids)
      */
-    public function funnel(Store $store, array $productIds, float $total): ?array
+    /** The A/B test version the last funnel() chose: [test handle, version key, offer handle], or null (G39). */
+    public ?array $lastTest = null;
+
+    public function funnel(Store $store, array $productIds, float $total, string $reference = ''): ?array
     {
+        $this->lastTest = null;
         if (! $store->planIncludes('post_purchase') || \App\Support\Features::killed('post_purchase')) {
             return null;
         }
@@ -96,6 +100,14 @@ class PostPurchase
         }
 
         $c = $experience->publishedVersion->config['content'];
+        // A running A/B test (G39): the order's version, the same on every retry of this order.
+        if ($picked = $this->version($store, $experience, $reference)) {
+            $this->lastTest = [$picked[0], $picked[1]->key, $experience->handle];
+            if ($picked[1]->hidden) {
+                return null;
+            }
+            $c = array_merge($c, $picked[1]->content ?? []);
+        }
         $offers = array_values(array_filter([
             $this->offer($store, $c['offer_product'][0] ?? null, (int) ($c['discount_percent'] ?? 0), (string) ($c['headline'] ?? ''), $productIds),
             ! empty($c['downsell']) ? $this->offer($store, $c['downsell_product'][0] ?? null, (int) ($c['downsell_discount'] ?? 0), (string) ($c['downsell_headline'] ?? ''), $productIds) : null,
@@ -115,11 +127,40 @@ class PostPurchase
     }
 
     /**
+     * The version of a running test on this offer for an order: a stable share of the order reference,
+     * so a retry sees the same one. Equal shares without Traffic allocation & guardrails.
+     *
+     * @return array{0: string, 1: \App\Models\Experiments\ExperimentVariant}|null
+     */
+    private function version(Store $store, Experience $experience, string $reference): ?array
+    {
+        if ($reference === '' || ! $store->planIncludes('ab_testing')) {
+            return null;
+        }
+        $test = \App\Models\Experiments\Experiment::with('variants')->where('experience_id', $experience->id)->where('status', 'running')->first();
+        if (! $test || $test->variants->count() < 2) {
+            return null;
+        }
+        $even = ! $store->planIncludes('ab_traffic_guardrails');
+        $count = $test->variants->count();
+        $bucket = crc32($test->handle.':'.$reference) % 100;
+        $sum = 0;
+        foreach ($test->variants->values() as $i => $v) {
+            $sum += $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation;
+            if ($bucket < $sum) {
+                return [$test->handle, $v];
+            }
+        }
+
+        return [$test->handle, $test->variants->first()];
+    }
+
+    /**
      * Signs the change that adds offer $step of the funnel to the order.
      */
     public function sign(Store $store, string $referenceId, string $experienceId, int $step, array $productIds, float $total): string
     {
-        $funnel = $this->funnel($store, $productIds, $total);
+        $funnel = $this->funnel($store, $productIds, $total, $referenceId);
         $offer = $funnel && $funnel['experience_id'] === $experienceId ? ($funnel['offers'][$step] ?? null) : null;
         if (! $offer || $referenceId === '') {
             throw new RuntimeException('This offer is no longer available.');
@@ -130,7 +171,7 @@ class PostPurchase
             $change['discount'] = ['value' => $offer['discount_percent'], 'valueType' => 'percentage', 'title' => $offer['discount_percent'].'% off'];
         }
 
-        $this->record($store, $experienceId, 'accept', round($offer['price'] * (1 - $offer['discount_percent'] / 100), 2));
+        $this->record($store, $experienceId, 'accept', round($offer['price'] * (1 - $offer['discount_percent'] / 100), 2), $referenceId, $this->lastTest);
 
         return Jwt::encode([
             'iss' => config('shopify.api_key'),
@@ -141,12 +182,14 @@ class PostPurchase
         ], (string) config('shopify.api_secret'));
     }
 
-    public function record(Store $store, string $experienceId, string $event, float $value = 0): void
+    /** An offer event; with a test, the order counts as the visitor "pp:<reference>" in that version. */
+    public function record(Store $store, string $experienceId, string $event, float $value = 0, ?string $reference = null, ?array $test = null): void
     {
         if (! preg_match('/^[A-Za-z0-9_\-]{1,64}$/', $experienceId)) {
             return;
         }
-        AnalyticsEvent::create(['store_id' => $store->id, 'experience_handle' => $experienceId, 'event' => $event, 'value' => $value, 'currency' => $store->currency, 'occurred_at' => now()]);
+        $who = $test && $reference ? ['visitor_id' => 'pp:'.mb_substr($reference, 0, 60), 'experiment_handle' => $test[0], 'variant' => $test[1], 'experience_type' => 'post-purchase'] : [];
+        AnalyticsEvent::create(['store_id' => $store->id, 'experience_handle' => $experienceId, 'event' => $event, 'value' => $value, 'currency' => $store->currency, 'occurred_at' => now()] + $who);
         if ($event === 'accept' && $value > 0) {
             // Revenue the funnel added to the order, for the offer's numbers.
             AnalyticsEvent::create(['store_id' => $store->id, 'experience_handle' => $experienceId, 'event' => 'attributed', 'value' => $value, 'currency' => $store->currency, 'occurred_at' => now()]);

@@ -29,7 +29,8 @@
           {
             "id": "gid://shopify/CartDeliveryGroup/0"
           }
-        ]
+        ],
+        "tests": null
       },
       "discount": {
         "discountClasses": [

@@ -40,7 +40,8 @@
             },
             "version": null
           }
-        ]
+        ],
+        "tests": null
       },
       "discount": {
         "discountClasses": [

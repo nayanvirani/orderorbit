@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { clone, Ctx, F, Help, Picker, Row, setIn } from '../../components/editorKit.jsx';
 import { Preview, useRuntime } from '../../components/runtime.jsx';
 import { money, Page } from '../../components/ui.jsx';
-import { route, useRouter, useShared } from '../../router.jsx';
+import { appUrl, route, useRouter, useShared } from '../../router.jsx';
+import { ActionButton } from '../../components/form.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
 
 const Card = ({ title, children }) => <section className="bx-card"><header className="bx-inline"><strong>{title}</strong></header>{children}</section>;
 
-export default function GiftEditor({ experience: x, config, fieldErrors: errors, banner, meta }) {
+export default function GiftEditor({ experience: x, config, fieldErrors: errors, banner, meta, testVersion }) {
   const { submit } = useRouter();
   const { currency } = useShared();
   const ready = useRuntime();
@@ -44,7 +45,9 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
 
   const save = async (action) => {
     setBusy(action);
-    await submit(route('app.gifts.update', { gift: x.id }), { action, name, config: state });
+    // A/B test version (G39): saved to the test, never to the live campaign.
+    if (testVersion) await submit(route('app.experiments.version.save', { experiment: testVersion.experiment, key: testVersion.key }), { config: state });
+    else await submit(route('app.gifts.update', { gift: x.id }), { action, name, config: state });
     setBusy(null);
     setDirty(false);
   };
@@ -67,15 +70,23 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
   };
 
   return (
-    <Page heading={x.name} back={route('app.gifts.index')} backLabel="Progressive gifts">
+    <Page heading={testVersion ? `${x.name} · Version ${testVersion.key}` : x.name}
+      back={testVersion ? route('app.experiments.edit', { experiment: testVersion.experiment }) : route('app.gifts.index')} backLabel={testVersion ? 'A/B test' : 'Progressive gifts'}>
+      {testVersion && (
+        <s-banner tone="info" heading={`Editing version ${testVersion.key} of the test "${testVersion.name}"`}>
+          <s-paragraph>Change the thresholds, gifts, discounts, layout, text or design. Version A stays your live campaign. Checkout gives each shopper the rewards of the version they saw.</s-paragraph>
+        </s-banner>
+      )}
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'critical'}>{banner}</s-banner>}
-      {x.status === 'published' && x.unpublished && <s-banner tone="info">These rewards have changes that aren't live yet. Publish to update your store.</s-banner>}
+      {!testVersion && x.status === 'published' && x.unpublished && <s-banner tone="info">These rewards have changes that aren't live yet. Publish to update your store.</s-banner>}
 
       <Ctx.Provider value={{ state, set, update, errors, meta, currency, open: new Set(), toggle: () => {}, expand: () => {} }}>
         <div className="bx-editor">
           <div className="bx-editor-top">
             <label className="bx-name"><span className="bx-muted">Name (only you see it)</span><input value={name} maxLength={120} onChange={(e) => { setName(e.target.value); setDirty(true); }} /></label>
-            <div className="bx-status"><ExperienceStatus experience={x} /></div>
+            <div className="bx-status"><ExperienceStatus experience={x} />
+            {!testVersion && x.test && <s-button href={appUrl(route(x.test.status === 'draft' ? 'app.experiments.edit' : 'app.experiments.show', { experiment: x.test.id }))}>{x.test.status === 'draft' ? 'A/B test draft' : 'View A/B test'}</s-button>}
+            {!testVersion && !x.test && x.testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: x.id }}>Test this offer</ActionButton>}</div>
           </div>
 
           <div className="bx-layout">
@@ -192,8 +203,14 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
               </div>
               <div className="bx-savebar">
                 {dirty && <span className="b-dirty">Unsaved changes</span>}
-                <button type="button" className="b-btn" disabled={!!busy} onClick={() => save('save')}>{busy === 'save' ? 'Saving…' : 'Save as draft'}</button>
-                <button type="button" className="b-btn b-primary" disabled={!!busy} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : x.status === 'published' ? 'Publish changes' : 'Publish'}</button>
+                {testVersion ? (
+                  <button type="button" className="b-btn b-primary" disabled={!!busy || !testVersion.editable} onClick={() => save('save')}>{busy ? 'Saving…' : `Save version ${testVersion.key}`}</button>
+                ) : (
+                  <>
+                    <button type="button" className="b-btn" disabled={!!busy} onClick={() => save('save')}>{busy === 'save' ? 'Saving…' : 'Save as draft'}</button>
+                    <button type="button" className="b-btn b-primary" disabled={!!busy} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : x.status === 'published' ? 'Publish changes' : 'Publish'}</button>
+                  </>
+                )}
               </div>
             </aside>
           </div>

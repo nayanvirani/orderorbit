@@ -244,12 +244,14 @@ class StorefrontPublisher
         return [
             'id' => $test->handle,
             'audience' => (object) $audience,
+            // Versions with their own prices: the storefront records the shopper's version for checkout.
+            'priced' => \App\Services\Experiments\ExperimentManager::priced($experience) ?: null,
             'variants' => $test->variants->values()->map(fn ($v, $i) => $v->key !== 'A' && $v->config && ! $v->hidden ? [
                 // A priced version (G39): its whole offer, and "pv" so its cart lines carry _oo_v.
                 'key' => $v->key,
                 'alloc' => $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation,
                 'pv' => $v->key,
-            ] + array_intersect_key(BundleSchema::payload(BundleSchema::normalize($v->config)[0]), array_flip(['content', 'design'])) : array_filter([
+            ] + array_intersect_key($experience->type === 'progressive-gifts' ? GiftSchema::payload(GiftSchema::normalize($v->config)[0]) : BundleSchema::payload(BundleSchema::normalize($v->config)[0]), array_flip(['content', 'design'])) : array_filter([
                 'key' => $v->key,
                 'alloc' => $even ? intdiv(100, $count) + ($i < 100 % $count ? 1 : 0) : $v->allocation,
                 // A variant that would show made-up content shows nothing instead (requirement 1.1.4).

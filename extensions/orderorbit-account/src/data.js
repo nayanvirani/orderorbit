@@ -40,11 +40,11 @@ export function loadPayload() {
   return payloadPromise;
 }
 
-/** The customer's first name and latest orders (newest first). */
+/** The customer's id, first name and latest orders (newest first). */
 export async function loadCustomer() {
-  const data = await customerApi(`query { customer { firstName orders(first: 50, sortKey: PROCESSED_AT, reverse: true) { nodes { ${ORDER_FIELDS} } } } }`);
+  const data = await customerApi(`query { customer { id firstName orders(first: 50, sortKey: PROCESSED_AT, reverse: true) { nodes { ${ORDER_FIELDS} } } } }`);
   const customer = data.customer || {};
-  return { firstName: customer.firstName || '', orders: (customer.orders && customer.orders.nodes) || [] };
+  return { id: customer.id || '', firstName: customer.firstName || '', orders: (customer.orders && customer.orders.nodes) || [] };
 }
 
 /** One order by id. */
@@ -76,6 +76,8 @@ export function track(exp, event, extra) {
   try {
     shopify.analytics.publish('growvia_event', Object.assign({
       event: 'growvia:' + event, experience_id: exp.id, experience_type: exp.type, template_id: exp.template, version: exp.version,
+      // A/B test and version (G39), so results count this customer's actions for their version.
+      experiment_id: exp.x ? exp.x.id : undefined, variant: exp.xv,
     }, extra || {}));
   } catch (e) {
     /* analytics not available here */

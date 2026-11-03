@@ -45,7 +45,11 @@ export function cartDeliveryOptionsDiscountsGenerateRun(input) {
     const need = (offer.t || {})[tag.split('|')[1]];
     return need != null && count >= Number(need);
   });
-  const offer = all.find((o) => (o.k === 'ship' && subtotal >= Number(o.min) * rate)
+  // The shopper's test versions (cart attribute _oo_x = "<id>:B;…"); an offer's other versions don't apply.
+  const versions = {};
+  String(input.cart.tests?.value || '').split(';').forEach((pair) => { const [id, v] = pair.split(':'); if (id && v) versions[id] = v; });
+  const mine = (o) => (versions[o.id] || 'A') === (o.v || 'A');
+  const offer = all.filter((o) => o.k !== 'pg' || mine(o)).find((o) => (o.k === 'ship' && subtotal >= Number(o.min) * rate)
     || (o.k === 'pg' && (o.m || []).some((m) => m.r === 'shipping' && progress(o) >= Number(m.t) * (o.by === 'count' ? 1 : rate)))
     || (o.k === 'bship' && tierBought(o)));
   if (!offer) {

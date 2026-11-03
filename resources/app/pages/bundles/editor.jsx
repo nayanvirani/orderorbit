@@ -4,7 +4,8 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { clone, Ctx, F, getIn, Help, Picker, Row, Section, setIn } from '../../components/editorKit.jsx';
 import { Preview, useRuntime } from '../../components/runtime.jsx';
 import { Page } from '../../components/ui.jsx';
-import { route, useRouter, useShared } from '../../router.jsx';
+import { appUrl, route, useRouter, useShared } from '../../router.jsx';
+import { ActionButton } from '../../components/form.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
 import TieredPanel, { usesTiered } from './_tiered.jsx';
 import MixTiersPanel from './_mixtiers.jsx';
@@ -118,7 +119,9 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
         <div className="bx-editor">
           <div className="bx-editor-top">
             <label className="bx-name"><span className="bx-muted">Bundle name (only you see it)</span><input value={name} maxLength={120} onChange={(e) => { setName(e.target.value); setDirty(true); }} /></label>
-            <div className="bx-status"><ExperienceStatus experience={x} /><span className="bx-pill">{type.label}</span></div>
+            <div className="bx-status"><ExperienceStatus experience={x} /><span className="bx-pill">{type.label}</span>
+            {!testVersion && x.test && <s-button href={appUrl(route(x.test.status === 'draft' ? 'app.experiments.edit' : 'app.experiments.show', { experiment: x.test.id }))}>{x.test.status === 'draft' ? 'A/B test draft' : 'View A/B test'}</s-button>}
+            {!testVersion && !x.test && x.testable && <ActionButton url={route('app.experiments.store')} data={{ experience_id: x.id }}>Test this offer</ActionButton>}</div>
           </div>
 
           <div className="bx-layout">

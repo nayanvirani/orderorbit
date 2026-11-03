@@ -168,6 +168,18 @@ class TemplateLibrary
             + BundleSchema::payload($config);
     }
 
+    /** A saved gift campaign as the storefront renders it, with sample gifts where none are picked. */
+    public static function giftPreviewFrom(array $config): array
+    {
+        foreach ($config['milestones'] as $i => $m) {
+            if (in_array($m['reward'], ['gift', 'choice'], true) && ($m['products'] ?? []) === []) {
+                $config['milestones'][$i]['products'] = $m['reward'] === 'choice' ? array_slice(self::samples(), 0, 3) : [self::samples()[3]];
+            }
+        }
+
+        return \App\Experiences\GiftSchema::payload($config);
+    }
+
     /** A saved bundle config as the storefront renders it, with sample products where none are picked. */
     public static function bundlePreviewFrom(array $config): array
     {

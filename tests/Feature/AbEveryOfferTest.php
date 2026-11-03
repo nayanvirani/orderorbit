@@ -70,6 +70,8 @@ class AbEveryOfferTest extends TestCase
         $this->post("/app/experiments/{$test->id}", ['name' => 'Bundle 10% vs 20%', 'primary_metric' => 'conversion_rate', 'min_days' => 7, 'min_visitors' => 1000, 'min_conversions' => 100,
             'variants' => ['A' => ['allocation' => 50], 'B' => ['allocation' => 50]], 'action' => 'launch'], $this->as($owner))->assertRedirectContains('launched');
         $this->assertSame('running', $test->fresh()->status);
+        $this->page('/app/experiments', $owner)->assertJsonPath('props.experiments.0.changes', 'Price')
+            ->assertJsonPath('props.offers.0.test.id', $test->id);
         $offers = OfferSync::versionOffers($bundle->fresh(), $store->fresh());
         $this->assertSame(['bq', 'B', 20.0], [$offers[0]['k'], $offers[0]['v'], (float) $offers[0]['o'][1]['v']]);
         $shown = collect(app(StorefrontPublisher::class)->payload($store->fresh())['experiences'])->firstWhere('id', $bundle->handle)['x']['variants'];
@@ -83,5 +85,35 @@ class AbEveryOfferTest extends TestCase
         $this->assertEquals(20, $bundle->fresh()->publishedVersion->config['offers'][1]['discount_value']);
         $this->assertSame('completed', $test->fresh()->status);
         $this->assertSame([], OfferSync::versionOffers($bundle->fresh(), $store->fresh()), 'No version prices once the test ends.');
+    }
+
+    public function test_a_gift_campaign_version_has_its_own_rewards(): void
+    {
+        $store = $this->installedStore(['plan' => 'scale']);
+        $owner = $this->member($store, 'owner');
+        FeatureFlag::create(['key' => 'ab_every_offer', 'mode' => 'all', 'enabled' => true]);
+        Features::forget();
+        $config = \App\Experiences\GiftSchema::defaults('pg-classic');
+        $config['milestones'] = [\App\Experiences\GiftSchema::milestone(50, 'shipping', 'Free shipping'), \App\Experiences\GiftSchema::milestone(100, 'percent', '10% off', 10)];
+        $gifts = app(\App\Services\Experiences\ExperienceManager::class)->create($store, 'progressive-gifts', 'pg-classic', $owner, 'Rewards');
+        $gifts->update(['draft_config' => $config]);
+        app(\App\Services\Experiences\ExperienceManager::class)->publish($gifts->fresh(), $owner);
+
+        $this->post('/app/experiments', ['experience_id' => $gifts->id], $this->as($owner))->assertRedirectContains('/edit');
+        $test = Experiment::sole();
+        $this->page("/app/experiments/{$test->id}/versions/B", $owner)->assertJsonPath('component', 'gifts/editor')->assertJsonPath('props.testVersion.key', 'B');
+        $b = $config;
+        $b['milestones'][1]['value'] = 15;
+        $b['milestones'][1]['threshold'] = 80;
+        $this->post("/app/experiments/{$test->id}/versions/B", ['config' => json_encode($b)], $this->as($owner))->assertRedirect();
+        $this->assertSame(['price'], $test->variants()->where('key', 'B')->sole()->changes);
+        $this->page("/app/experiments/{$test->id}/edit", $owner)->assertJsonPath('props.tiers.B.1', ['At 80.00 USD', '% off the order: 15%']);
+
+        $this->post("/app/experiments/{$test->id}", ['variants' => ['A' => ['allocation' => 50], 'B' => ['allocation' => 50]], 'action' => 'launch'], $this->as($owner))->assertRedirectContains('launched');
+        $offers = OfferSync::versionOffers($gifts->fresh(), $store->fresh());
+        $this->assertSame(['pg', 'B', 80.0, 15.0], [$offers[0]['k'], $offers[0]['v'], (float) $offers[0]['m'][1]['t'], (float) $offers[0]['m'][1]['v']]);
+        $x = collect(app(StorefrontPublisher::class)->payload($store->fresh())['experiences'])->firstWhere('id', $gifts->handle)['x'];
+        $this->assertTrue($x['priced'], 'The storefront records the shopper\'s version for checkout.');
+        $this->assertEquals(15, $x['variants'][1]['content']['milestones'][1]['value']);
     }
 }

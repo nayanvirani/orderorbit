@@ -66,7 +66,7 @@ export default function ExperimentResults({ experiment: x, results: r, primary, 
       <s-section heading="Variants">
         <div className="oo-scroll">
           <table className="oo-table stack xp-table">
-            <thead><tr><th>Variant</th><th>Traffic</th><th>Visitors</th><th>Conversions</th><th>Conversion rate</th><th>Revenue</th><th>Revenue / visitor</th><th>AOV</th>{primary === 'click_rate' && <th>Click-through</th>}<th>Lift vs control ({PRIMARY_LABEL[primary]})</th><th>p-value</th></tr></thead>
+            <thead><tr><th>Variant</th><th>Traffic</th><th>Visitors</th><th>Conversions</th><th>Conversion rate</th><th>Revenue</th><th>Revenue / visitor</th><th>AOV</th>{primary === 'click_rate' && <th>Click-through</th>}<th>Lift vs control ({PRIMARY_LABEL[primary]})</th><th>Chance to beat A</th><th>p-value</th></tr></thead>
             <tbody>
               {x.variants.map((v) => {
                 const vm = r.variants[v.key];
@@ -83,6 +83,7 @@ export default function ExperimentResults({ experiment: x, results: r, primary, 
                     <td data-label="AOV">{m(vm.aov)}</td>
                     {primary === 'click_rate' && <td data-label="Click-through">{pct(vm.click_rate)}</td>}
                     <td data-label="Lift">{v.key === 'A' ? <span className="oo-muted">Baseline</span> : lift(c)}</td>
+                    <td data-label="Chance to beat A">{v.key === 'A' ? '—' : c?.chance != null ? <strong className={c.chance >= 95 ? 'xp-good' : c.chance <= 5 ? 'xp-bad' : ''}>{c.chance}%</strong> : '—'}</td>
                     <td data-label="p-value">{v.key === 'A' ? '—' : c?.p_label ?? '—'}</td>
                   </tr>
                 );
@@ -90,7 +91,7 @@ export default function ExperimentResults({ experiment: x, results: r, primary, 
             </tbody>
           </table>
         </div>
-        <p className="oo-muted oo-small">Lift is relative to the control, with its {Math.round(r.confidence * 1000) / 10}% confidence interval in brackets. A visitor counts for the variant they first saw; their orders after that count for it.</p>
+        <p className="oo-muted oo-small">Lift is relative to the control, with its {Math.round(r.confidence * 1000) / 10}% confidence interval in brackets. Chance to beat A is how likely the version is better on the primary metric with the data so far; a winner still needs the minimum days and visitors. A visitor counts for the variant they first saw; their orders after that count for it.</p>
       </s-section>
 
       <s-section heading="Conversion rate over time (cumulative)">
