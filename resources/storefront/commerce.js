@@ -52,9 +52,17 @@
   }
 
   // The variant selected in the theme's own product form, if the page has one.
+  // The variant chosen in the theme's form; if it's sold out (or unknown), the first variant in stock.
   function pageVariant(ctx) {
     var input = document.querySelector('form[action*="/cart/add"] [name="id"]');
-    return (input && input.value) || ctx.variant || null;
+    var id = (input && input.value) || ctx.variant || null;
+    var list = (ctx.pageProduct && ctx.pageProduct.variants) || [];
+    var cur = list.filter(function (v) { return String(v.id) === String(id); })[0];
+    if (list.length && (!cur || cur.available === false)) {
+      var first = list.filter(function (v) { return v.available !== false; })[0];
+      if (first) return first.id;
+    }
+    return id;
   }
 
   function status(rootEl, text, bad) {

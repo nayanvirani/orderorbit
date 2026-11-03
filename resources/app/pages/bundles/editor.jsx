@@ -218,7 +218,7 @@ function SettingsPanel() {
           <F path="settings.button_text" label="Button text" max={40} />
           <F path="settings.after_add" label="After adding to cart" type="select" options={{ cart: 'Go to the cart', stay: 'Stay on the page', checkout: 'Skip cart and go to checkout' }} />
         </Row>
-        {state.bundle_type !== 'byob' && <F path="settings.show_variants" label="Show product variant selection" type="toggle" help="Shoppers choose a variant for each item (#1, #2 …)." />}
+        {state.bundle_type !== 'byob' && <F path="settings.show_variants" label="Show product variant selection" type="toggle" help={s.show_variants ? 'Shoppers choose a variant for each item (#1, #2 …).' : 'Hidden: each item is added in its first variant in stock.'} />}
         <F path="settings.hide_theme_form" label="Hide the theme’s product form" type="toggle" help="Hides your theme’s variant picker, quantity, add to cart, buy-now and subscription options where the bundle shows, so they don’t conflict." />
         {s.hide_theme_form && <F path="settings.hide_selectors" label="Extra elements to hide (CSS selectors)" placeholder=".my-theme-variant-picker, .my-subscriptions" help="Only needed if your theme uses a custom product form." />}
         <F path="behavior.priority" label="Priority" type="number" min={1} max={100} help="When several bundles match a product, the highest priority shows." />

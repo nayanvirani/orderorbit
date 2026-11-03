@@ -81,6 +81,12 @@ function Tiers({ onPick }) {
         </label>
       </div>
       <F path="tiers.pictures" label="Show product and gift pictures in each tier" type="toggle" />
+      <label className="b-field">Variant picker
+        <select value={state.settings.show_variants ? 'show' : 'hide'} onChange={(e) => set('settings.show_variants', e.target.value === 'show')}>
+          <option value="show">Show: shoppers choose a variant for each item (#1, #2 …)</option>
+          <option value="hide">Hide: add the first variant in stock</option>
+        </select>
+      </label>
       <Row>
         <F path="tiers.second_line" label="Second line under the title" type="select" options={{ subtitle: 'You save {saving}', each: 'Price per item', none: 'None' }} />
         <label className="b-field">Badge style
