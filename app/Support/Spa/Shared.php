@@ -39,6 +39,8 @@ class Shared
             'nav' => $access ? self::nav($request, $store) : null,
             'limit' => $access && ! $request->routeIs('app.settings.billing') ? self::limit($store) : null,
             'legal' => $user ? \App\Support\Legal::noticeFor($store) : null,
+            // Announcements from the Growvia team (G41) for this person and page.
+            'announcements' => $store && $user ? \App\Support\Announcements::forPage($store, $user, $request->routeIs('app.dashboard')) : [],
         ];
     }
 

@@ -1,16 +1,18 @@
 import { appUrl, pageComponent, route, useRouter } from './router.jsx';
 import { Icon } from './components/ui.jsx';
+import { api } from './api.js';
 
 /** The frame around every page: section sidebar, plan-limit notice, then the page itself. */
 export default function App() {
   const { page, shared } = useRouter();
-  const { nav, limit, legal } = shared;
+  const { nav, limit, legal, announcements } = shared;
   return nav ? (
     <div className="ob-shell">
       <Sidebar nav={nav} />
       <div className="ob-shell-main">
         <Limit limit={limit} />
         <Legal legal={legal} />
+        <Announcements list={announcements} />
         <Current page={page} />
       </div>
     </div>
@@ -18,6 +20,7 @@ export default function App() {
     <>
       <Limit limit={limit} />
       <Legal legal={legal} />
+      <Announcements list={announcements} />
       <Current page={page} />
     </>
   );
@@ -72,3 +75,21 @@ function Legal({ legal }) {
     </div>
   );
 }
+
+/** Messages from the Growvia team (Internal Admin › Announcements), shown between their start and end time. */
+function Announcements({ list }) {
+  const { submit, busy } = useRouter();
+  if (!list?.length) return null;
+  return list.map((a) => (
+    <div className="ob-announce" key={a.id}>
+      <s-banner tone={a.tone} heading={a.title} dismissible={a.dismissible || undefined} onDismiss={() => submit(route('app.announcements.dismiss', { announcement: a.id }))}>
+        <s-paragraph>{a.body}</s-paragraph>
+        {a.cta && (
+          <s-button slot="secondary-actions" href={a.cta.external ? a.cta.url : appUrl(a.cta.url)} target={a.cta.external ? '_blank' : undefined}
+            disabled={busy || undefined} onClick={() => { api(`announcements/${a.id}/click`, { method: 'POST' }).catch(() => {}); }}>{a.cta.text}</s-button>
+        )}
+      </s-banner>
+    </div>
+  ));
+}
+

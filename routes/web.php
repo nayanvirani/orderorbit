@@ -92,6 +92,22 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
         return back();
     })->name('legal.acknowledge');
 
+    // Announcements from the Growvia team (G41): close one, count a button click.
+    Route::post('/announcements/{announcement}/dismiss', function (\Illuminate\Http\Request $request, int $announcement) {
+        $user = $request->attributes->get('storeUser');
+        $a = \App\Models\Announcement::whereKey($announcement)->where('dismissible', true)->first();
+        if ($a && $user) {
+            \App\Models\AnnouncementView::updateOrCreate(['announcement_id' => $a->id, 'store_user_id' => $user->id], ['store_id' => $request->attributes->get('store')->id, 'seen_at' => now(), 'dismissed_at' => now()]);
+        }
+
+        return back();
+    })->whereNumber('announcement')->name('announcements.dismiss');
+    Route::post('/api/announcements/{announcement}/click', function (int $announcement) {
+        \App\Models\Announcement::whereKey($announcement)->increment('clicks');
+
+        return response()->json(['ok' => true]);
+    })->whereNumber('announcement')->name('announcements.click');
+
     // Billing stays reachable without a plan: it's where plans are chosen.
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
 
@@ -325,6 +341,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/flags', 'flags')->name('flags');
                 Route::post('/flags', 'saveFlag')->name('flags.save');
                 Route::post('/flags/{flag}/delete', 'deleteFlag')->whereNumber('flag')->name('flags.delete');
+                Route::get('/announcements', [\App\Http\Controllers\Admin\AnnouncementController::class, 'index'])->name('announcements');
+                Route::get('/announcements/new', [\App\Http\Controllers\Admin\AnnouncementController::class, 'form'])->name('announcements.new');
+                Route::post('/announcements', [\App\Http\Controllers\Admin\AnnouncementController::class, 'save'])->name('announcements.store');
+                Route::get('/announcements/{announcement}', [\App\Http\Controllers\Admin\AnnouncementController::class, 'form'])->whereNumber('announcement')->name('announcements.edit');
+                Route::post('/announcements/{announcement}', [\App\Http\Controllers\Admin\AnnouncementController::class, 'save'])->whereNumber('announcement')->name('announcements.update');
+                Route::get('/announcements/{announcement}/views', [\App\Http\Controllers\Admin\AnnouncementController::class, 'show'])->whereNumber('announcement')->name('announcements.show');
+                Route::post('/announcements/{announcement}/delete', [\App\Http\Controllers\Admin\AnnouncementController::class, 'delete'])->whereNumber('announcement')->name('announcements.delete');
                 Route::post('/flags/kill/{key}', 'killSwitch')->where('key', 'kill\.[a-z_]+')->name('flags.kill');
             });
             Route::middleware('admin.can:support')->group(function () {

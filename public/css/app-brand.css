@@ -215,3 +215,5 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .ob-legal a { flex: initial; padding: 0; background: none; color: inherit; font-weight: 600; text-decoration: underline; }
 .ob-legal button { flex: none; padding: 7px 12px; border: 0; border-radius: 8px; background: #303030; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .ob-legal button:disabled { opacity: .6; cursor: default; }
+/* Announcements from the Growvia team (G41). */
+.ob-announce { max-width: 1208px; margin: 16px auto 0; }
