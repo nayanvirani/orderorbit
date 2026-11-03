@@ -7,6 +7,7 @@ import { money, Page } from '../../components/ui.jsx';
 import { appUrl, route, useRouter, useShared } from '../../router.jsx';
 import { ActionButton } from '../../components/form.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
+import Look, { withLook } from '../../components/Look.jsx';
 
 const Card = ({ title, children }) => <section className="bx-card"><header className="bx-inline"><strong>{title}</strong></header>{children}</section>;
 
@@ -63,8 +64,8 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
     const d = c.design;
     return {
       id: x.handle, type: 'progressive-gifts', template: 'editor', style: c.settings.layout, version: 0, priority: 50,
-      content: { settings: c.settings, milestones: c.milestones },
-      design: { ...d, primary_color: d.accent, accent_color: d.accent, text_color: d.text, background_color: d.background, border: true },
+      content: { settings: c.settings, milestones: c.milestones, hide: c.look?.hide || [], words: c.look?.words || {} },
+      design: { ...withLook(d, meta.look, c.look?.hide), primary_color: d.accent, accent_color: d.accent, text_color: d.text, background_color: d.background, border: true },
       behavior: {}, targeting: {},
     };
   };
@@ -175,6 +176,10 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
                   <Card title="Custom CSS"><F path="design.custom_css" label="CSS" type="textarea" rows={5} code help="Scoped to these rewards. Classes start with .oo-pg." /></Card>
                 </>
               )}
+              <section className="bx-card tx-card">
+                <Look look={meta.look} hide={state.look?.hide || []} words={state.look?.words || {}} onChange={(look) => set('look', look)}
+                  note="Turn off any part of these rewards shoppers shouldn't see, and change any fixed word. Titles, messages and reward names are edited above; empty one to hide it." />
+              </section>
             </div>
 
             <aside className="bx-preview-col">

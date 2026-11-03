@@ -8,7 +8,7 @@ import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
 import { createContext } from 'preact';
 import { useContext, useEffect, useState } from 'preact/hooks';
-import { assign, boxStyle, choose, fill, imageStyle, numericId, pageFor, progress } from './select.js';
+import { applyLook, assign, boxStyle, choose, fill, imageStyle, numericId, pageFor, progress } from './select.js';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -73,13 +73,17 @@ function Extension() {
 
   if (!exp) return null;
   const Render = BLOCKS[exp.type];
+  const shown = applyLook(exp);
   const d = exp.design || {};
   const text = { color: d.ck_text === 'subdued' ? 'subdued' : undefined, tone: d.ck_tone && d.ck_tone !== 'auto' ? d.ck_tone : undefined };
-  return Render ? <TextStyle.Provider value={text}><Render exp={exp} c={exp.content || {}} payload={payload} page={page} /></TextStyle.Provider> : null;
+  return Render ? <TextStyle.Provider value={text}><Render exp={shown} c={shown.content || {}} payload={payload} page={page} /></TextStyle.Provider> : null;
 }
 
 /** The block's text colour and tone (Design step), applied to every text in it. */
 const TextStyle = createContext({});
+
+// Texts and visibility: a part the merchant turned off (content.hide).
+const on = (exp, part) => !((exp.content && exp.content.hide) || []).includes(part);
 
 function T({ color, tone, type, children }) {
   const style = useContext(TextStyle);
@@ -188,7 +192,7 @@ function ShippingProgress({ exp, c, payload }) {
     return (
       <Frame exp={exp}>
         <T>{text}</T>
-        <s-progress value={st.percent} max={100} />
+        {on(exp, 'bar') ? <s-progress value={st.percent} max={100} /> : null}
         <s-stack direction="inline" gap="small-200">
           {st.milestones.map((m) => {
             const done = st.value >= m.threshold;
@@ -204,7 +208,7 @@ function ShippingProgress({ exp, c, payload }) {
         <s-icon type="delivery" tone="info" size="large" />
         <s-stack gap="small-200" inlineSize="fill">
           <T>{text}</T>
-          <s-progress value={st.percent} max={100} />
+          {on(exp, 'bar') ? <s-progress value={st.percent} max={100} /> : null}
         </s-stack>
       </Row>
     </Frame>
@@ -240,7 +244,7 @@ function FreeGift({ exp, c, payload }) {
           <s-stack direction="inline" gap="small-200" alignItems="center"><s-icon type="gift" tone="success" /><T type="strong">{c.unlocked_message}</T></s-stack>
         ) : null}
         <Row>
-          {product.image ? <s-product-thumbnail src={product.image} alt={product.title} /> : null}
+          {product.image && on(exp, 'picture') ? <s-product-thumbnail src={product.image} alt={product.title} /> : null}
           <s-stack gap="small-100">
             <T type="strong">{product.title}</T>
             <T color="subdued">{shopify.i18n.translate('free')}</T>
@@ -259,12 +263,12 @@ function FreeGift({ exp, c, payload }) {
     return (
       <Frame exp={exp}>
         <Row>
-          {next.image ? <s-product-thumbnail src={next.image} alt={next.title} /> : null}
+          {next.image && on(exp, 'picture') ? <s-product-thumbnail src={next.image} alt={next.title} /> : null}
           <s-stack gap="small-200" inlineSize="fill">
             <s-badge icon="gift">{shopify.i18n.translate('freeGift')}</s-badge>
             <T type="strong">{next.title}</T>
             <T color="subdued">{message}</T>
-            <s-progress value={st.percent} max={100} />
+            {on(exp, 'bar') ? <s-progress value={st.percent} max={100} /> : null}
           </s-stack>
         </Row>
       </Frame>
@@ -275,7 +279,7 @@ function FreeGift({ exp, c, payload }) {
     return (
       <Frame exp={exp} tone="info">
         <T>{message}</T>
-        <s-progress value={st.percent} max={100} />
+        {on(exp, 'bar') ? <s-progress value={st.percent} max={100} /> : null}
       </Frame>
     );
   }
@@ -288,7 +292,7 @@ function FreeGift({ exp, c, payload }) {
         </s-stack>
         <T color="subdued">{st.percent + '%'}</T>
       </Row>
-      <s-progress value={st.percent} max={100} />
+      {on(exp, 'bar') ? <s-progress value={st.percent} max={100} /> : null}
     </Frame>
   );
 }
@@ -302,13 +306,13 @@ function Promotion({ exp, c }) {
     track(exp, 'experience_clicked', { action: 'apply_code' });
   }
   const done = status ? <T color="subdued">{status}</T> : null;
-  const applyButton = (primary) => (c.code && canApply ? <s-button variant={primary ? 'primary' : 'secondary'} onClick={apply}>{c.apply_text}</s-button> : null);
+  const applyButton = (primary) => (c.code && canApply && on(exp, 'button') ? <s-button variant={primary ? 'primary' : 'secondary'} onClick={apply}>{c.apply_text}</s-button> : null);
 
   if (exp.style === 'announcement') {
     return (
       <Frame exp={exp} heading={c.headline} tone="info">
         {c.message ? <T>{c.message}</T> : null}
-        {c.code ? <Row><T type="strong">{c.code}</T>{applyButton(false)}</Row> : null}
+        {c.code ? <Row>{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}{applyButton(false)}</Row> : null}
         {done}
       </Frame>
     );
@@ -317,7 +321,7 @@ function Promotion({ exp, c }) {
     return (
       <Frame exp={exp} heading={c.headline} tone="success">
         {c.message ? <T>{c.message}</T> : null}
-        {c.code ? <Row><T type="strong">{c.code}</T>{applyButton(true)}</Row> : null}
+        {c.code ? <Row>{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}{applyButton(true)}</Row> : null}
         {done}
       </Frame>
     );
@@ -331,7 +335,7 @@ function Promotion({ exp, c }) {
           {c.message ? <T color="subdued">{c.message}</T> : null}
           {c.code ? (
             <s-box border="large base dashed" borderRadius="base" padding="base" background="base" inlineSize="fill">
-              <s-stack direction="inline" gap="base" alignItems="center" justifyContent="center"><T type="strong">{c.code}</T>{applyButton(true)}</s-stack>
+              <s-stack direction="inline" gap="base" alignItems="center" justifyContent="center">{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}{applyButton(true)}</s-stack>
             </s-box>
           ) : null}
           {done}
@@ -350,7 +354,7 @@ function Promotion({ exp, c }) {
       </Row>
       {c.code ? (
         <Row>
-          <s-box border="base base dashed" borderRadius="base" padding="small"><T type="strong">{c.code}</T></s-box>
+          <s-box border="base base dashed" borderRadius="base" padding="small">{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}</s-box>
           {applyButton(false)}
         </Row>
       ) : null}
@@ -484,11 +488,12 @@ function Upsell({ exp, c }) {
   }
 
   const priceRow = (p) => {
+    if (!on(exp, 'price')) return null;
     const pr = offerPrice(p, live, percent);
     return (
       <s-stack direction="inline" gap="small-200" alignItems="center">
         <T type="strong">{money(pr.now)}</T>
-        {pr.was ? <T type="redundant" color="subdued">{money(pr.was)}</T> : null}
+        {pr.was && on(exp, 'compare') ? <T type="redundant" color="subdued">{money(pr.was)}</T> : null}
         {pr.off > 0 ? <s-badge>{'-' + pr.off + '%'}</s-badge> : null}
       </s-stack>
     );
@@ -692,7 +697,7 @@ function Reorder({ exp, c }) {
       {c.message ? <T>{c.message}</T> : null}
       {images.length ? (
         <Row>
-          {images.map((src) => <s-product-thumbnail src={src} />)}
+          {on(exp, 'pictures') ? images.map((src) => <s-product-thumbnail src={src} />) : null}
           <T color="subdued">{shopify.i18n.translate('itemsInOrder', { count: lines.length })}</T>
         </Row>
       ) : null}
@@ -715,7 +720,7 @@ function ReviewRequest({ exp, c }) {
           return (
             <Row justify="space-between">
               <s-stack direction="inline" gap="base" alignItems="center">
-                {m.image?.url ? <s-product-thumbnail src={m.image.url} alt={title} size="small" /> : null}
+                {m.image?.url && on(exp, 'pictures') ? <s-product-thumbnail src={m.image.url} alt={title} size="small" /> : null}
                 <T type="strong">{title}</T>
               </s-stack>
               <s-link href={c.review_url || storefront(m.product?.handle ? '/products/' + m.product.handle : '')} onClick={clicked}>{shopify.i18n.translate('review')}</s-link>
@@ -745,7 +750,7 @@ function Referral({ exp, c }) {
     return (
       <Frame exp={exp} heading={c.headline} tone="info">
         {c.message ? <T>{c.message}</T> : null}
-        <Row><T type="strong">{c.code}</T><s-link href={share} onClick={clicked}>{shopify.i18n.translate('share')}</s-link></Row>
+        <Row>{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}<s-link href={share} onClick={clicked}>{shopify.i18n.translate('share')}</s-link></Row>
       </Frame>
     );
   }
@@ -757,7 +762,7 @@ function Referral({ exp, c }) {
         {c.message ? <T color="subdued">{c.message}</T> : null}
         <s-box border="large base dashed" borderRadius="base" padding="base" inlineSize="fill">
           <s-stack direction="inline" gap="base" alignItems="center" justifyContent="center">
-            <T type="strong">{c.code}</T>
+            {on(exp, 'code') ? <T type="strong">{c.code}</T> : null}
             <s-button variant="primary" href={share} onClick={clicked}>{shopify.i18n.translate('share')}</s-button>
           </s-stack>
         </s-box>
@@ -805,7 +810,7 @@ function NextDiscount({ exp, c }) {
     return (
       <Frame exp={exp} heading={c.headline} tone="success">
         {c.message ? <T>{c.message}</T> : null}
-        <Row><T type="strong">{c.code}</T>{c.expiry_text ? <T color="subdued">{c.expiry_text}</T> : null}</Row>
+        <Row>{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}{c.expiry_text ? <T color="subdued">{c.expiry_text}</T> : null}</Row>
       </Frame>
     );
   }
@@ -816,7 +821,7 @@ function NextDiscount({ exp, c }) {
         <s-heading>{c.headline}</s-heading>
         {c.message ? <T color="subdued">{c.message}</T> : null}
         <s-box border="large base dashed" borderRadius="base" padding="base" inlineSize="fill">
-          <s-stack alignItems="center"><T type="strong">{c.code}</T></s-stack>
+          <s-stack alignItems="center">{on(exp, 'code') ? <T type="strong">{c.code}</T> : null}</s-stack>
         </s-box>
         {c.expiry_text ? <T color="subdued">{c.expiry_text}</T> : null}
       </s-stack>

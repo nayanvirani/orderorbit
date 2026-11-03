@@ -1,5 +1,8 @@
 /* Growvia · bundles: free gift tiles and add-on upsells (loaded only for bundles that use them). */
 (function () {
+  // The merchant's wording (Texts and visibility); today's word when none is saved.
+  function W(c, k, d) { var v = c.words && c.words[k]; return v != null ? v : d; }
+
   var h = OrderOrbit.h;
   var money = function (v, ctx) { return h.esc(h.money(v, ctx.currency)); };
   var ticked = function (root) { return [].slice.call(root.querySelectorAll('[data-oo-up]:checked')); };
@@ -33,7 +36,7 @@
       var need = unlockAt(c) - count;
       el.classList.toggle('oo-bgift-on', need <= 0);
       el.querySelectorAll('.oo-bgift b').forEach(function (b) { b.textContent = need > 0 ? c.gifts.locked_text || 'Locked' : 'FREE'; });
-      el.querySelector('[data-oo-giftmsg]').innerHTML = need > 0 ? 'Add <b>' + need + '</b> more to unlock your free gift' : 'Free gift unlocked';
+      el.querySelector('[data-oo-giftmsg]').innerHTML = need > 0 ? h.esc(W(c, 'gift_progress', 'Add {count} more to unlock your free gift')).replace('{count}', '<b>' + need + '</b>') : h.esc(W(c, 'gift_unlocked', 'Free gift unlocked'));
     },
 
     // The unlocked gifts, as [variant id, quantity].

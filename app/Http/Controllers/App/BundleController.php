@@ -211,6 +211,7 @@ class BundleController extends Controller
                 'tiered' => $tiered,
                 'discounts' => BundleSchema::DISCOUNTS,
                 'presets' => BundleSchema::PRESETS,
+                'look' => \App\Experiences\Parts::meta('bundles'),
             ],
         ] + $extra, $errors ? 422 : 200);
     }

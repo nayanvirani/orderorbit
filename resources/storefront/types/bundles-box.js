@@ -3,6 +3,9 @@
    past its maximum or a product's limit, and is priced by its discount steps or its box price.
    It shares the mix & match engine: each unit is a pick, and "slots" is the box maximum. */
 (function () {
+  // The merchant's wording (Texts and visibility); today's word when none is saved.
+  function W(c, k, d) { var v = c.words && c.words[k]; return v != null ? v : d; }
+
   var h = OrderOrbit.h;
 
   function rate() { return (window.Shopify && Shopify.currency && Number(Shopify.currency.rate)) || 1; }
@@ -42,7 +45,7 @@
       (many ? B.select('m:' + j, p.variants, ctx) : '') + '</span>' +
       (c.mix.show_quantity === false
         // Add / Remove: one of each product.
-        ? '<span class="oo-xstep oo-xone"><button type="button" class="oo-xadd" data-oo-pick="' + j + '"' + (p.available === false ? ' disabled' : '') + '>' + h.esc(p.available === false ? 'Sold out' : c.mix.add_text || 'Add') + '</button>' +
+        ? '<span class="oo-xstep oo-xone"><button type="button" class="oo-xadd" data-oo-pick="' + j + '"' + (p.available === false ? ' disabled' : '') + '>' + h.esc(p.available === false ? W(c, 'box_sold', 'Sold out') : c.mix.add_text || 'Add') + '</button>' +
           '<button type="button" class="oo-xrem" data-oo-unpick="" hidden>' + h.esc(c.mix.remove_text || 'Remove') + '</button><b data-oo-xq hidden>0</b></span>'
         : '<span class="oo-xstep"><button type="button" class="oo-xminus" data-oo-unpick="" aria-label="Remove one ' + h.esc(p.title) + '" disabled>−</button>' +
           '<b data-oo-xq aria-live="polite">0</b>' +
@@ -101,8 +104,8 @@
 
       var msg = count < min ? 'Add <b>' + plural(min - count, 'more item', 'more items') + '</b> to complete your box'
         : m.pricing !== 'fixed' && next ? 'Add <b>' + (next.count - count) + '</b> more to save <b>' + h.esc(next.discount) + '%</b>'
-          : count >= max ? 'Your box is full' + (saving > 0 ? ': you save <b>' + B.money(saving, ctx) + '</b>' : '')
-            : 'Your box is ready' + (saving > 0 ? ': you save <b>' + B.money(saving, ctx) + '</b>' : '');
+          : count >= max ? h.esc(W(c, 'box_full', 'Your box is full')) + (saving > 0 ? ': you save <b>' + B.money(saving, ctx) + '</b>' : '')
+            : h.esc(W(c, 'box_ready', 'Your box is ready')) + (saving > 0 ? ': you save <b>' + B.money(saving, ctx) + '</b>' : '');
       root.querySelector('[data-oo-msg]').innerHTML = msg;
       root.querySelector('[data-oo-xcount]').textContent = count + ' / ' + max + (m.min > 1 && m.min !== max ? ' · min ' + min : '');
       root.querySelector('[data-oo-xbar]').style.width = Math.min(100, count / max * 100) + '%';

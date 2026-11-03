@@ -2,6 +2,9 @@
    or item count. Gift lines carry _oo_offer = experience id and _oo_gift = milestone index; the
    OrderOrbit discount makes them free while the milestone is reached. */
 (function () {
+  // The merchant's wording (Texts and visibility); today's word when none is saved.
+  function W(c, k, d) { var v = c.words && c.words[k]; return v != null ? v : d; }
+
   var S = OrderOrbit.shop;
   var h = OrderOrbit.h;
   var CHECK = '<path d="m5 12 4.5 4.5L19 7"/>';
@@ -84,7 +87,7 @@
       if ((m.reward !== 'gift' && m.reward !== 'choice') || st.progress < m.threshold || !m.products.length) return '';
       if (claimed.indexOf(String(m.index)) !== -1) return '<p class="oo-pg-claimed">' + h.icon(CHECK) + ' ' + h.esc(m.label) + ': in your cart</p>';
       if (m.reward === 'gift' && exp.content.settings.claim === 'auto') return '';
-      return '<div class="oo-pg-pick"><p>' + h.esc(m.reward === 'choice' ? 'Choose your gift' : m.label) + '</p><div class="oo-pg-picks">' + m.products.map(function (p, j) {
+      return '<div class="oo-pg-pick"><p>' + h.esc(m.reward === 'choice' ? W(exp.content, 'choose', 'Choose your gift') : m.label) + '</p><div class="oo-pg-picks">' + m.products.map(function (p, j) {
         return '<button type="button" class="oo-pg-gift" data-oo-gift="' + m.index + ':' + j + '">' + h.productImage(p) + '<span>' + h.esc(p.title) + '</span><b>FREE</b></button>';
       }).join('') + '</div></div>';
     }).join('');

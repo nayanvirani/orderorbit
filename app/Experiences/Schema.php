@@ -230,6 +230,8 @@ class Schema
         }
 
         $errors += self::crossFieldErrors($type, $config);
+        // Texts and visibility (Parts): hidden parts and changed words.
+        $config['content'] += Parts::clean($type, (array) ($input['content'] ?? []));
 
         return [$config, $errors];
     }

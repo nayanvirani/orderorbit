@@ -135,6 +135,7 @@ class GiftController extends Controller
                 'timezone' => $store->timezone ?? 'UTC',
                 'rewards' => GiftSchema::REWARDS,
                 'layouts' => GiftSchema::LAYOUTS,
+                'look' => \App\Experiences\Parts::meta('progressive-gifts'),
             ],
         ] + $extra, $errors ? 422 : 200);
     }

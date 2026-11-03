@@ -133,3 +133,12 @@ a.b-template *:not(.oo-preview, .oo-preview *), a.bx-type *:not(.oo-preview, .oo
 .bx-type-body { flex: 0 0 auto; }
 /* Side-by-side bundle layouts need a wider canvas to keep every tier on one row. */
 .tpl-stage > .oo-preview:has(.oo-bl-horizontal) { zoom: .58; }
+
+/* Texts and visibility (every offer) */
+.lk { margin-top: 18px; padding-top: 14px; border-top: 1px solid #ececec; }
+.bx-card .lk { margin-top: 0; padding-top: 0; border-top: 0; }
+.lk h2 { margin: 0 0 4px; font-size: 15px; }
+.lk-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 16px; margin: 10px 0 14px; }
+.lk-part { display: flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
+.lk-part input { width: 16px; height: 16px; }
+.lk-words { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 14px; }

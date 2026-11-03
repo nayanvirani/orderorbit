@@ -1,6 +1,9 @@
 /* Growvia · countdown. Counts down to one real campaign deadline or a daily cutoff
    (e.g. same-day shipping) in the store's time zone; never resets per visitor. Eight layouts. */
 (function () {
+  // The merchant's wording (Texts and visibility); today's word when none is saved.
+  function W(c, k, d) { var v = c.words && c.words[k]; return v != null ? v : d; }
+
   var h = OrderOrbit.h;
   var CLOCK = '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>';
   var TRUCK = '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>';
@@ -41,7 +44,8 @@
   // daily: the cutoff rolls over every day; every: an hour/minute timer that starts again.
   function timer(c, end, kind, daily, every) {
     var noDays = c.show_days === false || daily || !!every || c.mode === 'hours' || c.mode === 'minutes';
-    var names = (NAMES[c.labels] || NAMES.full).slice(noDays ? 1 : 0);
+    var full = [W(c, 'days', 'Days'), W(c, 'hours', 'Hours'), W(c, 'minutes', 'Min'), W(c, 'seconds', 'Sec')];
+    var names = (c.labels === 'short' || c.labels === 'none' ? NAMES[c.labels] : full).slice(noDays ? 1 : 0);
     var attrs = ' data-oo-end="' + end + '"' + (noDays ? ' data-oo-nodays' : '') + (daily ? ' data-oo-daily' : '') + (every ? ' data-oo-every="' + every + '"' : '') +
       (Number(c.urgency_hours) > 0 ? ' data-oo-urgent="' + Number(c.urgency_hours) * 3600 + '"' : '') + (c.ended === 'hide' && !daily && !every ? ' data-oo-hide-ended' : '');
     if (kind === 'inline') {
@@ -113,7 +117,7 @@
       root.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-oo-copy]');
         if (!btn) return;
-        var done = function () { btn.classList.add('oo-copied'); btn.querySelector('em').textContent = 'Copied'; };
+        var done = function () { btn.classList.add('oo-copied'); btn.querySelector('em').textContent = W(c, 'copied', 'Copied'); };
         try { navigator.clipboard.writeText(btn.getAttribute('data-oo-copy')).then(done, done); } catch (err) { done(); }
       });
     }

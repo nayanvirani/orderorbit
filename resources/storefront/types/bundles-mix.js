@@ -1,5 +1,8 @@
 /* Growvia · bundles: mix & match slots and product pool (loaded only for mix & match). */
 (function () {
+  // The merchant's wording (Texts and visibility); today's word when none is saved.
+  function W(c, k, d) { var v = c.words && c.words[k]; return v != null ? v : d; }
+
   var h = OrderOrbit.h;
 
   function tierFor(c, count) {
@@ -26,7 +29,7 @@
         return '<div class="oo-mcard">' + img(p) +
           '<span class="oo-minfo"><span class="oo-mname">' + h.esc(p.title) + '</span><span class="oo-mprice">' + B.money(p.price || 0, ctx) + '</span>' +
           (many ? B.select('m:' + j, p.variants, ctx) : '') + '</span>' +
-          '<button type="button" class="oo-madd" data-oo-pick="' + j + '">+ Add</button></div>';
+          '<button type="button" class="oo-madd" data-oo-pick="' + j + '">' + h.esc(W(c, 'mix_add', '+ Add')) + '</button></div>';
       }).join('');
       return '<div class="oo-mslots" style="--n:' + c.mix.slots + '">' + slots + '</div><p class="oo-bmsg" data-oo-msg></p><div class="oo-mpool">' + pool + '</div>';
     },
@@ -45,7 +48,7 @@
         : (tier ? 'Bundle complete: you save <b>' + h.esc(tier.discount) + '%</b>' : '');
       var full = picks.length >= c.mix.slots;
       btn.disabled = picks.length < Math.min(2, c.mix.slots);
-      root.querySelectorAll('[data-oo-pick]').forEach(function (b) { b.disabled = full; b.textContent = full ? 'Bundle full' : '+ Add'; });
+      root.querySelectorAll('[data-oo-pick]').forEach(function (b) { b.disabled = full; b.textContent = full ? W(c, 'bundle_full', 'Bundle full') : W(c, 'mix_add', '+ Add'); });
       btn.innerHTML = h.esc(c.settings.button_text) + (total ? ' · ' + B.money(total - saving + extra, ctx) : '');
       // Subscribe & save (oo-bundles-sub.js) prices the box's first delivery.
       if (c.subscription && c.subscription.enabled && OrderOrbit.bundleSub) OrderOrbit.bundleSub.update(root, c, ctx, 'm', total, total - saving, extra, btn, picks.map(function (p) { return { id: p.v, quantity: 1, properties: { _oo_bundle: 1 } }; }));

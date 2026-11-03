@@ -9,6 +9,7 @@ import { ActionButton } from '../../components/form.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
 import TieredPanel, { usesTiered } from './_tiered.jsx';
 import MixTiersPanel from './_mixtiers.jsx';
+import Look, { withLook } from '../../components/Look.jsx';
 
 export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts, testVersion }) {
   const { submit } = useRouter();
@@ -73,8 +74,8 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     const d = c.design;
     return {
       id: x.handle, type: 'bundles', template: 'editor', style: c.settings.layout, version: 0, priority: 50,
-      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription, tiers: tiersPayload(c.tiers, meta.timezone), mt: c.bundle_type === 'mix-tiers' ? c.mt : null },
-      design: { ...d, primary_color: d.button_background, accent_color: d.accent, text_color: d.text, background_color: d.background, border: false },
+      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription, tiers: tiersPayload(c.tiers, meta.timezone), mt: c.bundle_type === 'mix-tiers' ? c.mt : null, hide: c.look?.hide || [], words: c.look?.words || {} },
+      design: { ...withLook(d, meta.look, c.look?.hide), primary_color: d.button_background, accent_color: d.accent, text_color: d.text, background_color: d.background, border: false },
       behavior: { priority: 50, after_add: c.settings.after_add, position: c.settings.position, animation: 'none' },
       targeting: {},
     };
@@ -138,6 +139,12 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
               </nav>
               {tab === 'settings' && <SettingsPanel />}
               {tab === 'offers' && <OffersPanel />}
+              {tab === 'offers' && (
+                <section className="bx-card tx-card">
+                  <Look look={meta.look} hide={state.look?.hide || []} words={state.look?.words || {}} onChange={(look) => set('look', look)}
+                    note="Turn off any part of this bundle shoppers shouldn't see, and change any fixed word. Titles, offer names and buttons are edited above; empty one to hide it." />
+                </section>
+              )}
               {tab === 'design' && <DesignPanel />}
             </div>
 

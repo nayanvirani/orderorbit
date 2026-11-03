@@ -139,7 +139,8 @@
    */
   function add(exp, ctx, items, btn, rootEl) {
     items = items.filter(function (i) { return i && i.id && i.quantity > 0; });
-    if (!items.length) { status(rootEl, 'This item is unavailable right now.', true); return Promise.resolve(false); }
+    var words = (exp.content && exp.content.words) || {};
+    if (!items.length) { status(rootEl, words.unavailable != null ? words.unavailable : 'This item is unavailable right now.', true); return Promise.resolve(false); }
     if (ctx.preview) { status(rootEl, 'Preview: adds ' + items.reduce(function (n, i) { return n + i.quantity; }, 0) + ' item(s) to the cart.'); return Promise.resolve(false); }
 
     var label = btn ? btn.innerHTML : '';
@@ -171,7 +172,7 @@
         var after = go ? detail.after : 'stay';
         if (after === 'checkout') { location.href = root() + 'checkout'; return true; }
         if (after === 'cart') { location.href = root() + 'cart'; return true; }
-        status(rootEl, 'Added to your cart.');
+        status(rootEl, words.added != null ? words.added : 'Added to your cart.');
         document.dispatchEvent(new CustomEvent('growvia:cart-updated', { detail: { experience_id: exp.id } }));
         reset();
         themeCart();

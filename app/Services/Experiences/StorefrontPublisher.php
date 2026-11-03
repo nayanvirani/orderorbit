@@ -5,6 +5,7 @@ namespace App\Services\Experiences;
 use App\Experiences\BundleSchema;
 use App\Experiences\Factual;
 use App\Experiences\GiftSchema;
+use App\Experiences\Parts;
 use App\Experiences\Registry;
 use App\Experiences\Schema;
 use App\Models\Experience;
@@ -139,6 +140,11 @@ class StorefrontPublisher
                     $config = BundleSchema::payload(BundleSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
                 } elseif ($e->type === 'progressive-gifts') {
                     $config = GiftSchema::payload(GiftSchema::normalize($config)[0]) + ['analytics' => $config['analytics'] ?? []];
+                }
+
+                // Texts and visibility: hidden storefront parts become a scoped CSS rule.
+                if ($hidden = Parts::css($e->type, (array) ($config['content']['hide'] ?? []))) {
+                    $config['design']['custom_css'] = trim(($config['design']['custom_css'] ?? '')."\n".$hidden);
                 }
 
                 if ($e->type === 'sales-pop') {

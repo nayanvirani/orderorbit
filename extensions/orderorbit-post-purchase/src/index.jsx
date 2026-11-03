@@ -113,6 +113,9 @@ function App() {
     if (step + 1 < funnel.offers.length) setStep(step + 1); else done();
   }
 
+  // Texts and visibility: hidden parts and the merchant's wording.
+  const on = (part) => (funnel.hide || []).indexOf(part) === -1;
+  const word = (key, fallback) => ((funnel.words || {})[key] != null ? funnel.words[key] : fallback);
   const premium = funnel.style === 'premium';
   const minimal = funnel.style === 'minimal';
 
@@ -127,7 +130,7 @@ function App() {
           { viewportSize: 'large', sizes: [400, 30, 0.33] },
         ]}
       >
-        <View>{offer.image && !minimal ? <Image source={offer.image} description={offer.product_title} /> : null}</View>
+        <View>{offer.image && !minimal && on('picture') ? <Image source={offer.image} description={offer.product_title} /> : null}</View>
         <View />
         <BlockStack spacing="xloose">
           <TextContainer>
@@ -138,11 +141,12 @@ function App() {
           <BlockStack spacing="tight">
             {original != null && discounted != null && Number(discounted) < Number(original) ? (
               <TextBlock>
-                <Text role="deletion">{money(original, currency)}</Text> <Text emphasized>{money(discounted, currency)}</Text> · {offer.discount_percent}% off
+                {on('compare') ? <><Text role="deletion">{money(original, currency)}</Text>{' '}</> : null}<Text emphasized>{money(discounted, currency)}</Text>
+                {on('savings') && word('off', '{percent}% off') ? ' · ' + word('off', '{percent}% off').replace('{percent}', offer.discount_percent) : ''}
               </TextBlock>
             ) : discounted != null ? <TextBlock emphasized>{money(discounted, currency)}</TextBlock> : null}
             <Separator />
-            {due != null ? <TextBlock>Charged now to your original payment: {money(due, currency)}</TextBlock> : null}
+            {due != null && on('charged') && word('charged', '') !== '' ? <TextBlock>{word('charged', 'Charged now to your original payment: {amount}').replace('{amount}', money(due, currency))}</TextBlock> : null}
           </BlockStack>
           {error ? <TextBlock appearance="critical">{error}</TextBlock> : null}
           <BlockStack spacing="tight">

@@ -445,6 +445,7 @@ class ExperienceController extends Controller
             ],
             'type' => ['label' => $type['label'], 'description' => $type['description'], 'surface' => $type['surface']],
             'fields' => Schema::fields($experience->type),
+            'look' => \App\Experiences\Parts::meta($experience->type),
             'config' => array_map(fn ($section) => (object) $section, $config),
             'fieldErrors' => (object) $errors,
             'banner' => $banner,

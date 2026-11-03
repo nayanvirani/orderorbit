@@ -179,6 +179,7 @@ class GiftSchema
             'design' => $design,
             'schedule' => ['starts_at' => $date($input['schedule']['starts_at'] ?? null), 'ends_at' => $date($input['schedule']['ends_at'] ?? null)],
             'analytics' => ['track_views' => filter_var($input['analytics']['track_views'] ?? true, FILTER_VALIDATE_BOOLEAN), 'track_clicks' => filter_var($input['analytics']['track_clicks'] ?? true, FILTER_VALIDATE_BOOLEAN)],
+            'look' => Parts::clean('progressive-gifts', (array) ($input['look'] ?? [])),
             'behavior' => ['priority' => max(1, min(100, (int) ($input['behavior']['priority'] ?? 50)))],
         ], $errors];
     }
@@ -217,6 +218,8 @@ class GiftSchema
             'content' => [
                 'settings' => $s,
                 'milestones' => array_map(fn ($m, $i) => ['index' => $i] + array_merge($m, ['products' => $strip($m['products'])]), $config['milestones'], array_keys($config['milestones'])),
+                'hide' => $config['look']['hide'] ?? [],
+                'words' => $config['look']['words'] ?? (object) [],
             ],
             'design' => $config['design'] + [
                 'primary_color' => $config['design']['accent'],

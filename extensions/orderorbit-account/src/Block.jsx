@@ -79,6 +79,9 @@ function Extension() {
 /** The block's text colour and tone (Design step), applied to every text in it. */
 const TextStyle = createContext({});
 
+// Texts and visibility: a part the merchant turned off (content.hide).
+const on = (exp, part) => !((exp.content && exp.content.hide) || []).includes(part);
+
 function T({ color, tone, type, children }) {
   const style = useContext(TextStyle);
   return <s-text type={type} color={color || style.color} tone={tone || style.tone}>{children}</s-text>;
@@ -175,7 +178,7 @@ function MyOrders({ exp, c, shopUrl, customer, order }) {
   return (
     <Frame exp={exp} heading={headline}>
       {message}
-      {orders.length ? (
+      {!on(exp, 'stats') ? null : orders.length ? (
         <s-grid gridTemplateColumns="1fr 1fr 1fr" gap="small-300">
           <Tile center><s-heading>{String(orders.length)}</s-heading><T color="subdued">{t('stats.orders')}</T></Tile>
           <Tile center><s-heading>{money(spent, currency)}</s-heading><T color="subdued">{t('stats.spent')}</T></Tile>
@@ -219,7 +222,7 @@ function TrackOrder({ exp, c, shopUrl, order }) {
       <Frame exp={exp} heading={c.headline}>
         <T type="strong">{order.name}{eta && step < 3 ? ' · ' + t('estimated', { date: date(eta) }) : ''}</T>
         <s-stack gap="small-200">
-          {labels.map((label, i) => (
+          {on(exp, 'steps') && labels.map((label, i) => (
             <s-stack direction="inline" gap="small-200" alignItems="center">
               <s-icon type={i <= step ? 'check-circle-filled' : 'circle-dashed'} tone={i <= step ? 'success' : undefined} />
               <T color={i <= step ? undefined : 'subdued'} type={i === step ? 'strong' : undefined}>{label}</T>
@@ -227,7 +230,7 @@ function TrackOrder({ exp, c, shopUrl, order }) {
           ))}
         </s-stack>
         {note}
-        <Tracking order={order} buttonText={c.button_text} />
+        {on(exp, 'carrier') ? <Tracking order={order} buttonText={c.button_text} /> : null}
         {helpLink}
       </Frame>
     );
@@ -238,13 +241,13 @@ function TrackOrder({ exp, c, shopUrl, order }) {
         <T type="strong">{order.name}</T>
         <s-badge icon="delivery">{orderStatus(order)}</s-badge>
       </Row>
-      <s-progress value={Math.round((step / 3) * 100)} max={100} />
+      {on(exp, 'steps') ? <s-progress value={Math.round((step / 3) * 100)} max={100} /> : null}
       <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr" gap="small-200">
-        {labels.map((label, i) => <T color={i <= step ? undefined : 'subdued'} type={i <= step ? 'strong' : 'small'}>{label}</T>)}
+        {on(exp, 'steps') && labels.map((label, i) => <T color={i <= step ? undefined : 'subdued'} type={i <= step ? 'strong' : 'small'}>{label}</T>)}
       </s-grid>
       {note}
       {eta && step < 3 ? <T>{t('estimated', { date: date(eta) })}</T> : null}
-      <Tracking order={order} buttonText={c.button_text} />
+      {on(exp, 'carrier') ? <Tracking order={order} buttonText={c.button_text} /> : null}
       {helpLink}
     </Frame>
   );
@@ -274,7 +277,7 @@ function Reorder({ exp, c, shopUrl, order }) {
     </s-stack>
   ) : (
     <Row>
-      {lines.filter((l) => l.image && l.image.url).slice(0, 4).map((l) => <s-product-thumbnail src={l.image.url} alt={l.title} />)}
+      {on(exp, 'pictures') ? lines.filter((l) => l.image && l.image.url).slice(0, 4).map((l) => <s-product-thumbnail src={l.image.url} alt={l.title} />) : null}
       <T color="subdued">{t('reorderItems', { count: lines.length })}</T>
     </Row>
   );
@@ -302,7 +305,7 @@ function Rewards({ exp, c, shopUrl, customer }) {
   const perks = page ? <s-link href={page}>{t('viewRewards')}</s-link> : null;
 
   if (exp.style === 'banner') {
-    return <Frame exp={exp} heading={c.headline} tone="success">{message}<s-progress value={r.percent} max={100} />{perks}</Frame>;
+    return <Frame exp={exp} heading={c.headline} tone="success">{message}{on(exp, 'bar') ? <s-progress value={r.percent} max={100} /> : null}{perks}</Frame>;
   }
   if (exp.style === 'premium') {
     return (
@@ -313,7 +316,7 @@ function Rewards({ exp, c, shopUrl, customer }) {
           <s-heading>{r.tier ? r.tier.name : t('member')}</s-heading>
           {r.tier && r.tier.perks ? <T color="subdued">{r.tier.perks}</T> : null}
         </s-stack>
-        <s-progress value={r.percent} max={100} />
+        {on(exp, 'bar') ? <s-progress value={r.percent} max={100} /> : null}
         {message}
         {perks}
       </Frame>
@@ -326,10 +329,10 @@ function Rewards({ exp, c, shopUrl, customer }) {
         <s-badge icon="star">{r.tier ? r.tier.name : t('member')}</s-badge>
         {r.next ? <T color="subdued">{t('nextTier', { tier: r.next.name })}</T> : null}
       </Row>
-      <s-progress value={r.percent} max={100} />
+      {on(exp, 'bar') ? <s-progress value={r.percent} max={100} /> : null}
       {message}
       <s-grid gridTemplateColumns={columns(sorted.length)} gap="small-300">
-        {sorted.map((tier) => <Tile center><T type="strong">{tier.name}</T>{tier.perks ? <T color="subdued">{tier.perks}</T> : null}</Tile>)}
+        {on(exp, 'tiers') && sorted.map((tier) => <Tile center><T type="strong">{tier.name}</T>{tier.perks ? <T color="subdued">{tier.perks}</T> : null}</Tile>)}
       </s-grid>
       {perks}
     </Frame>
@@ -359,7 +362,7 @@ function Reviews({ exp, c, shopUrl, customer }) {
       <Frame exp={exp}>
         <Row justify="space-between">
           <s-stack direction="inline" gap="base" alignItems="center">
-            {image(p) ? <s-product-thumbnail src={image(p)} alt={name(p)} /> : null}
+            {image(p) && on(exp, 'pictures') ? <s-product-thumbnail src={image(p)} alt={name(p)} /> : null}
             <s-stack gap="small-100">
               <T type="strong">{c.headline}</T>
               <T color="subdued">{name(p)}</T>
@@ -378,7 +381,7 @@ function Reviews({ exp, c, shopUrl, customer }) {
         <s-grid gridTemplateColumns="1fr 1fr" gap="base">
           {products.map((p) => (
             <Tile center>
-              {image(p) ? <s-product-thumbnail src={image(p)} alt={name(p)} /> : null}
+              {image(p) && on(exp, 'pictures') ? <s-product-thumbnail src={image(p)} alt={name(p)} /> : null}
               <T type="strong">{name(p)}</T>
               <T tone="warning">☆☆☆☆☆</T>
               <s-link href={href(p)} onClick={clicked}>{c.button_text}</s-link>
@@ -394,7 +397,7 @@ function Reviews({ exp, c, shopUrl, customer }) {
       <Divided items={products.map((p) => (
         <Row justify="space-between">
           <s-stack direction="inline" gap="base" alignItems="center">
-            {image(p) ? <s-product-thumbnail src={image(p)} alt={name(p)} size="small" /> : null}
+            {image(p) && on(exp, 'pictures') ? <s-product-thumbnail src={image(p)} alt={name(p)} size="small" /> : null}
             <T type="strong">{name(p)}</T>
           </s-stack>
           <s-link href={href(p)} onClick={clicked}>{c.button_text}</s-link>
@@ -423,7 +426,7 @@ function MyProducts({ exp, c, shopUrl, customer }) {
           {products.slice(0, 4).map((p) => (
             <s-clickable href={url(p) || again(p) || undefined}>
               <s-stack gap="small-100" alignItems="center">
-                {image(p) ? <s-product-thumbnail src={image(p)} alt={name(p)} /> : null}
+                {image(p) && on(exp, 'pictures') ? <s-product-thumbnail src={image(p)} alt={name(p)} /> : null}
                 <T color="subdued">{name(p)}</T>
               </s-stack>
             </s-clickable>
@@ -439,7 +442,7 @@ function MyProducts({ exp, c, shopUrl, customer }) {
         <s-grid gridTemplateColumns={columns(Math.min(3, products.length))} gap="base">
           {products.map((p) => (
             <s-stack gap="small-100">
-              {image(p) ? <s-image src={image(p)} alt={name(p)} aspectRatio="1" objectFit="cover" borderRadius="base" /> : null}
+              {image(p) && on(exp, 'pictures') ? <s-image src={image(p)} alt={name(p)} aspectRatio="1" objectFit="cover" borderRadius="base" /> : null}
               <T type="strong">{name(p)}</T>
               {p.count > 1 ? <T color="subdued">{t('boughtTimes', { count: p.count })}</T> : null}
               {buy(p)}
@@ -455,7 +458,7 @@ function MyProducts({ exp, c, shopUrl, customer }) {
       <Divided items={products.map((p) => (
         <Row justify="space-between">
           <s-stack direction="inline" gap="base" alignItems="center">
-            {image(p) ? <s-product-thumbnail src={image(p)} alt={name(p)} size="small" /> : null}
+            {image(p) && on(exp, 'pictures') ? <s-product-thumbnail src={image(p)} alt={name(p)} size="small" /> : null}
             <s-stack gap="small-100">
               <T type="strong">{name(p)}</T>
               <s-stack direction="inline" gap="small-200">

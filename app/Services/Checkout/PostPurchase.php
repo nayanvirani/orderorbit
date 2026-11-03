@@ -122,6 +122,9 @@ class PostPurchase
             'message' => $c['message'] ?? '',
             'accept_text' => $c['accept_text'] ?? 'Pay now',
             'decline_text' => $c['decline_text'] ?? 'Decline this offer',
+            // Texts and visibility.
+            'hide' => array_values((array) ($c['hide'] ?? [])),
+            'words' => (object) ($c['words'] ?? []),
             'offers' => array_map(fn ($o, $i) => ['step' => $i] + $o, $offers, array_keys($offers)),
         ];
     }

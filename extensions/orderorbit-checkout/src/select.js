@@ -206,3 +206,22 @@ export function assign(exp, visitorId, ctx) {
   });
   return { exp: v.hidden ? null : shown, variant: v.key, tracked: shown };
 }
+
+/**
+ * Texts and visibility: parts the merchant turned off that are data (pictures, prices, captions,
+ * expiry dates, guarantees, badges) are removed before drawing; the rest are checked where drawn.
+ */
+export function applyLook(exp) {
+  const hide = (exp.content && exp.content.hide) || [];
+  if (!hide.length) return exp;
+  const c = Object.assign({}, exp.content);
+  const off = (...parts) => parts.some((p) => hide.indexOf(p) !== -1);
+  const each = (fn) => ['products', 'product'].forEach((k) => { if (Array.isArray(c[k])) c[k] = c[k].map((p) => fn(Object.assign({}, p))); });
+  if (off('pictures', 'picture')) each((p) => { p.image = null; return p; });
+  if (off('prices')) each((p) => { p.price = null; return p; });
+  if (off('caption')) c.caption = '';
+  if (off('expiry')) c.expiry_text = '';
+  if (off('guarantee')) c.guarantee = '';
+  if (off('badges')) c.badges = [];
+  return Object.assign({}, exp, { content: c });
+}

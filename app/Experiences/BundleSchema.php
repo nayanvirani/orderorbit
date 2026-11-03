@@ -348,6 +348,7 @@ class BundleSchema
             'tiers' => self::tierDefaults(isset($model['tiers'])),
             'design' => array_merge(self::designDefaults($model['design']['preset'] ?? 'black'), $model['design'] ?? [], array_intersect_key($branding, array_flip(['font']))),
             'schedule' => ['starts_at' => null, 'ends_at' => null],
+            'look' => ['hide' => [], 'words' => (object) []],
             'analytics' => ['track_views' => true, 'track_clicks' => true],
             'behavior' => ['priority' => 50],
         ];
@@ -632,6 +633,7 @@ class BundleSchema
                 'starts_at' => self::date($input['schedule']['starts_at'] ?? null, $timezone),
                 'ends_at' => self::date($input['schedule']['ends_at'] ?? null, $timezone),
             ],
+            'look' => Parts::clean('bundles', (array) ($input['look'] ?? [])),
             'analytics' => [
                 'track_views' => self::bool($input['analytics']['track_views'] ?? true),
                 'track_clicks' => self::bool($input['analytics']['track_clicks'] ?? true),
@@ -776,6 +778,8 @@ class BundleSchema
                 'mt' => $config['bundle_type'] === 'mix-tiers' ? ['pool' => $strip($config['mt']['pool'])] + $config['mt'] : null,
                 'subscription' => $config['subscription'] ?? self::subscriptionDefaults(),
                 // "on" tells the storefront to load the tier options at all.
+                'hide' => $config['look']['hide'] ?? [],
+                'words' => $config['look']['words'] ?? (object) [],
                 'tiers' => ($tiers = $config['tiers'] ?? self::tierDefaults(false)) + ['on' => $tiers['sale_header'] || $tiers['pictures'] || $tiers['details'] || $tiers['gifts_row']
                     || $tiers['button_price'] || $tiers['second_line'] !== 'subtitle' || $tiers['delivery']['enabled'] || $tiers['free_shipping'] !== ''],
             ],
