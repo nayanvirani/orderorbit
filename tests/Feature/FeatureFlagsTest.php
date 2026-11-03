@@ -71,6 +71,20 @@ class FeatureFlagsTest extends TestCase
         $this->actingAs($admin)->get('/admin/flags')->assertSee('Everyone');
     }
 
+    public function test_flags_work_from_a_cache_that_stores_serialized_values(): void
+    {
+        // Production caches serialize values and refuse app classes; the flags must still load from it.
+        config(['cache.stores.array.serialize' => true]);
+        \Illuminate\Support\Facades\Cache::forgetDriver('array');
+        $store = $this->installedStore();
+        FeatureFlag::create(['key' => 'live_chat', 'mode' => 'stores', 'store_ids' => [$store->id], 'enabled' => true]);
+        Features::forget();
+
+        $this->assertTrue(Features::enabled('live_chat', $store));
+        $this->assertTrue(Features::enabled('live_chat', $store), 'Read back from the cache.');
+        $this->assertFalse(Features::enabled('kill.sales_pop'));
+    }
+
     public function test_emergency_off_hides_a_live_part_for_every_store_and_turning_it_back_on_restores_it(): void
     {
         app(TemplateLibrary::class)->sync();

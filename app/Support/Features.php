@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class Features
 {
-    private const CACHE = 'feature-flags:v2';
+    // Plain rows are cached, not models: the cache won't unserialize app classes.
+    private const CACHE = 'feature-flags:v3';
 
     /** @return array<string, array{name: string, description: string, area: string, phase: string, built: bool, kill: bool}> */
     public static function registry(): array
@@ -60,7 +61,9 @@ class Features
     /** @return array<string, FeatureFlag> */
     public static function all(): array
     {
-        return Cache::remember(self::CACHE, 60, fn () => FeatureFlag::all()->keyBy('key')->all());
+        $rows = Cache::remember(self::CACHE, 60, fn () => FeatureFlag::query()->toBase()->get()->map(fn ($r) => (array) $r)->all());
+
+        return collect($rows)->map(fn (array $r) => (new FeatureFlag)->newFromBuilder($r))->keyBy('key')->all();
     }
 
     public static function forget(?string $key = null): void
