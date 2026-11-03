@@ -23,7 +23,8 @@ class Ticket extends Model
 
     protected function casts(): array
     {
-        return ['diagnostics' => 'array', 'resolved_at' => 'datetime', 'last_reply_at' => 'datetime'];
+        return ['diagnostics' => 'array', 'resolved_at' => 'datetime', 'last_reply_at' => 'datetime', 'first_reply_at' => 'datetime', 'merchant_typing_at' => 'datetime',
+            'team_typing_at' => 'datetime', 'merchant_seen_at' => 'datetime', 'alerted_at' => 'datetime', 'closed_at' => 'datetime', 'rating' => 'integer', 'merchant_read_id' => 'integer'];
     }
 
     public function store(): BelongsTo
@@ -44,6 +45,11 @@ class Ticket extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class, 'ticket_id')->orderBy('id');
+    }
+
+    public function isChat(): bool
+    {
+        return $this->channel === 'chat';
     }
 
     public function reference(): string

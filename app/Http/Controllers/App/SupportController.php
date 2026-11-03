@@ -25,7 +25,7 @@ class SupportController extends Controller
         return page('support/index', [
             'tickets' => Ticket::where('store_id', $store->id)->latest('updated_at')->get()->map(fn (Ticket $t) => [
                 'id' => $t->id, 'reference' => $t->reference(), 'subject' => $t->subject, 'status' => $t->status,
-                'category' => Ticket::CATEGORIES[$t->category] ?? $t->category, 'updated_at' => $t->updated_at,
+                'category' => ($t->channel === 'chat' ? 'Live chat · ' : '').(Ticket::CATEGORIES[$t->category] ?? $t->category), 'updated_at' => $t->updated_at,
             ]),
             'categories' => Ticket::CATEGORIES,
             'priorities' => Ticket::PRIORITIES,

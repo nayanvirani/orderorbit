@@ -6,7 +6,7 @@ import { appUrl, route, useRouter } from '../../router.jsx';
 export const TONE = { open: 'info', pending: 'warning', resolved: 'success', closed: 'neutral' };
 
 export default function Support({ tickets, categories, priorities, statuses, helpUrl, docsUrl }) {
-  const { submit } = useRouter();
+  const { submit, shared } = useRouter();
   const files = useRef(null);
   const blank = { category: Object.keys(categories)[0], priority: 'normal', subject: '', body: '' };
   const [data, setData] = useState(blank);
@@ -28,6 +28,7 @@ export default function Support({ tickets, categories, priorities, statuses, hel
   return (
     <Page heading="Support">
       <Hero eyebrow="Support" icon="message" tone="analytics" title="We're here to <em>help.</em>" lead="Open a ticket and the Growvia team replies here, usually within one business day. Your store's setup details are attached automatically, so you don't need to explain them.">
+        {shared.chat && <s-button variant="primary" onClick={() => window.dispatchEvent(new Event('growvia:chat'))}>Chat with us</s-button>}
         <s-button href={helpUrl} target="_blank">Help center</s-button>
         <s-button href={docsUrl} target="_blank" variant="tertiary">Documentation</s-button>
       </Hero>

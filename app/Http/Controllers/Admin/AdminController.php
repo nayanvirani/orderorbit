@@ -219,11 +219,11 @@ class AdminController extends Controller
         $status = in_array($request->query('status'), ['open', 'pending', 'resolved', 'closed', 'all'], true) ? $request->query('status') : 'open';
 
         return view('admin.tickets', [
-            'tickets' => Ticket::with(['store', 'assignee'])->when($status !== 'all', fn ($q) => $q->where('status', $status))
+            'tickets' => Ticket::with(['store', 'assignee'])->where('channel', 'ticket')->when($status !== 'all', fn ($q) => $q->where('status', $status))
                 ->when($request->query('category'), fn ($q, $c) => $q->where('category', $c))
                 ->orderByRaw("case priority when 'urgent' then 0 when 'high' then 1 when 'normal' then 2 else 3 end")->latest('last_reply_at')->paginate(50)->withQueryString(),
             'status' => $status,
-            'counts' => Ticket::selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
+            'counts' => Ticket::where('channel', 'ticket')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
         ]);
     }
 

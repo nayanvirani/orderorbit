@@ -108,6 +108,15 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
         return response()->json(['ok' => true]);
     })->whereNumber('announcement')->name('announcements.click');
 
+    // Live chat with the Growvia team (G43): the chat button on every page.
+    Route::prefix('api/chat')->name('chat.')->controller(\App\Http\Controllers\App\ChatController::class)->group(function () {
+        Route::get('/', 'show')->middleware('throttle:120,1')->name('show');
+        Route::post('/', 'send')->middleware('throttle:30,1')->name('send');
+        Route::post('/{chat}/typing', 'typing')->whereNumber('chat')->middleware('throttle:60,1')->name('typing');
+        Route::post('/{chat}/rate', 'rate')->whereNumber('chat')->name('rate');
+        Route::post('/{chat}/close', 'close')->whereNumber('chat')->name('close');
+    });
+
     // Billing stays reachable without a plan: it's where plans are chosen.
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
 
@@ -356,6 +365,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('/tickets/{ticket}/reply', 'replyTicket')->whereNumber('ticket')->name('ticket.reply');
                 Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
                 Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
+            });
+            Route::middleware('admin.can:support')->prefix('chat')->name('chat')->controller(\App\Http\Controllers\Admin\ChatController::class)->group(function () {
+                Route::get('/', 'index');
+                Route::get('/feed', 'feed')->name('.feed');
+                Route::post('/status', 'status')->name('.status');
+                Route::post('/hours', 'hours')->name('.hours');
+                Route::post('/{chat}/send', 'send')->whereNumber('chat')->name('.send');
+                Route::post('/{chat}/typing', 'typing')->whereNumber('chat')->name('.typing');
+                Route::post('/{chat}/assign', 'assign')->whereNumber('chat')->name('.assign');
+                Route::post('/{chat}/ticket', 'makeTicket')->whereNumber('chat')->name('.ticket');
+                Route::post('/{chat}/close', 'close')->whereNumber('chat')->name('.close');
             });
             Route::middleware('admin.can:support')->controller(\App\Http\Controllers\Admin\ContactController::class)->group(function () {
                 Route::get('/contact', 'index')->name('contact');

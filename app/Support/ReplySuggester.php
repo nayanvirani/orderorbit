@@ -43,6 +43,24 @@ class ReplySuggester
         }, array_slice(array_filter($candidates, fn ($c) => $c['score'] > 0), 0, $limit)));
     }
 
+    /** Help-centre articles that match a message, for a merchant to read while they wait (G43). */
+    public function articles(string $message, int $limit = 3): array
+    {
+        $words = self::words($message);
+        $found = [];
+        foreach (Content::helpCategories() as $cat) {
+            foreach ($cat['articles'] ?? [] as [$q, $a]) {
+                $score = $words ? $this->score($words, $q, $a) : 0;
+                if ($score > 0) {
+                    $found[] = ['q' => $q, 'a' => $a, 'score' => $score];
+                }
+            }
+        }
+        usort($found, fn ($x, $y) => $y['score'] <=> $x['score']);
+
+        return array_map(fn ($f) => ['q' => $f['q'], 'a' => $f['a']], array_slice($found, 0, $limit));
+    }
+
     /** Placeholders filled from the context; unknown ones stay visible as [FILL: name] and are listed. */
     public static function fill(string $body, array $context): array
     {

@@ -30,6 +30,7 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
             'last_login_at' => 'datetime',
             'disabled_at' => 'datetime',
+            'chat_seen_at' => 'datetime',
         ];
     }
 }

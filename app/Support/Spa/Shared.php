@@ -41,6 +41,8 @@ class Shared
             'legal' => $user ? \App\Support\Legal::noticeFor($store) : null,
             // Announcements from the Growvia team (G41) for this person and page.
             'announcements' => $store && $user ? \App\Support\Announcements::forPage($store, $user, $request->routeIs('app.dashboard')) : [],
+            // The live chat button (G43), released with the live_chat flag.
+            'chat' => $store && $user && \App\Support\Features::enabled('live_chat', $store),
         ];
     }
 

@@ -1,12 +1,29 @@
 import { appUrl, pageComponent, route, useRouter } from './router.jsx';
 import { Icon } from './components/ui.jsx';
 import { api } from './api.js';
+import Chat from './components/Chat.jsx';
 
 /** The frame around every page: section sidebar, plan-limit notice, then the page itself. */
 export default function App() {
   const { page, shared } = useRouter();
   const { nav, limit, legal, announcements } = shared;
-  return nav ? (
+  return (
+    <>
+      {nav ? <Framed nav={nav} limit={limit} legal={legal} announcements={announcements} page={page} /> : (
+        <>
+          <Limit limit={limit} />
+          <Legal legal={legal} />
+          <Announcements list={announcements} />
+          <Current page={page} />
+        </>
+      )}
+      {shared.chat && <Chat />}
+    </>
+  );
+}
+
+function Framed({ nav, limit, legal, announcements, page }) {
+  return (
     <div className="ob-shell">
       <Sidebar nav={nav} />
       <div className="ob-shell-main">
@@ -16,13 +33,6 @@ export default function App() {
         <Current page={page} />
       </div>
     </div>
-  ) : (
-    <>
-      <Limit limit={limit} />
-      <Legal legal={legal} />
-      <Announcements list={announcements} />
-      <Current page={page} />
-    </>
   );
 }
 

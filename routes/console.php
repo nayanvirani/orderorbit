@@ -22,3 +22,6 @@ Schedule::command('orderorbit:ops-check')->everyFiveMinutes()->withoutOverlappin
 Schedule::command('orderorbit:ops-check --digest')->dailyAt('03:30'); // 09:00 in India
 // Announcements (G41): email store owners when an announcement marked "email owners" starts.
 Schedule::command('orderorbit:announcement-emails')->everyFiveMinutes()->withoutOverlapping(10);
+
+// Live chat (G43): email the team about chats nobody picked up, close answered chats that went quiet.
+Schedule::command('orderorbit:chat-sweep')->everyMinute()->withoutOverlapping(5);
