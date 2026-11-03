@@ -30,7 +30,8 @@ class BundleSchema
             'lead' => 'Buy more and unlock gifts.',
             'example' => '2 products = 1 gift. 3 products = 2 gifts.',
             'goal' => 'Boost the cart with rewards.',
-            'offer_kinds' => ['quantity'],
+            // A tier can also be a mix of products (2x serum + 1x cream): priced by the cart transform.
+            'offer_kinds' => ['quantity', 'multi'],
         ],
         'variant-offers' => [
             'label' => 'Variant offers',
@@ -96,6 +97,7 @@ class BundleSchema
         'red' => ['accent' => '#d92d20', 'selected_background' => '#fff1f0', 'button_background' => '#d92d20', 'label_background' => '#d92d20'],
         'night' => ['accent' => '#8b7bff', 'selected_background' => '#221d4f', 'button_background' => '#8b7bff', 'label_background' => '#8b7bff', 'background' => '#14112f', 'text' => '#ffffff', 'muted' => '#b9b5dc', 'border' => '#2e2a5a', 'gift_background' => '#1d1946', 'summary_background' => '#183a2c', 'summary_text' => '#6ee7b7', 'badge_background' => '#3a1830', 'badge_text' => '#ff8fb3'],
         'luxe' => ['accent' => '#c9a45c', 'selected_background' => '#241f1a', 'button_background' => '#c9a45c', 'button_text' => '#1a1714', 'label_background' => '#c9a45c', 'label_text' => '#1a1714', 'background' => '#1a1714', 'text' => '#f5efe4', 'muted' => '#bfb39f', 'border' => '#3a332a', 'gift_background' => '#241f1a', 'summary_background' => '#2a241c', 'summary_text' => '#e5c886', 'badge_background' => '#3a2f1c', 'badge_text' => '#e5c886'],
+        'berry' => ['accent' => '#c2185b', 'selected_background' => '#fdeef3', 'button_background' => '#b5174f', 'label_background' => '#c2185b', 'gift_background' => '#fff5f8', 'summary_background' => '#fde7ef', 'summary_text' => '#8e1240', 'badge_background' => '#fde7ef', 'badge_text' => '#b5174f'],
         'sage' => ['accent' => '#2f6f5e', 'selected_background' => '#eef6f2', 'button_background' => '#2f6f5e', 'label_background' => '#2f6f5e', 'gift_background' => '#f3f8f5', 'summary_background' => '#e6f2ec', 'summary_text' => '#1f5446'],
         'berry' => ['accent' => '#a3214f', 'selected_background' => '#fbeff3', 'button_background' => '#a3214f', 'label_background' => '#a3214f', 'background' => '#fffafb', 'border' => '#efd5de', 'summary_background' => '#fbe7ee', 'summary_text' => '#8a1c43'],
     ];
@@ -125,6 +127,8 @@ class BundleSchema
             'qb-compact' => ['type' => 'quantity-breaks', 'name' => 'Compact selector', 'description' => 'A slim radio list that fits tight product pages.', 'layout' => 'vertical', 'style' => 'compact', 'skin' => 'minimal', 'design' => ['preset' => 'black', 'radius' => 8, 'border_width' => 1, 'offer_title_size' => 15, 'price_size' => 16]],
 
             'qg-classic' => ['type' => 'quantity-gifts', 'name' => 'Quantity breaks + gifts', 'description' => 'Each tier unlocks more free gifts, shown under the offers.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'pink', 'radius' => 18]],
+            'qg-tiered' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Sale price on top, pictures in each tier, the chosen tier opens to list what\'s inside, a gifts row and the price in the button.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'berry', 'radius' => 12]],
+            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'sage', 'radius' => 12]],
             'qg-horizontal' => ['type' => 'quantity-gifts', 'name' => 'Gift tiers side by side', 'description' => 'Horizontal tiers with the gifts each one unlocks.', 'layout' => 'horizontal', 'skin' => 'ribbon', 'design' => ['preset' => 'yellow', 'radius' => 12]],
 
             'vo-classic' => ['type' => 'variant-offers', 'name' => 'Classic variant offers', 'description' => 'One card per pack size or variant, each with its own price.', 'layout' => 'vertical', 'skin' => 'soft', 'design' => ['preset' => 'blue', 'radius' => 22, 'border_width' => 1]],
@@ -288,6 +292,8 @@ class BundleSchema
             'upsells' => ['enabled' => false, 'title' => 'Complete your order', 'products' => [], 'discount_percent' => 10],
             'summary' => ['enabled' => true, 'text' => 'You save {saving}'],
             'subscription' => self::subscriptionDefaults(),
+            // Tiered gift bundle options (G36): on for new gift bundles, off for ones saved before.
+            'tiers' => self::tierDefaults(in_array($type, ['quantity-gifts', 'fixed-gifts'], true)),
             'design' => array_merge(self::designDefaults($model['design']['preset'] ?? 'black'), $model['design'] ?? [], array_intersect_key($branding, array_flip(['font']))),
             'schedule' => ['starts_at' => null, 'ends_at' => null],
             'analytics' => ['track_views' => true, 'track_clicks' => true],
@@ -444,10 +450,13 @@ class BundleSchema
                 'highlight' => self::bool($o['highlight'] ?? false),
                 'preselected' => self::bool($o['preselected'] ?? false),
                 'visible' => self::bool($o['visible'] ?? true),
+                'label_style' => self::pick($o['label_style'] ?? null, ['filled', 'outlined'], 'filled'),
+                // What's in the tier, for its open list: a short description and a value per item (null = from the price).
+                'notes' => array_map(fn ($n) => self::note($n), array_slice(array_values(array_filter((array) ($o['notes'] ?? []), 'is_array')), 0, 10)),
                 'gifts' => [],
             ];
             foreach (array_slice(array_values(array_filter((array) ($o['gifts'] ?? []), 'is_array')), 0, 4) as $g) {
-                $offer['gifts'][] = ['product' => array_slice(self::resources($g['product'] ?? [], 'Product', 1), 0, 1), 'quantity' => max(1, min(10, (int) ($g['quantity'] ?? 1)))];
+                $offer['gifts'][] = ['product' => array_slice(self::resources($g['product'] ?? [], 'Product', 1), 0, 1), 'quantity' => max(1, min(10, (int) ($g['quantity'] ?? 1)))] + self::note($g);
             }
             if ($offer['title'] === '') {
                 $errors["offers.{$i}.title"] = 'Give this offer a title.';
@@ -554,6 +563,7 @@ class BundleSchema
                 'discount_percent' => max(0, min(100, round((float) ($u['discount_percent'] ?? 0), 2))),
             ],
             'summary' => ['enabled' => self::bool($sm['enabled'] ?? true), 'text' => self::text($sm['text'] ?? 'You save {saving}', 80)],
+            'tiers' => self::tierOptions((array) ($input['tiers'] ?? []), $offers, $timezone, $errors),
             'subscription' => [
                 'enabled' => self::bool($sub['enabled'] ?? false),
                 'layout' => self::pick($sub['layout'] ?? null, array_keys(self::SUBSCRIPTION_LAYOUTS), 'cards'),
@@ -691,7 +701,7 @@ class BundleSchema
             $o['index'] = $i;
             $o['product'] = $strip($o['product']);
             $o['products'] = $strip($o['products']);
-            $o['gifts'] = array_map(fn ($g) => ['product' => $strip($g['product']), 'quantity' => $g['quantity']], $o['gifts']);
+            $o['gifts'] = array_map(fn ($g) => ['product' => $strip($g['product']), 'quantity' => $g['quantity'], 'desc' => $g['desc'] ?? '', 'value' => $g['value'] ?? null], $o['gifts']);
 
             return $o;
         }, $config['offers'], array_keys($config['offers'])));
@@ -711,6 +721,9 @@ class BundleSchema
                 'upsells' => ['enabled' => $config['upsells']['enabled'], 'title' => $config['upsells']['title'], 'products' => $strip($config['upsells']['products']), 'discount_percent' => $config['upsells']['discount_percent']],
                 'summary' => $config['summary'],
                 'subscription' => $config['subscription'] ?? self::subscriptionDefaults(),
+                // "on" tells the storefront to load the tier options at all.
+                'tiers' => ($tiers = $config['tiers'] ?? self::tierDefaults(false)) + ['on' => $tiers['sale_header'] || $tiers['pictures'] || $tiers['details'] || $tiers['gifts_row']
+                    || $tiers['button_price'] || $tiers['second_line'] !== 'subtitle' || $tiers['delivery']['enabled'] || $tiers['free_shipping'] !== ''],
             ],
             'design' => $config['design'] + [
                 // The runtime's shared variables.
@@ -732,6 +745,77 @@ class BundleSchema
                 'customer' => 'all',
             ],
         ];
+    }
+
+    // ---------------------------------------------------------------- tiered gift bundles (G36)
+
+    /**
+     * Options for "Buy more, get a free gift" and pack + gift bundles: the sale header, pictures and a
+     * second line in each tier, the open list of what's inside, the gifts row (with free shipping as a
+     * reward), the delivery date bar and the price in the button. All off when $on is false.
+     */
+    public static function tierDefaults(bool $on): array
+    {
+        return [
+            'sale_header' => $on, 'sale_badge' => 'SALE · Save {saving}',
+            'pictures' => $on,
+            'second_line' => 'subtitle', 'unit' => 'item',
+            'details' => $on,
+            'value_price' => $on,
+            'gifts_row' => $on, 'gifts_title' => 'Unlock free gifts', 'unlocked_title' => 'All gifts unlocked',
+            'free_shipping' => '',
+            'button_price' => $on,
+            'delivery' => ['enabled' => false, 'text' => 'Order now for delivery by: {date}', 'min_days' => 3, 'max_days' => 5, 'cutoff' => '14:00', 'skip_weekends' => true, 'holidays' => '', 'timezone' => 'UTC'],
+        ];
+    }
+
+    private static function tierOptions(array $t, array $offers, string $timezone, array &$errors): array
+    {
+        $d = self::tierDefaults(false);
+        $dl = (array) ($t['delivery'] ?? []);
+        $holidays = array_values(array_unique(array_filter(array_map('trim', explode(',', (string) ($dl['holidays'] ?? ''))), fn ($day) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $day))));
+        $options = [
+            'sale_header' => self::bool($t['sale_header'] ?? false),
+            'sale_badge' => self::text($t['sale_badge'] ?? $d['sale_badge'], 60),
+            'pictures' => self::bool($t['pictures'] ?? false),
+            'second_line' => self::pick($t['second_line'] ?? null, ['subtitle', 'each', 'none'], 'subtitle'),
+            'unit' => self::text($t['unit'] ?? 'item', 20) ?: 'item',
+            'details' => self::bool($t['details'] ?? false),
+            'value_price' => self::bool($t['value_price'] ?? false),
+            'gifts_row' => self::bool($t['gifts_row'] ?? false),
+            'gifts_title' => self::text($t['gifts_title'] ?? $d['gifts_title'], 60),
+            'unlocked_title' => self::text($t['unlocked_title'] ?? $d['unlocked_title'], 60),
+            // Free shipping from this offer (by id) and every offer after it; '' = no free shipping reward.
+            'free_shipping' => in_array($t['free_shipping'] ?? '', array_column($offers, 'id'), true) ? $t['free_shipping'] : '',
+            'button_price' => self::bool($t['button_price'] ?? false),
+            'delivery' => [
+                'enabled' => self::bool($dl['enabled'] ?? false),
+                'text' => self::text($dl['text'] ?? $d['delivery']['text'], 80),
+                'min_days' => max(0, min(60, (int) ($dl['min_days'] ?? 3))),
+                'max_days' => max(0, min(60, (int) ($dl['max_days'] ?? 5))),
+                'cutoff' => preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', (string) ($dl['cutoff'] ?? '')) ? $dl['cutoff'] : '14:00',
+                'skip_weekends' => self::bool($dl['skip_weekends'] ?? true),
+                'holidays' => implode(', ', array_slice($holidays, 0, 40)),
+                // Re-checks without a store (publishing) keep the time zone saved with the bundle.
+                'timezone' => $timezone !== 'UTC' || ! in_array($dl['timezone'] ?? '', timezone_identifiers_list(), true) ? $timezone : $dl['timezone'],
+            ],
+        ];
+        if ($options['delivery']['enabled'] && $options['delivery']['max_days'] < $options['delivery']['min_days']) {
+            $errors['tiers.delivery.max_days'] = 'The latest delivery can\'t be sooner than the earliest.';
+        }
+        if ($options['delivery']['enabled'] && ! str_contains($options['delivery']['text'], '{date}') && ! str_contains($options['delivery']['text'], '{time}')) {
+            $errors['tiers.delivery.text'] = 'Use {date} for the delivery date (and {time} for the time left to order).';
+        }
+
+        return $options;
+    }
+
+    /** A tier item's or gift's short description and value (null = worked out from its price). */
+    private static function note(array $n): array
+    {
+        $value = $n['value'] ?? null;
+
+        return ['desc' => self::text($n['desc'] ?? '', 80), 'value' => $value === null || $value === '' ? null : max(0, min(1000000, round((float) $value, 2)))];
     }
 
     // ---------------------------------------------------------------- helpers

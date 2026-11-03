@@ -19,7 +19,9 @@
               "amountPerQuantity": {
                 "amount": "60"
               }
-            }
+            },
+            "bundle": null,
+            "tier": null
           }
         ],
         "deliveryGroups": [

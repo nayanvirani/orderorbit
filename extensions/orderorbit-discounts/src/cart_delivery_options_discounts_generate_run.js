@@ -1,8 +1,11 @@
 import {DeliveryDiscountSelectionStrategy, DiscountClass} from '../generated/api';
 
 /**
- * Free shipping from a Shipping Bar experience ({ k: "ship", min, m }) or a
- * Progressive gifts shipping milestone ({ k: "pg", by, m: [{ t, r: "shipping" }] }).
+ * Free shipping from a Shipping Bar experience ({ k: "ship", min, m }), a
+ * Progressive gifts shipping milestone ({ k: "pg", by, m: [{ t, r: "shipping" }] }) or a
+ * bundle tier ({ k: "bship", id, t: { "<offer index>": units } }): the cart holds that tier,
+ * either as lines tagged _oo_bundle = "<id>|<index>|<group>" with enough paid units, or as a
+ * pack the cart transform merged, tagged _oo_tier = "<id>|<index>".
  *
  * @typedef {import("../generated/api").DeliveryInput} RunInput
  * @typedef {import("../generated/api").CartDeliveryOptionsDiscountsGenerateRunResult} CartDeliveryOptionsDiscountsGenerateRunResult
@@ -28,8 +31,21 @@ export function cartDeliveryOptionsDiscountsGenerateRun(input) {
       ? paid.reduce((sum, line) => sum + line.quantity, 0)
       : paid.reduce((sum, line) => sum + Number(line.cost.amountPerQuantity.amount) * line.quantity, 0);
   };
+  const tierBought = (offer) => (input.cart.lines || []).some((line) => {
+    const tier = line.tier?.value;
+    if (tier && tier.indexOf(offer.id + '|') === 0) return Object.prototype.hasOwnProperty.call(offer.t || {}, tier.split('|')[1]);
+    return false;
+  }) || Object.entries((input.cart.lines || []).reduce((groups, line) => {
+    const tag = line.bundle?.value;
+    if (tag && tag.indexOf(offer.id + '|') === 0 && line.gift?.value == null) groups[tag] = (groups[tag] || 0) + line.quantity;
+    return groups;
+  }, {})).some(([tag, count]) => {
+    const need = (offer.t || {})[tag.split('|')[1]];
+    return need != null && count >= Number(need);
+  });
   const offer = all.find((o) => (o.k === 'ship' && subtotal >= Number(o.min) * rate)
-    || (o.k === 'pg' && (o.m || []).some((m) => m.r === 'shipping' && progress(o) >= Number(m.t) * (o.by === 'count' ? 1 : rate))));
+    || (o.k === 'pg' && (o.m || []).some((m) => m.r === 'shipping' && progress(o) >= Number(m.t) * (o.by === 'count' ? 1 : rate)))
+    || (o.k === 'bship' && tierBought(o)));
   if (!offer) {
     return {operations: []};
   }

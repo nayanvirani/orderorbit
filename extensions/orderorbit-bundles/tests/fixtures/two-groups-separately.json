@@ -166,6 +166,10 @@
               {
                 "key": "_oo_offer",
                 "value": "b1"
+              },
+              {
+                "key": "_oo_tier",
+                "value": "b1|1"
               }
             ],
             "title": "Complete bundle",
@@ -196,6 +200,10 @@
               {
                 "key": "_oo_offer",
                 "value": "b1"
+              },
+              {
+                "key": "_oo_tier",
+                "value": "b1|1"
               }
             ],
             "title": "Complete bundle",

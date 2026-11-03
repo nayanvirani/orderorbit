@@ -96,4 +96,38 @@ class OfferMappingTest extends TestCase
 
         $this->assertSame([], $offers, 'The pack is priced by the cart transform and the single product has no saving, so no discount is needed.');
     }
+
+    public function test_tiered_gift_bundles_are_on_for_new_bundles_off_for_saved_ones_and_give_free_shipping(): void
+    {
+        $schema = \App\Experiences\BundleSchema::class;
+        $new = $schema::defaults('qg-tiered');
+        $this->assertTrue($new['tiers']['details'] && $new['tiers']['sale_header'] && $new['tiers']['button_price']);
+        $this->assertSame('berry', $new['design']['preset']);
+
+        // A bundle saved before G36 has no tier options: it looks exactly as before.
+        $old = $schema::defaults('qg-classic');
+        unset($old['tiers']);
+        [$saved] = $schema::normalize($old);
+        $this->assertFalse($saved['tiers']['details'] || $saved['tiers']['pictures'] || $saved['tiers']['gifts_row'] || $saved['tiers']['delivery']['enabled']);
+        $this->assertFalse($schema::payload($saved)['content']['tiers']['on'], 'The storefront doesn\'t load the tier options.');
+        $this->assertTrue($schema::payload($schema::normalize($new)[0])['content']['tiers']['on']);
+
+        // A tier can mix products, and each item and gift can carry a description and value.
+        $new['offers'][2] = ['kind' => 'multi', 'title' => 'Buy 3, get 2 free gifts', 'products' => [$this->products(1)[0] + ['quantity' => 2], $this->products(2)[0]],
+            'notes' => [['desc' => 'Brightening daily serum', 'value' => '48'], ['desc' => '', 'value' => '']], 'label' => 'Best value', 'label_style' => 'outlined',
+            'gifts' => [['product' => $this->products(9), 'quantity' => 1, 'desc' => 'Tinted', 'value' => 14]], 'discount_type' => 'percentage', 'discount_value' => 20];
+        $new['tiers']['free_shipping'] = $new['offers'][1]['id'];
+        $new['tiers']['delivery'] = ['enabled' => true, 'text' => 'Arrives soon', 'min_days' => 5, 'max_days' => 3];
+        [$config, $errors] = $schema::normalize($new, 'Asia/Kolkata');
+        $this->assertSame(['tiers.delivery.max_days', 'tiers.delivery.text'], array_keys(array_filter($errors, fn ($k) => str_starts_with($k, 'tiers'), ARRAY_FILTER_USE_KEY)));
+        $this->assertSame('multi', $config['offers'][2]['kind']);
+        $this->assertSame([['desc' => 'Brightening daily serum', 'value' => 48.0], ['desc' => '', 'value' => null]], $config['offers'][2]['notes']);
+        $this->assertSame(['Tinted', 14.0, 'outlined'], [$config['offers'][2]['gifts'][0]['desc'], $config['offers'][2]['gifts'][0]['value'], $config['offers'][2]['label_style']]);
+        $this->assertSame('Asia/Kolkata', $schema::normalize($config)[0]['tiers']['delivery']['timezone'], 'Re-checks keep the store\'s time zone.');
+
+        // Free shipping from the second tier on: the units each tier must hold at checkout.
+        $config['offers'][1]['gifts'][0]['product'] = $this->products(8);
+        $offers = OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $config);
+        $this->assertSame(['k' => 'bship', 'id' => 'b-1', 't' => ['1' => 2, '2' => 3], 'm' => 'Free shipping'], collect($offers)->firstWhere('k', 'bship'));
+    }
 }

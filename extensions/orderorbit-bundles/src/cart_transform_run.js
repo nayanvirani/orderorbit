@@ -129,7 +129,8 @@ export function cartTransformRun(input) {
         cartLines: lines.map((line) => ({cartLineId: line.id, quantity: line.qty})),
         parentVariantId: main.variant,
         // Keeps the bundle's tag on the merged line so orders are attributed to it.
-        attributes: [{key: '_oo_offer', value: bundle.id}],
+        // _oo_tier tells the shipping discount which tier this pack is (free shipping as a tier reward).
+        attributes: [{key: '_oo_offer', value: bundle.id}, {key: '_oo_tier', value: `${bundle.id}|${index}`}],
         ...(title ? {title} : {}),
         ...(bundle.image ? {image: {url: bundle.image}} : {}),
         ...(percent > 0 ? {price: {percentageDecrease: {value: Math.round(percent * 100) / 100}}} : {}),

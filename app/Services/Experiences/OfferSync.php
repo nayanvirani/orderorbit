@@ -69,6 +69,16 @@ class OfferSync
                 // On a subscription the plan has its own saving; name this one so shoppers can tell them apart.
                 'm' => $subscribed ? 'Bundle discount · first delivery' : ($bundle['settings']['title'] ?: 'Bundle discount')], fn ($v) => $v !== null);
         }
+        // Free shipping as a tier reward (G36): from the chosen offer on. "t" maps each offer index to the
+        // units its group must hold; packs merged by the cart transform carry _oo_tier = "<id>|<index>".
+        $from = array_search($bundle['tiers']['free_shipping'] ?? '', array_column($bundle['offers'], 'id'), true);
+        if ($from !== false) {
+            $tiers = [];
+            foreach (array_slice($bundle['offers'], $from, null, true) as $i => $o) {
+                $tiers[(string) $i] = $o['kind'] === 'multi' ? array_sum(array_map(fn ($p) => max(1, (int) ($p['quantity'] ?? 1)), $o['products'])) : $o['quantity'];
+            }
+            $offers[] = ['k' => 'bship', 'id' => $experience->handle, 't' => $tiers, 'm' => 'Free shipping'];
+        }
         if ($bundle['upsells']['enabled'] && $bundle['upsells']['discount_percent'] > 0 && $bundle['upsells']['products']) {
             $offers[] = ['k' => 'upsell', 'id' => $experience->handle.':u', 'v' => $bundle['upsells']['discount_percent'], 'm' => $bundle['upsells']['title'] ?: 'Add-on offer'];
         }
@@ -150,8 +160,12 @@ class OfferSync
 
     private function upsert(Store $store, Experience $experience, array $offers): void
     {
-        $shipping = $offers[0]['k'] === 'ship';
+        $shipping = $offers[0]['k'] === 'ship' || $offers[0]['k'] === 'bship';
         $classes = [$shipping ? 'SHIPPING' : 'PRODUCT'];
+        // A bundle with a free shipping tier also needs the shipping class.
+        if (! $shipping && in_array('bship', array_column($offers, 'k'), true)) {
+            $classes[] = 'SHIPPING';
+        }
         if ($offers[0]['k'] === 'pg') {
             $rewards = array_column($offers[0]['m'], 'r');
             $classes = array_values(array_filter([

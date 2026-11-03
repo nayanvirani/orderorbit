@@ -57,7 +57,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     const d = c.design;
     return {
       id: x.handle, type: 'bundles', template: 'editor', style: c.settings.layout, version: 0, priority: 50,
-      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription },
+      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription, tiers: tiersPayload(c.tiers, meta.timezone) },
       design: { ...d, primary_color: d.button_background, accent_color: d.accent, text_color: d.text, background_color: d.background, border: false },
       behavior: { priority: 50, after_add: c.settings.after_add, position: c.settings.position, animation: 'none' },
       targeting: {},
@@ -138,6 +138,15 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
       </Ctx.Provider>
     </Page>
   );
+}
+
+const GIFT_TYPES = ['quantity-gifts', 'fixed-gifts'];
+
+// Mirrors BundleSchema::payload's "on": the storefront loads the tier options only when one is used.
+function tiersPayload(t, timezone) {
+  if (!t) return { on: false };
+  const on = !!(t.sale_header || t.pictures || t.details || t.gifts_row || t.button_price || t.second_line !== 'subtitle' || t.delivery?.enabled || t.free_shipping);
+  return { ...t, delivery: { ...t.delivery, timezone }, on };
 }
 
 function SettingsPanel() {
@@ -247,11 +256,52 @@ function Extras() {
         <Picker path="upsells.products" label="Add-on products" max={4} />
         <F path="upsells.discount_percent" label="Add-on discount (%)" type="number" min={0} max={100} step={0.01} help="Applies only to add-ons ticked in this bundle." />
       </Section>
+      {GIFT_TYPES.includes(state.bundle_type) && state.tiers && <TierOptions />}
       <Subscription />
       <Section id="summary" title="Savings summary" toggle="summary.enabled">
         <F path="summary.text" label="Text" max={80} help="Use {saving} for the amount saved." />
       </Section>
     </>
+  );
+}
+
+/** Tiered gift bundle options (G36). */
+function TierOptions() {
+  const { state } = useContext(Ctx);
+  const t = state.tiers;
+  const offers = Object.fromEntries([['', 'No free shipping reward'], ...state.offers.map((o) => [o.id, `From "${o.title || 'offer'}" up`])]);
+  return (
+    <Section id="tiers" title="Tier options">
+      <Help text="Each option changes how the tiers look on your product page. Prices and gifts at checkout stay the same." />
+      <F path="tiers.sale_header" label="Sale price header above the tiers" type="toggle" />
+      {t.sale_header && <F path="tiers.sale_badge" label="Sale badge" max={60} help="{saving} becomes the amount saved on the chosen tier, e.g. FALL SALE · Save {saving}." />}
+      <F path="tiers.pictures" label="Product and gift pictures in each tier" type="toggle" />
+      <Row>
+        <F path="tiers.second_line" label="Second line under each title" type="select" options={{ subtitle: 'The offer subtitle', each: 'Price per item', none: 'Nothing' }} />
+        {t.second_line === 'each' && <F path="tiers.unit" label="Item word" max={20} placeholder="item, bottle, pack" help='Shows "$28.67 per bottle".' />}
+      </Row>
+      <F path="tiers.details" label="Open the chosen tier to list what's inside, with free gifts under PLUS FREE GIFTS" type="toggle" />
+      <F path="tiers.value_price" label="Crossed-out price = total value of the items and gifts" type="toggle" help="Values come from each product's compare-at price (or price). You can change them in each offer." />
+      <F path="tiers.gifts_row" label="Gifts row under the tiers, with locked gifts" type="toggle" />
+      {t.gifts_row && <Row><F path="tiers.gifts_title" label="Gifts row title" max={60} /><F path="tiers.unlocked_title" label="When everything is unlocked" max={60} /></Row>}
+      <F path="tiers.free_shipping" label="Free shipping as a reward" type="select" options={offers} help="Checkout gives free shipping only when the cart holds that tier or a bigger one." />
+      <F path="tiers.button_price" label='Price in the button, e.g. "ADD TO CART | $86.00 $156.00"' type="toggle" />
+      <F path="tiers.delivery.enabled" label="Delivery date bar" type="toggle" />
+      {t.delivery.enabled && (
+        <>
+          <F path="tiers.delivery.text" label="Text" max={80} help="{date} becomes the delivery date and {time} the time left to order today." />
+          <Row>
+            <F path="tiers.delivery.min_days" label="Delivery takes at least (working days)" type="number" min={0} max={60} />
+            <F path="tiers.delivery.max_days" label="At most (working days)" type="number" min={0} max={60} help="The date shown uses this one." />
+          </Row>
+          <Row>
+            <F path="tiers.delivery.cutoff" label="Same-day cutoff (store time)" max={5} placeholder="14:00" help="Orders after this ship the next working day." />
+            <F path="tiers.delivery.skip_weekends" label="Skip weekends" type="toggle" />
+          </Row>
+          <F path="tiers.delivery.holidays" label="Holidays" placeholder="2026-12-25, 2027-01-01" help="Dates that don't count, separated by commas." />
+        </>
+      )}
+    </Section>
   );
 }
 
@@ -411,6 +461,8 @@ function OfferBody({ o, i }) {
         {o.discount_type !== 'none' && <F path={`${p}.discount_value`} label={o.discount_type === 'percentage' ? '% off' : `Value (${currency})`} type="number" min={0} step={0.01} help={o.discount_type === 'fixed_price' ? 'The total the shopper pays for this offer.' : ''} />}
       </Row>
       <Row><F path={`${p}.label`} label="Ribbon" max={40} placeholder="e.g. Most popular" /><F path={`${p}.badge`} label="Badge" max={24} placeholder="Automatic: −20%" /></Row>
+      {state.tiers?.details && o.label && <F path={`${p}.label_style`} label="Ribbon style" type="select" options={{ filled: 'Filled (Most Popular)', outlined: 'Outlined (Best Value)' }} />}
+      {state.tiers?.details && <TierItems o={o} i={i} />}
       <div className="b-field b-toggle"><label><input type="radio" name="preselected" checked={!!o.preselected} onChange={() => update((s) => { s.offers.forEach((x, j) => { x.preselected = j === i; }); return s; })} /> Selected by default</label></div>
       {state.gifts.enabled && (
         <div className="bx-sub-list">
@@ -419,6 +471,7 @@ function OfferBody({ o, i }) {
             <div className="bx-sub-item" key={j}>
               <Picker path={`${p}.gifts.${j}.product`} label={`Gift ${j + 1}`} max={1} />
               <F path={`${p}.gifts.${j}.quantity`} label="Quantity" type="number" min={1} max={10} />
+              {state.tiers?.details && <><F path={`${p}.gifts.${j}.desc`} label="Short description" max={80} /><F path={`${p}.gifts.${j}.value`} label={`Value (${currency})`} type="number" min={0} step={0.01} help="Empty = its compare-at price or price." /></>}
               <button type="button" className="b-icon-btn" aria-label="Remove gift" onClick={() => update((s) => { s.offers[i].gifts.splice(j, 1); return s; })}>×</button>
             </div>
           ))}
@@ -426,6 +479,23 @@ function OfferBody({ o, i }) {
         </div>
       )}
     </>
+  );
+}
+
+/** A short description and value for each item in a tier, shown when the tier opens. */
+function TierItems({ o, i }) {
+  const { currency } = useContext(Ctx);
+  const names = o.kind === 'multi' ? (o.products || []).map((x) => x.title || 'Product') : [o.kind === 'mono' ? (o.product[0] || {}).title || 'Product' : 'The product on the page'];
+  return (
+    <div className="bx-sub-list">
+      <span className="b-label">What's in this tier</span>
+      {names.map((n, j) => (
+        <Row key={j}>
+          <F path={`offers.${i}.notes.${j}.desc`} label={`${n}: short description`} max={80} placeholder="e.g. Brightening daily serum" />
+          <F path={`offers.${i}.notes.${j}.value`} label={`Value (${currency})`} type="number" min={0} step={0.01} help="Empty = compare-at price (or price) × quantity." />
+        </Row>
+      ))}
+    </div>
   );
 }
 

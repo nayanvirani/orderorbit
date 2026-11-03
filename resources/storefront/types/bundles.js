@@ -8,8 +8,8 @@
 
   function money(v, ctx) { return h.esc(h.money(v, ctx.currency)); }
 
-  // Shared with oo-bundles-mix.js.
-  var B = { money: money, select: function () { return select.apply(null, arguments); } };
+  // Shared with oo-bundles-mix.js and oo-bundles-tiers.js.
+  var B = { money: money, select: select, prices: prices, detail: detail, base: base, fill: fillText };
 
   function afterOffer(full, o) {
     var v = Number(o.discount_value || 0);
@@ -94,6 +94,7 @@
 
   function offerCard(o, i, c, ctx, selected) {
     var pr = prices(o, ctx, i);
+    if (T(c)) return T(c).card(o, i, c, ctx, selected, pr, B);
     var badge = o.badge || (pr.pct > 0 ? '−' + pr.pct + '%' : '');
     return '<label class="oo-boffer' + (selected ? ' oo-bsel' : '') + (o.highlight ? ' oo-bhl' : '') + '" data-oo-offer="' + i + '">' +
       (o.label ? '<span class="oo-blabel">' + h.esc(o.label) + '</span>' : '') +
@@ -124,6 +125,10 @@
   // Gift tiles and add-on upsells (oo-bundles-extras.js), for bundles that use them.
   function X() { return OrderOrbit.bundleExtras; }
 
+  // Tiered gift bundle options (oo-bundles-tiers.js): sale header, open tiers, gifts row, delivery bar.
+  function on(c) { return (c.tiers || {}).on; }
+  function T(c) { return on(c) && OrderOrbit.bundleTiers; }
+
   // Mix & match (oo-bundles-mix.js) or build your own box (oo-bundles-box.js): a pool of products.
   function M(c) { return c.bundle_type === 'byob' ? OrderOrbit.bundleBox : c.bundle_type === 'mix-match' ? OrderOrbit.bundleMix : null; }
 
@@ -144,7 +149,7 @@
     var cols = '', colVars = '';
     [['d', s.columns_desktop], ['t', s.columns_tablet], ['m', s.columns_mobile]].forEach(function (x) { if (x[1] > 0) { cols += ' oo-bc' + x[0]; colVars += '--oo-c' + x[0] + ':' + Number(x[1]) + ';'; } });
     return '<div class="oo-body oo-bundle oo-bl-' + s.layout + ' oo-bs-' + (s.style || 'cards') + ' oo-bk-' + (s.skin || 'classic') + cols + '" style="' + vars(exp.design || {}) + colVars + '">' + header(s, mix && c.mix) +
-      (mix ? M(c).html(c, ctx, B) + (X() ? X().boxGifts(c) : '') : '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>') +
+      (mix ? M(c).html(c, ctx, B) + (X() ? X().boxGifts(c) : '') : (T(c) ? T(c).top(c) : '') + '<div class="oo-boffers">' + c.offers.map(function (o, i) { return offerCard(o, i, c, ctx, i === pre); }).join('') + '</div>' + (T(c) ? T(c).after(c, ctx, B) : '')) +
       (sub(c) ? sub(c).html(c, ctx, mix ? 'm' : pre) : '') + (X() ? X().upsells(c, ctx) : '') + (c.summary.enabled ? '<p class="oo-bsum" data-oo-sum hidden></p>' : '') +
       '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add>' + h.esc(s.button_text) + '</button><p class="oo-status" data-oo-status role="status"></p></div>';
   }, {
@@ -153,7 +158,7 @@
       var c = exp.content;
       var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'),
         c.bundle_type === 'byob' && OrderOrbit.need('bundles-box').then(function () { return !ctx.preview && OrderOrbit.bundleBox.load(c); }), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub'),
-        (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras')]);
+        (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras'), on(c) && OrderOrbit.need('bundles-tiers')]);
       // The admin preview uses saved product data; the storefront loads live variants and prices.
       if (ctx.preview) return mix;
       var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products, g: (c.gifts.items || []).map(function (g) { return g.product[0]; }).filter(Boolean) } }, ['a', 'b', 'g'])];
@@ -195,6 +200,7 @@
           root.querySelector('.oo-bsel .oo-bprice').innerHTML = priceHtml(pr, ctx);
           saving = pr.saving;
           btn.innerHTML = h.esc(c.settings.button_text) + ' · ' + money(pr.after + upsellTotal(), ctx);
+          if (T(c)) saving = T(c).update(root, c, ctx, i, pr, btn, B, upsellTotal());
           if (sub(c)) sub(c).update(root, c, ctx, i, pr.full, pr.after, upsellTotal(), btn, items());
         }
         if (sum) { sum.hidden = !(saving > 0); sum.innerHTML = fillText(c.summary.text, { saving: saving, pct: 0 }, ctx); }

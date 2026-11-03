@@ -104,6 +104,10 @@
               {
                 "key": "_oo_offer",
                 "value": "b1"
+              },
+              {
+                "key": "_oo_tier",
+                "value": "b1|m"
               }
             ],
             "title": "Build your box",

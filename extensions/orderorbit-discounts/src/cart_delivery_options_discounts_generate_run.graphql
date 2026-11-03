@@ -14,6 +14,12 @@ query DeliveryInput {
       gift: attribute(key: "_oo_gift") {
         value
       }
+      bundle: attribute(key: "_oo_bundle") {
+        value
+      }
+      tier: attribute(key: "_oo_tier") {
+        value
+      }
       cost {
         amountPerQuantity {
           amount
