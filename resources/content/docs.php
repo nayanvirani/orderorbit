@@ -204,7 +204,7 @@ return [
             ]],
             'build' => ['Build a workflow', [
                 ['steps', [
-                    ['Start from a template', 'Automation → Templates: review request, delivery follow-up, welcome, VIP, reorder, win-back, cross-sell, product education, refund and cancellation follow-ups.'],
+                    ['Start from a template', 'Automation → Templates: VIP customer, second-order thank-you, reorder reminder, product education, refund and cancellation follow-ups, and survey answers to your CRM.'],
                     ['Edit on the canvas', 'Change the trigger, add conditions, waits, branches and actions. Placeholders such as {{order_name}} and {{discount_code}} fill in per order.'],
                     ['Test', '"Test with a sample order" walks through every step and changes nothing.'],
                     ['Publish', 'Every publish is saved as a version you can restore. How many workflows can be on at once, and how many runs a month, depends on your plan.'],

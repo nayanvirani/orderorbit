@@ -134,7 +134,7 @@ const ACTIONS = [
   { label: 'Create a bundle', help: 'Sell more per order with packs and mix & match.', href: '/app/cro/bundles/new', icon: '📦' },
   { label: 'Add free shipping or gifts', help: 'Rewards that unlock as the cart grows.', href: '/app/cro/progressive-gifts/new', icon: '🎁' },
   { label: 'Start an A/B test', help: 'Find out which version earns more.', href: '/app/experiments', icon: '🧪' },
-  { label: 'Follow up automatically', help: 'Review requests, win-backs and more.', href: '/app/automation/templates', icon: '⚡' },
+  { label: 'Follow up automatically', help: 'VIP rewards, reorder reminders and more.', href: '/app/automation/templates', icon: '⚡' },
 ];
 
 /** Recommended steps first, topped up with the usual shortcuts. */

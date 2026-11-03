@@ -25,7 +25,7 @@ return [
             ['Cart upsell', 'One relevant add-on in the cart, with a small incentive.'],
             ['Trust row near the buy button', 'Shipping, returns and secure checkout, in your colours.'],
         ],
-        'later' => ['A/B test two bundle layouts', 'Review request emails after delivery'],
+        'later' => ['A/B test two bundle layouts', 'VIP rewards with a unique code'],
         'features' => ['bundles', 'progressive-gifts', 'cart-upsells', 'trust-social-proof', 'analytics'],
         'faqs' => [
             ['Can I replace my current bundle app?', 'Yes. Recreate your bundles in Growvia, check them on your store, then remove the old app.'],

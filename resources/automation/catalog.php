@@ -8,7 +8,7 @@
 | What the workflow builder offers and the engine understands. Field types:
 | text, textarea, number, select, products, collections, workflow.
 | Placeholders usable in text actions: {{order_name}}, {{order_total}},
-| {{product_titles}}, {{shop_name}}, {{discount_code}}, {{event_name}}.
+| {{product_titles}}, {{shop_name}}, {{discount_code}}, {{event_name}}, {{event_label}}.
 |
 */
 

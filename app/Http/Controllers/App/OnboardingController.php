@@ -15,7 +15,7 @@ class OnboardingController extends Controller
     public const GOALS = [
         'conversion' => ['label' => 'Increase conversion', 'help' => 'Turn more visitors into buyers with trust, urgency and sticky add-to-cart.'],
         'aov' => ['label' => 'Increase order value', 'help' => 'Bundles, quantity breaks, free gifts and upsells.'],
-        'repeat' => ['label' => 'Drive repeat purchases', 'help' => 'Thank You offers, reorder reminders and win-back flows.'],
+        'repeat' => ['label' => 'Drive repeat purchases', 'help' => 'Thank You offers, reorder reminders and VIP rewards.'],
         'checkout' => ['label' => 'Improve checkout', 'help' => 'Trust, shipping progress and offers in checkout where supported.'],
     ];
 

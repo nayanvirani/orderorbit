@@ -57,7 +57,7 @@ class DashboardApiController extends Controller
             ! $store->experiences()->whereIn('type', ['bundles', 'quantity-breaks'])->exists() ? ['text' => 'Bundles on your best seller lift units per order.', 'action' => 'Create a bundle', 'href' => route('app.bundles.types', [], false)] : null,
             ! $store->experiences()->where('type', 'progressive-gifts')->exists() ? ['text' => 'A gift or free-shipping goal just above your average order.', 'action' => 'Add a gift goal', 'href' => route('app.gifts.models', [], false)] : null,
             $store->planIncludes('ab_testing') && $store->experiences()->where('status', 'published')->exists() && ! Experiment::where('store_id', $store->id)->exists() ? ['text' => 'Find out which layout or headline earns more.', 'action' => 'Start an A/B test', 'href' => '/app/experiments'] : null,
-            $store->planIncludes('automation') && ! Workflow::where('store_id', $store->id)->where('status', 'enabled')->exists() ? ['text' => 'Review requests and win-backs, sent for you.', 'action' => 'Turn on a workflow', 'href' => '/app/automation/templates'] : null,
+            $store->planIncludes('automation') && ! Workflow::where('store_id', $store->id)->where('status', 'enabled')->exists() ? ['text' => 'VIP rewards and reorder reminders, sent for you.', 'action' => 'Turn on a workflow', 'href' => '/app/automation/templates'] : null,
             $store->planIncludes('personalization') && ! PersonalizationRule::where('store_id', $store->id)->exists() ? ['text' => 'Show returning customers a different offer.', 'action' => 'Personalize', 'href' => '/app/audiences/rules'] : null,
         ])), 0, 4);
 

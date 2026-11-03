@@ -2,7 +2,9 @@
 
 /*
 | Automation templates (scope section 19). Each is a ready workflow definition: a trigger, its
-| settings and steps. Steps: action ({action, params}), wait ({amount, unit}) and condition
+| settings and steps, plus a category for the template gallery. Only follow-ups that Shopify
+| (Flow, Messaging) and review apps don't already offer are kept: no review requests, welcomes,
+| win-backs or cross-sells. Steps: action ({action, params}), wait ({amount, unit}) and condition
 | ({match: all|any, rules: [{field, op, value}], then: [...], else: [...]}).
 */
 
@@ -13,38 +15,10 @@ $rule = fn (string $field, string $op, $value) => ['field' => $field, 'op' => $o
 $tag = fn (string $action, string $tags) => ['type' => 'action', 'action' => $action, 'params' => ['tags' => $tags]];
 
 return [
-    'review-request' => [
-        'name' => 'Review request',
-        'description' => 'Delivered → wait 5 days → ask for a review.',
-        'trigger' => 'order_delivered',
-        'steps' => [
-            $wait(5),
-            $email('How are you finding your order?', "Hi,\n\nYour order {{order_name}} arrived a few days ago. We'd love to hear what you think: a quick review helps other shoppers and helps us improve.\n\nThank you,\n{{shop_name}}"),
-        ],
-    ],
-    'delivery-follow-up' => [
-        'name' => 'Delivery follow-up',
-        'description' => 'Delivered → care tips and how to get help.',
-        'trigger' => 'order_delivered',
-        'steps' => [
-            $wait(1),
-            $email('Getting started with your order', "Hi,\n\nYour order {{order_name}} has arrived. Here are a few tips to get the most from {{product_titles}}. If anything isn't right, just reply to this email.\n\n{{shop_name}}"),
-        ],
-    ],
-    'new-customer-welcome' => [
-        'name' => 'New customer welcome',
-        'description' => 'First order → welcome and tag the customer.',
-        'trigger' => 'order_paid',
-        'steps' => [
-            $if([$rule('customer', 'is', 'new')], [
-                $tag('add_customer_tag', 'new-customer'),
-                $email('Welcome to {{shop_name}}', "Hi,\n\nThank you for your first order, {{order_name}}. We're glad you're here.\n\n{{shop_name}}"),
-            ]),
-        ],
-    ],
     'vip-customer' => [
+        'category' => 'vip',
         'name' => 'VIP customer',
-        'description' => 'Lifetime spend over a threshold → VIP tag and a thank-you code.',
+        'description' => 'Lifetime spend over a threshold → VIP tag, a unique thank-you code by email and a note to your team.',
         'trigger' => 'order_paid',
         'steps' => [
             $if([$rule('ltv', 'gte', 500), $rule('customer_tag', 'has_not', 'vip')], [
@@ -56,8 +30,9 @@ return [
         ],
     ],
     'reorder-reminder' => [
+        'category' => 'retention',
         'name' => 'Reorder reminder',
-        'description' => 'Purchase → product-specific delay → reminder to reorder.',
+        'description' => 'Chosen products → wait → a reminder to reorder, skipped if they already have.',
         'trigger' => 'product_purchased',
         'trigger_config' => ['products' => []],
         'steps' => [
@@ -67,29 +42,8 @@ return [
             ]),
         ],
     ],
-    'win-back' => [
-        'name' => 'Win-back',
-        'description' => 'No order in 90 days → an offer to come back.',
-        'trigger' => 'order_paid',
-        'steps' => [
-            $wait(90),
-            $if([$rule('ordered_again', 'is', 'no')], [
-                ['type' => 'action', 'action' => 'create_discount', 'params' => ['kind' => 'percent', 'value' => 20, 'expires_days' => 14, 'prefix' => 'COMEBACK']],
-                $email('We miss you', "Hi,\n\nIt's been a while! Here's 20% off your next order, valid for 14 days: {{discount_code}}\n\n{{shop_name}}"),
-            ]),
-        ],
-    ],
-    'cross-sell' => [
-        'name' => 'Cross-sell',
-        'description' => 'Product purchased → recommend a related product.',
-        'trigger' => 'product_purchased',
-        'trigger_config' => ['products' => []],
-        'steps' => [
-            $wait(7),
-            $email('Goes great with your {{product_titles}}', "Hi,\n\nCustomers who bought {{product_titles}} often add our matching products. Take a look.\n\n{{shop_name}}"),
-        ],
-    ],
     'product-education' => [
+        'category' => 'care',
         'name' => 'Product education',
         'description' => 'Purchase → delay → how-to and care guide.',
         'trigger' => 'order_fulfilled',
@@ -99,6 +53,7 @@ return [
         ],
     ],
     'refund-follow-up' => [
+        'category' => 'care',
         'name' => 'Refund follow-up',
         'description' => 'Refund → check in and create a support task.',
         'trigger' => 'refund_created',
@@ -108,12 +63,37 @@ return [
         ],
     ],
     'cancellation-follow-up' => [
+        'category' => 'care',
         'name' => 'Cancellation follow-up',
         'description' => 'Cancellation → ask for feedback and tag the order.',
         'trigger' => 'order_cancelled',
         'steps' => [
             $tag('add_order_tag', 'cancelled-follow-up'),
             $email('Sorry to see your order go', "Hi,\n\nYour order {{order_name}} was cancelled. If something got in the way, we'd love to know so we can fix it.\n\n{{shop_name}}"),
+        ],
+    ],
+    'second-order-thanks' => [
+        'category' => 'vip',
+        'name' => 'Second-order thank-you',
+        'description' => 'A customer\'s second order → tag them and email a unique code for the next one.',
+        'trigger' => 'order_paid',
+        'steps' => [
+            $if([$rule('previous_orders', 'eq', 1)], [
+                $tag('add_customer_tag', 'repeat-customer'),
+                ['type' => 'action', 'action' => 'create_discount', 'params' => ['kind' => 'percent', 'value' => 10, 'expires_days' => 45, 'prefix' => 'AGAIN']],
+                $email('Thanks for coming back', "Hi,\n\nThank you for ordering from us again. Here's 10% off your next order, just for you: {{discount_code}}\n\n{{shop_name}}"),
+            ]),
+        ],
+    ],
+    'survey-to-crm' => [
+        'category' => 'growvia',
+        'name' => 'Survey answer to your CRM',
+        'description' => 'A post-purchase survey answer from Growvia → sent to your own tools and your team.',
+        'trigger' => 'custom_event',
+        'trigger_config' => ['event' => 'survey_answered'],
+        'steps' => [
+            ['type' => 'action', 'action' => 'webhook', 'params' => ['url' => '']],
+            ['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'New survey answer', 'body' => 'A shopper answered: {{event_label}}']],
         ],
     ],
 ];

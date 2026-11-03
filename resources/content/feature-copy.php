@@ -170,11 +170,11 @@ return [
         'status' => 'live',
         'summary' => 'Workflows triggered by what customers do: tags, codes, tasks and follow-ups.',
         'overview' => [
-            'The second order rarely happens by itself, and manual follow-ups get forgotten. Lifecycle automation reacts to real Shopify events, such as an order paid, delivered or refunded, a new customer or a tag, and follows up for you: tag a VIP, create a single-use code, remind your team, call your own systems, or prepare a review or win-back email.',
-            'Build on a visual canvas with waits and if/else branches, or start from one of 10 templates. Test on a sample order before you publish; every run is logged, never starts twice for the same event and retries failed steps on its own. Email steps prepare each message today, and sending through an email provider is being connected now.',
+            'The second order rarely happens by itself, and manual follow-ups get forgotten. Lifecycle automation reacts to real Shopify events, such as an order paid, delivered or refunded, a new customer or a tag, and follows up for you: tag a VIP, create a single-use code, remind your team, call your own systems, or prepare a reorder reminder or product guide.',
+            'Build on a visual canvas with waits and if/else branches, or start from one of 7 templates. Test on a sample order before you publish; every run is logged, never starts twice for the same event and retries failed steps on its own. Email steps prepare each message today, and sending through an email provider is being connected now.',
         ],
         'benefits' => [
-            ['10 templates', 'Review request, welcome, VIP, reorder, win-back, cross-sell and more, ready to publish.'],
+            ['7 templates', 'VIP rewards, second-order thank-yous, reorder reminders, product guides and refund follow-ups, ready to publish.'],
             ['Reliable runs', 'Every run is logged, starts once per event and retries failed steps automatically.'],
             ['Safe to try', 'Test runs walk through a sample order and change nothing in your store.'],
             ['Versions', 'Every publish is saved, and any earlier version can be restored.'],

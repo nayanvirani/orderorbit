@@ -25,7 +25,7 @@ export default function Automation({ workflows, stats, automationOn, docsUrl }) 
       <s-section heading="Workflows">
         {!workflows.length ? (
           <>
-            <s-paragraph>No workflows yet. Templates cover review requests, welcomes, VIPs, reorder reminders, win-backs and more.</s-paragraph>
+            <s-paragraph>No workflows yet. Templates cover VIP rewards, second-order thank-yous, reorder reminders, product guides, refund and cancellation follow-ups.</s-paragraph>
             <s-button href={appUrl(route('app.automation.templates'))}>Browse templates</s-button>
           </>
         ) : (

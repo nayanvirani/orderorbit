@@ -47,7 +47,7 @@ const ABOUT = {
   window: ['Pause, then continue only during set hours in your store\'s time zone.', 'Wait 1 day, then send between 09:00 and 20:00.'],
 };
 
-const VARIABLES = ['order_name', 'order_total', 'product_titles', 'shop_name', 'discount_code', 'event_name'];
+const VARIABLES = ['order_name', 'order_total', 'product_titles', 'shop_name', 'discount_code', 'event_name', 'event_label'];
 
 function blank(kind, extra) {
   if (kind === 'wait') return { type: 'wait', amount: 1, unit: 'days' };

@@ -106,7 +106,9 @@ class AutomationTest extends TestCase
 
         // Every template is a valid workflow (the product pickers are filled in by the merchant).
         foreach (Definition::templates() as $key => $template) {
-            $template['trigger_config'] = ['products' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']]];
+            $template['trigger_config'] = array_filter($template['trigger_config'] ?? []) + ['products' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']]];
+            // The merchant fills in their own webhook address.
+            array_walk($template['steps'], function (&$s) { if (($s['action'] ?? null) === 'webhook') { $s['params']['url'] = 'https://hooks.example.com/crm'; } });
             $this->assertSame([], Definition::normalize($template)[1], $key);
         }
     }
@@ -249,9 +251,10 @@ class AutomationTest extends TestCase
         $owner = $this->member($store, 'owner');
         $this->page('/app/automation', $owner)->assertOk()->assertJsonPath('component', 'automation/index')->assertJsonPath('props.workflows', []);
         $names = array_column($this->page('/app/automation/templates', $owner)->assertOk()->json('props.templates'), 'name');
-        $this->assertContains('Review request', $names);
+        $this->assertNotContains('Review request', $names, 'Review apps already send these.');
+        $this->assertContains('Second-order thank-you', $names);
         $this->assertContains('Cancellation follow-up', $names);
-        $this->send('/app/automation/workflows', ['template' => 'review-request'], $owner)->assertOk()->assertJsonPath('notice.message', 'Draft created.');
+        $this->send('/app/automation/workflows', ['template' => 'product-education'], $owner)->assertOk()->assertJsonPath('notice.message', 'Draft created.');
         $workflow = Workflow::sole();
         $this->page('/app/automation/workflows/'.$workflow->id, $owner)->assertOk()->assertJsonPath('props.workflow.draft.trigger', $workflow->draft['trigger'])->assertJsonPath('props.catalog.triggers.order_paid.label', 'Order paid');
 
@@ -268,7 +271,7 @@ class AutomationTest extends TestCase
 
         $this->post('/app/automation/workflows/'.$workflow->id, ['name' => 'Reviews', 'action' => 'test', 'definition' => json_encode($good)], $this->as($owner))->assertRedirectContains('/app/automation/runs/');
         $run = WorkflowRun::where('test', true)->sole();
-        $this->page('/app/automation/runs/'.$run->id, $owner)->assertOk()->assertJsonPath('props.run.test', true)->assertSee('Would wait 5 days');
+        $this->page('/app/automation/runs/'.$run->id, $owner)->assertOk()->assertJsonPath('props.run.test', true)->assertSee('Would wait 3 days');
         $this->page('/app/automation/runs', $owner)->assertOk()->assertJsonPath('props.runs.data.0.id', $run->id);
         $this->page('/app/automation/inbox', $owner)->assertOk()->assertJsonPath('props.open', []);
         $this->page('/app/automation/emails', $owner)->assertOk()->assertJsonPath('props.emails.data', []);
@@ -333,5 +336,36 @@ class AutomationTest extends TestCase
         $draft['steps'][0]['label'] = 'Tell the team';
         $this->post('/app/automation/workflows/'.$workflow->id, ['name' => 'Paid orders', 'action' => 'save', 'definition' => json_encode($draft)], $this->as($owner))->assertRedirectContains('saved');
         $this->assertSame('Tell the team', $workflow->fresh()->draft['steps'][0]['label']);
+    }
+
+    public function test_the_redesigned_list_templates_and_run_history(): void
+    {
+        $store = $this->store();
+        $owner = $this->member($store, 'owner');
+        \App\Models\FeatureFlag::create(['key' => 'flow_editor', 'mode' => 'stores', 'store_ids' => [$store->id], 'enabled' => true]);
+        \App\Support\Features::forget();
+        $this->send('/app/automation/workflows', ['template' => 'vip-customer'], $owner);
+        $vip = Workflow::sole();
+        app(WorkflowManager::class)->publish($vip, null);
+
+        $this->page('/app/automation', $owner)->assertOk()->assertJsonPath('component', 'automation/flows')
+            ->assertJsonPath('props.workflows.0.pills.0', ['kind' => 'trigger', 'label' => 'Order paid'])
+            ->assertJsonPath('props.workflows.0.pills.1', ['kind' => 'condition', 'label' => 'Customer lifetime spend?'])
+            ->assertJsonPath('props.workflows.0.pills.2.kind', 'action')
+            ->assertJsonPath('props.plan.name', 'Scale')
+            ->assertJsonPath('shared.nav.groups.0.items.2.label', 'Run history');
+        $templates = collect($this->page('/app/automation/templates', $owner)->assertJsonPath('component', 'automation/flow-templates')->json('props.templates'))->keyBy('key');
+        $this->assertTrue($templates['vip-customer']['in_use']);
+        $this->assertFalse($templates['reorder-reminder']['in_use']);
+        $this->assertSame('growvia', $templates['survey-to-crm']['category']);
+
+        // A small order doesn't match: the run shows the condition, then the Then steps it never reached.
+        app(Engine::class)->trigger($store, 'order_paid', Context::fromOrder($this->order(['customer' => ['total_spent' => '40.00']])), 'order_paid:5001');
+        $run = WorkflowRun::sole();
+        $steps = $this->page('/app/automation/runs/'.$run->id, $owner)->assertOk()->assertJsonPath('component', 'automation/flow-runs')
+            ->assertJsonPath('props.run.id', $run->id)->assertJsonPath('props.runs.data.0.id', $run->id)->json('props.run.steps');
+        $this->assertSame(['no_match', 'not_reached', 'not_reached', 'not_reached', 'not_reached', 'finished'], array_column($steps, 'status'));
+        $this->assertStringEndsWith('The Otherwise branch is empty, so the run ended.', $steps[0]['message']);
+        $this->assertSame('Add customer tags', $steps[1]['message']);
     }
 }

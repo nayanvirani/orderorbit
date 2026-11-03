@@ -28,3 +28,20 @@ export function PlanNote({ automationOn }) {
 export function utc(value) {
   return value ? new Date(value).toLocaleString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
 }
+
+/** A workflow as coloured pills: green trigger → orange conditions → grey waits → violet actions. */
+export function Pills({ pills, max = 6 }) {
+  if (!pills?.length) return null;
+  const shown = pills.slice(0, max);
+  return (
+    <span className="fl-pills">
+      {shown.map((p, i) => (
+        <span key={i} className="fl-pill-wrap">
+          {i > 0 && <span className="fl-arrow" aria-hidden="true">→</span>}
+          <span className={`fl-pill ${p.kind}`}>{p.label}</span>
+        </span>
+      ))}
+      {pills.length > max && <span className="fl-pill more">+{pills.length - max} more</span>}
+    </span>
+  );
+}

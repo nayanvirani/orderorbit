@@ -105,6 +105,7 @@ class Context
             'shop_name' => $shop,
             'discount_code' => collect($results)->pluck('discount_code')->filter()->last() ?? '',
             'event_name' => str_replace('_', ' ', (string) ($context['event']['name'] ?? '')),
+            'event_label' => (string) ($context['event']['label'] ?? ''),
         ];
     }
 

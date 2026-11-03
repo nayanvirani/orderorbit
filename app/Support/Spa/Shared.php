@@ -101,6 +101,11 @@ class Shared
             return null;
         }
         [$label, $items] = $modules[$section];
+        // The automation redesign renames three items (labels only), released with the flow_editor flag.
+        if ($section === 'automation' && \App\Support\Features::enabled('flow_editor', $store)) {
+            $rename = ['Runs' => 'Run history', 'Inbox' => 'Team inbox', 'Emails' => 'Emails sent'];
+            $items = array_map(fn ($i) => [$rename[$i[0]] ?? $i[0], ...array_slice($i, 1)], $items);
+        }
         $items = array_values(array_filter($items, fn ($i) => ! isset($i[5]) || $user?->can($i[5])));
 
         return ['section' => $section, 'label' => $label, 'groups' => [['heading' => null, 'items' => array_map(fn ($i) => [
