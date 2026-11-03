@@ -97,15 +97,15 @@
     var set = function (k) { return d[k] && d[k] !== 'auto'; };
     var style = exp.style || 'card';
     var custom = set('ck_background') || set('ck_border') || set('ck_radius') || set('ck_padding');
-    // "Show as" and "Banner colour" from the Design step (Shopify's four banner tones).
-    var forced = d.ck_frame && d.ck_frame !== 'auto' ? d.ck_frame : null;
-    // A banner only when picked in the Design step: Shopify adds its own status icon to banners, which can't be hidden.
+    // "Show as" from the Design step. Never a Shopify banner (it adds a status icon that can't be hidden);
+    // blocks saved as "Coloured banner" show as a tinted box, as live.
+    var legacyBanner = d.ck_frame === 'banner';
+    var forced = legacyBanner ? 'box' : d.ck_frame === 'box' || d.ck_frame === 'plain' ? d.ck_frame : null;
     var kind = forced || (!custom && (opts.as === 'plain' || PLAIN.indexOf(style) !== -1) ? 'plain' : 'box');
-    if (set('ck_banner_tone')) opts = Object.assign({}, opts, { tone: d.ck_banner_tone });
     var css = [];
     if (kind === 'box') {
       var plain = !forced && (PLAIN.indexOf(style) !== -1 || opts.as === 'plain');
-      var bg = set('ck_background') ? d.ck_background : opts.as === 'subdued' || opts.as === 'banner' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : 'base';
+      var bg = set('ck_background') ? d.ck_background : legacyBanner || opts.as === 'subdued' || opts.as === 'banner' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : 'base';
       var border = set('ck_border') ? d.ck_border : plain ? 'none' : 'base';
       css.push('background:' + (bg === 'subdued' ? '#f4f4f4' : bg === 'transparent' ? 'transparent' : '#fff'));
       css.push('border:' + (BORDER[border] || '0') + ' ' + (d.ck_border_style || 'solid') + ' #dedede');
@@ -118,11 +118,6 @@
     if (d.ck_tone && TONE[d.ck_tone]) css.push('--ck-text:' + TONE[d.ck_tone]);
     var cls = 'ck ck-' + kind + ' ck-s-' + h.esc(style) + (d.ck_text === 'subdued' ? ' ck-subdued' : '') + (d.ck_tone && TONE[d.ck_tone] ? ' ck-toned' : '');
     var head = opts.heading ? (kind === 'plain' ? title(opts.heading) : heading(opts.heading)) : '';
-    if (kind === 'banner') {
-      var tone = opts.tone || 'info';
-      return '<div class="' + cls + ' ck-tone-' + tone + '" style="' + css.join(';') + '">' + icon({ info: 'info', success: 'check', warning: 'alert', critical: 'alert' }[tone], tone) +
-        '<div class="ck-stack">' + head + body + '</div></div>';
-    }
     return '<div class="' + cls + '" style="' + css.join(';') + '">' + head + body + '</div>';
   }
 

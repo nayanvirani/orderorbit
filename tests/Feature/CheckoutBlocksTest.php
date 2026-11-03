@@ -50,7 +50,7 @@ class CheckoutBlocksTest extends TestCase
 
         // Checkout uses the store's checkout branding: Shopify's box styles only, and only the targeting checkout knows.
         $fields = Schema::fields('checkout-trust');
-        $this->assertSame(['ck_frame', 'ck_banner_tone', 'ck_background', 'ck_border', 'ck_border_style', 'ck_radius', 'ck_padding', 'ck_width', 'ck_width_value', 'ck_height', 'ck_height_value', 'ck_text', 'ck_tone'], array_keys($fields['design']));
+        $this->assertSame(['ck_frame', 'ck_background', 'ck_border', 'ck_border_style', 'ck_radius', 'ck_padding', 'ck_width', 'ck_width_value', 'ck_height', 'ck_height_value', 'ck_text', 'ck_tone'], array_keys($fields['design']));
         $this->assertSame([], Schema::fields('post-purchase')['design']);
         $this->assertSame(['priority'], array_keys($fields['behavior']));
         $this->assertSame(['cart_min', 'cart_max', 'countries'], array_keys($fields['targeting']));

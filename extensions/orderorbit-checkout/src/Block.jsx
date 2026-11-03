@@ -111,9 +111,6 @@ function useVisitor(needed) {
  */
 function Frame({ exp, heading, tone, as, children }) {
   const box = boxStyle(exp.style, exp.design, as);
-  if (box.kind === 'banner') {
-    return <Sized size={box.size}><s-banner heading={heading || undefined} tone={box.tone || tone || 'info'}><s-stack gap="small-200">{children}</s-stack></s-banner></Sized>;
-  }
   if (box.kind === 'plain') {
     return <Sized size={box.size}><s-stack gap="small-200">{heading ? <T type="strong">{heading}</T> : null}{children}</s-stack></Sized>;
   }

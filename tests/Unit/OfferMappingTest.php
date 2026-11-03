@@ -60,11 +60,14 @@ class OfferMappingTest extends TestCase
         $this->assertSame(['k' => 'upsell', 'v' => 15.0, 'id' => 'exp-1', 'm' => 'Checkout offer'], $this->offer('checkout-upsell', ['discount_percent' => 15]));
     }
 
-    public function test_checkout_blocks_can_be_shown_as_coloured_banners(): void
+    public function test_checkout_blocks_never_use_shopify_banners_with_their_status_icon(): void
     {
         $design = Schema::fields('checkout-countdown')['design'];
-        $this->assertSame(['auto', 'banner', 'box', 'plain'], array_keys($design['ck_frame']['options']));
-        $this->assertSame(['auto', 'info', 'success', 'warning', 'critical'], array_keys($design['ck_banner_tone']['options']));
+        $this->assertSame(['auto', 'box', 'plain'], array_keys($design['ck_frame']['options']));
+        $this->assertArrayNotHasKey('ck_banner_tone', $design);
+        foreach (array_merge(glob(base_path('extensions/orderorbit-checkout/src/*.jsx')), glob(base_path('extensions/orderorbit-account/src/*.jsx'))) as $file) {
+            $this->assertStringNotContainsString('<s-banner', file_get_contents($file), basename(dirname($file, 2)).' must not draw a Shopify banner.');
+        }
         // "Cart reservation" claimed a reservation Growvia doesn't make (requirement 1.1.4).
         $this->assertArrayNotHasKey('cart-reservation', \App\Experiences\Registry::templates('checkout-countdown'));
         $this->assertArrayNotHasKey('payment_methods', Schema::fields('checkout-trust')['content']);

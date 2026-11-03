@@ -125,12 +125,10 @@ export function boxStyle(style, design, as) {
     inlineSize: d.ck_width && d.ck_width !== 'full' ? size(d.ck_width, d.ck_width_value) : undefined,
     minBlockSize: d.ck_height === 'px' ? size('px', d.ck_height_value) : undefined,
   };
-  // "Show as" in the Design step picks the frame; the banner colour is one of Shopify's banner tones.
-  const frame = d.ck_frame && d.ck_frame !== 'auto' ? d.ck_frame : null;
-  const tone = d.ck_banner_tone && d.ck_banner_tone !== 'auto' ? d.ck_banner_tone : undefined;
-  // Shopify draws its own status icon on every banner and it can't be hidden, so a banner is used only when
-  // the merchant picks "Coloured banner"; banner-style layouts otherwise show as a tinted box without an icon.
-  if (frame === 'banner') return { kind: 'banner', tone, props: {}, size: sized };
+  // "Show as" in the Design step picks the frame. Shopify banners always add a status icon that can't be
+  // hidden, so they are never used: banner-style layouts (and blocks saved as "Coloured banner") show as a tinted box.
+  const legacyBanner = d.ck_frame === 'banner';
+  const frame = d.ck_frame === 'box' || d.ck_frame === 'plain' || legacyBanner ? (legacyBanner ? 'box' : d.ck_frame) : null;
   if (frame === 'plain' || (!frame && !custom && (as === 'plain' || PLAIN.indexOf(style) !== -1))) return { kind: 'plain', props: {}, size: sized };
 
   const plain = !frame && (as === 'plain' || PLAIN.indexOf(style) !== -1);
@@ -138,7 +136,7 @@ export function boxStyle(style, design, as) {
   return {
     kind: 'box',
     props: {
-      background: set('ck_background') ? d.ck_background : as === 'subdued' || as === 'banner' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
+      background: set('ck_background') ? d.ck_background : legacyBanner || as === 'subdued' || as === 'banner' || SUBDUED.indexOf(style) !== -1 || BANNER.indexOf(style) !== -1 ? 'subdued' : undefined,
       border: BORDERS.indexOf(border) !== -1 ? border + ' base ' + (d.ck_border_style || 'solid') : 'none',
       borderRadius: set('ck_radius') ? d.ck_radius : plain ? 'none' : 'base',
       padding: set('ck_padding') ? d.ck_padding : plain ? 'none' : 'base',

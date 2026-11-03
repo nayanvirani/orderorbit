@@ -81,8 +81,7 @@ function T({ color, tone, type, children }) {
 /** The block's frame (same rules as checkout blocks); `as` asks for a banner, plain or subdued frame. */
 function Frame({ exp, heading, tone, as, children }) {
   const box = boxStyle(exp.style, exp.design, as);
-  const body = <s-stack gap="small-300">{heading && box.kind !== 'banner' ? (box.kind === 'plain' ? <T type="strong">{heading}</T> : <s-heading>{heading}</s-heading>) : null}{children}</s-stack>;
-  if (box.kind === 'banner') return <Sized size={box.size}><s-banner heading={heading || undefined} tone={box.tone || tone || 'info'}>{body}</s-banner></Sized>;
+  const body = <s-stack gap="small-300">{heading ? (box.kind === 'plain' ? <T type="strong">{heading}</T> : <s-heading>{heading}</s-heading>) : null}{children}</s-stack>;
   if (box.kind === 'plain') return <Sized size={box.size}>{body}</Sized>;
   return <s-box {...box.props} {...box.size}>{body}</s-box>;
 }
