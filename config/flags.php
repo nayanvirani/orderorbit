@@ -18,7 +18,7 @@
 return [
     'release' => [
         'new_menu' => ['New menu and names', 'The 9-item menu with the new module names.', 'App', 'Phase 2', false],
-        'flow_editor' => ['Flow-style automation editor', 'The canvas editor for workflows (same saved format).', 'Automation', 'Phase 2', false],
+        'flow_editor' => ['Flow-style automation editor', 'The canvas editor for workflows (same saved format).', 'Automation', 'Phase 2', true],
         'live_chat' => ['Live chat with Growvia support', 'The chat button on every page for the stores you choose. The team console is always on.', 'Support', 'Phase 2', true],
         'premium_plan' => ['Premium plan', 'The Premium plan above Scale and new-module limits.', 'Billing', 'Phase 2', false],
         'profit' => ['Profit module', 'Profit dashboard, costs, ad expenses, breakdowns, ROAS and POAS.', 'Profit', 'Phase 3', false],

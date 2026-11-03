@@ -202,7 +202,12 @@ class AutomationController extends Controller
 
     private function editor(Store $store, Workflow $workflow, array $errors, ?string $banner = null): Page
     {
-        return page('automation/editor', $this->shared($store) + [
+        // The flow-style editor (automation redesign), released with the flow_editor flag; it reads and saves the same definition.
+        $flow = \App\Support\Features::enabled('flow_editor', $store);
+        $live = $workflow->published_version_id ? $workflow->versions()->find($workflow->published_version_id) : null;
+        $since = now()->subDays(30);
+
+        return page($flow ? 'automation/flow' : 'automation/editor', $this->shared($store) + [
             'workflow' => [
                 'id' => $workflow->id, 'name' => $workflow->name, 'status' => $workflow->status, 'draft' => (object) ($workflow->draft ?? []),
                 'unpublished' => $workflow->has_unpublished_changes && $workflow->published_version_id, 'published' => (bool) $workflow->published_version_id,
@@ -215,6 +220,15 @@ class AutomationController extends Controller
             ]),
             'recentRuns' => $workflow->runs()->latest('id')->limit(10)->get()->map(fn ($r) => ['id' => $r->id, 'subject' => $r->subject, 'status' => $r->status, 'test' => (bool) $r->test]),
             'otherWorkflows' => Workflow::where('store_id', $store->id)->whereKeyNot($workflow->id)->orderBy('name')->get(['handle', 'name']),
+            'live' => $live ? ['version' => $live->version, 'published_at' => $live->published_at] : null,
+            'savedAt' => $workflow->updated_at,
+            'gates' => ['branching' => $store->planIncludes('automation_branching'), 'webhooks' => $store->planIncludes('automation_webhooks')],
+            'stats' => $flow ? [
+                'runs' => $workflow->runs()->where('test', false)->where('created_at', '>=', $since)->count(),
+                'failed' => $workflow->runs()->where('test', false)->where('status', 'failed')->where('created_at', '>=', $since)->count(),
+                'matched' => \App\Models\Automation\WorkflowLog::whereIn('run_id', $workflow->runs()->where('test', false)->where('created_at', '>=', $since)->select('id'))
+                    ->where('kind', 'condition')->where('status', 'ok')->distinct()->count('run_id'),
+            ] : null,
         ], $errors ? 422 : 200);
     }
 

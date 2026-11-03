@@ -73,7 +73,18 @@ class Definition
                         $errors["{$p}.amount"] = "Wait between 1 and {$max} {$unit}.";
                         $amount = max(1, min($max, $amount));
                     }
-                    $out[] = ['type' => 'wait', 'amount' => $amount, 'unit' => $unit];
+                    $wait = ['type' => 'wait', 'amount' => $amount, 'unit' => $unit];
+                    // Optional: only continue between two times of day (the store's time zone).
+                    $from = (string) ($step['window']['from'] ?? '');
+                    $to = (string) ($step['window']['to'] ?? '');
+                    if ($from !== '' || $to !== '') {
+                        if (! preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $from) || ! preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $to) || $from >= $to) {
+                            $errors["{$p}.window"] = 'Choose a start time before the end time, e.g. 09:00 to 20:00.';
+                        } else {
+                            $wait['window'] = ['from' => $from, 'to' => $to];
+                        }
+                    }
+                    $out[] = $wait + self::label($step);
                     break;
 
                 case 'condition':
@@ -115,7 +126,7 @@ class Definition
                         'rules' => $rules,
                         'then' => self::steps((array) ($step['then'] ?? []), "{$p}.then", $depth + 1, $errors, $count),
                         'else' => self::steps((array) ($step['else'] ?? []), "{$p}.else", $depth + 1, $errors, $count),
-                    ];
+                    ] + self::label($step);
                     break;
 
                 case 'action':
@@ -134,12 +145,37 @@ class Definition
                     if ($step['action'] === 'webhook' && $params['url'] !== '' && ! \App\Support\PublicUrl::looksValid($params['url'])) {
                         $errors["{$p}.params.url"] = 'Use a full, public https:// address.';
                     }
-                    $out[] = ['type' => 'action', 'action' => $step['action'], 'params' => $params];
+                    $out[] = ['type' => 'action', 'action' => $step['action'], 'params' => $params] + self::label($step);
                     break;
             }
         }
 
         return $out;
+    }
+
+    /** An optional name the merchant gives a step ("Is this a big spender?"); only kept when set. */
+    private static function label(array $step): array
+    {
+        $label = trim(mb_substr(strip_tags((string) ($step['label'] ?? '')), 0, 80));
+
+        return $label === '' ? [] : ['label' => $label];
+    }
+
+    /** The first moment at or after $at inside the daily window, in the given time zone. */
+    public static function inWindow(\Carbon\CarbonInterface $at, array $window, string $timezone): \Carbon\CarbonInterface
+    {
+        $local = \Illuminate\Support\Carbon::parse($at)->setTimezone($timezone);
+        [$fh, $fm] = array_map('intval', explode(':', $window['from']));
+        [$th, $tm] = array_map('intval', explode(':', $window['to']));
+        $start = $local->copy()->setTime($fh, $fm);
+        $end = $local->copy()->setTime($th, $tm);
+        if ($local->lt($start)) {
+            $local = $start;
+        } elseif ($local->gte($end)) {
+            $local = $start->addDay();
+        }
+
+        return $local->setTimezone('UTC');
     }
 
     /** @return array{0: mixed, 1: ?string} */
@@ -197,7 +233,7 @@ class Definition
                     $program[$at]['else'] = count($program);
                 }
             } elseif ($step['type'] === 'wait') {
-                $program[] = ['t' => 'wait', 'amount' => $step['amount'], 'unit' => $step['unit']];
+                $program[] = ['t' => 'wait', 'amount' => $step['amount'], 'unit' => $step['unit']] + (isset($step['window']) ? ['window' => $step['window']] : []);
             } else {
                 $program[] = ['t' => 'action', 'action' => $step['action'], 'params' => $step['params']];
             }
@@ -212,7 +248,7 @@ class Definition
         $catalog = self::catalog();
 
         return match ($step['type'] ?? $step['t'] ?? null) {
-            'wait' => "Wait {$step['amount']} {$step['unit']}",
+            'wait' => "Wait {$step['amount']} {$step['unit']}".(isset($step['window']) ? ", then continue between {$step['window']['from']} and {$step['window']['to']}" : ''),
             'condition', 'cond' => 'If '.implode($step['match'] === 'any' ? ' or ' : ' and ', array_map(fn ($r) => ($catalog['conditions'][$r['field']]['label'] ?? $r['field']).' '.($catalog['operators'][$r['op']] ?? $r['op']).' '.(is_array($r['value']) ? implode(', ', array_column($r['value'], 'title')) : $r['value']), $step['rules'])),
             'action' => $catalog['actions'][$step['action']]['label'] ?? $step['action'],
             default => '',

@@ -275,4 +275,63 @@ class AutomationTest extends TestCase
         $this->post('/app/automation/workflows/'.$workflow->id.'/toggle', [], $this->as($owner))->assertRedirect();
         $this->assertSame('disabled', $workflow->fresh()->status);
     }
+
+    public function test_the_flow_editor_keeps_the_saved_format_and_adds_names_and_time_windows(): void
+    {
+        // Existing definitions come back unchanged: names and windows are only added when set.
+        foreach (Definition::templates() as $key => $template) {
+            $template['trigger_config'] = ['products' => [['id' => 'gid://shopify/Product/1', 'title' => 'A']]];
+            [$once] = Definition::normalize($template);
+            $this->assertSame($once, Definition::normalize($once)[0], $key);
+            $this->assertStringNotContainsString('"label"', json_encode($once), $key);
+        }
+
+        [$def, $errors] = Definition::normalize(['trigger' => 'order_paid', 'steps' => [
+            ['type' => 'condition', 'label' => '  Is this a big spender?  ', 'match' => 'all', 'rules' => [['field' => 'ltv', 'op' => 'gte', 'value' => 300]],
+                'then' => [['type' => 'wait', 'amount' => 1, 'unit' => 'days', 'window' => ['from' => '09:00', 'to' => '20:00'], 'label' => '']], 'else' => []],
+            ['type' => 'wait', 'amount' => 1, 'unit' => 'hours', 'window' => ['from' => '20:00', 'to' => '09:00']],
+        ]]);
+        $this->assertSame(['steps.1.window'], array_keys($errors), 'The window must start before it ends.');
+        $this->assertSame('Is this a big spender?', $def['steps'][0]['label']);
+        $this->assertSame(['type' => 'wait', 'amount' => 1, 'unit' => 'days', 'window' => ['from' => '09:00', 'to' => '20:00']], $def['steps'][0]['then'][0]);
+        $this->assertSame(['from' => '09:00', 'to' => '20:00'], Definition::compile($def['steps'])[1]['window']);
+
+        // A wait ending outside the hours continues when they next start, in the store's time zone.
+        $ny = 'America/New_York';
+        $at = fn (string $local) => Definition::inWindow(\Illuminate\Support\Carbon::parse($local, $ny), ['from' => '09:00', 'to' => '20:00'], $ny)->setTimezone($ny)->format('Y-m-d H:i');
+        $this->assertSame('2026-11-05 09:00', $at('2026-11-05 06:30'));
+        $this->assertSame('2026-11-05 14:15', $at('2026-11-05 14:15'));
+        $this->assertSame('2026-11-06 09:00', $at('2026-11-05 21:00'));
+    }
+
+    public function test_a_wait_with_hours_resumes_inside_them(): void
+    {
+        $store = $this->store();
+        $store->forceFill(['timezone' => 'UTC'])->save();
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-05 18:00', 'UTC'));
+        $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [
+            ['type' => 'wait', 'amount' => 3, 'unit' => 'hours', 'window' => ['from' => '09:00', 'to' => '20:00']],
+            ['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'Morning']],
+        ]]);
+        app(Engine::class)->trigger($store, 'order_paid', Context::fromOrder($this->order()), 'order_paid:5001');
+        $this->assertSame('2026-11-06 09:00', WorkflowRun::sole()->resume_at->format('Y-m-d H:i'), '21:00 is after hours, so it waits for 09:00.');
+    }
+
+    public function test_the_flow_editor_is_released_with_its_flag(): void
+    {
+        $store = $this->store();
+        $owner = $this->member($store, 'owner');
+        $workflow = $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'Paid']]]]);
+        $this->page('/app/automation/workflows/'.$workflow->id, $owner)->assertJsonPath('component', 'automation/editor');
+
+        \App\Models\FeatureFlag::create(['key' => 'flow_editor', 'mode' => 'stores', 'store_ids' => [$store->id], 'enabled' => true]);
+        \App\Support\Features::forget();
+        $this->page('/app/automation/workflows/'.$workflow->id, $owner)->assertOk()->assertJsonPath('component', 'automation/flow')
+            ->assertJsonPath('props.live.version', 1)->assertJsonPath('props.gates.branching', true)->assertJsonPath('props.stats.runs', 0);
+
+        $draft = $workflow->draft;
+        $draft['steps'][0]['label'] = 'Tell the team';
+        $this->post('/app/automation/workflows/'.$workflow->id, ['name' => 'Paid orders', 'action' => 'save', 'definition' => json_encode($draft)], $this->as($owner))->assertRedirectContains('saved');
+        $this->assertSame('Tell the team', $workflow->fresh()->draft['steps'][0]['label']);
+    }
 }

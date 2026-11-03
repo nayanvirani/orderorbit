@@ -142,6 +142,9 @@ class Engine
                     continue;
                 }
                 $resume = now()->add($node['unit'], $node['amount']);
+                if (isset($node['window'])) {
+                    $resume = Definition::inWindow($resume, $node['window'], $run->store?->timezone ?: 'UTC');
+                }
                 $run->forceFill(['status' => 'waiting', 'resume_at' => $resume, 'results' => $results])->save();
                 $this->log($run, $i, 'wait', 'waiting', 'Waiting '.$node['amount'].' '.$node['unit'].', until '.$resume->toDayDateTimeString().' UTC.');
 
