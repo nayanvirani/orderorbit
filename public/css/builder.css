@@ -111,7 +111,9 @@
 @media (max-width: 1100px) { .b-templates, .bx-types { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 680px) { .b-templates, .bx-types { grid-template-columns: minmax(0, 1fr); } }
 .b-template, .bx-type { position: relative; display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; border: 1px solid #e3e3e3; border-radius: 14px; background: #fff; color: inherit; text-decoration: none; box-shadow: 0 1px 0 rgba(26, 26, 26, .05); transition: border-color .15s, box-shadow .15s, transform .15s; }
-a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover, a.b-template *, a.bx-type * { color: inherit; text-decoration: none; }
+a.b-template, a.bx-type, a.b-template:hover, a.bx-type:hover { color: inherit; text-decoration: none; }
+/* The card's own text only: the widget preview keeps its colours (white button text, ribbons, badges). */
+a.b-template *:not(.oo-preview, .oo-preview *), a.bx-type *:not(.oo-preview, .oo-preview *) { color: inherit; text-decoration: none; }
 .b-template.is-clickable { cursor: pointer; }
 .b-template.is-clickable:hover, a.bx-type:hover { transform: translateY(-2px); border-color: var(--ob-accent, #4f46e5); box-shadow: 0 14px 28px -18px rgba(79, 70, 229, .55); }
 .b-template.is-clickable:focus-visible { outline: 2px solid var(--ob-accent, #4f46e5); outline-offset: 2px; }
