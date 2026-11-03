@@ -857,3 +857,51 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 /* With the open list on, a pack keeps only its variant pickers (the list already names each item). */
 .oo-ttier .oo-tlist ~ .oo-bpack .oo-bitem > :not(.oo-bunits) { display: none; }
 .oo-ttier .oo-tlist ~ .oo-bpack .oo-bitem:not(:has(.oo-bunits)) { display: none; }
+/* "Tiered" style (tiered gift bundle template): the layout of the G36 design */
+.oo-tplus-sign { margin: 0 2px; font-weight: 800; color: var(--b-accent, #111); }
+.oo-tg-plus { flex: none; align-self: center; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #b6bbc1; color: #6b7178; font-size: 12px; }
+.oo-tdate { text-decoration: underline; color: var(--b-accent, inherit); }
+.oo-tcheck-g { background: none !important; color: var(--b-accent, #111) !important; font-size: 14px !important; }
+.oo-bk-tiered { color: #15181c; }
+.oo-bk-tiered .oo-boffers { gap: 16px; }
+.oo-bk-tiered .oo-tsale { gap: 12px; margin: 0 0 14px; align-items: center; }
+.oo-bk-tiered .oo-tsale b { font-size: 26px; color: var(--b-accent, #111); }
+.oo-bk-tiered .oo-tsale s { font-size: 18px; color: #5b6168; }
+.oo-bk-tiered .oo-tbadge { display: inline-flex; align-items: center; height: 30px; padding: 0 14px; border-radius: 8px; font-size: 14px; letter-spacing: 0; text-transform: none; color: #fff; }
+.oo-bk-tiered .oo-ttier { position: relative; padding: 16px; border: 1px solid #c9ccd1; border-radius: 12px; background: #fff; }
+.oo-bk-tiered .oo-ttier.oo-bsel { border: 2px solid var(--b-accent, #111); padding: 15px; background: var(--b-sel, #f5f5f5); }
+.oo-bk-tiered .oo-ttier input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.oo-bk-tiered .oo-ttier .oo-brow { display: flex; align-items: center; gap: 14px; }
+.oo-bk-tiered .oo-tpics { flex: 0 0 auto; min-width: 132px; flex-wrap: nowrap; gap: 4px; margin: 0; }
+.oo-bk-tiered .oo-tpics > * { flex: none; }
+.oo-bk-tiered .oo-tpic { width: 36px; height: 44px; border-radius: 7px; border: 1px solid rgba(0, 0, 0, .12); background: var(--b-gbg, #f7f7f7); }
+.oo-bk-tiered .oo-tpic-gift { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #f1cf8e; background: #fdeed2; }
+.oo-bk-tiered .oo-tpic-gift::before { display: none; }
+.oo-bk-tiered .oo-btitle { font-size: 17px; font-weight: 800; }
+.oo-bk-tiered .oo-bsubt { font-size: 14px; font-style: normal; color: #3c4148; }
+.oo-bk-tiered .oo-bprice b { font-size: 17px; color: var(--b-accent, #111); }
+.oo-bk-tiered .oo-bprice s { font-size: 14px; color: #5b6168; }
+.oo-bk-tiered .oo-blabel { top: -12px; right: 22px; left: auto !important; height: 24px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 999px; font-size: 12px; letter-spacing: 0; text-transform: none; transform: none; }
+.oo-bk-tiered .oo-tlist { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--b-line, #e5e5e5); gap: 2px; }
+.oo-bk-tiered .oo-tlist li { padding: 5px 0; gap: 10px; font-size: 14px; }
+.oo-bk-tiered .oo-tlist b { font-weight: 800; }
+.oo-bk-tiered .oo-tval { color: inherit; font-weight: 600; }
+.oo-bk-tiered .oo-tlist small { font-size: 12px; color: #5b6168; }
+.oo-bk-tiered .oo-tcheck { width: 20px; height: 20px; margin-top: 1px; }
+.oo-bk-tiered .oo-tlist .oo-tplus { margin: 8px 0 4px; font-size: 11px; letter-spacing: .1em; }
+.oo-bk-tiered .oo-tgifts { position: relative; margin: 22px 0 0; padding: 24px 12px 14px; border: 1px solid #15181c; border-radius: 12px; background: none; }
+.oo-bk-tiered .oo-tg-title { position: absolute; top: -13px; left: 16px; height: 26px; margin: 0; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid #15181c; border-radius: 7px; background: #fbf8ec; color: #15181c; font-size: 12px; letter-spacing: .1em; }
+.oo-bk-tiered .oo-tg-row { display: flex; align-items: center; gap: 2px; }
+.oo-bk-tiered .oo-tg { flex: 1 1 0; min-width: 0; gap: 6px; padding: 0; border: 0; background: none; font-size: 12px; opacity: 1; }
+.oo-bk-tiered .oo-tg-img { width: 72px; height: 64px; border-radius: 12px; background: var(--b-gbg, #f6eaec); color: var(--b-accent, #111); overflow: hidden; }
+.oo-bk-tiered .oo-tg-img .oo-img { border-radius: 0; }
+.oo-bk-tiered .oo-tg s { color: #6b7178; }
+.oo-bk-tiered .oo-tg-free { font-size: 12.5px; font-weight: 800; color: #b3261e; }
+.oo-bk-tiered .oo-tg-locked { border: 0; opacity: 1; }
+.oo-bk-tiered .oo-tg-locked .oo-tg-img { background: #f1f2f4; color: #8a9097; }
+.oo-bk-tiered .oo-tg-lock { color: #6b7178; font-size: 12px; }
+.oo-tg-lock b { display: block; font-size: 12.5px; color: #5b6168; }
+.oo-bk-tiered .oo-tdel { justify-content: center; gap: 8px; margin: 14px 0 0; padding: 12px; border-radius: 10px; background: #f3f2ea; color: #15181c; font-size: 15px; font-weight: 400; }
+.oo-bk-tiered .oo-tdate { font-weight: 800; }
+.oo-bk-tiered .oo-badd { min-height: 58px; margin-top: 14px; border-radius: 10px; font-size: 17px; font-weight: 800; letter-spacing: .02em; }
+.oo-bk-tiered .oo-tbtn s { opacity: .7; font-weight: 600; }

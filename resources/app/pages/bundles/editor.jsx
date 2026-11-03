@@ -6,6 +6,7 @@ import { Preview, useRuntime } from '../../components/runtime.jsx';
 import { Page } from '../../components/ui.jsx';
 import { route, useRouter, useShared } from '../../router.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
+import TieredPanel, { usesTiered } from './_tiered.jsx';
 
 export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts }) {
   const { submit } = useRouter();
@@ -87,7 +88,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
       {x.status === 'published' && x.unpublished && <s-banner tone="info">This bundle has changes that aren't live yet. Publish to update your store.</s-banner>}
       {missingGifts.length > 0 && (
         <s-banner tone="info" heading="Last step: choose your free gifts">
-          <s-paragraph>Everything else is set up. Pick the gift product in {missingGifts.map((i) => `"${state.offers[i].title || `Offer ${i + 1}`}"`).join(' and ')} under Offers, then Publish.</s-paragraph>
+          <s-paragraph>Everything else is set up. Pick the gift product in {missingGifts.map((i) => `"${state.offers[i].title || `Offer ${i + 1}`}"`).join(' and ')} under {usesTiered(state) ? 'Tiers' : 'Offers'}, then Publish.</s-paragraph>
         </s-banner>
       )}
 
@@ -106,7 +107,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
               </div>
 
               <nav className="bx-tabbar" role="tablist" aria-label="Bundle editor">
-                {[['settings', 'Settings'], ['offers', state.bundle_type === 'mix-match' || state.bundle_type === 'byob' ? 'Products' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
+                {[['settings', 'Settings'], ['offers', state.bundle_type === 'mix-match' || state.bundle_type === 'byob' ? 'Products' : usesTiered(state) ? 'Tiers' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
                   <button type="button" role="tab" key={k} aria-selected={tab === k} className={errorTabs.includes(k) ? 'has-error' : ''} onClick={() => setTab(k)}>{l}</button>
                 ))}
               </nav>
@@ -392,6 +393,7 @@ function BoxPanel() {
 function OffersPanel() {
   const { state, update, errors, meta, open, toggle, expand } = useContext(Ctx);
   if (state.bundle_type === 'byob') return <BoxPanel />;
+  if (usesTiered(state)) return <TieredPanel />;
   if (state.bundle_type === 'mix-match') {
     return (
       <>
@@ -476,7 +478,7 @@ function OfferBody({ o, i }) {
         <div className="bx-sub-list">
           <span className="b-label">Free gifts with this offer</span>
           {(o.gifts || []).map((g, j) => (
-            <div className="bx-sub-item" key={j}>
+            <div className={`bx-sub-item ${state.tiers?.details ? 'bx-sub-stack' : ''}`} key={j}>
               <Picker path={`${p}.gifts.${j}.product`} label={`Gift ${j + 1}`} max={1} />
               <F path={`${p}.gifts.${j}.quantity`} label="Quantity" type="number" min={1} max={10} />
               {state.tiers?.details && <><F path={`${p}.gifts.${j}.desc`} label="Short description" max={80} /><F path={`${p}.gifts.${j}.value`} label={`Value (${currency})`} type="number" min={0} step={0.01} help="Empty = its compare-at price or price." /></>}

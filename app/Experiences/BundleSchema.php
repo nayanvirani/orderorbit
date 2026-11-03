@@ -97,13 +97,12 @@ class BundleSchema
         'red' => ['accent' => '#d92d20', 'selected_background' => '#fff1f0', 'button_background' => '#d92d20', 'label_background' => '#d92d20'],
         'night' => ['accent' => '#8b7bff', 'selected_background' => '#221d4f', 'button_background' => '#8b7bff', 'label_background' => '#8b7bff', 'background' => '#14112f', 'text' => '#ffffff', 'muted' => '#b9b5dc', 'border' => '#2e2a5a', 'gift_background' => '#1d1946', 'summary_background' => '#183a2c', 'summary_text' => '#6ee7b7', 'badge_background' => '#3a1830', 'badge_text' => '#ff8fb3'],
         'luxe' => ['accent' => '#c9a45c', 'selected_background' => '#241f1a', 'button_background' => '#c9a45c', 'button_text' => '#1a1714', 'label_background' => '#c9a45c', 'label_text' => '#1a1714', 'background' => '#1a1714', 'text' => '#f5efe4', 'muted' => '#bfb39f', 'border' => '#3a332a', 'gift_background' => '#241f1a', 'summary_background' => '#2a241c', 'summary_text' => '#e5c886', 'badge_background' => '#3a2f1c', 'badge_text' => '#e5c886'],
-        'berry' => ['accent' => '#c2185b', 'selected_background' => '#fdeef3', 'button_background' => '#b5174f', 'label_background' => '#c2185b', 'gift_background' => '#fff5f8', 'summary_background' => '#fde7ef', 'summary_text' => '#8e1240', 'badge_background' => '#fde7ef', 'badge_text' => '#b5174f'],
         'sage' => ['accent' => '#2f6f5e', 'selected_background' => '#eef6f2', 'button_background' => '#2f6f5e', 'label_background' => '#2f6f5e', 'gift_background' => '#f3f8f5', 'summary_background' => '#e6f2ec', 'summary_text' => '#1f5446'],
         'berry' => ['accent' => '#a3214f', 'selected_background' => '#fbeff3', 'button_background' => '#a3214f', 'label_background' => '#a3214f', 'background' => '#fffafb', 'border' => '#efd5de', 'summary_background' => '#fbe7ee', 'summary_text' => '#8a1c43'],
     ];
 
     /** Visual skins: each bundle template has its own look (header, offer cards, selection and button). */
-    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe', 'subscribe', 'refill', 'box', 'boxgrid', 'boxlist', 'boxdark'];
+    public const SKINS = ['classic', 'tiles', 'promo', 'spotlight', 'minimal', 'gift', 'ribbon', 'soft', 'cards', 'list', 'night', 'market', 'outline', 'fbt', 'checklist', 'luxe', 'subscribe', 'refill', 'box', 'boxgrid', 'boxlist', 'boxdark', 'tiered'];
 
     /**
      * Ready-made models per bundle type. "layout" and "style" pick the storefront
@@ -127,8 +126,8 @@ class BundleSchema
             'qb-compact' => ['type' => 'quantity-breaks', 'name' => 'Compact selector', 'description' => 'A slim radio list that fits tight product pages.', 'layout' => 'vertical', 'style' => 'compact', 'skin' => 'minimal', 'design' => ['preset' => 'black', 'radius' => 8, 'border_width' => 1, 'offer_title_size' => 15, 'price_size' => 16]],
 
             'qg-classic' => ['type' => 'quantity-gifts', 'name' => 'Quantity breaks + gifts', 'description' => 'Each tier unlocks more free gifts, shown under the offers.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'pink', 'radius' => 18]],
-            'qg-tiered' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Ready to publish: Buy 1, Buy 2 + 1 gift, Buy 3 + 2 gifts and free shipping. Just choose your gift products.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'berry', 'radius' => 12]] + self::tieredTemplate(),
-            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The same ready-made tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'gift', 'design' => ['preset' => 'sage', 'radius' => 12]] + self::tieredTemplate(),
+            'qg-tiered' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Berry', 'description' => 'Ready to publish: Buy 1, Buy 2 + 1 gift, Buy 3 + 2 gifts and free shipping. Just choose your gift products.', 'layout' => 'vertical', 'skin' => 'tiered', 'design' => ['preset' => 'berry', 'radius' => 12, 'accent' => '#7d1420', 'selected_background' => '#f5e6e8', 'button_background' => '#7d1420', 'label_background' => '#7d1420', 'background' => '#ffffff', 'border' => '#e2b8bf', 'gift_background' => '#f6eaec', 'summary_background' => '#f3f2ea', 'summary_text' => '#15181c']] + self::tieredTemplate(),
+            'qg-tiered-sage' => ['type' => 'quantity-gifts', 'name' => 'Tiered gift bundle · Sage', 'description' => 'The same ready-made tiered gift bundle in calm greens.', 'layout' => 'vertical', 'skin' => 'tiered', 'design' => ['preset' => 'sage', 'radius' => 12, 'accent' => '#1f5446', 'selected_background' => '#e6f2ec', 'button_background' => '#1f5446', 'label_background' => '#1f5446', 'background' => '#ffffff', 'border' => '#b9d3c7', 'gift_background' => '#eef4f1', 'summary_background' => '#f3f2ea', 'summary_text' => '#15181c']] + self::tieredTemplate(),
             'qg-horizontal' => ['type' => 'quantity-gifts', 'name' => 'Gift tiers side by side', 'description' => 'Horizontal tiers with the gifts each one unlocks.', 'layout' => 'horizontal', 'skin' => 'ribbon', 'design' => ['preset' => 'yellow', 'radius' => 12]],
 
             'vo-classic' => ['type' => 'variant-offers', 'name' => 'Classic variant offers', 'description' => 'One card per pack size or variant, each with its own price.', 'layout' => 'vertical', 'skin' => 'soft', 'design' => ['preset' => 'blue', 'radius' => 22, 'border_width' => 1]],
@@ -188,7 +187,8 @@ class BundleSchema
         $gift = fn (string $desc) => ['product' => [], 'quantity' => 1, 'desc' => $desc, 'value' => null];
 
         return [
-            'settings' => ['title' => 'LIMITED-TIME BUNDLE', 'subtitle' => 'Pick your bundle and unlock free gifts', 'button_text' => 'ADD TO CART'],
+            // The product page shows the product's own title; the sale header leads the bundle.
+            'settings' => ['title' => '', 'subtitle' => '', 'button_text' => 'ADD TO CART'],
             'offers' => [
                 ['id' => 'tier1', 'notes' => $note] + self::quantityOffer(1, 'none', 0, 'Buy One', 'You save {saving}'),
                 ['id' => 'tier2', 'notes' => $note, 'label_style' => 'filled'] + self::quantityOffer(2, 'percentage', 10, 'Buy 2, Get 1 Free Gift', 'You save {saving}', [$gift('Free with this bundle')], 'Most Popular', true),
@@ -196,7 +196,7 @@ class BundleSchema
             ],
             'gifts' => ['enabled' => true, 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked'],
             'summary' => ['enabled' => false],
-            'tiers' => ['sale_badge' => 'SALE · Save {saving}', 'free_shipping' => 'tier3', 'gifts_title' => 'Unlock free gifts', 'unlocked_title' => 'All gifts unlocked',
+            'tiers' => ['sale_badge' => 'SALE · Save {saving}', 'free_shipping' => 'tier1', 'shipping_value' => 6.99, 'gifts_title' => 'Gifts unlocked', 'unlocked_title' => 'All gifts unlocked',
                 'delivery' => ['enabled' => true, 'text' => 'Order now for delivery by: {date}', 'min_days' => 3, 'max_days' => 5, 'cutoff' => '14:00', 'skip_weekends' => true, 'holidays' => '', 'timezone' => 'UTC']],
         ];
     }
@@ -787,7 +787,7 @@ class BundleSchema
             'details' => $on,
             'value_price' => $on,
             'gifts_row' => $on, 'gifts_title' => 'Unlock free gifts', 'unlocked_title' => 'All gifts unlocked',
-            'free_shipping' => '',
+            'free_shipping' => '', 'shipping_value' => 0,
             'button_price' => $on,
             'delivery' => ['enabled' => false, 'text' => 'Order now for delivery by: {date}', 'min_days' => 3, 'max_days' => 5, 'cutoff' => '14:00', 'skip_weekends' => true, 'holidays' => '', 'timezone' => 'UTC'],
         ];
@@ -811,6 +811,8 @@ class BundleSchema
             'unlocked_title' => self::text($t['unlocked_title'] ?? $d['unlocked_title'], 60),
             // Free shipping from this offer (by id) and every offer after it; '' = no free shipping reward.
             'free_shipping' => in_array($t['free_shipping'] ?? '', array_column($offers, 'id'), true) ? $t['free_shipping'] : '',
+            // What shipping is worth, shown crossed out on the free shipping slot (0 = no amount).
+            'shipping_value' => max(0, min(1000, round((float) ($t['shipping_value'] ?? 0), 2))),
             'button_price' => self::bool($t['button_price'] ?? false),
             'delivery' => [
                 'enabled' => self::bool($dl['enabled'] ?? false),

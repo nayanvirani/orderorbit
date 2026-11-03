@@ -140,3 +140,38 @@
 
 /* The box's sticky "Add to cart" sits in place inside the editor preview instead of floating over the cards. */
 .b-stage .oo-bundle:has(.oo-xbox) .oo-badd { position: static; }
+
+/* Gift rows with a description and value: one field per line. */
+.bx-sub-stack { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; background: #fff; margin-bottom: 10px; }
+.bx-sub-stack > .b-icon-btn { align-self: flex-end; }
+
+/* Tiered gift bundle editor (G36 design) */
+.tx-card { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.tx-card .b-field { margin-bottom: 0; }
+.tx-title { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 700; }
+.tx-tag { padding: 1px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 11px; font-weight: 700; }
+.tx-table { display: grid; gap: 6px; }
+.tx-tr { display: grid; grid-template-columns: 52px minmax(0, 1.5fr) 150px minmax(0, 1fr) minmax(0, 1fr) 32px; gap: 8px; align-items: center; }
+.tx-tr > *, .tx-off > * { min-width: 0 !important; max-width: 100%; }
+.tx-th { font-size: 12px; font-weight: 600; color: #616161; }
+.tx-tr input, .tx-tr select { width: 100%; box-sizing: border-box; min-height: 36px; padding: 6px 9px; border: 1px solid #c9cccf; border-radius: 8px; font: inherit; font-size: 13px; background: #fff; }
+.tx-off { display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 4px; min-width: 0; }
+.tx-off select { padding: 6px 4px; }
+.tx-fixed { display: grid; place-items: center; min-height: 36px; border-radius: 8px; background: #f3f3f3; font-weight: 600; }
+.tx-gifts { min-height: 36px; padding: 6px 9px; border: 1px solid #c9cccf; border-radius: 8px; background: #fafafa; font: inherit; font-size: 13px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.tx-err input { border-color: #c70a24; }
+@media (max-width: 760px) { .tx-tr { grid-template-columns: 1fr 1fr; } .tx-th { display: none; } }
+.tx-actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.tx-inline { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.tx-inline select { min-height: 34px; border: 1px solid #c9cccf; border-radius: 8px; padding: 4px 8px; font: inherit; }
+.tx-seg { display: inline-flex; flex-wrap: wrap; align-self: flex-start; gap: 4px; padding: 4px; border-radius: 10px; background: #f1f1f1; }
+.tx-seg button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.tx-seg button[aria-selected="true"] { background: #4f46e5; color: #fff; }
+.tx-sub { margin: 4px 0 0; font-size: 12px; font-weight: 700; color: #616161; text-transform: uppercase; letter-spacing: .03em; }
+/* One item or gift per block, one field per line. */
+.tx-item { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; }
+.tx-item > .b-icon-btn { align-self: flex-end; }
+.tx-name { font-weight: 700; font-size: 14px; }
+.tx-rewards { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tx-rewards li { display: flex; gap: 8px; align-items: baseline; padding: 8px 10px; border-radius: 8px; background: #f7f7f7; font-size: 13px; }
+.tx-rewards span, .tx-muted { color: #616161; }

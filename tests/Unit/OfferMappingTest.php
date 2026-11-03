@@ -137,7 +137,7 @@ class OfferMappingTest extends TestCase
         $c = $schema::defaults('qg-tiered');
         $this->assertSame(['Buy One', 'Buy 2, Get 1 Free Gift', 'Buy 3, Get 2 Free Gifts'], array_column($c['offers'], 'title'));
         $this->assertSame([['Most Popular', 'filled'], ['Best Value', 'outlined']], [[$c['offers'][1]['label'], $c['offers'][1]['label_style']], [$c['offers'][2]['label'], $c['offers'][2]['label_style']]]);
-        $this->assertSame(['tier3', true, true], [$c['tiers']['free_shipping'], $c['tiers']['delivery']['enabled'], $c['offers'][2]['preselected']]);
+        $this->assertSame(['tier1', true, true], [$c['tiers']['free_shipping'], $c['tiers']['delivery']['enabled'], $c['offers'][2]['preselected']]);
 
         // Before the gifts are chosen, those are the only errors.
         $this->assertSame(['offers.1.gifts.0.product', 'offers.2.gifts.0.product', 'offers.2.gifts.1.product'], array_keys($schema::normalize($c)[1]));
