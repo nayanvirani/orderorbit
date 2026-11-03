@@ -11,7 +11,8 @@ export default function BundleModels({ type, models, presets }) {
   const { submit } = useRouter();
   const ready = useRuntime();
   const [layout, setLayout] = useState('all');
-  const [preset, setPreset] = useState('black');
+  // "default" shows each model in its own colours; a swatch recolours every model.
+  const [preset, setPreset] = useState('default');
   const [context, setContext] = useState({ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });
 
   // Preview with one of the store's products (title, price, image, variants).
@@ -36,6 +37,7 @@ export default function BundleModels({ type, models, presets }) {
             {LAYOUTS.map(([k, l]) => <button type="button" key={k} aria-pressed={layout === k} onClick={() => setLayout(k)}>{l}</button>)}
           </div>
           <div className="bx-swatches" role="group" aria-label="Colour">
+            <button type="button" className="b-btn bx-own" aria-pressed={preset === 'default'} onClick={() => setPreset('default')}>Template colours</button>
             {Object.entries(presets).map(([k, p]) => <button type="button" key={k} className="bx-swatch" style={{ '--sw': p.accent }} aria-pressed={preset === k} aria-label={k} onClick={() => setPreset(k)} />)}
           </div>
         </div>

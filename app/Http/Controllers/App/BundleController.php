@@ -90,7 +90,9 @@ class BundleController extends Controller
             'type' => ['label' => BundleSchema::TYPES[$type]['label'], 'lead' => BundleSchema::TYPES[$type]['lead']],
             'models' => collect(BundleSchema::models())->filter(fn ($model, $key) => ($model['group'] ?? $model['type']) === $type && (self::tiered($store) || ! str_starts_with($key, 'qg-tiered')))->map(fn ($model, $key) => [
                 'key' => $key, 'name' => $model['name'], 'description' => $model['description'], 'layout' => $model['layout'],
-                'previews' => collect(BundleSchema::PRESETS)->keys()->mapWithKeys(fn ($preset) => [$preset => TemplateLibrary::bundlePreview($key, $branding, $preset)])->all(),
+                // "default" = the model's own colours (Berry, Sage…); the others recolour it with a preset.
+                'previews' => ['default' => TemplateLibrary::bundlePreview($key, $branding)]
+                    + collect(BundleSchema::PRESETS)->keys()->mapWithKeys(fn ($preset) => [$preset => TemplateLibrary::bundlePreview($key, $branding, $preset)])->all(),
             ])->values(),
             'presets' => BundleSchema::PRESETS,
         ]);
@@ -100,11 +102,14 @@ class BundleController extends Controller
     {
         $model = (string) $request->input('model');
         abort_unless(BundleSchema::model($model) && (self::tiered($store) || ! str_starts_with($model, 'qg-tiered')), 404);
-        $preset = array_key_exists($request->input('preset'), BundleSchema::PRESETS) ? $request->input('preset') : 'black';
+        // No preset (or "default") keeps the model's own colours.
+        $preset = array_key_exists((string) $request->input('preset'), BundleSchema::PRESETS) ? $request->input('preset') : null;
 
         $experience = $this->manager->create($store, 'bundles', $model, $request->attributes->get('storeUser'), BundleSchema::model($model)['name']);
         $config = $experience->draft_config;
-        $config['design'] = array_merge($config['design'], BundleSchema::designDefaults($preset));
+        if ($preset) {
+            $config['design'] = array_merge($config['design'], BundleSchema::designDefaults($preset));
+        }
         // The tier options (G36) start on only once the tiered_gifts flag is on for this store.
         if (! self::tiered($store)) {
             $config['tiers'] = BundleSchema::tierDefaults(false);

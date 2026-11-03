@@ -89,6 +89,8 @@ class BundleModuleTest extends TestCase
         $this->post('/app/cro/bundles', ['model' => 'qg-tiered'], $this->as($owner))->assertRedirect();
         $after = Experience::where('type', 'bundles')->latest('id')->first();
         $this->assertTrue($after->draft_config['tiers']['details']);
+        $this->assertSame(['#7d1420', 'tiered'], [$after->draft_config['design']['accent'], $after->draft_config['settings']['skin']], 'Without a colour picked, the template keeps its own Berry colours.');
+        $this->assertArrayHasKey('default', $this->page('/app/cro/bundles/new/quantity-gifts', $owner)->json('props.models.0.previews'));
         $this->page("/app/cro/bundles/{$after->id}", $owner)->assertJsonPath('props.meta.tiered', true);
     }
 

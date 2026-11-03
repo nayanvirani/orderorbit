@@ -33,6 +33,10 @@ class TemplateLibraryController extends Controller
                 continue;
             }
             foreach (Registry::offered($typeKey) as $key => $template) {
+                // The tiered gift bundle templates are released with the tiered_gifts flag.
+                if ($typeKey === 'bundles' && str_starts_with($key, 'qg-tiered') && ! \App\Support\Features::enabled('tiered_gifts', $store)) {
+                    continue;
+                }
                 $templates[] = [
                     'type' => $typeKey,
                     'type_label' => $definition['label'],
