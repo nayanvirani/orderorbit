@@ -22,7 +22,7 @@ class PixelController extends Controller
     {
         $data = json_decode($request->getContent(), true);
         $ok = response('', 204)->header('Access-Control-Allow-Origin', '*');
-        if (! is_array($data)) {
+        if (! is_array($data) || \App\Support\Features::killed('web_pixel')) {
             return $ok;
         }
 

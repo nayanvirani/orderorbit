@@ -97,6 +97,20 @@ class StorefrontPublisher
         ];
     }
 
+    /** Whether an emergency-off switch hides this type of experience right now. */
+    public static function switchedOff(string $type): bool
+    {
+        $surface = Registry::type($type)['surface'] ?? '';
+
+        return match (true) {
+            $type === 'sales-pop' => \App\Support\Features::killed('sales_pop') || \App\Support\Features::killed('storefront_widgets'),
+            in_array($surface, ['checkout', 'thank-you'], true) => \App\Support\Features::killed('checkout_blocks'),
+            $surface === 'account' => \App\Support\Features::killed('customer_accounts'),
+            $surface === 'post-purchase' => \App\Support\Features::killed('post_purchase'),
+            default => \App\Support\Features::killed('storefront_widgets'),
+        };
+    }
+
     /**
      * Every live experience in the storefront payload shape, highest priority first.
      */
@@ -117,6 +131,8 @@ class StorefrontPublisher
             ->filter(fn (Experience $e) => $store->allowsExperience($e->type, $e->publishedVersion->config))
             // Only factual content reaches shoppers (App Store requirement 1.1.4).
             ->filter(fn (Experience $e) => Factual::allowed($e->type, $e->publishedVersion->template_key, $e->publishedVersion->config))
+            // Emergency off (Internal Admin › Feature flags) hides a part of Growvia for every store.
+            ->reject(fn (Experience $e) => self::switchedOff($e->type))
             ->map(function (Experience $e) use ($store, $tests) {
                 $config = Factual::clean($e->type, $e->publishedVersion->config);
                 if ($e->type === 'bundles') {

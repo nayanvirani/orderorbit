@@ -150,7 +150,8 @@ class Store extends Model
         $modules = $this->modules();
         sort($modules);
 
-        return hash('sha256', json_encode([$this->effectivePlan(), $modules, collect(array_keys(\App\Services\Usage::METERS))->mapWithKeys(fn ($m) => [$m => $this->planLimit($m)])->all()]));
+        // Emergency-off switches are part of it, so turning one on or off republishes every store.
+        return hash('sha256', json_encode([$this->effectivePlan(), $modules, collect(array_keys(\App\Services\Usage::METERS))->mapWithKeys(fn ($m) => [$m => $this->planLimit($m)])->all(), \App\Support\Features::killFingerprint()]));
     }
 
     /**

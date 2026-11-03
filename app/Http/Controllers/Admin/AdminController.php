@@ -145,28 +145,71 @@ class AdminController extends Controller
         return back()->with('status', 'Template '.$template->status.'.');
     }
 
-    public function flags(): View
+    public function flags(Request $request): View
     {
-        return view('admin.flags', ['flags' => FeatureFlag::orderBy('key')->get()]);
+        $registry = Features::registry();
+        $rows = FeatureFlag::all()->keyBy('key');
+        $key = array_key_exists((string) $request->query('key'), $registry) && ! $registry[$request->query('key')]['kill'] ? $request->query('key') : array_key_first(array_filter($registry, fn ($f) => ! $f['kill']));
+
+        return view('admin.flags', [
+            'registry' => $registry, 'rows' => $rows, 'key' => $key, 'flag' => $rows[$key] ?? null,
+            'unknown' => $rows->reject(fn ($r) => array_key_exists($r->key, $registry)),
+            'stores' => Store::whereNotNull('installed_at')->whereNull('uninstalled_at')->orderBy('shop_domain')->get(['id', 'shop_domain']),
+            'history' => AuditLog::whereIn('action', ['admin.flag_saved', 'admin.kill_switch'])->latest('id')->limit(15)->get(),
+        ]);
     }
 
     public function saveFlag(Request $request): RedirectResponse
     {
-        $data = $request->validate(['key' => ['required', 'regex:/^[a-z0-9_.-]{2,60}$/'], 'description' => ['nullable', 'string', 'max:300'], 'store_domains' => ['nullable', 'string', 'max:5000']]);
-        $ids = collect(preg_split('/[\s,]+/', (string) ($data['store_domains'] ?? ''), -1, PREG_SPLIT_NO_EMPTY))
-            ->map(fn ($d) => Store::where('shop_domain', strtolower(trim($d)))->value('id'))->filter()->values()->all();
-        $flag = FeatureFlag::updateOrCreate(['key' => $data['key']], ['description' => $data['description'] ?? null, 'enabled' => $request->boolean('enabled'), 'store_ids' => $ids ?: null]);
-        Features::forget($flag->key);
-        AuditLog::record('admin.flag_saved', null, ['flag' => $flag->key, 'enabled' => $flag->enabled, 'stores' => count($ids), 'by' => auth()->user()->email]);
+        $release = array_keys(array_filter(Features::registry(), fn ($f) => ! $f['kill']));
+        $data = $request->validate([
+            'key' => ['required', 'in:'.implode(',', $release)],
+            'mode' => ['required', 'in:'.implode(',', array_keys(FeatureFlag::MODES))],
+            'store_ids' => ['array'], 'store_ids.*' => ['integer'],
+            'percent' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date', 'after:starts_at'],
+        ], ['key.in' => 'Choose a flag from the list.', 'ends_at.after' => 'The turn-off time must be after the turn-on time.']);
+        if ($data['mode'] === 'stores' && empty($data['store_ids'])) {
+            return back()->withInput()->withErrors(['store_ids' => 'Choose at least one store.']);
+        }
+        if ($data['mode'] === 'percent' && empty($data['percent'])) {
+            return back()->withInput()->withErrors(['percent' => 'Choose a share of stores.']);
+        }
+        $ids = Store::whereIn('id', $data['store_ids'] ?? [])->pluck('id')->all();
+        $flag = FeatureFlag::updateOrCreate(['key' => $data['key']], [
+            'mode' => $data['mode'], 'enabled' => $data['mode'] === 'all', 'store_ids' => $data['mode'] === 'stores' ? $ids : null,
+            'percent' => $data['mode'] === 'percent' ? (int) $data['percent'] : 0,
+            'starts_at' => $data['starts_at'] ?? null, 'ends_at' => $data['ends_at'] ?? null,
+            'description' => Features::registry()[$data['key']]['name'],
+        ]);
+        Features::forget();
+        AuditLog::record('admin.flag_saved', null, ['flag' => $flag->key, 'mode' => $flag->mode, 'stores' => count($ids), 'percent' => $flag->percent,
+            'starts_at' => $flag->starts_at?->toIso8601String(), 'ends_at' => $flag->ends_at?->toIso8601String(), 'by' => auth()->user()->email]);
 
-        return redirect()->route('admin.flags')->with('status', 'Flag saved.');
+        return redirect()->route('admin.flags', ['key' => $flag->key])->with('status', Features::registry()[$flag->key]['name'].' saved.');
+    }
+
+    /** Emergency off: hides a live part of Growvia for every store, then republishes every store. */
+    public function killSwitch(Request $request, string $key): RedirectResponse
+    {
+        abort_unless(array_key_exists($key, config('flags.kill', [])), 404);
+        $on = $request->boolean('on');
+        FeatureFlag::updateOrCreate(['key' => $key], ['mode' => $on ? 'all' : 'off', 'enabled' => $on, 'store_ids' => null, 'percent' => 0, 'starts_at' => null, 'ends_at' => null, 'description' => config('flags.kill')[$key][0]]);
+        Features::forget();
+        AuditLog::record('admin.kill_switch', null, ['flag' => $key, 'on' => $on, 'by' => auth()->user()->email]);
+        // Storefront, checkout and account data change for every store: push it now (the 5-minute job would catch up too).
+        defer(function () {
+            Store::whereNotNull('installed_at')->whereNull('uninstalled_at')->lazyById(50)->each(fn (Store $s) => app(\App\Services\Billing\Entitlements::class)->apply($s));
+        });
+
+        return redirect()->route('admin.flags')->with('status', config('flags.kill')[$key][0].($on ? ' is OFF for every store.' : ' is back on for every store.'));
     }
 
     public function deleteFlag(int $flag): RedirectResponse
     {
         $flag = FeatureFlag::findOrFail($flag);
-        Features::forget($flag->key);
         $flag->delete();
+        Features::forget();
 
         return redirect()->route('admin.flags')->with('status', 'Flag deleted.');
     }

@@ -78,7 +78,7 @@ class PostPurchase
      */
     public function funnel(Store $store, array $productIds, float $total): ?array
     {
-        if (! $store->planIncludes('post_purchase')) {
+        if (! $store->planIncludes('post_purchase') || \App\Support\Features::killed('post_purchase')) {
             return null;
         }
 

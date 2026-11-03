@@ -25,6 +25,11 @@ class SendEmails extends Command
 
     public function handle(EmailSender $sender): int
     {
+        if (\App\Support\Features::killed('automation_emails')) {
+            $this->info('Automation emails are switched off (Internal Admin › Feature flags); they wait in the queue.');
+
+            return self::SUCCESS;
+        }
         $due = AutomationEmail::whereIn('status', ['queued', 'retrying', 'waiting_for_provider'])
             ->where(fn ($q) => $q->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now()))
             ->orderBy('id')->limit((int) $this->option('limit'))->get();

@@ -35,7 +35,7 @@ class SalesPopController extends Controller
     private function items(string $shop, int $days): array
     {
         $store = Store::where('shop_domain', $shop)->whereNull('uninstalled_at')->first();
-        if (! $store || ! $store->experiences()->where('type', 'sales-pop')->where('status', 'published')->exists()) {
+        if (! $store || \App\Services\Experiences\StorefrontPublisher::switchedOff('sales-pop') || ! $store->experiences()->where('type', 'sales-pop')->where('status', 'published')->exists()) {
             return [];
         }
 

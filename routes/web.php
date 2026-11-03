@@ -325,6 +325,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/flags', 'flags')->name('flags');
                 Route::post('/flags', 'saveFlag')->name('flags.save');
                 Route::post('/flags/{flag}/delete', 'deleteFlag')->whereNumber('flag')->name('flags.delete');
+                Route::post('/flags/kill/{key}', 'killSwitch')->where('key', 'kill\.[a-z_]+')->name('flags.kill');
             });
             Route::middleware('admin.can:support')->group(function () {
                 Route::get('/tickets', 'tickets')->name('tickets');

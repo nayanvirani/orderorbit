@@ -101,13 +101,13 @@ class SupportAndAdminTest extends TestCase
         app(TemplateLibrary::class)->sync();
         $this->assertSame('unpublished', $template->fresh()->status, 'Deploys keep the admin\'s choice.');
 
-        // Feature flags: everyone, or only listed stores.
-        $this->actingAs($admin)->post('/admin/flags', ['key' => 'email_sending', 'description' => 'Send workflow emails', 'store_domains' => $this->store->shop_domain])->assertRedirect();
-        $this->assertTrue(Features::enabled('email_sending', $this->store));
-        $this->assertFalse(Features::enabled('email_sending', $this->installedStore(['shop_domain' => 'b.myshopify.com'])));
+        // Feature flags: only flags defined in the code, for chosen stores (more in FeatureFlagsTest).
+        $this->actingAs($admin)->post('/admin/flags', ['key' => 'profit', 'mode' => 'stores', 'store_ids' => [$this->store->id]])->assertRedirect();
+        $this->assertTrue(Features::enabled('profit', $this->store));
+        $this->assertFalse(Features::enabled('profit', $this->installedStore(['shop_domain' => 'b.myshopify.com'])));
         $this->assertFalse(Features::enabled('missing_flag', $this->store));
         $this->actingAs($admin)->post('/admin/flags/'.FeatureFlag::sole()->id.'/delete')->assertRedirect();
-        $this->assertFalse(Features::enabled('email_sending', $this->store));
+        $this->assertFalse(Features::enabled('profit', $this->store));
     }
 
     public function test_documentation_hub_and_guides_are_public(): void
