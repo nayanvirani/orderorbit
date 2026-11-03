@@ -205,7 +205,7 @@ function GiftsRow() {
   );
 }
 
-function Delivery() {
+export function Delivery() {
   const { state, set, update } = useContext(Ctx);
   const d = state.tiers.delivery;
   const days = `${d.min_days}-${d.max_days}`;

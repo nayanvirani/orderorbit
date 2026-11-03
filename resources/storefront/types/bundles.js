@@ -9,7 +9,7 @@
   function money(v, ctx) { return h.esc(h.money(v, ctx.currency)); }
 
   // Shared with oo-bundles-mix.js and oo-bundles-tiers.js.
-  var B = { money: money, select: select, prices: prices, detail: detail, base: base, fill: fillText };
+  var B = { money: money, select: select, prices: prices, detail: detail, base: base, fill: fillText, vars: vars, header: header };
 
   function afterOffer(full, o) {
     var v = Number(o.discount_value || 0);
@@ -130,6 +130,9 @@
   function on(c) { return (c.tiers || {}).on; }
   function T(c) { return on(c) && OrderOrbit.bundleTiers; }
 
+  // Mix and match quantity tiers (oo-bundles-mt.js) draws and runs the whole widget.
+  function MT(c) { return c.bundle_type === 'mix-tiers' && OrderOrbit.bundleMt; }
+
   // Mix & match (oo-bundles-mix.js) or build your own box (oo-bundles-box.js): a pool of products.
   function M(c) { return c.bundle_type === 'byob' ? OrderOrbit.bundleBox : c.bundle_type === 'mix-match' ? OrderOrbit.bundleMix : null; }
 
@@ -141,6 +144,7 @@
     var c = exp.content;
     if (!c || !c.settings) return null;
     c._id = exp.id;
+    if (MT(c)) return MT(c).html(exp, ctx, B);
     var mix = /^(mix-match|byob)$/.test(c.bundle_type);
     if (mix ? !M(c) : !c.offers.length) return null;
     var pre = 0;
@@ -159,10 +163,10 @@
       var c = exp.content;
       var mix = Promise.all([c.bundle_type === 'mix-match' && OrderOrbit.need('bundles-mix'),
         c.bundle_type === 'byob' && OrderOrbit.need('bundles-box').then(function () { return !ctx.preview && OrderOrbit.bundleBox.load(c); }), c.subscription && c.subscription.enabled && OrderOrbit.need('bundles-sub'),
-        (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras'), on(c) && OrderOrbit.need('bundles-tiers')]);
+        (c.gifts.enabled || c.upsells.enabled) && OrderOrbit.need('bundles-extras'), on(c) && OrderOrbit.need('bundles-tiers'), c.mt && OrderOrbit.need('bundles-mt')]);
       // The admin preview uses saved product data; the storefront loads live variants and prices.
       if (ctx.preview) return mix;
-      var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products, g: (c.gifts.items || []).map(function (g) { return g.product[0]; }).filter(Boolean) } }, ['a', 'b', 'g'])];
+      var jobs = [mix, S.hydrate({ content: { a: c.mix.pool, b: c.upsells.products, g: (c.gifts.items || []).map(function (g) { return g.product[0]; }).filter(Boolean), m: c.mt ? c.mt.pool : [] } }, ['a', 'b', 'g', 'm'])];
       c.offers.forEach(function (o) {
         jobs.push(S.hydrate({ content: { a: o.products, b: o.product, g: o.gifts.map(function (g) { return g.product[0]; }).filter(Boolean) } }, ['a', 'b', 'g']));
       });
@@ -172,6 +176,7 @@
     setup: function (root, exp, ctx) {
       if (!root) return;
       var c = exp.content;
+      if (MT(c)) return MT(c).setup(root, exp, ctx, B);
       var mix = /^(mix-match|byob)$/.test(c.bundle_type);
       var btn = root.querySelector('[data-oo-add]');
       var picks = [];

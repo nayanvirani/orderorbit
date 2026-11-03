@@ -57,6 +57,15 @@ class BundleSchema
             'goal' => 'Personalise the shopping experience.',
             'offer_kinds' => [],
         ],
+        // G44: shoppers add any quantity of each item; tiers by total quantity, priced by the Growvia discount.
+        'mix-tiers' => [
+            'label' => 'Mix and match quantity tiers',
+            'lead' => 'Pick any items, any quantity: the more in the box, the better the deal.',
+            'example' => '2+1 free, 3+2 free, or 3 for 99€.',
+            'goal' => 'Sell more units with a box shoppers fill their way.',
+            'offer_kinds' => [],
+            'flag' => 'mix_match_tiers',
+        ],
         'fixed' => [
             'label' => 'Fixed bundle',
             'lead' => 'Buy a product pack and save.',
@@ -145,6 +154,11 @@ class BundleSchema
 
             'mm-bundler' => ['type' => 'mix-match', 'name' => 'Mix & match — bundler', 'description' => 'Product slots in a list with progressive discounts as the bundle fills.', 'layout' => 'vertical', 'skin' => 'list', 'design' => ['preset' => 'purple', 'radius' => 12]],
             'mm-slots' => ['type' => 'mix-match', 'name' => 'Mix & match — slot cards', 'description' => 'A row of slot cards shoppers fill one by one.', 'layout' => 'horizontal', 'skin' => 'night', 'design' => ['preset' => 'night', 'radius' => 14]],
+            'mt-grid' => ['type' => 'mix-tiers', 'name' => 'Quantity tiers · grid and slider', 'description' => 'Product tiles with Add and − / +, tiers on a slider with the price per unit. Buy 2 get 1, buy 3 get 2.', 'layout' => 'grid', 'skin' => 'mixtiers', 'design' => ['preset' => 'black', 'radius' => 12]],
+            'mt-cards' => ['type' => 'mix-tiers', 'name' => 'Quantity tiers · list and cards', 'description' => 'A list with steppers and the tiers as cards: 2 = −10%, 3 = −20%.', 'layout' => 'vertical', 'skin' => 'mixtiers', 'design' => ['preset' => 'black', 'radius' => 12],
+                'mt' => ['layout' => 'list', 'tier_style' => 'cards', 'rule' => 'percent', 'tiers' => [['count' => 2, 'value' => 10], ['count' => 3, 'value' => 20]]]],
+            'mt-row' => ['type' => 'mix-tiers', 'name' => 'Quantity tiers · swipe row, set price', 'description' => 'Items in a swipe row and set prices: 3 for 99€, 6 for 179€.', 'layout' => 'horizontal', 'skin' => 'mixtiers', 'design' => ['preset' => 'black', 'radius' => 12],
+                'mt' => ['layout' => 'row', 'rule' => 'fixed', 'tiers' => [['count' => 3, 'value' => 99], ['count' => 6, 'value' => 179]]]],
             'mm-grid' => ['type' => 'mix-match', 'name' => 'Mix & match — product grid', 'description' => 'Pick straight from a grid of products with a live bundle total.', 'layout' => 'grid', 'skin' => 'market', 'design' => ['preset' => 'orange', 'radius' => 14]],
 
             'fx-classic' => ['type' => 'fixed', 'name' => 'Classic fixed bundle', 'description' => 'The single product or the full pack, with the pack’s products listed.', 'layout' => 'vertical', 'skin' => 'outline', 'design' => ['preset' => 'blue', 'radius' => 4, 'selected_background' => '#ffffff']],
@@ -318,6 +332,7 @@ class BundleSchema
                 'countries' => '',
             ],
             'offers' => self::defaultOffers($type),
+            'mt' => self::mixTierDefaults(),
             'mix' => $type === 'byob' ? self::boxDefaults() : [
                 'slots' => 3,
                 'pool' => [],
@@ -337,7 +352,7 @@ class BundleSchema
             'behavior' => ['priority' => 50],
         ];
 
-        foreach (['settings', 'offers', 'mix', 'gifts', 'upsells', 'summary', 'subscription', 'tiers'] as $section) {
+        foreach (['settings', 'offers', 'mix', 'gifts', 'upsells', 'summary', 'subscription', 'tiers', 'mt'] as $section) {
             if (isset($model[$section])) {
                 $config[$section] = $section === 'offers' ? $model[$section] : array_merge($config[$section], $model[$section]);
             }
@@ -514,7 +529,7 @@ class BundleSchema
             }
             $offers[] = $offer;
         }
-        if (! in_array($type, ['mix-match', 'byob'], true) && ! collect($offers)->where('visible', true)->count()) {
+        if (! in_array($type, ['mix-match', 'byob', 'mix-tiers'], true) && ! collect($offers)->where('visible', true)->count()) {
             $errors['offers'] = 'Add at least one visible offer.';
         }
         // Exactly one offer starts selected.
@@ -592,6 +607,7 @@ class BundleSchema
             'settings' => $settings,
             'offers' => $offers,
             'mix' => $mix,
+            'mt' => self::mixTiers((array) ($input['mt'] ?? []), $type, $errors),
             'gifts' => self::boxGifts($g, $type, $mix, $errors),
             'upsells' => [
                 'enabled' => self::bool($u['enabled'] ?? false),
@@ -757,6 +773,7 @@ class BundleSchema
                 'gifts' => ['items' => array_map(fn ($g) => ['product' => $strip($g['product']), 'quantity' => $g['quantity']], $config['gifts']['items'])] + $config['gifts'],
                 'upsells' => ['enabled' => $config['upsells']['enabled'], 'title' => $config['upsells']['title'], 'products' => $strip($config['upsells']['products']), 'discount_percent' => $config['upsells']['discount_percent']],
                 'summary' => $config['summary'],
+                'mt' => $config['bundle_type'] === 'mix-tiers' ? ['pool' => $strip($config['mt']['pool'])] + $config['mt'] : null,
                 'subscription' => $config['subscription'] ?? self::subscriptionDefaults(),
                 // "on" tells the storefront to load the tier options at all.
                 'tiers' => ($tiers = $config['tiers'] ?? self::tierDefaults(false)) + ['on' => $tiers['sale_header'] || $tiers['pictures'] || $tiers['details'] || $tiers['gifts_row']
@@ -782,6 +799,83 @@ class BundleSchema
                 'customer' => 'all',
             ],
         ];
+    }
+
+    // ---------------------------------------------------------------- mix and match quantity tiers (G44)
+
+    public const MIX_RULES = ['free' => 'Buy X, get Y free', 'percent' => '% off', 'fixed' => 'Set price'];
+
+    /**
+     * Mix and match with quantity tiers: the items (several products, or one product's variants), the
+     * rule and its tiers by total quantity, the price per unit and how it's shown. A tier's "count" is
+     * the items in a full set; "value" is the free items (free), the % off (percent) or the set price.
+     */
+    public static function mixTierDefaults(): array
+    {
+        return [
+            'source' => 'products', 'pool' => [],
+            'rule' => 'free',
+            'tiers' => [['count' => 3, 'value' => 1, 'label' => '', 'badge' => ''], ['count' => 5, 'value' => 2, 'label' => '', 'badge' => '']],
+            'units' => 0, 'unit_label' => 'unit',
+            'layout' => 'grid', 'columns_desktop' => 4, 'columns_mobile' => 3,
+            'tier_style' => 'slider', 'best_label' => 'BEST OFFER', 'first_label' => '1 item',
+            'add_text' => 'ADD', 'nudge' => 'Add {count} more to unlock {tier}', 'done' => 'Best offer unlocked',
+            'max' => 0,
+        ];
+    }
+
+    private static function mixTiers(array $m, string $type, array &$errors): array
+    {
+        $d = self::mixTierDefaults();
+        $rule = self::pick($m['rule'] ?? null, array_keys(self::MIX_RULES), 'free');
+        $source = self::pick($m['source'] ?? null, ['products', 'variants'], 'products');
+        $tiers = [];
+        foreach (array_slice(array_values(array_filter((array) ($m['tiers'] ?? $d['tiers']), 'is_array')), 0, 6) as $t) {
+            $count = max(1, min(100, (int) ($t['count'] ?? 2)));
+            $value = max(0, min(1000000, round((float) ($t['value'] ?? 0), 2)));
+            $tiers[] = ['count' => $count, 'value' => $value, 'label' => self::text($t['label'] ?? '', 24), 'badge' => self::text($t['badge'] ?? '', 16)];
+        }
+        usort($tiers, fn ($a, $b) => $a['count'] <=> $b['count']);
+        $out = [
+            'source' => $source,
+            'pool' => self::resources($m['pool'] ?? [], 'Product', $source === 'variants' ? 1 : 30),
+            'rule' => $rule, 'tiers' => $tiers,
+            'units' => max(0, min(100000, (int) ($m['units'] ?? 0))),
+            'unit_label' => self::text($m['unit_label'] ?? 'unit', 20) ?: 'unit',
+            'layout' => self::pick($m['layout'] ?? null, ['grid', 'list', 'row'], 'grid'),
+            'columns_desktop' => max(2, min(6, (int) ($m['columns_desktop'] ?? 4))),
+            'columns_mobile' => max(1, min(4, (int) ($m['columns_mobile'] ?? 3))),
+            'tier_style' => self::pick($m['tier_style'] ?? null, ['slider', 'cards'], 'slider'),
+            'best_label' => self::text($m['best_label'] ?? $d['best_label'], 24),
+            'first_label' => self::text($m['first_label'] ?? $d['first_label'], 24),
+            'add_text' => self::text($m['add_text'] ?? 'ADD', 16) ?: 'ADD',
+            'nudge' => self::text($m['nudge'] ?? $d['nudge'], 80),
+            'done' => self::text($m['done'] ?? $d['done'], 60),
+            'max' => max(0, min(200, (int) ($m['max'] ?? 0))),
+        ];
+        if ($type !== 'mix-tiers') {
+            return $out;
+        }
+        if ($out['pool'] === []) {
+            $errors['mt.pool'] = $source === 'variants' ? 'Choose the product whose variants shoppers mix.' : 'Add the products shoppers can choose from.';
+        }
+        if ($tiers === []) {
+            $errors['mt.tiers'] = 'Add at least one tier.';
+        }
+        foreach ($tiers as $i => $t) {
+            if ($rule === 'free' && ($t['value'] < 1 || $t['value'] >= $t['count'])) {
+                $errors["mt.tiers.{$i}.value"] = 'The free items must be at least 1 and fewer than the items in the set.';
+            } elseif ($rule === 'percent' && ($t['value'] <= 0 || $t['value'] > 100)) {
+                $errors["mt.tiers.{$i}.value"] = 'Use a % between 1 and 100.';
+            } elseif ($rule === 'fixed' && $t['value'] <= 0) {
+                $errors["mt.tiers.{$i}.value"] = 'Set the price of the set.';
+            }
+        }
+        if (count(array_unique(array_column($tiers, 'count'))) < count($tiers)) {
+            $errors['mt.tiers'] = 'Each tier needs a different number of items.';
+        }
+
+        return $out;
     }
 
     // ---------------------------------------------------------------- tiered gift bundles (G36)

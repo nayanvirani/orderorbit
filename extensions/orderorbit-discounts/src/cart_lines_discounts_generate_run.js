@@ -22,6 +22,11 @@ import {DiscountClass, OrderDiscountSelectionStrategy, ProductDiscountSelectionS
  *          progressive gifts: gift lines carry _oo_offer = id and _oo_gift = milestone index and are
  *          free (up to q units) once the milestone is reached; the best reached order discount applies
  *          to the rest of the order. Gifts never count toward their own milestones.
+ *   mt     { id, r: "free"|"percent"|"fixed", t: [[count, value], ...], p }
+ *          mix and match quantity tiers: lines tagged _oo_bundle = "<id>|t|<group>" of the products p.
+ *          The best tier reached by the group's total quantity applies: free = the cheapest "value"
+ *          units are free for each full set of "count"; percent = "value"% off every item; fixed =
+ *          each full set of the cheapest items costs "value" (shop currency), extra items pay full price.
  *   upsell { id, v }          lines added by the widget carry _oo_offer = id
  *   gift   { id, th: [amounts] } lines added by the widget carry _oo_offer = id
  *
@@ -70,6 +75,35 @@ function mixFits(mix, paid) {
 }
 
 const RULES = {
+  mt(offer, lines, rate) {
+    const groups = {};
+    lines.forEach((line) => {
+      if (line.bundle && line.bundle.indexOf(offer.id + '|t|') === 0 && !line.gift && (offer.p || []).includes(line.product)) {
+        (groups[line.bundle] = groups[line.bundle] || []).push(line);
+      }
+    });
+    const found = [];
+    for (const group of Object.values(groups)) {
+      const count = units(group);
+      const tier = [...(offer.t || [])].sort((a, b) => b[0] - a[0]).find(([need]) => count >= Number(need));
+      if (!tier) continue;
+      const [size, value] = tier.map(Number);
+      if (offer.r === 'percent') {
+        found.push(candidate(offer.m || `${value}% off`, group.map((line) => ({line})), percent(value)));
+      } else if (offer.r === 'free') {
+        const free = Math.floor(count / size) * value;
+        if (free > 0) found.push(candidate(offer.m || 'Free items', takeUnits(group, free), percent(100)));
+      } else if (offer.r === 'fixed') {
+        const sets = Math.floor(count / size);
+        const targets = takeUnits(group, sets * size);
+        const total = targets.reduce((sum, {line, quantity}) => sum + line.unit * (quantity || line.qty), 0);
+        const pct = total > 0 ? (1 - (sets * value * rate) / total) * 100 : 0;
+        if (pct > 0) found.push(candidate(offer.m || `${size} for a set price`, targets, percent(Math.round(pct * 10000) / 10000)));
+      }
+    }
+    return found;
+  },
+
   tiers(offer, lines) {
     const ids = offer.p || [];
     const excluded = offer.x || [];

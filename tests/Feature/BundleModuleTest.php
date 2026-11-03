@@ -39,7 +39,7 @@ class BundleModuleTest extends TestCase
             [$config, $errors] = BundleSchema::normalize(BundleSchema::defaults($model));
             $this->assertSame(BundleSchema::model($model)['type'], $config['bundle_type'], $model);
             foreach (array_keys($errors) as $key) {
-                $this->assertMatchesRegularExpression('/(products|product|gifts\.\d+|mix\.pool)$/', $key, "{$model}: unexpected error {$key}");
+                $this->assertMatchesRegularExpression('/(products|product|gifts\.\d+|mix\.pool|mt\.pool)$/', $key, "{$model}: unexpected error {$key}");
             }
         }
     }
@@ -94,6 +94,21 @@ class BundleModuleTest extends TestCase
         $this->assertSame(['#7d1420', 'tiered'], [$after->draft_config['design']['accent'], $after->draft_config['settings']['skin']], 'Without a colour picked, the template keeps its own Berry colours.');
         $this->assertArrayHasKey('default', $this->page('/app/cro/bundles/new/tiered-gifts', $owner)->json('props.models.0.previews'));
         $this->page("/app/cro/bundles/{$after->id}", $owner)->assertJsonPath('props.meta.tiered', true);
+    }
+
+    public function test_mix_and_match_tiers_have_their_own_card_with_the_flag(): void
+    {
+        $store = $this->installedStore();
+        $owner = $this->member($store, 'owner');
+        $labels = fn () => array_column($this->page('/app/cro/bundles/new', $owner)->json('props.types'), 'label');
+        $this->assertNotContains('Mix and match quantity tiers', $labels());
+        \App\Models\FeatureFlag::create(['key' => 'mix_match_tiers', 'mode' => 'all', 'enabled' => true]);
+        \App\Support\Features::forget();
+        $this->assertContains('Mix and match quantity tiers', $labels());
+        $this->assertSame(['mt-grid', 'mt-cards', 'mt-row'], array_column($this->page('/app/cro/bundles/new/mix-tiers', $owner)->json('props.models'), 'key'));
+        $this->post('/app/cro/bundles', ['model' => 'mt-cards'], $this->as($owner))->assertRedirect();
+        $bundle = Experience::where('type', 'bundles')->sole();
+        $this->page("/app/cro/bundles/{$bundle->id}", $owner)->assertJsonPath('props.config.mt.rule', 'percent')->assertJsonPath('props.config.mt.layout', 'list');
     }
 
     public function test_save_validate_publish_and_toggle(): void

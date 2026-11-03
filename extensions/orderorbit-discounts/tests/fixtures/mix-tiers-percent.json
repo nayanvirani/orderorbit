@@ -1,0 +1,125 @@
+{
+  "payload": {
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 1,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|t|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "20"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/1",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null
+          },
+          {
+            "id": "gid://shopify/CartLine/1",
+            "quantity": 1,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|t|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "30"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/2",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null
+          }
+        ]
+      },
+      "discount": {
+        "discountClasses": [
+          "PRODUCT",
+          "ORDER"
+        ],
+        "metafield": {
+          "jsonValue": {
+            "offers": [
+              {
+                "k": "mt",
+                "id": "b1",
+                "r": "percent",
+                "t": [
+                  [
+                    2,
+                    10
+                  ],
+                  [
+                    3,
+                    20
+                  ]
+                ],
+                "p": [
+                  "1",
+                  "2",
+                  "3"
+                ],
+                "m": "Mix & save"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "productDiscountsAdd": {
+            "candidates": [
+              {
+                "message": "Mix & save",
+                "targets": [
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/0"
+                    }
+                  },
+                  {
+                    "cartLine": {
+                      "id": "gid://shopify/CartLine/1"
+                    }
+                  }
+                ],
+                "value": {
+                  "percentage": {
+                    "value": 10
+                  }
+                }
+              }
+            ],
+            "selectionStrategy": "ALL"
+          }
+        }
+      ]
+    }
+  }
+}

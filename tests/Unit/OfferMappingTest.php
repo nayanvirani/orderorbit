@@ -152,4 +152,24 @@ class OfferMappingTest extends TestCase
         $this->assertSame('Night Cream 50 ml', $ready['offers'][2]['notes'][1]['name']);
         $this->assertSame('bship', collect(OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $ready))->last()['k']);
     }
+
+    public function test_mix_and_match_quantity_tiers_validate_and_price_at_checkout(): void
+    {
+        $schema = \App\Experiences\BundleSchema::class;
+        $c = $schema::defaults('mt-grid');
+        $this->assertSame(['mix-tiers', 'free', [3, 5]], [$c['bundle_type'], $c['mt']['rule'], array_column($c['mt']['tiers'], 'count')]);
+        $this->assertSame(['mt.pool'], array_keys($schema::normalize($c)[1]), 'Only the products are left to pick; no offers are needed.');
+
+        $c['mt']['pool'] = [['id' => 'gid://shopify/Product/1'], ['id' => 'gid://shopify/Product/2']];
+        $c['mt']['tiers'][] = ['count' => 4, 'value' => 4];
+        $this->assertSame(['mt.tiers.1.value'], array_keys($schema::normalize($c)[1]), '4 free in a set of 4 is not allowed (tiers sort by size).');
+        array_pop($c['mt']['tiers']);
+        [$ready, $errors] = $schema::normalize($c);
+        $this->assertSame([], $errors);
+        $this->assertFalse(\App\Services\Experiences\BundleSync::merges($ready), 'Lines stay separate: the discount prices them.');
+        $this->assertSame([['k' => 'mt', 'id' => 'b-9', 'r' => 'free', 't' => [[3, 1.0], [5, 2.0]], 'p' => ['1', '2'], 'm' => 'BUNDLE & SAVE']],
+            OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-9']), $ready));
+        $this->assertSame('free', $schema::payload($ready)['content']['mt']['rule']);
+        $this->assertNull($schema::payload($schema::normalize($schema::defaults('qb-classic'))[0])['content']['mt'], 'Other bundles don\'t carry it.');
+    }
 }

@@ -157,6 +157,9 @@ class TemplateLibrary
                 }
             }
         }
+        if (($config['mt']['pool'] ?? null) === []) {
+            $config['mt']['pool'] = $samples;
+        }
         if ($config['mix']['pool'] === []) {
             $config['mix']['pool'] = $samples;
         }

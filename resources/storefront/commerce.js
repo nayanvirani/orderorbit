@@ -51,7 +51,6 @@
     return sel ? sel.value : p.variant_id;
   }
 
-  // The variant selected in the theme's own product form, if the page has one.
   // The variant chosen in the theme's form; if it's sold out (or unknown), the first variant in stock.
   function pageVariant(ctx) {
     var input = document.querySelector('form[action*="/cart/add"] [name="id"]');

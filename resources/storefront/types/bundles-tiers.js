@@ -97,6 +97,9 @@
   }
 
   OrderOrbit.bundleTiers = {
+    // Shared with oo-bundles-mt.js.
+    delivery: delivery,
+
     top: function (c) { return c.tiers.sale_header ? '<div class="oo-tsale" data-oo-tsale></div>' : ''; },
 
     card: function (o, i, c, ctx, selected, pr, B) {

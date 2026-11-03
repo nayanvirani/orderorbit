@@ -180,3 +180,11 @@
 .bx-steps { margin: 4px 0 8px; padding-left: 20px; display: grid; gap: 6px; }
 .bx-steps li { display: list-item; }
 .bx-steps .b-btn { margin-left: 6px; padding: 2px 10px; font-size: 12px; }
+
+/* Mix and match quantity tiers editor (G44) */
+.mx-tr { grid-template-columns: 96px 110px minmax(0, 1fr) minmax(0, 1fr) 32px; }
+.mx-calc { display: grid; gap: 0; margin: 0; }
+.mx-calc div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #ececec; font-size: 14px; }
+.mx-calc dt { color: #4a4a4a; }
+.mx-calc dd { margin: 0; font-weight: 600; }
+.mx-save { color: #c70a24; }

@@ -1,0 +1,69 @@
+{
+  "payload": {
+    "export": "cart-lines-discounts-generate-run",
+    "target": "cart.lines.discounts.generate.run",
+    "input": {
+      "presentmentCurrencyRate": "1.0",
+      "cart": {
+        "lines": [
+          {
+            "id": "gid://shopify/CartLine/0",
+            "quantity": 2,
+            "offer": {
+              "value": "b1"
+            },
+            "bundle": {
+              "value": "b1|t|g1"
+            },
+            "gift": null,
+            "cost": {
+              "amountPerQuantity": {
+                "amount": "40"
+              }
+            },
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "product": {
+                "id": "gid://shopify/Product/3",
+                "inCollections": []
+              }
+            },
+            "sellingPlanAllocation": null
+          }
+        ]
+      },
+      "discount": {
+        "discountClasses": [
+          "PRODUCT",
+          "ORDER"
+        ],
+        "metafield": {
+          "jsonValue": {
+            "offers": [
+              {
+                "k": "mt",
+                "id": "b1",
+                "r": "free",
+                "t": [
+                  [
+                    3,
+                    1
+                  ]
+                ],
+                "p": [
+                  "1",
+                  "2",
+                  "3"
+                ],
+                "m": "Mix & save"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output": {
+      "operations": []
+    }
+  }
+}

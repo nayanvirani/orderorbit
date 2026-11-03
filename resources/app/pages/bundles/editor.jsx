@@ -7,6 +7,7 @@ import { Page } from '../../components/ui.jsx';
 import { route, useRouter, useShared } from '../../router.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
 import TieredPanel, { usesTiered } from './_tiered.jsx';
+import MixTiersPanel from './_mixtiers.jsx';
 
 export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts }) {
   const { submit } = useRouter();
@@ -21,7 +22,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const [open, setOpen] = useState(() => new Set(['offer-0', 'visibility', 'mix', 'box-cards', 'box-size', 'box-price', 'd-overall', ...giftless(config).map((i) => `offer-${i}`)]));
   const [device, setDevice] = useState('desktop');
   const [context, setContext] = useState({ currency, cartTotal: 4500, productPrice: 2900, productTitle: 'Sample product', page: 'product' });
-  const tabOf = (k) => (/^(offers|mix|upsells|gifts|subscription|summary)/.test(k) ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
+  const tabOf = (k) => (/^(offers|mix|mt|upsells|gifts|subscription|summary|tiers)/.test(k) ? 'offers' : k.startsWith('design') ? 'design' : 'settings');
   const errorTabs = Object.keys(errors).map(tabOf);
   const [tab, setTab] = useState(errorTabs[0] || (giftless(config).length ? 'offers' : 'settings'));
   const missingGifts = giftless(state);
@@ -64,11 +65,12 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
       (o.gifts || []).forEach((g) => { if (!g.product.length) g.product = [meta.samples[3]]; });
     });
     if (!c.mix.pool.length) c.mix.pool = samples;
+    if (c.mt && !c.mt.pool.length) c.mt.pool = samples;
     (c.gifts.items || []).forEach((g) => { if (!g.product.length) g.product = [meta.samples[3]]; });
     const d = c.design;
     return {
       id: x.handle, type: 'bundles', template: 'editor', style: c.settings.layout, version: 0, priority: 50,
-      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription, tiers: tiersPayload(c.tiers, meta.timezone) },
+      content: { bundle_type: c.bundle_type, settings: c.settings, offers: c.offers.filter((o) => o.visible), mix: c.mix, gifts: c.gifts, upsells: c.upsells, summary: c.summary, subscription: c.subscription, tiers: tiersPayload(c.tiers, meta.timezone), mt: c.bundle_type === 'mix-tiers' ? c.mt : null },
       design: { ...d, primary_color: d.button_background, accent_color: d.accent, text_color: d.text, background_color: d.background, border: false },
       behavior: { priority: 50, after_add: c.settings.after_add, position: c.settings.position, animation: 'none' },
       targeting: {},
@@ -119,7 +121,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
               </div>
 
               <nav className="bx-tabbar" role="tablist" aria-label="Bundle editor">
-                {[['settings', 'Settings'], ['offers', state.bundle_type === 'mix-match' || state.bundle_type === 'byob' ? 'Products' : usesTiered(state) ? 'Tiers' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
+                {[['settings', 'Settings'], ['offers', ['mix-match', 'byob', 'mix-tiers'].includes(state.bundle_type) ? 'Products' : usesTiered(state) ? 'Tiers' : 'Offers'], ['design', 'Design']].map(([k, l]) => (
                   <button type="button" role="tab" key={k} aria-selected={tab === k} className={errorTabs.includes(k) ? 'has-error' : ''} onClick={() => setTab(k)}>{l}</button>
                 ))}
               </nav>
@@ -406,6 +408,7 @@ function OffersPanel() {
   const { state, update, errors, meta, open, toggle, expand } = useContext(Ctx);
   if (state.bundle_type === 'byob') return <BoxPanel />;
   if (usesTiered(state)) return <TieredPanel />;
+  if (state.bundle_type === 'mix-tiers') return <MixTiersPanel />;
   if (state.bundle_type === 'mix-match') {
     return (
       <>

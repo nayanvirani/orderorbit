@@ -47,6 +47,15 @@ class OfferSync
 
         [$bundle] = BundleSchema::normalize($config);
         $offers = [];
+        // Mix and match quantity tiers (G44): lines tagged "<id>|t|<group>"; the discount picks the best
+        // tier by quantity and applies its rule (r: free | percent | fixed), only to the pool's products.
+        if ($bundle['bundle_type'] === 'mix-tiers') {
+            $mt = $bundle['mt'];
+            $ids = array_values(array_filter(array_map(fn ($p) => preg_match('#(\d+)$#', (string) ($p['id'] ?? ''), $m) ? $m[1] : null, $mt['pool'])));
+
+            return $ids && $mt['tiers'] ? [['k' => 'mt', 'id' => $experience->handle, 'r' => $mt['rule'], 't' => array_map(fn ($x) => [$x['count'], $x['value']], $mt['tiers']), 'p' => $ids,
+                'm' => $bundle['settings']['title'] ?: 'Bundle discount']] : [];
+        }
         // One-product offers (quantity breaks, variant offers) and their gifts. Offers of several
         // products are merged and priced by the cart transform, so they're null here.
         // With subscriptions on, packs and mix & match boxes bought on a subscription can't be merged
