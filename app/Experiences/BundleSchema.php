@@ -183,16 +183,19 @@ class BundleSchema
      */
     private static function tieredTemplate(): array
     {
-        $note = [['desc' => 'Our best seller', 'value' => null]];
+        $note = [['name' => '', 'desc' => 'Our best seller', 'value' => null]];
         $gift = fn (string $desc) => ['product' => [], 'quantity' => 1, 'desc' => $desc, 'value' => null];
 
         return [
-            // The product page shows the product's own title; the sale header leads the bundle.
-            'settings' => ['title' => '', 'subtitle' => '', 'button_text' => 'ADD TO CART'],
+            // A bundle for one product page (its own title leads), with what's in each tier set in the app:
+            // shoppers see names and values, not variant pickers.
+            'settings' => ['title' => '', 'subtitle' => '', 'button_text' => 'ADD TO CART', 'visibility' => 'products', 'show_variants' => false],
             'offers' => [
                 ['id' => 'tier1', 'notes' => $note] + self::quantityOffer(1, 'none', 0, 'Buy One', 'You save {saving}'),
                 ['id' => 'tier2', 'notes' => $note, 'label_style' => 'filled'] + self::quantityOffer(2, 'percentage', 10, 'Buy 2, Get 1 Free Gift', 'You save {saving}', [$gift('Free with this bundle')], 'Most Popular', true),
-                ['id' => 'tier3', 'notes' => $note, 'label_style' => 'outlined'] + self::quantityOffer(3, 'percentage', 15, 'Buy 3, Get 2 Free Gifts', 'You save {saving}', [$gift('Free with this bundle'), $gift('A little extra, on us')], 'Best Value', false, true),
+                // A mix the merchant picks, e.g. 2x Glow Serum + 1x Night Cream.
+                ['id' => 'tier3', 'kind' => 'multi', 'notes' => [['name' => '', 'desc' => 'Our best seller', 'value' => null], ['name' => '', 'desc' => 'The perfect partner', 'value' => null]], 'label_style' => 'outlined']
+                    + self::quantityOffer(3, 'percentage', 15, 'Buy 3, Get 2 Free Gifts', 'You save {saving}', [$gift('Free with this bundle'), $gift('A little extra, on us')], 'Best Value', false, true),
             ],
             'gifts' => ['enabled' => true, 'title' => 'FREE gifts with your order', 'locked_text' => 'Locked'],
             'summary' => ['enabled' => false],
@@ -725,7 +728,7 @@ class BundleSchema
             $o['index'] = $i;
             $o['product'] = $strip($o['product']);
             $o['products'] = $strip($o['products']);
-            $o['gifts'] = array_map(fn ($g) => ['product' => $strip($g['product']), 'quantity' => $g['quantity'], 'desc' => $g['desc'] ?? '', 'value' => $g['value'] ?? null], $o['gifts']);
+            $o['gifts'] = array_map(fn ($g) => ['product' => $strip($g['product']), 'quantity' => $g['quantity'], 'name' => $g['name'] ?? '', 'desc' => $g['desc'] ?? '', 'value' => $g['value'] ?? null], $o['gifts']);
 
             return $o;
         }, $config['offers'], array_keys($config['offers'])));
@@ -836,12 +839,12 @@ class BundleSchema
         return $options;
     }
 
-    /** A tier item's or gift's short description and value (null = worked out from its price). */
+    /** A tier item's or gift's name shown to shoppers ('' = the product's title), short description and value (null = from its price). */
     private static function note(array $n): array
     {
         $value = $n['value'] ?? null;
 
-        return ['desc' => self::text($n['desc'] ?? '', 80), 'value' => $value === null || $value === '' ? null : max(0, min(1000000, round((float) $value, 2)))];
+        return ['name' => self::text($n['name'] ?? '', 80), 'desc' => self::text($n['desc'] ?? '', 80), 'value' => $value === null || $value === '' ? null : max(0, min(1000000, round((float) $value, 2)))];
     }
 
     // ---------------------------------------------------------------- helpers

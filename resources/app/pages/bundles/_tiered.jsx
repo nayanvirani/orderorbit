@@ -116,10 +116,11 @@ function InEachTier({ tier, onPick }) {
       <p className="tx-sub">Items in "{o.title}"</p>
       {o.kind === 'multi' ? (
         <>
-          <Picker path={`${p}.products`} label="Products in this tier, with quantities" max={10} quantities help="For example 2× serum and 1× night cream. Checkout merges them into one bundle line at the tier's price." />
+          <Picker path={`${p}.products`} label="Products in this tier, with quantities" max={10} quantities help="For example 2× serum and 1× night cream. Pick the variant in the picker; shoppers only see the names. Checkout merges them into one bundle line at the tier's price." />
           {(o.products || []).map((x, j) => (
             <div className="tx-item" key={j}>
               <span className="tx-name">{x.quantity || 1}× {x.title}</span>
+              <F path={`${p}.notes.${j}.name`} label="Name shown to shoppers" max={80} placeholder={x.title} help="Empty = the product's title." />
               <F path={`${p}.notes.${j}.value`} label={`Value (${currency})`} type="number" min={0} step={0.01} />
               <F path={`${p}.notes.${j}.desc`} label="Short description" max={80} />
             </div>
@@ -130,6 +131,7 @@ function InEachTier({ tier, onPick }) {
         <>
           <div className="tx-item">
             <span className="tx-name">{o.quantity}× the product on the page</span>
+            <F path={`${p}.notes.0.name`} label="Name shown to shoppers" max={80} placeholder="The product's title" help="Empty = the product's title." />
             <F path={`${p}.notes.0.value`} label={`Value (${currency})`} type="number" min={0} step={0.01} />
             <F path={`${p}.notes.0.desc`} label="Short description" max={80} placeholder="e.g. Brightening daily serum" />
           </div>
@@ -141,6 +143,7 @@ function InEachTier({ tier, onPick }) {
       {(o.gifts || []).map((g, j) => (
         <div className="tx-item tx-gift" key={j}>
           <Picker path={`${p}.gifts.${j}.product`} label={`Gift ${j + 1}`} max={1} help="" />
+          <F path={`${p}.gifts.${j}.name`} label="Name shown to shoppers" max={80} placeholder={g.product?.[0]?.title || 'The gift product\'s title'} />
           <F path={`${p}.gifts.${j}.quantity`} label="Qty" type="number" min={1} max={10} />
           <F path={`${p}.gifts.${j}.value`} label={`Value (${currency})`} type="number" min={0} step={0.01} />
           <F path={`${p}.gifts.${j}.desc`} label="Short description" max={80} />

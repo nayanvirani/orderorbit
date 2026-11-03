@@ -18,13 +18,13 @@
     var notes = o.notes || [];
     var list = o.kind === 'multi' ? (o.products || []).map(function (p, j) { return [p, Number(p.quantity || 1), notes[j]]; })
       : [[o.kind === 'mono' ? o.product[0] || {} : B.base(ctx), Number(o.quantity || 1), notes[0]]];
-    return list.map(function (x) { return { p: x[0], q: x[1], desc: (x[2] || {}).desc || '', value: valueOf(x[2], x[0], x[1]) }; });
+    return list.map(function (x) { return { p: x[0], q: x[1], name: (x[2] || {}).name, desc: (x[2] || {}).desc || '', value: valueOf(x[2], x[0], x[1]) }; });
   }
 
   function gifts(o, c) {
     if (!c.gifts.enabled) return [];
     return (o.gifts || []).filter(function (g) { return g.product[0]; }).map(function (g) {
-      return { p: g.product[0], q: Number(g.quantity || 1), desc: g.desc || '', value: valueOf(g, g.product[0], Number(g.quantity || 1)) };
+      return { p: g.product[0], q: Number(g.quantity || 1), name: g.name, desc: g.desc || '', value: valueOf(g, g.product[0], Number(g.quantity || 1)) };
     });
   }
 
@@ -39,7 +39,7 @@
   function priceHtml(p, ctx) { return '<b>' + money(p.after, ctx) + '</b>' + (p.saving > 0 ? '<s>' + money(p.full, ctx) + '</s>' : ''); }
 
   function line(x, ctx, free) {
-    return '<li><span class="oo-tcheck' + (free ? ' oo-tcheck-g' : '') + '" aria-hidden="true">✓</span><span><b>' + (free ? 'FREE ' : x.q + 'x ') + h.esc(x.p.title || 'Product') + '</b>' +
+    return '<li><span class="oo-tcheck' + (free ? ' oo-tcheck-g' : '') + '" aria-hidden="true">✓</span><span><b>' + (free ? 'FREE ' : x.q + 'x ') + h.esc(x.name || x.p.title || 'Product') + '</b>' +
       (x.value > 0 ? ' <span class="oo-tval">(' + money(x.value, ctx) + ' Value)</span>' : '') + (x.desc ? '<small>' + h.esc(x.desc) + '</small>' : '') + '</span></li>';
   }
 
@@ -129,7 +129,7 @@
         out += '<div class="oo-tgifts" data-oo-tgifts><p class="oo-tg-title" data-oo-tgt></p><div class="oo-tg-row">' + all.map(function (s, k) {
           var value = s.ship ? Number(t.shipping_value || 0) * rate() : s.g.value;
           return (k ? '<span class="oo-tg-plus" aria-hidden="true">+</span>' : '') + '<span class="oo-tg" data-oo-tg="' + k + '"><span class="oo-tg-img">' + (s.ship ? TRUCK : h.productImage(s.g.p)) + '</span>' +
-            (value > 0 ? '<s>' + money(value, ctx) + '</s>' : '') + '<b class="oo-tg-free">FREE ' + h.esc(s.ship ? 'Shipping' : s.g.p.title || 'Gift') + '</b>' +
+            (value > 0 ? '<s>' + money(value, ctx) + '</s>' : '') + '<b class="oo-tg-free">FREE ' + h.esc(s.ship ? 'Shipping' : s.g.name || s.g.p.title || 'Gift') + '</b>' +
             '<small class="oo-tg-lock"><b>' + h.esc(c.gifts.locked_text || 'Locked') + '</b>With Buy ' + unitsOf(c.offers[s.at] || {}) + '</small></span>';
         }).join('') + '</div></div>';
       }

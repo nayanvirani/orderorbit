@@ -144,7 +144,8 @@ class TemplateLibrary
         $samples = array_slice(self::samples(), 0, 3);
         foreach ($config['offers'] as $i => $offer) {
             if ($offer['kind'] === 'multi' && $offer['products'] === []) {
-                $config['offers'][$i]['products'] = array_slice($samples, 0, 3);
+                // Gift tiers preview as a mix like 2x serum + 1x cream; other packs as three products.
+                $config['offers'][$i]['products'] = $config['bundle_type'] === 'quantity-gifts' ? [$samples[0] + ['quantity' => 2], $samples[1] + ['quantity' => 1]] : array_slice($samples, 0, 3);
             }
             if ($offer['kind'] === 'mono' && $offer['product'] === []) {
                 $config['offers'][$i]['product'] = [$samples[$i % 3]];

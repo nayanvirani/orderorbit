@@ -25,6 +25,12 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   const errorTabs = Object.keys(errors).map(tabOf);
   const [tab, setTab] = useState(errorTabs[0] || (giftless(config).length ? 'offers' : 'settings'));
   const missingGifts = giftless(state);
+  // What a new bundle from a template still needs: the product page, packs to fill, gifts to pick.
+  const steps = [
+    state.settings.visibility === 'products' && !state.settings.products.length && ['settings', 'Choose the product page this bundle shows on', 'Settings › Visibility'],
+    ...state.offers.map((o) => o.kind === 'multi' && !(o.products || []).length && ['offers', `Pick the products in "${o.title}" (e.g. 2× serum + 1× night cream)`, `${usesTiered(state) ? 'Tiers' : 'Offers'} › What's in each tier`]),
+    missingGifts.length > 0 && ['offers', `Pick the free gift products in ${missingGifts.map((i) => `"${state.offers[i].title || `Offer ${i + 1}`}"`).join(' and ')}`, `${usesTiered(state) ? 'Tiers' : 'Offers'} › What's in each tier`],
+  ].filter(Boolean);
 
   const update = (fn) => { setState((s) => fn(clone(s))); setDirty(true); };
   const set = (path, value) => { setState((s) => setIn(s, path, value)); setDirty(true); };
@@ -52,7 +58,8 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     const samples = meta.samples.slice(0, 3);
     c.offers.forEach((o, i) => {
       o.index = i;
-      if (o.kind === 'multi' && !o.products.length) o.products = samples.slice(0, 2);
+      // An empty pack previews as 2× + 1× sample products, like the tiered design.
+      if (o.kind === 'multi' && !o.products.length) o.products = [{ ...samples[0], quantity: 2 }, { ...samples[1], quantity: 1 }];
       if (o.kind === 'mono' && !o.product.length) o.product = [samples[i % 3]];
       (o.gifts || []).forEach((g) => { if (!g.product.length) g.product = [meta.samples[3]]; });
     });
@@ -86,9 +93,14 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     <Page heading={x.name} back={route('app.bundles.index')} backLabel="Bundles">
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'critical'}>{banner}</s-banner>}
       {x.status === 'published' && x.unpublished && <s-banner tone="info">This bundle has changes that aren't live yet. Publish to update your store.</s-banner>}
-      {missingGifts.length > 0 && (
-        <s-banner tone="info" heading="Last step: choose your free gifts">
-          <s-paragraph>Everything else is set up. Pick the gift product in {missingGifts.map((i) => `"${state.offers[i].title || `Offer ${i + 1}`}"`).join(' and ')} under {usesTiered(state) ? 'Tiers' : 'Offers'}, then Publish.</s-paragraph>
+      {steps.length > 0 && (
+        <s-banner tone="info" heading={`Almost ready: ${steps.length} ${steps.length === 1 ? 'step' : 'steps'} left`}>
+          <ol className="bx-steps">
+            {steps.map(([to, text, where]) => (
+              <li key={text}><span>{text}</span> <button type="button" className="b-btn" onClick={() => { setTab(to); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>{where}</button></li>
+            ))}
+          </ol>
+          <s-paragraph>Everything else is set up and can be changed. Then Publish.</s-paragraph>
         </s-banner>
       )}
 

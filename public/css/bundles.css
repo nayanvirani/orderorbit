@@ -177,3 +177,6 @@
 .tx-rewards span, .tx-muted { color: #616161; }
 .bx-own { min-height: 28px; padding: 2px 10px; font-size: 12px; }
 .bx-own[aria-pressed="true"] { background: #303030; color: #fff; border-color: #303030; }
+.bx-steps { margin: 4px 0 8px; padding-left: 20px; display: grid; gap: 6px; }
+.bx-steps li { display: list-item; }
+.bx-steps .b-btn { margin-left: 6px; padding: 2px 10px; font-size: 12px; }

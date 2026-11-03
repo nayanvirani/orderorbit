@@ -121,7 +121,7 @@ class OfferMappingTest extends TestCase
         [$config, $errors] = $schema::normalize($new, 'Asia/Kolkata');
         $this->assertSame(['tiers.delivery.max_days', 'tiers.delivery.text'], array_keys(array_filter($errors, fn ($k) => str_starts_with($k, 'tiers'), ARRAY_FILTER_USE_KEY)));
         $this->assertSame('multi', $config['offers'][2]['kind']);
-        $this->assertSame([['desc' => 'Brightening daily serum', 'value' => 48.0], ['desc' => '', 'value' => null]], $config['offers'][2]['notes']);
+        $this->assertSame([['name' => '', 'desc' => 'Brightening daily serum', 'value' => 48.0], ['name' => '', 'desc' => '', 'value' => null]], $config['offers'][2]['notes']);
         $this->assertSame(['Tinted', 14.0, 'outlined'], [$config['offers'][2]['gifts'][0]['desc'], $config['offers'][2]['gifts'][0]['value'], $config['offers'][2]['label_style']]);
         $this->assertSame('Asia/Kolkata', $schema::normalize($config)[0]['tiers']['delivery']['timezone'], 'Re-checks keep the store\'s time zone.');
 
@@ -139,12 +139,17 @@ class OfferMappingTest extends TestCase
         $this->assertSame([['Most Popular', 'filled'], ['Best Value', 'outlined']], [[$c['offers'][1]['label'], $c['offers'][1]['label_style']], [$c['offers'][2]['label'], $c['offers'][2]['label_style']]]);
         $this->assertSame(['tier1', true, true], [$c['tiers']['free_shipping'], $c['tiers']['delivery']['enabled'], $c['offers'][2]['preselected']]);
 
-        // Before the gifts are chosen, those are the only errors.
-        $this->assertSame(['offers.1.gifts.0.product', 'offers.2.gifts.0.product', 'offers.2.gifts.1.product'], array_keys($schema::normalize($c)[1]));
+        // What the merchant picks: the product page, the mix in Buy 3 and the gifts. Shoppers pick nothing.
+        $this->assertSame(['multi', false], [$c['offers'][2]['kind'], $c['settings']['show_variants']]);
+        $this->assertSame(['settings.products', 'offers.1.gifts.0.product', 'offers.2.products', 'offers.2.gifts.0.product', 'offers.2.gifts.1.product'], array_keys($schema::normalize($c)[1]));
+        $c['settings']['products'] = $this->products(1);
+        $c['offers'][2]['products'] = [$this->products(1)[0] + ['quantity' => 2], $this->products(2)[0]];
+        $c['offers'][2]['notes'][1]['name'] = 'Night Cream 50 ml';
         $c['offers'][1]['gifts'][0]['product'] = $c['offers'][2]['gifts'][0]['product'] = $this->products(9);
         $c['offers'][2]['gifts'][1]['product'] = $this->products(8);
         [$ready, $errors] = $schema::normalize($c);
         $this->assertSame([], $errors);
+        $this->assertSame('Night Cream 50 ml', $ready['offers'][2]['notes'][1]['name']);
         $this->assertSame('bship', collect(OfferSync::offersFor(new Experience(['type' => 'bundles', 'handle' => 'b-1']), $ready))->last()['k']);
     }
 }
