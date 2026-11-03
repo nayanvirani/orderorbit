@@ -1,3 +1,8 @@
+<nav class="ad-tabs" style="margin:0;padding:0 8px">
+    @foreach ($tabs as $k => $l)
+        <a href="{{ route('admin.chat', ['tab' => $k]) }}" @if ($tab === $k) aria-current="page" @endif>{{ $l }}@if ($counts[$k] !== null)<span>{{ $counts[$k] }}</span>@endif</a>
+    @endforeach
+</nav>
 @forelse ($queue as $q)
     @php($since = $q->chat_state === 'closed' ? $q->closed_at : ($q->first_reply_at ? $q->last_reply_at : $q->created_at))
     @php($late = in_array($q->chat_state, ['waiting', 'offline'], true) && ! $q->first_reply_at && $q->created_at->lt(now()->subMinutes(3)))

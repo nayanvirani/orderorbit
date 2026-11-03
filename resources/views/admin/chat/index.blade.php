@@ -16,11 +16,6 @@
 
     <div class="ad-chat">
         <section class="ad-card flush ad-chat-queue">
-            <nav class="ad-tabs" style="margin:0;padding:0 8px">
-                @foreach ($tabs as $k => $l)
-                    <a href="{{ route('admin.chat', ['tab' => $k]) }}" @if ($tab === $k) aria-current="page" @endif>{{ $l }}@if ($counts[$k] !== null)<span>{{ $counts[$k] }}</span>@endif</a>
-                @endforeach
-            </nav>
             <div id="chat-queue">@include('admin.chat._queue')</div>
         </section>
 
@@ -64,7 +59,7 @@
         <aside class="ad-card ad-chat-side">
             @if ($current)
                 <h2>Store details</h2>
-                <dl class="ad-chat-details">@foreach ($details as $k => $v)<dt>{{ $k }}</dt><dd>{{ $v }}</dd>@endforeach</dl>
+                <dl class="ad-chat-details">@foreach ($details as $k => $v)<div><dt>{{ $k }}</dt><dd>{{ $v }}</dd></div>@endforeach</dl>
                 <p><a href="{{ route('admin.store', $current->store_id) }}">Open store in Internal Admin</a></p>
                 <h2 style="margin-top:18px">History</h2>
                 @forelse ($history as $h)

@@ -280,6 +280,8 @@ textarea.ad-code { display: block; width: 100%; padding: 12px 14px; border-radiu
 .ad-chat-presence { display: flex; gap: 8px; }
 .ad-chat-dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--faint); }
 .ad-chat-dot.on { background: #34d399; }
-.ad-chat-details { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0 0 12px; font-size: 13px; }
-.ad-chat-details dt { color: var(--muted); }
-.ad-chat-details dd { margin: 0; word-break: break-word; }
+.ad-chat-details { margin: 0 0 14px; font-size: 13.5px; }
+.ad-chat-details div { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.ad-chat-details div:first-child { padding-top: 0; }
+.ad-chat-details dt { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.ad-chat-details dd { margin: 0; color: var(--ink); font-weight: 550; overflow-wrap: anywhere; }
