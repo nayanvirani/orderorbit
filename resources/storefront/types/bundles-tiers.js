@@ -38,9 +38,14 @@
 
   function priceHtml(p, ctx) { return '<b>' + money(p.after, ctx) + '</b>' + (p.saving > 0 ? '<s>' + money(p.full, ctx) + '</s>' : ''); }
 
-  function line(x, ctx, free) {
-    return '<li><span class="oo-tcheck' + (free ? ' oo-tcheck-g' : '') + '" aria-hidden="true">✓</span><span><b>' + (free ? 'FREE ' : x.q + 'x ') + h.esc(x.name || x.p.title || 'Product') + '</b>' +
-      (x.value > 0 ? ' <span class="oo-tval">(' + money(x.value, ctx) + ' Value)</span>' : '') + (x.desc ? '<small>' + h.esc(x.desc) + '</small>' : '') + '</span></li>';
+  // The merchant's wording (Texts and visibility), with today's words when a bundle has none saved.
+  function w(t, key, fallback) { var v = (t.words || {})[key]; return v != null ? v : fallback; }
+
+  function line(x, ctx, free, t) {
+    var pre = free ? (w(t, 'free', 'FREE') ? h.esc(w(t, 'free', 'FREE')) + ' ' : '') : t.show_qty === false ? '' : x.q + 'x ';
+    var val = t.show_values !== false && x.value > 0 && w(t, 'value', '({amount} Value)') ? ' <span class="oo-tval">' + h.esc(w(t, 'value', '({amount} Value)')).replace('{amount}', money(x.value, ctx)) + '</span>' : '';
+    return '<li><span class="oo-tcheck' + (free ? ' oo-tcheck-g' : '') + '" aria-hidden="true">✓</span><span><b>' + pre + h.esc(x.name || x.p.title || 'Product') + '</b>' +
+      val + (x.desc && t.show_desc !== false ? '<small>' + h.esc(x.desc) + '</small>' : '') + '</span></li>';
   }
 
   function unitsOf(o) { return o.kind === 'multi' ? (o.products || []).reduce(function (s, p) { return s + Number(p.quantity || 1); }, 0) : Number(o.quantity || 1); }
@@ -48,7 +53,7 @@
   function secondLine(o, c, ctx, p, B) {
     var t = c.tiers;
     if (t.second_line === 'none') return '';
-    if (t.second_line === 'each') return '<span class="oo-bsubt">' + money(p.after / Math.max(1, unitsOf(o)), ctx) + ' per ' + h.esc(t.unit || 'item') + '</span>';
+    if (t.second_line === 'each') return '<span class="oo-bsubt">' + money(p.after / Math.max(1, unitsOf(o)), ctx) + ' ' + h.esc(w(t, 'per', 'per')) + ' ' + h.esc(t.unit || 'item') + '</span>';
     // "You save {saving}" with nothing saved says nothing.
     return o.subtitle && !(p.saving <= 0 && /\{(saving|percent)\}/.test(o.subtitle)) ? '<span class="oo-bsubt">' + B.fill(o.subtitle, p, ctx) + '</span>' : '';
   }
@@ -113,8 +118,9 @@
         for (var u = 0; u < Math.min(2, x.q); u++) out += '<span class="oo-tpic">' + h.productImage(x.p) + (u === 1 && x.q > 2 ? '<i>×' + x.q + '</i>' : '') + '</span>';
         return out;
       }).join('') + (gs.length ? '<span class="oo-tplus-sign">+</span>' + gs.map(function (x) { return '<span class="oo-tpic oo-tpic-gift">' + h.productImage(x.p) + '</span>'; }).join('') : '') + '</span>' : '';
-      var list = t.details ? '<ul class="oo-tlist">' + its.map(function (x) { return line(x, ctx); }).join('') +
-        (gs.length ? '<li class="oo-tplus"><span>PLUS FREE GIFTS</span></li>' + gs.map(function (x) { return line(x, ctx, true); }).join('') : '') + '</ul>' : '';
+      var plus = w(t, 'plus', 'PLUS FREE GIFTS');
+      var list = t.details ? '<ul class="oo-tlist">' + its.map(function (x) { return line(x, ctx, false, t); }).join('') +
+        (gs.length ? (plus ? '<li class="oo-tplus"><span>' + h.esc(plus) + '</span></li>' : '') + gs.map(function (x) { return line(x, ctx, true, t); }).join('') : '') + '</ul>' : '';
       var giftTiles = !t.details && OrderOrbit.bundleExtras ? OrderOrbit.bundleExtras.gifts(o, c) : '';
       return '<label class="oo-boffer oo-ttier' + (selected ? ' oo-bsel' : '') + (o.highlight ? ' oo-bhl' : '') + '" data-oo-offer="' + i + '">' +
         (o.label ? '<span class="oo-blabel' + (o.label_style === 'outlined' ? ' oo-blabel-o' : '') + '">' + h.esc(o.label) + '</span>' : '') +
@@ -132,11 +138,11 @@
         out += '<div class="oo-tgifts" data-oo-tgifts><p class="oo-tg-title" data-oo-tgt></p><div class="oo-tg-row">' + all.map(function (s, k) {
           var value = s.ship ? Number(t.shipping_value || 0) * rate() : s.g.value;
           return (k ? '<span class="oo-tg-plus" aria-hidden="true">+</span>' : '') + '<span class="oo-tg" data-oo-tg="' + k + '"><span class="oo-tg-img">' + (s.ship ? TRUCK : h.productImage(s.g.p)) + '</span>' +
-            (value > 0 ? '<s>' + money(value, ctx) + '</s>' : '') + '<b class="oo-tg-free">FREE ' + h.esc(s.ship ? 'Shipping' : s.g.name || s.g.p.title || 'Gift') + '</b>' +
-            '<small class="oo-tg-lock"><b>' + h.esc(c.gifts.locked_text || 'Locked') + '</b>With Buy ' + unitsOf(c.offers[s.at] || {}) + '</small></span>';
+            (value > 0 ? '<s>' + money(value, ctx) + '</s>' : '') + '<b class="oo-tg-free">' + (w(t, 'free', 'FREE') ? h.esc(w(t, 'free', 'FREE')) + ' ' : '') + h.esc(s.ship ? w(t, 'shipping', 'Shipping') : s.g.name || s.g.p.title || 'Gift') + '</b>' +
+            '<small class="oo-tg-lock"><b>' + h.esc(c.gifts.locked_text || 'Locked') + '</b>' + h.esc(w(t, 'with', 'With Buy {count}')).replace('{count}', unitsOf(c.offers[s.at] || {})).replace('{tier}', h.esc((c.offers[s.at] || {}).title || '')) + '</small></span>';
         }).join('') + '</div></div>';
       }
-      if (t.delivery && t.delivery.enabled) out += '<p class="oo-tdel" data-oo-tdel>🕑 <span>' + delivery(t.delivery) + '</span></p>';
+      if (t.delivery && t.delivery.enabled) out += '<p class="oo-tdel" data-oo-tdel>' + (t.show_clock === false ? '' : '🕑 ') + '<span>' + delivery(t.delivery) + '</span></p>';
       return out;
     },
 

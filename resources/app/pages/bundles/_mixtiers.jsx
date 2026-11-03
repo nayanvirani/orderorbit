@@ -111,9 +111,28 @@ export default function MixTiersPanel() {
         </Row>
         {m.layout === 'grid' && <Row><F path={`${p}.columns_desktop`} label="Columns on desktop" type="number" min={2} max={6} /><F path={`${p}.columns_mobile`} label="Columns on mobile" type="number" min={1} max={4} /></Row>}
         <Row><F path={`${p}.best_label`} label="Ribbon on the tiers" max={24} placeholder="BEST OFFER" /><F path={`${p}.first_label`} label="First step" max={24} /></Row>
-        <Row><F path={`${p}.add_text`} label="Add button" max={16} /><F path="settings.button_text" label="Add to cart button" max={40} /></Row>
-        <F path={`${p}.nudge`} label="Nudge" max={80} help="{count} becomes the items still needed and {tier} the next tier." />
-        <F path={`${p}.done`} label="When the best tier is reached" max={60} />
+        <F path="settings.button_text" label="Add to cart button" max={40} />
+      </Card>
+      <Card title="Texts and visibility">
+        <Help text="Change any text shoppers see, and hide what you don't need. Empty a text to hide it." />
+        <p className="tx-sub">Above the items</p>
+        <Row><F path="settings.title" label="Title" max={80} placeholder="Empty = no title" /><F path="settings.subtitle" label="Subtitle" max={120} placeholder="Empty = no subtitle" /></Row>
+        <F path={`${p}.show_tiers`} label="Show the tiers (slider or cards)" type="toggle" />
+        {m.show_tiers !== false && <F path={`${p}.show_badges`} label="Show the discount badges on the tiers (−33%)" type="toggle" />}
+        <p className="tx-sub">Items</p>
+        <F path={`${p}.show_price`} label="Show each item's price" type="toggle" />
+        <Row><F path={`${p}.add_text`} label="Add button" max={16} /><F path={`${p}.sold_text`} label="Sold out text" max={24} /></Row>
+        <p className="tx-sub">Under the items</p>
+        <F path={`${p}.show_nudge`} label="Show the nudge line" type="toggle" />
+        {m.show_nudge !== false && (
+          <>
+            <F path={`${p}.empty`} label="Before anything is chosen" max={60} placeholder="Choose your items" />
+            <F path={`${p}.nudge`} label="While a better tier is left" max={80} help="{count} becomes the items still needed and {tier} the next tier." />
+            <F path={`${p}.done`} label="When the best tier is reached" max={60} />
+          </>
+        )}
+        <F path={`${p}.button_price`} label="Show the total in the add to cart button" type="toggle" />
+        <F path="tiers.show_clock" label="Show the clock icon in the delivery bar" type="toggle" />
       </Card>
       <Delivery />
     </>

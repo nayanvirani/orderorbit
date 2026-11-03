@@ -57,7 +57,7 @@
   }
 
   function badge(m, t, ref) {
-    if (t.first) return '';
+    if (t.first || m.show_badges === false) return '';
     if (t.badge) return t.badge;
     var pct = ref ? Math.round((1 - each(m, t, ref) / ref) * 100) : 0;
     return pct > 0 ? '−' + pct + '%' : '';
@@ -80,10 +80,10 @@
 
   function tile(it, j, m, ctx, B) {
     return '<div class="oo-mt-item' + (it.sold ? ' oo-mt-sold' : '') + '" data-oo-mt-item="' + j + '"><div class="oo-mt-pic"><div class="oo-mt-img">' + h.productImage({ image: it.image, title: it.title }) + '</div>' +
-      '<span class="oo-mt-ctl"><button type="button" class="oo-mt-add" data-oo-mt-add="' + j + '"' + (it.sold ? ' disabled' : '') + '>' + h.esc(it.sold ? 'Sold out' : m.add_text) + '</button>' +
+      '<span class="oo-mt-ctl"><button type="button" class="oo-mt-add" data-oo-mt-add="' + j + '"' + (it.sold ? ' disabled' : '') + '>' + h.esc(it.sold ? m.sold_text || 'Sold out' : m.add_text) + '</button>' +
       '<span class="oo-mt-step-ctl"><button type="button" data-oo-mt-sub="' + j + '" aria-label="One less ' + h.esc(it.title) + '">−</button><b data-oo-mt-q="' + j + '">0</b>' +
       '<button type="button" data-oo-mt-add="' + j + '" aria-label="One more ' + h.esc(it.title) + '">+</button></span></span></div>' +
-      '<span class="oo-mt-title">' + h.esc(it.title) + '</span><span class="oo-mt-price">' + B.money(it.price, ctx) + (m.units > 0 ? ' · ' + perUnit(m, it.price, ctx, B) : '') + '</span></div>';
+      '<span class="oo-mt-title">' + h.esc(it.title) + '</span>' + (m.show_price === false ? '' : '<span class="oo-mt-price">' + B.money(it.price, ctx) + (m.units > 0 ? ' · ' + perUnit(m, it.price, ctx, B) : '') + '</span>') + '</div>';
   }
 
   OrderOrbit.bundleMt = {
@@ -95,11 +95,11 @@
       var ref = list[0].price;
       var del = OrderOrbit.bundleTiers && c.tiers && c.tiers.delivery && c.tiers.delivery.enabled;
       return '<div class="oo-body oo-bundle oo-bk-' + h.esc(c.settings.skin || 'mixtiers') + ' oo-mt oo-mt-l-' + m.layout + '" style="' + B.vars(exp.design || {}) + '--mt-cd:' + m.columns_desktop + ';--mt-cm:' + m.columns_mobile + '">' +
-        B.header(c.settings) + tierBox(m, ctx, B, ref) +
+        B.header(c.settings) + (m.show_tiers === false ? '' : tierBox(m, ctx, B, ref)) +
         '<div class="oo-mt-items">' + list.map(function (it, j) { return tile(it, j, m, ctx, B); }).join('') + '</div>' +
-        '<p class="oo-mt-nudge" data-oo-mt-nudge></p>' +
+        '<p class="oo-mt-nudge" data-oo-mt-nudge' + (m.show_nudge === false ? ' hidden' : '') + '></p>' +
         '<button type="button" class="oo-btn oo-badd" data-oo-click="bundle_add" data-oo-add disabled>' + h.esc(c.settings.button_text) + '</button>' +
-        (del ? '<p class="oo-tdel" data-oo-tdel>🕑 <span>' + OrderOrbit.bundleTiers.delivery(c.tiers.delivery) + '</span></p>' : '') +
+        (del ? '<p class="oo-tdel" data-oo-tdel>' + (c.tiers.show_clock === false ? '' : '🕑 ') + '<span>' + OrderOrbit.bundleTiers.delivery(c.tiers.delivery) + '</span></p>' : '') +
         '<p class="oo-status" data-oo-status role="status"></p></div>';
     },
 
@@ -129,11 +129,11 @@
         var full = m.max > 0 && count >= m.max;
         root.querySelectorAll('[data-oo-mt-add]').forEach(function (b) { if (!list[Number(b.getAttribute('data-oo-mt-add'))].sold) b.disabled = full; });
         var next = steps.filter(function (t) { return t.count > count; })[0];
-        root.querySelector('[data-oo-mt-nudge]').innerHTML = !count ? 'Choose your items'
+        root.querySelector('[data-oo-mt-nudge]').innerHTML = !count ? h.esc(m.empty != null ? m.empty : 'Choose your items')
           : next ? h.esc(m.nudge || '').replace('{count}', '<b>' + (next.count - count) + '</b>').replace('{tier}', '<b>' + h.esc(label(m, next, ctx)) + (badge(m, next, list[0].price) ? ' (' + h.esc(badge(m, next, list[0].price)) + ')' : '') + '</b>')
             : h.esc(m.done || '');
         btn.disabled = !count;
-        btn.innerHTML = h.esc(c.settings.button_text) + (count ? ' · ' + money(pr[1]) + (pr[0] - pr[1] > 0.004 ? ' <s>' + money(pr[0]) + '</s>' : '') : '');
+        btn.innerHTML = h.esc(c.settings.button_text) + (count && m.button_price !== false ? ' · ' + money(pr[1]) + (pr[0] - pr[1] > 0.004 ? ' <s>' + money(pr[0]) + '</s>' : '') : '');
       }
 
       root.addEventListener('click', function (e) {

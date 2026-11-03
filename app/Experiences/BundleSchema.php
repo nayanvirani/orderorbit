@@ -820,6 +820,8 @@ class BundleSchema
             'layout' => 'grid', 'columns_desktop' => 4, 'columns_mobile' => 3,
             'tier_style' => 'slider', 'best_label' => 'BEST OFFER', 'first_label' => '1 item',
             'add_text' => 'ADD', 'nudge' => 'Add {count} more to unlock {tier}', 'done' => 'Best offer unlocked',
+            'empty' => 'Choose your items', 'sold_text' => 'Sold out',
+            'show_tiers' => true, 'show_price' => true, 'show_nudge' => true, 'show_badges' => true, 'button_price' => true,
             'max' => 0,
         ];
     }
@@ -851,6 +853,13 @@ class BundleSchema
             'add_text' => self::text($m['add_text'] ?? 'ADD', 16) ?: 'ADD',
             'nudge' => self::text($m['nudge'] ?? $d['nudge'], 80),
             'done' => self::text($m['done'] ?? $d['done'], 60),
+            'empty' => self::text($m['empty'] ?? $d['empty'], 60),
+            'sold_text' => self::text($m['sold_text'] ?? $d['sold_text'], 24) ?: 'Sold out',
+            'show_tiers' => self::bool($m['show_tiers'] ?? true),
+            'show_price' => self::bool($m['show_price'] ?? true),
+            'show_nudge' => self::bool($m['show_nudge'] ?? true),
+            'show_badges' => self::bool($m['show_badges'] ?? true),
+            'button_price' => self::bool($m['button_price'] ?? true),
             'max' => max(0, min(200, (int) ($m['max'] ?? 0))),
         ];
         if ($type !== 'mix-tiers') {
@@ -885,6 +894,8 @@ class BundleSchema
      * second line in each tier, the open list of what's inside, the gifts row (with free shipping as a
      * reward), the delivery date bar and the price in the button. All off when $on is false.
      */
+    public const TIER_WORDS = ['free' => 'FREE', 'value' => '({amount} Value)', 'plus' => 'PLUS FREE GIFTS', 'per' => 'per', 'shipping' => 'Shipping', 'with' => 'With Buy {count}'];
+
     public static function tierDefaults(bool $on): array
     {
         return [
@@ -896,6 +907,9 @@ class BundleSchema
             'gifts_row' => $on, 'gifts_title' => 'Unlock free gifts', 'unlocked_title' => 'All gifts unlocked',
             'free_shipping' => '', 'shipping_value' => 0,
             'button_price' => $on,
+            // What shoppers read and which details show; defaults are today's wording.
+            'show_values' => true, 'show_desc' => true, 'show_qty' => true, 'show_clock' => true,
+            'words' => self::TIER_WORDS,
             'delivery' => ['enabled' => false, 'text' => 'Order now for delivery by: {date}', 'min_days' => 3, 'max_days' => 5, 'cutoff' => '14:00', 'skip_weekends' => true, 'holidays' => '', 'timezone' => 'UTC'],
         ];
     }
@@ -921,6 +935,11 @@ class BundleSchema
             // What shipping is worth, shown crossed out on the free shipping slot (0 = no amount).
             'shipping_value' => max(0, min(1000, round((float) ($t['shipping_value'] ?? 0), 2))),
             'button_price' => self::bool($t['button_price'] ?? false),
+            'show_values' => self::bool($t['show_values'] ?? true),
+            'show_desc' => self::bool($t['show_desc'] ?? true),
+            'show_qty' => self::bool($t['show_qty'] ?? true),
+            'show_clock' => self::bool($t['show_clock'] ?? true),
+            'words' => array_map(fn ($k) => self::text($t['words'][$k] ?? self::TIER_WORDS[$k], 40), array_combine(array_keys(self::TIER_WORDS), array_keys(self::TIER_WORDS))),
             'delivery' => [
                 'enabled' => self::bool($dl['enabled'] ?? false),
                 'text' => self::text($dl['text'] ?? $d['delivery']['text'], 80),

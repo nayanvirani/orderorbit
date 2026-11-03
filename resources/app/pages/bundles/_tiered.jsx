@@ -26,6 +26,7 @@ export default function TieredPanel() {
       <GiftsRow />
       <Delivery />
       <Button />
+      <Words />
     </>
   );
 }
@@ -259,6 +260,30 @@ function Button() {
           <small className="b-help">Every colour and block is under Design.</small>
         </label>
       </Row>
+    </Card>
+  );
+}
+
+/** Every word shoppers read and every detail that can be hidden, top to bottom. Empty text hides it. */
+function Words() {
+  const { state } = useContext(Ctx);
+  const t = state.tiers;
+  return (
+    <Card title="Texts and visibility">
+      <Help text="Change any text shoppers see. Empty a text to hide it." />
+      <p className="tx-sub">Above the tiers</p>
+      <Row><F path="settings.title" label="Title" max={80} placeholder="Empty = no title" /><F path="settings.subtitle" label="Subtitle" max={120} placeholder="Empty = no subtitle" /></Row>
+      <p className="tx-sub">In each tier</p>
+      <F path="tiers.show_qty" label='Show the quantity before each item ("2x")' type="toggle" />
+      <F path="tiers.show_values" label="Show each item's value" type="toggle" />
+      {t.show_values !== false && <F path="tiers.words.value" label="Value text" max={40} help="{amount} becomes the value, e.g. ($96.00 Value)." />}
+      <F path="tiers.show_desc" label="Show the short descriptions" type="toggle" />
+      <Row><F path="tiers.words.plus" label="Gifts divider" max={40} placeholder="Empty = no divider" /><F path="tiers.words.free" label="Word before each gift" max={20} placeholder="FREE" /></Row>
+      {t.second_line === 'each' && <F path="tiers.words.per" label='Word in "$28.67 per bottle"' max={20} />}
+      <p className="tx-sub">Gifts row</p>
+      <Row><F path="tiers.words.shipping" label="Free shipping name" max={40} /><F path="tiers.words.with" label="Under a locked gift" max={40} help="{count} = items in the tier that unlocks it, {tier} = its title." /></Row>
+      <p className="tx-sub">Delivery bar</p>
+      <F path="tiers.show_clock" label="Show the clock icon" type="toggle" />
     </Card>
   );
 }

@@ -172,4 +172,24 @@ class OfferMappingTest extends TestCase
         $this->assertSame('free', $schema::payload($ready)['content']['mt']['rule']);
         $this->assertNull($schema::payload($schema::normalize($schema::defaults('qb-classic'))[0])['content']['mt'], 'Other bundles don\'t carry it.');
     }
+
+    public function test_every_text_and_detail_of_the_new_bundles_can_be_changed_or_hidden(): void
+    {
+        $schema = \App\Experiences\BundleSchema::class;
+        // Saved before these settings: today's wording and everything shown.
+        $old = $schema::defaults('qg-tiered');
+        unset($old['tiers']['words'], $old['tiers']['show_values'], $old['mt']);
+        [$c] = $schema::normalize($old);
+        $this->assertSame($schema::TIER_WORDS, $c['tiers']['words']);
+        $this->assertTrue($c['tiers']['show_values'] && $c['tiers']['show_desc'] && $c['mt']['show_tiers'] && $c['mt']['show_price'] && $c['mt']['button_price']);
+
+        // An emptied text stays empty (hidden); a changed one is kept.
+        $c['tiers']['words']['plus'] = '';
+        $c['tiers']['words']['free'] = 'GRATIS';
+        $c['tiers']['show_desc'] = false;
+        $c['mt']['empty'] = '';
+        $c['mt']['show_nudge'] = false;
+        [$saved] = $schema::normalize($c);
+        $this->assertSame(['', 'GRATIS', false, '', false], [$saved['tiers']['words']['plus'], $saved['tiers']['words']['free'], $saved['tiers']['show_desc'], $saved['mt']['empty'], $saved['mt']['show_nudge']]);
+    }
 }
