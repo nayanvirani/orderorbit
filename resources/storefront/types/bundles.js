@@ -26,7 +26,8 @@
     return {
       title: p.title || ctx.productTitle || 'Product', image: p.image || ctx.productImage || (ctx.preview ? window.OO_SAMPLE_IMAGE : null),
       price: p.price != null ? p.price : (ctx.productPrice != null ? ctx.productPrice / 100 : 29),
-      compare: p.compare_at, variants: p.variants || (ctx.preview ? SAMPLE_VARIANTS : null)
+      // Sample variants only for the sample product: a picked product with one variant has no picker.
+      compare: p.compare_at, variants: p.variants || (ctx.preview && !ctx.pageProduct ? SAMPLE_VARIANTS : null)
     };
   }
 
