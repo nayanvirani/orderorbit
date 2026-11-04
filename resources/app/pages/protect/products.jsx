@@ -28,7 +28,7 @@ export default function ProtectProducts({ rows, active, counts, currency, access
                     <td data-label="Product">{r.name}</td>
                     <td data-label="Sales, 30 days">{money(r.sales, currency)}</td>
                     <td data-label="Issues"><div className="pd-chips">{Object.values(r.issues).map((t) => <span className="pd-chip" key={t}>{t}</span>)}</div></td>
-                    <td><s-button variant="tertiary" href={r.url} target="_top">Fix in Shopify</s-button></td>
+                    <td><s-button variant="tertiary" href={r.url} target="_blank">Fix in Shopify</s-button></td>
                   </tr>
                 ))}
                 {!shown.length && <tr><td colSpan={4} className="oo-muted">No gaps here.</td></tr>}

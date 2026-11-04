@@ -19,7 +19,7 @@ function Alert({ a, act }) {
         <div><small>How to fix</small>{a.fix}</div>
       </div>
       <div className="pf-bar">
-        {a.cta && <s-button variant="primary" href={external ? a.cta_url : appUrl(a.cta_url)} target={external ? '_top' : undefined}>{a.cta}</s-button>}
+        {a.cta && <s-button variant="primary" href={external ? a.cta_url : appUrl(a.cta_url)} target={external ? '_blank' : undefined}>{a.cta}</s-button>}
         {a.status === 'open' ? (
           <>
             <s-button onClick={() => act(a.id, 'snooze')}>Snooze 7 days</s-button>
