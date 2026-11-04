@@ -384,6 +384,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/tickets/{ticket}', 'ticket')->whereNumber('ticket')->name('ticket');
                 Route::post('/tickets/{ticket}/reply', 'replyTicket')->whereNumber('ticket')->name('ticket.reply');
                 Route::post('/tickets/{ticket}', 'updateTicket')->whereNumber('ticket')->name('ticket.update');
+                // Custom plan requests (G34): apply access for the store and tell the owner.
+                Route::post('/tickets/{ticket}/custom-plan', 'applyCustomPlan')->whereNumber('ticket')->middleware('admin.can:stores.manage')->name('ticket.custom-plan');
                 Route::get('/attachments/{attachment}', 'attachment')->whereNumber('attachment')->name('attachment');
             });
             Route::middleware('admin.can:support')->prefix('chat')->name('chat')->controller(\App\Http\Controllers\Admin\ChatController::class)->group(function () {

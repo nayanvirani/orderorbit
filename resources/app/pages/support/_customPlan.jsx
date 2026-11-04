@@ -17,7 +17,9 @@ export default function CustomPlanForm({ options }) {
   const toggle = (key, on) => setPicked((p) => (on ? [...p, key] : p.filter((k) => k !== key)));
 
   // The cheapest plan with every ticked module and room for the widgets and runs.
-  const fits = (p) => picked.every((k) => p.includes.includes(k))
+  // Modules still being built don't decide the plan yet.
+  const coming = new Set(Object.values(options.groups).flat().filter((m) => m.coming).map((m) => m.key));
+  const fits = (p) => picked.filter((k) => !coming.has(k)).every((k) => p.includes.includes(k))
     && (p.widgets === null || !widgets || Number(widgets) <= p.widgets) && (p.runs === null || !runs || Number(runs) <= p.runs);
   const closest = picked.length ? options.plans.find(fits) : null;
 
@@ -39,7 +41,7 @@ export default function CustomPlanForm({ options }) {
               <label className="cp-module" key={m.key}>
                 <input type="checkbox" checked={picked.includes(m.key)} onChange={(e) => toggle(m.key, e.target.checked)} />
                 <span>{m.label}</span>
-                <small>{m.plan}</small>
+                <small>{m.coming ? `Coming soon · ${m.plan}` : m.plan}</small>
               </label>
             ))}
           </fieldset>

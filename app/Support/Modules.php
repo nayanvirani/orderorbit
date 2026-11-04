@@ -74,6 +74,10 @@ class Modules
         'first_in_line_support' => ['First-in-line support', 'Service', 'Answered before every other plan.', 'priority_support'],
     ];
 
+    /** Next MVP modules that aren't built yet: shown as "Coming soon", never promised as available. */
+    public const COMING = ['translations', 'profit_snapshot', 'profit', 'profit_roas', 'profit_goals', 'protect', 'protect_alerts', 'product_data', 'url_monitor',
+        'sales_insights', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'review_apps', 'klaviyo_ga4', 'gorgias', 'first_in_line_support'];
+
     /** The next MVP's module keys per plan (G29, section 8), added to each plan's own list. */
     public const NEXT_MVP = [
         'free' => ['profit_snapshot', 'protect'],

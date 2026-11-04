@@ -42,6 +42,13 @@ class CustomPlanTest extends TestCase
 
         $admin = User::forceCreate(['name' => 'Ava Team', 'email' => 'ava@orderorbit.space', 'password' => 'secret-password-123', 'is_admin' => true]);
         $this->actingAs($admin)->get(route('admin.ticket', $ticket->id))->assertOk()
-            ->assertSee('Custom plan request')->assertSee('Included in their plan')->assertSee('Needs Growth')->assertSee('Suggest Growth');
+            ->assertSee('Custom plan request')->assertSee('Included in their plan')->assertSee('Needs Growth')->assertSee('Suggest Growth')->assertSee('Best fit: suggest Growth');
+
+        // Apply: Checkout blocks turned on for this store, runs raised, and the owner told.
+        $this->actingAs($admin)->post(route('admin.ticket.custom-plan', $ticket->id), ['modules' => ['checkout'], 'runs' => 2000, 'message' => 'Checkout blocks are on for you.'])->assertRedirect();
+        $store->refresh();
+        $this->assertTrue($store->planIncludes('checkout'));
+        $this->assertSame(2000, $store->planLimit('automation_executions'));
+        $this->assertSame('Checkout blocks are on for you.', $ticket->messages()->latest('id')->first()->body);
     }
 }

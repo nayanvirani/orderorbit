@@ -253,18 +253,95 @@ class AdminController extends Controller
         }
         $store = $ticket->store;
         $first = \App\Support\Plans::firstWith();
-        $rows = array_map(fn ($key) => ['label' => \App\Support\Modules::label($key), 'has' => $store->planIncludes($key), 'needs' => $first[$key] ?? 'a private plan'], (array) ($request['modules'] ?? []));
-        $missing = array_values(array_filter($rows, fn ($r) => ! $r['has']));
+        $plans = collect(\App\Support\Plans::public())->sortBy('price');
+        $keys = array_values(array_intersect((array) ($request['modules'] ?? []), array_keys(\App\Support\Modules::ALL)));
+        $rows = collect($keys)->map(fn ($key) => [
+            'key' => $key, 'label' => \App\Support\Modules::label($key), 'has' => $store->planIncludes($key), 'needs' => $first[$key] ?? 'a private plan',
+            'coming' => in_array($key, \App\Support\Modules::COMING, true), 'on' => in_array($key, (array) ($store->entitlements['modules_on'] ?? []), true),
+        ])
+            // What their plan lacks first, then what's coming, then what they already have.
+            ->sortBy(fn ($r) => ($r['has'] ? 2 : 0) + ($r['coming'] ? 1 : 0))->values()->all();
+        $missing = array_values(array_filter($rows, fn ($r) => ! $r['has'] && ! $r['coming']));
+        $coming = array_values(array_filter($rows, fn ($r) => $r['coming']));
         $name = trim((string) ($ticket->requester?->first_name ?? '')) ?: 'there';
-        $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name') ?: 'no plan yet';
+        $planKey = $store->effectivePlan();
+        $plan = config('shopify.billing.plans.'.$planKey.'.name') ?: 'no plan yet';
         $closest = $request['closest'] ?? null;
+        $closestPrice = $closest ? $plans->firstWhere('name', $closest)['price'] ?? null : null;
+        $sales = app(\App\Services\Analytics\Analytics::class)->totals($store, now()->subDays(30), now());
+        $available = count($rows) - count($coming);
+        $covered = $available - count($missing);
 
-        return ['rows' => $rows, 'closest' => $closest, 'widgets' => $request['widgets'] ?? null, 'runs' => $request['runs'] ?? null, 'budget' => $request['budget'] ?? null, 'plan' => $plan,
+        // A plain-words suggestion: which plan covers the modules that exist today.
+        $fit = $plans->first(fn ($p) => ! array_diff(array_column($missing, 'key'), $p['includes'] ?? []) && ($p['price'] ?? 0) >= (config('shopify.billing.plans.'.$planKey.'.price') ?? 0));
+        $suggestion = match (true) {
+            $available === 0 => 'Everything they asked for is still being built. Tell them what\'s coming and offer to let them know when it ships.',
+            ! $missing => "Their {$plan} plan already covers all {$available} modules that are available today. No change needed.",
+            (bool) $fit => "{$plan} covers {$covered} of the {$available} available modules. {$fit['name']} (\$".number_format($fit['price'], 2).') adds '.implode(', ', array_column($missing, 'label')).'. Best fit: suggest '.$fit['name'].'.',
+            default => "No plan covers this mix. Turn the missing modules on for this store below, or set up a private plan.",
+        }.($coming ? ' Coming soon, so not available on any plan yet: '.implode(', ', array_column($coming, 'label')).'.' : '');
+
+        $soon = $coming ? "\n\n".implode(', ', array_column($coming, 'label')).(count($coming) === 1 ? ' is' : ' are')." still being built. We'll let you know as soon as ".(count($coming) === 1 ? 'it ships' : 'they ship').'.' : '';
+        $runsLimit = config('shopify.billing.plans.'.$planKey.'.limits.automation_executions');
+        $widgetsLimit = config('shopify.billing.plans.'.$planKey.'.limits.active_experiences');
+
+        return ['rows' => $rows, 'closest' => $closest, 'closestPrice' => $closestPrice, 'widgets' => $request['widgets'] ?? null, 'runs' => $request['runs'] ?? null,
+            'budget' => $request['budget'] ?? null, 'plan' => $plan, 'planKey' => $planKey, 'planPrice' => config('shopify.billing.plans.'.$planKey.'.price'),
+            'sales' => $sales['revenue'], 'orders' => $sales['orders'], 'currency' => $store->currency ?: 'USD', 'suggestion' => $suggestion,
+            'runsLimit' => $runsLimit, 'widgetsLimit' => $widgetsLimit, 'entitlements' => (array) ($store->entitlements ?? []),
+            'plans' => $plans->map(fn ($p, $k) => ['key' => $k, 'name' => $p['name'], 'price' => $p['price']])->values()->all(),
             'templates' => array_filter([
-                'Already in your plan' => ! $missing ? "Hi {$name},\n\nGood news: your {$plan} plan already includes everything you asked for. You can turn each module on from its page in Growvia.\n\nIf anything doesn't work as expected, reply here and we'll help." : null,
-                'Suggest '.($closest ?? 'a plan') => $closest && $closest !== $plan ? "Hi {$name},\n\nThanks for telling us what you need. The {$closest} plan includes ".implode(', ', array_column($missing, 'label')).". You can switch in Settings › Plan and billing; your settings and data stay as they are.\n\nWould that work for you?" : null,
-                'Private plan' => "Hi {$name},\n\nNo standard plan fits this mix exactly, so we can set up a plan for your store: ".implode(', ', array_column($rows, 'label')).". We'll confirm the price and turn it on for you.\n\nDoes that sound good?",
+                'Already in your plan' => ! $missing && $available > 0 ? "Hi {$name},\n\nGood news: your {$plan} plan already includes ".($coming ? 'everything you asked for that\'s available today' : 'everything you asked for').". You can turn each module on from its page in Growvia.{$soon}\n\nIf anything doesn't work as expected, reply here and we'll help." : null,
+                'Suggest '.($fit['name'] ?? 'a plan') => $missing && $fit ? "Hi {$name},\n\nThanks for telling us what you need. The {$fit['name']} plan (\$".number_format($fit['price'], 2).' a month) includes '.implode(', ', array_column($missing, 'label')).". You can switch in Settings › Plan and billing; your settings and data stay as they are.{$soon}\n\nWould that work for you?" : null,
+                'Turned on for you' => $missing ? "Hi {$name},\n\nWe've turned on ".implode(', ', array_column($missing, 'label'))." for your store on your {$plan} plan. You'll find ".(count($missing) === 1 ? 'it' : 'them').' in Growvia now.'."{$soon}\n\nAnything else you need, just reply here." : null,
+                'Private plan' => "Hi {$name},\n\nNo standard plan fits this mix exactly, so we can set up a plan for your store with ".implode(', ', array_column(array_filter($rows, fn ($r) => ! $r['coming']), 'label')).". We'll confirm the price and turn it on for you.{$soon}\n\nDoes that sound good?",
             ])];
+    }
+
+    /**
+     * "Apply and tell the store owner" (G34): turns the chosen modules on for this store, sets the
+     * runs and widgets limits and an optional plan until a date, replies to the owner and logs it.
+     */
+    public function applyCustomPlan(Request $request, int $ticket, SupportDesk $desk): RedirectResponse
+    {
+        $ticket = Ticket::with('store')->findOrFail($ticket);
+        abort_unless(is_array($ticket->diagnostics['custom_plan'] ?? null), 404);
+        $data = $request->validate([
+            'modules' => ['array'], 'modules.*' => ['in:'.implode(',', array_keys(\App\Support\Modules::ALL))],
+            'runs' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'widgets' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'plan' => ['nullable', 'in:'.implode(',', array_keys((array) config('shopify.billing.plans')))], 'plan_until' => ['nullable', 'date', 'after:yesterday'],
+            'note' => ['nullable', 'string', 'max:1000'], 'message' => ['nullable', 'string', 'max:10000'],
+        ]);
+        $store = $ticket->store;
+        $before = $store->entitlements;
+        $e = (array) ($store->entitlements ?? []);
+        $requested = (array) ($ticket->diagnostics['custom_plan']['modules'] ?? []);
+        $on = array_values(array_intersect((array) ($data['modules'] ?? []), $requested));
+        // Only the requested modules are touched: ticked ones on, unticked ones back to their plan default.
+        $e['modules_on'] = array_values(array_unique([...array_diff((array) ($e['modules_on'] ?? []), $requested), ...$on]));
+        $e['modules_off'] = array_values(array_diff((array) ($e['modules_off'] ?? []), $on));
+        foreach (['automation_executions' => 'runs', 'active_experiences' => 'widgets'] as $meter => $field) {
+            if (($data[$field] ?? null) !== null) {
+                $e['limits'][$meter] = (int) $data[$field];
+            }
+        }
+        if (! empty($data['plan'])) {
+            $e['plan'] = $data['plan'];
+            $e['plan_until'] = $data['plan_until'] ?? null;
+        }
+        if (trim((string) ($data['note'] ?? '')) !== '') {
+            $e['note'] = trim($data['note']);
+        }
+        $e = array_filter($e, fn ($v) => $v !== null && $v !== []);
+        $store->forceFill(['entitlements' => $e ?: null])->save();
+        \App\Models\AuditLog::record('admin.store_access_changed', $store, ['before' => $before, 'after' => $e, 'by' => $request->user()->email, 'ticket' => $ticket->id]);
+        app(\App\Services\Billing\Entitlements::class)->apply($store->fresh(), force: true);
+
+        if (trim((string) ($data['message'] ?? '')) !== '') {
+            $desk->reply($ticket, 'team', $data['message'], [], false, $request->user());
+        }
+
+        return redirect()->route('admin.ticket', $ticket->id)->with('status', 'Access applied'.(trim((string) ($data['message'] ?? '')) !== '' ? ' and the store owner was told.' : '.'));
     }
 
     public function replyTicket(Request $request, int $ticket, SupportDesk $desk): RedirectResponse

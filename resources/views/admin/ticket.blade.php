@@ -15,17 +15,48 @@
             </div>
         @endforeach
         @if ($customPlan)
-            <div class="ad-card" style="margin:12px 0;padding:12px">
-                <h2>Custom plan request</h2>
-                <p class="ad-muted">Their plan: {{ $customPlan['plan'] }} · closest plan: {{ $customPlan['closest'] ?? 'none, needs a private plan' }}@if ($customPlan['widgets'] !== null) · {{ $customPlan['widgets'] }} live widgets @endif @if ($customPlan['runs'] !== null) · {{ number_format($customPlan['runs']) }} runs/month @endif @if ($customPlan['budget'] !== null) · budget ${{ $customPlan['budget'] }}/month @endif</p>
-                <table class="ad-table"><thead><tr><th>Module</th><th>Status</th></tr></thead><tbody>
-                    @foreach ($customPlan['rows'] as $r)<tr><td>{{ $r['label'] }}</td><td>{{ $r['has'] ? 'Included in their plan' : 'Needs '.$r['needs'] }}</td></tr>@endforeach
+            @php($cp = $customPlan)
+            <div class="ad-card" style="margin:12px 0;padding:14px">
+                <div class="ad-head" style="margin:0 0 6px"><div><h2 style="margin:0">Custom plan request</h2>
+                    <p class="ad-muted" style="margin:4px 0 0">On {{ $cp['plan'] }}{{ $cp['planPrice'] !== null ? ' ($'.number_format($cp['planPrice'], 2).')' : '' }} · {{ $cp['currency'] }} {{ number_format($cp['sales'], 2) }} sales in the last 30 days ({{ number_format($cp['orders']) }} orders)
+                    @if ($cp['widgets'] !== null) · wants {{ $cp['widgets'] }} live widgets (plan: {{ $cp['widgetsLimit'] ?? 'unlimited' }}) @endif
+                    @if ($cp['runs'] !== null) · {{ number_format($cp['runs']) }} runs a month (plan: {{ $cp['runsLimit'] !== null ? number_format($cp['runsLimit']) : 'unlimited' }}) @endif
+                    @if ($cp['budget'] !== null) · budget ${{ $cp['budget'] }}/month @endif</p></div>
+                    @if (! in_array($ticket->status, ['closed', 'resolved'], true))
+                        <form method="POST" action="{{ route('admin.ticket.update', $ticket->id) }}">@csrf<input type="hidden" name="status" value="closed"><input type="hidden" name="priority" value="{{ $ticket->priority }}"><input type="hidden" name="assigned_to" value="{{ $ticket->assigned_to }}"><input type="hidden" name="resolution" value="{{ $ticket->resolution }}"><button class="ad-btn" type="submit">Close request</button></form>
+                    @endif
+                </div>
+                <p style="margin:8px 0;padding:10px 12px;border-radius:10px;background:#f4f2ff"><b>Suggested answer:</b> {{ $cp['suggestion'] }}</p>
+                <table class="ad-table"><thead><tr><th>What they asked for</th><th>Status</th></tr></thead><tbody>
+                    @foreach ($cp['rows'] as $r)<tr><td>{{ $r['label'] }}</td><td>
+                        @if ($r['coming'])<span class="ad-badge">Coming soon</span> <span class="ad-muted">{{ $r['needs'] }} when it ships</span>
+                        @elseif ($r['has'])<span class="ad-badge ok">Included in their plan</span>{{ $r['on'] ? ' · turned on for this store' : '' }}
+                        @else<span class="ad-badge warn">Needs {{ $r['needs'] }}</span>@endif
+                    </td></tr>@endforeach
                 </tbody></table>
-                <p style="margin:10px 0 4px"><b>Reply templates</b> (fills the reply box; edit before sending)</p>
-                @foreach ($customPlan['templates'] as $label => $text)
-                    <button type="button" class="ad-btn" data-template="{{ $text }}" onclick="document.querySelector('textarea[name=body]').value = this.dataset.template">{{ $label }}</button>
+                <p style="margin:12px 0 4px"><b>Reply templates</b> <span class="ad-muted">(fill the reply box below; edit before sending)</span></p>
+                @foreach ($cp['templates'] as $label => $text)
+                    <button type="button" class="ad-btn" data-template="{{ $text }}" onclick="document.querySelector('textarea[name=body]').value = this.dataset.template; var m = document.querySelector('textarea[name=message]'); if (m) m.value = this.dataset.template;">{{ $label }}</button>
                 @endforeach
-                <p class="ad-muted" style="margin-top:8px">To turn modules on, raise a limit or override the plan until a date, use the <a href="{{ route('admin.store', $ticket->store_id) }}">store's access panel</a>; changes take effect at once and are in the audit log.</p>
+
+                <form method="POST" action="{{ route('admin.ticket.custom-plan', $ticket->id) }}" class="ad-form" style="margin-top:14px;border-top:1px solid #ecebf3;padding-top:12px">
+                    @csrf
+                    <h3 style="margin:0">Store access</h3>
+                    <p class="ad-muted" style="margin:2px 0 8px">Turn the requested modules on for this store only. Unticked ones follow their plan. Changes take effect at once and are in the audit log.</p>
+                    @foreach ($cp['rows'] as $r)
+                        @continue($r['coming'])
+                        <label class="ad-check"><input type="checkbox" name="modules[]" value="{{ $r['key'] }}" @checked($r['has'])> {{ $r['label'] }} <span class="ad-muted">{{ $r['has'] && ! $r['on'] ? '(in their plan)' : ($r['on'] ? '(turned on for this store)' : '(needs '.$r['needs'].')') }}</span></label>
+                    @endforeach
+                    <div class="ad-fields">
+                        <label>Live widgets<input type="number" name="widgets" min="0" placeholder="{{ $cp['widgetsLimit'] ?? 'Unlimited' }} (plan)" value="{{ $cp['entitlements']['limits']['active_experiences'] ?? '' }}"></label>
+                        <label>Automation runs a month<input type="number" name="runs" min="0" placeholder="{{ $cp['runsLimit'] ?? 'Unlimited' }} (plan)" value="{{ $cp['entitlements']['limits']['automation_executions'] ?? '' }}"></label>
+                        <label>Plan override<select name="plan"><option value="">None (their plan)</option>@foreach ($cp['plans'] as $p)<option value="{{ $p['key'] }}" @selected(($cp['entitlements']['plan'] ?? '') === $p['key'])>{{ $p['name'] }} (${{ number_format($p['price'], 2) }})</option>@endforeach</select></label>
+                        <label>Until<input type="date" name="plan_until" min="{{ now()->toDateString() }}" value="{{ $cp['entitlements']['plan_until'] ?? '' }}"></label>
+                    </div>
+                    <label>Note (shown in the audit log)<input type="text" name="note" maxlength="1000" value=""></label>
+                    <label>Message to the store owner (optional; sent with the change)<textarea name="message" rows="4"></textarea></label>
+                    <button class="ad-btn primary" type="submit">Apply and tell the store owner</button>
+                </form>
             </div>
         @endif
         @include('admin._suggestions', ['suggestUrl' => route('admin.ticket', ['ticket' => $ticket->id, 'suggest' => 1]), 'suggestions' => $suggestions])

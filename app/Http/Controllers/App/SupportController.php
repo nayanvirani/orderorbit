@@ -46,7 +46,7 @@ class SupportController extends Controller
 
         return [
             'current' => config('shopify.billing.plans.'.$store->effectivePlan().'.name'),
-            'groups' => collect(\App\Support\Modules::all())->map(fn ($m, $key) => ['key' => $key, 'label' => $m[0], 'group' => $m[1], 'plan' => $first[$key] ?? null])
+            'groups' => collect(\App\Support\Modules::all())->map(fn ($m, $key) => ['key' => $key, 'label' => $m[0], 'group' => $m[1], 'plan' => $first[$key] ?? null, 'coming' => in_array($key, \App\Support\Modules::COMING, true)])
                 ->filter(fn ($m) => $m['plan'] !== null)->groupBy('group')->map->values()->all(),
             'plans' => $plans->map(fn ($p, $key) => ['key' => $key, 'name' => $p['name'], 'price' => (float) $p['price'], 'includes' => array_values($p['includes'] ?? []),
                 'widgets' => $p['limits']['active_experiences'] ?? null, 'runs' => $p['limits']['automation_executions'] ?? null])->values()->all(),
@@ -142,7 +142,7 @@ class SupportController extends Controller
         ], ['modules.required' => 'Tick the modules you need.'])->validate();
 
         $labels = array_map(fn ($k) => \App\Support\Modules::label($k), $data['modules']);
-        $closest = collect(\App\Support\Plans::public())->sortBy('price')->first(fn ($p) => ! array_diff($data['modules'], $p['includes'] ?? [])
+        $closest = collect(\App\Support\Plans::public())->sortBy('price')->first(fn ($p) => ! array_diff(array_diff($data['modules'], \App\Support\Modules::COMING), $p['includes'] ?? [])
             && (($p['limits']['active_experiences'] ?? null) === null || ($data['widgets'] ?? 0) <= $p['limits']['active_experiences'])
             && (($p['limits']['automation_executions'] ?? null) === null || ($data['runs'] ?? 0) <= $p['limits']['automation_executions']));
         $body = "Custom plan request\n\nModules: ".implode(', ', $labels)
