@@ -164,3 +164,9 @@ a.b-template *:not(.oo-preview, .oo-preview *), a.bx-type *:not(.oo-preview, .oo
 .tl-note { margin: 0 0 10px; font-size: 13px; color: #616161; }
 .tl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0 14px; }
 .tl-note .b-link { padding: 0; border: 0; background: none; color: #005bd3; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+/* Free read-only preview (G29): what the unlocking plan adds. */
+.pv-card { margin-top: 14px; padding: 14px 16px; border: 1px solid #e3e3e3; border-radius: 12px; background: #fafafe; }
+.pv-card b { display: block; margin-bottom: 6px; font-size: 14px; }
+.pv-card ul { margin: 0 0 12px; padding-left: 18px; font-size: 13.5px; line-height: 1.6; }
+.pv-card .b-muted { margin: 8px 0 0; font-size: 12.5px; }

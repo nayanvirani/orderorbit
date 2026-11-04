@@ -62,6 +62,30 @@ class Plans
         return Modules::label($feature).($plan ? " is in the {$plan} plan" : ' isn\'t in your plan').". Your draft is saved: upgrade to {$action}.";
     }
 
+    /**
+     * Free read-only preview (G29) for an editor: what the store's plan can't publish here, the plan
+     * that unlocks it with its price, and what else that plan adds (built modules only). Null when allowed.
+     */
+    public static function preview(\App\Models\Store $store, array $features): ?array
+    {
+        $missing = collect($features)->first(fn ($k) => ! $store->planIncludes($k));
+        if ($missing === null) {
+            return null;
+        }
+        $own = (array) config('shopify.billing.plans.'.$store->effectivePlan().'.includes', []);
+        if ($own && collect(Modules::chain($missing))->every(fn ($k) => in_array($k, $own, true))) {
+            return ['feature' => Modules::label($missing), 'plan' => null, 'price' => null, 'also' => [], 'off' => true];
+        }
+        $name = self::firstWith()[$missing] ?? null;
+        $plan = collect(self::public())->first(fn ($p) => $p['name'] === $name);
+
+        return [
+            'feature' => Modules::label($missing), 'plan' => $name, 'price' => $plan['price'] ?? null, 'off' => false,
+            'also' => $plan ? collect($plan['includes'] ?? [])->diff($own)->diff(Modules::COMING)->reject(fn ($k) => $k === $missing || Modules::ALL[$k][3] !== null)
+                ->map(fn ($k) => Modules::label($k))->values()->take(8)->all() : [],
+        ];
+    }
+
     /** Plans shown to merchants (pricing pages and the in-app plan list). */
     public static function public(): array
     {

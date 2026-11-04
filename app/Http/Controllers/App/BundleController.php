@@ -203,6 +203,8 @@ class BundleController extends Controller
             'banner' => $banner ?? (request('error') ? (string) request('error') : null),
             'type' => ['label' => $type['label'].(! empty($config['subscription']['enabled']) ? ' · Subscription' : '')],
             'subscriptionLayouts' => BundleSchema::SUBSCRIPTION_LAYOUTS,
+            // Free read-only preview (G29).
+            'preview' => \App\Support\Plans::preview($store, \App\Support\Modules::forExperience('bundles', $config)),
             'meta' => [
                 'samples' => TemplateLibrary::samples(),
                 'timezone' => $store->timezone ?? 'UTC',

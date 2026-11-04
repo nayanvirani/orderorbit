@@ -79,4 +79,15 @@ class GrowthBasicsTest extends TestCase
         $this->assertTrue($store->fresh()->lifecycle_unsubscribed);
         $this->assertSame([], $emails->due($store->fresh()));
     }
+
+    public function test_free_previews_name_the_plan_that_unlocks_them(): void
+    {
+        $store = $this->installedStore(['plan' => 'free']);
+        $owner = $this->member($store, 'owner');
+        $draft = app(ExperienceManager::class)->create($store, 'cart-upsells', array_key_first(\App\Experiences\Registry::type('cart-upsells')['templates']), null);
+        $this->page("/app/cro/experiences/{$draft->id}/edit", $owner)
+            ->assertJsonPath('props.preview.plan', 'Starter')->assertJsonPath('props.preview.feature', 'Cart upsells & cross-sell');
+        $trust = app(ExperienceManager::class)->create($store, 'trust', 'trust-row', null);
+        $this->page("/app/cro/experiences/{$trust->id}/edit", $owner)->assertJsonPath('props.preview', null);
+    }
 }

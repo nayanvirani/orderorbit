@@ -7,6 +7,7 @@ import { Page } from '../../components/ui.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
 import ElementColours, { withElements } from '../../components/ElementColours.jsx';
 import TextLayout, { withLayout } from '../../components/TextLayout.jsx';
+import { PreviewBanner, previewLabel, UnlockCard } from '../../components/PlanPreview.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
 
 const STEPS = [['type', 'Type'], ['template', 'Template'], ['content', 'Content'], ['design', 'Design'], ['behavior', 'Behavior'], ['targeting', 'Targeting'], ['analytics', 'Analytics'], ['preview', 'Preview'], ['publish', 'Publish']];
@@ -16,7 +17,7 @@ const CUSTOMERS = { all: 'Everyone', new: 'New shoppers', returning: 'Returning 
 const DEVICES = { all: 'All devices', mobile: 'Mobile', desktop: 'Desktop' };
 
 export default function Builder(props) {
-  const { experience: x, type, fields, look, fieldErrors: errors, banner, templates, timezone, tzOffset, currency, segments, pageTypes, publishHelp, editor, designNote, checkout, elements, layout, brand, designSources } = props;
+  const { experience: x, type, fields, look, fieldErrors: errors, banner, templates, timezone, tzOffset, currency, segments, pageTypes, publishHelp, editor, designNote, checkout, elements, layout, brand, designSources, preview } = props;
   const { submit } = useRouter();
   const ready = useRuntime({ checkout });
   const [config, setConfig] = useState(props.config);
@@ -62,6 +63,7 @@ export default function Builder(props) {
   return (
     <Page heading={x.name} back={route('app.cro.experiences.show', { experience: x.id })} backLabel="Experience">
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'info'}>{banner}</s-banner>}
+      <PreviewBanner preview={preview} />
 
       <nav className="b-steps" aria-label="Builder steps">
         {STEPS.map(([key, label], i) => (
@@ -147,8 +149,9 @@ export default function Builder(props) {
               <div className="b-field"><label htmlFor="f-description">Description</label><textarea id="f-description" rows={2} maxLength={500} value={meta.description} onChange={(e) => { setMeta({ ...meta, description: e.target.value }); setDirty(true); }} /></div>
               <div className="b-field"><label htmlFor="f-note">Change note</label><input id="f-note" maxLength={190} value={meta.change_note} onChange={(e) => setMeta({ ...meta, change_note: e.target.value })} placeholder="What changed in this version?" /></div>
               {publishHelp.map((html, i) => <p key={i} className="b-muted" dangerouslySetInnerHTML={{ __html: html }} />)}
+              <UnlockCard preview={preview} />
               <div className="b-actions">
-                <button type="button" className="b-btn b-primary" disabled={!!busy} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : config.schedule?.starts_at ? 'Schedule' : 'Publish'}</button>
+                <button type="button" className="b-btn b-primary" disabled={!!busy || !!preview} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : previewLabel(preview, config.schedule?.starts_at ? 'Schedule' : 'Publish')}</button>
                 <a className="b-btn" target="_top" href={editor.url}>{editor.label}</a>
               </div>
             </section>

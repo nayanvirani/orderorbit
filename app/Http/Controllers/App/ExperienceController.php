@@ -448,6 +448,8 @@ class ExperienceController extends Controller
             'look' => \App\Experiences\Parts::meta($experience->type),
             // Design for every offer (G37): a colour per element, brand colours and other offers to copy from.
             'elements' => \App\Support\Features::enabled('design_tab', $store) ? (object) \App\Experiences\Elements::meta($experience->type) : (object) [],
+            // Free read-only preview (G29): drafts can be built; Publish names the plan that unlocks it.
+            'preview' => \App\Support\Plans::preview($store, \App\Support\Modules::forExperience($experience->type, $config)),
             'layout' => \App\Support\Features::enabled('design_tab', $store) ? (object) \App\Experiences\Layout::meta($experience->type) : (object) [],
             'brand' => \App\Support\Features::enabled('design_tab', $store) ? array_intersect_key(\App\Models\CroSetting::brandingFor($store), Schema::shared()['design']) : null,
             'designSources' => \App\Support\Features::enabled('design_tab', $store) && \App\Experiences\Elements::for($experience->type) ? $this->designSources($store, $experience) : [],

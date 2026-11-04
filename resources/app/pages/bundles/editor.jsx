@@ -10,8 +10,9 @@ import ExperienceStatus from '../cro/_status.jsx';
 import TieredPanel, { usesTiered } from './_tiered.jsx';
 import MixTiersPanel from './_mixtiers.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
+import { PreviewBanner, previewLabel } from '../../components/PlanPreview.jsx';
 
-export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts, testVersion }) {
+export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts, testVersion, preview }) {
   const { submit } = useRouter();
   const { currency } = useShared();
   const ready = useRuntime();
@@ -104,6 +105,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
         </s-banner>
       )}
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'critical'}>{banner}</s-banner>}
+      {!testVersion && <PreviewBanner preview={preview} />}
       {!testVersion && x.status === 'published' && x.unpublished && <s-banner tone="info">This bundle has changes that aren't live yet. Publish to update your store.</s-banner>}
       {steps.length > 0 && (
         <s-banner tone="info" heading={`Almost ready: ${steps.length} ${steps.length === 1 ? 'step' : 'steps'} left`}>
@@ -175,7 +177,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
                 ) : (
                   <>
                     <button type="button" className="b-btn" disabled={!!busy} onClick={() => save('save')}>{busy === 'save' ? 'Saving…' : 'Save as draft'}</button>
-                    <button type="button" className="b-btn b-primary" disabled={!!busy} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : x.status === 'published' ? 'Publish changes' : 'Publish'}</button>
+                    <button type="button" className="b-btn b-primary" disabled={!!busy || !!preview} onClick={() => save('publish')}>{busy === 'publish' ? 'Publishing…' : previewLabel(preview, x.status === 'published' ? 'Publish changes' : 'Publish')}</button>
                   </>
                 )}
               </div>
