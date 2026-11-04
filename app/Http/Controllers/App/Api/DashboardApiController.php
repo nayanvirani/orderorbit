@@ -65,7 +65,18 @@ class DashboardApiController extends Controller
             'setup' => ['done' => ! $next, 'completed' => collect($steps)->where('done', true)->count(), 'total' => count($steps), 'next' => $next, 'steps' => array_map(fn ($s) => ['label' => $s['label'], 'done' => (bool) $s['done']], $steps)],
             'alerts' => $alerts,
             'next' => $nextActions,
+            // Review request (G23): a milestone to celebrate, then Shopify's own review window.
+            'milestone' => \App\Support\ReviewPrompt::milestone($store),
         ]);
+    }
+
+    /** What Shopify's review window answered (G23), so Growvia waits before asking again. */
+    public function review(\Illuminate\Http\Request $request, Store $store): JsonResponse
+    {
+        $data = $request->validate(['milestone' => ['required', 'string', 'max:40'], 'code' => ['required', 'string', 'max:60']]);
+        \App\Support\ReviewPrompt::record($store, $data['milestone'], $data['code']);
+
+        return response()->json(['ok' => true]);
     }
 
     /** The four headline numbers, with trends and daily series. */

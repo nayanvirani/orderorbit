@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { api } from '../api.js';
 import { useApi } from '../useApi.js';
 import { appUrl, useShared } from '../router.jsx';
 import { LoadError, Skeleton, Sparkline, Trend, money, number } from '../components/ui.jsx';
@@ -37,6 +38,7 @@ export default function Home() {
           </s-banner>
         ))}
 
+        {overview.data?.milestone && <Milestone milestone={overview.data.milestone} />}
         {overview.data && !overview.data.setup.done && <SetupCard setup={overview.data.setup} />}
 
         <Kpis days={days} />
@@ -49,6 +51,36 @@ export default function Home() {
         <Activity />
       </div>
     </s-page>
+  );
+}
+
+/**
+ * A real milestone (G23). Once the card has been seen, Growvia asks Shopify for its review window:
+ * never from a button, and Shopify decides whether to show it. Its answer is recorded either way.
+ */
+function Milestone({ milestone }) {
+  const asked = useRef(false);
+  useEffect(() => {
+    if (asked.current) return undefined;
+    const timer = setTimeout(async () => {
+      if (asked.current) return;
+      asked.current = true;
+      let code = 'unavailable';
+      try {
+        const result = window.shopify?.reviews?.request ? await window.shopify.reviews.request() : null;
+        code = result ? (result.code || (result.success ? 'success' : 'declined')) : 'unavailable';
+      } catch (e) {
+        code = 'error';
+      }
+      api('dashboard/review', { method: 'POST', body: { milestone: milestone.key, code } }).catch(() => {});
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [milestone.key]);
+
+  return (
+    <s-banner tone="success" heading={milestone.title}>
+      <s-paragraph>{milestone.text}</s-paragraph>
+    </s-banner>
   );
 }
 

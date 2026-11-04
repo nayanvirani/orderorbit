@@ -30,6 +30,8 @@ class Store extends Model
             'plan_expires_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
             'installed_at' => 'datetime',
+            'review_prompted_at' => 'datetime',
+            'lifecycle_unsubscribed' => 'boolean',
             'uninstalled_at' => 'datetime',
         ];
     }

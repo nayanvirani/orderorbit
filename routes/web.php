@@ -41,6 +41,7 @@ Route::middleware('throttle:300,1')->group(function () {
 Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, 'feed'])->middleware('throttle:600,1')->name('sales-pop.feed');
 // Product documents (G42): private download links from emails and the certificate check its QR code opens.
 Route::get('/documents/{token}', [\App\Http\Controllers\DocumentController::class, 'download'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:60,1')->name('documents.download');
+Route::get('/emails/off/{store}', [\App\Http\Controllers\LifecycleController::class, 'unsubscribe'])->whereNumber('store')->middleware('throttle:30,1')->name('lifecycle.unsubscribe');
 Route::get('/verify/{code}', [\App\Http\Controllers\DocumentController::class, 'verify'])->where('code', '[a-z0-9]{1,24}')->middleware('throttle:60,1')->name('documents.verify');
 });
 
@@ -131,6 +132,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
             Route::get('/kpis', 'kpis')->name('kpis');
             Route::get('/top', 'top')->name('top');
             Route::get('/activity', 'activity')->name('activity');
+            Route::post('/review', 'review')->name('review');
         });
         Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
         Route::post('/onboarding', [OnboardingController::class, 'update'])->middleware('store.can:manage_settings')->name('onboarding.update');
