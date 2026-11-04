@@ -22,7 +22,7 @@ class CostSync
         $seen = 0;
         for ($page = 0; $page < $maxPages; $page++) {
             $data = $this->api->graphql($store, 'query ($after: String) { productVariants(first: 250, after: $after) { pageInfo { hasNextPage endCursor }
-                nodes { id title displayName product { id title } inventoryItem { unitCost { amount } } } } }', ['after' => $after]);
+                nodes { id title displayName price product { id title } inventoryItem { unitCost { amount } } } } }', ['after' => $after]);
             foreach ((array) ($data['productVariants']['nodes'] ?? []) as $v) {
                 $variant = (int) Str::afterLast((string) $v['id'], '/');
                 if (! $variant) {
@@ -33,6 +33,7 @@ class CostSync
                     'product_id' => (int) Str::afterLast((string) ($v['product']['id'] ?? ''), '/') ?: null,
                     'title' => mb_substr((string) ($v['displayName'] ?? $v['product']['title'] ?? ''), 0, 255),
                     'shopify_cost' => $cost !== null && $cost !== '' ? round((float) $cost, 2) : null,
+                    'price' => isset($v['price']) && is_numeric($v['price']) ? round((float) $v['price'], 2) : null,
                 ]);
                 $seen++;
             }

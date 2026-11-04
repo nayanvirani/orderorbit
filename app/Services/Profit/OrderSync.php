@@ -67,7 +67,7 @@ class OrderSync
             'shipping' => max(0, $money($o['total_shipping_price_set'] ?? null, 0) - $shippingRefund),
             'taxes' => $money($o['total_tax_set'] ?? null, $o['total_tax'] ?? 0),
             'total' => $money($o['total_price_set'] ?? null, $o['total_price'] ?? 0),
-            'excluded' => ! empty($o['cancelled_at']) || ! empty($o['test']),
+            'excluded' => ! empty($o['cancelled_at']) || (! empty($o['test']) && ! self::devStore($store)),
         ], $lines);
     }
 
@@ -113,8 +113,17 @@ class OrderSync
             'gateway' => $o['paymentGatewayNames'][0] ?? null,
             'shipping' => max(0, $num($o['totalShippingPriceSet'] ?? null) - $shippingRefund),
             'taxes' => $num($o['totalTaxSet'] ?? null), 'total' => $num($o['totalPriceSet'] ?? null),
-            'excluded' => ! empty($o['cancelledAt']) || ! empty($o['test']),
+            'excluded' => ! empty($o['cancelledAt']) || (! empty($o['test']) && ! self::devStore($store)),
         ], $lines);
+    }
+
+    /**
+     * Test orders are left out of profit, except on development stores, where every order is a
+     * test order (Shopify's test gateway) and the merchant is trying Profit out.
+     */
+    public static function devStore(Store $store): bool
+    {
+        return $store->capability('development_store') === true || in_array($store->shopify_plan, ['partner_test', 'affiliate', 'plus_partner_sandbox'], true);
     }
 
     public const ORDER_FIELDS = <<<'GQL'

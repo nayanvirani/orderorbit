@@ -55,7 +55,7 @@ class ProfitController extends Controller
             ->groupBy('profit_order_lines.variant_id')->get()->keyBy('variant_id');
         $all = ProductCost::where('store_id', $store->id)->get();
         $missing = $all->filter(fn ($c) => $c->effective() === null)
-            ->map(fn ($c) => ['variant_id' => (int) $c->variant_id, 'name' => $c->title, 'price' => (float) ($sales[$c->variant_id]->price ?? 0), 'sales' => round((float) ($sales[$c->variant_id]->sales ?? 0), 2)])
+            ->map(fn ($c) => ['variant_id' => (int) $c->variant_id, 'name' => $c->title, 'price' => (float) ($c->price ?? $sales[$c->variant_id]->price ?? 0), 'sales' => round((float) ($sales[$c->variant_id]->sales ?? 0), 2)])
             ->sortByDesc('sales')->values();
         $withCost = $all->filter(fn ($c) => $c->effective() !== null);
         [, $from, $to] = $this->range(new Request(['range' => '30']), $store);

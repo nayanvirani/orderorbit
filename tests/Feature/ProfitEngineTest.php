@@ -97,4 +97,13 @@ class ProfitEngineTest extends TestCase
         $this->assertStringStartsWith('backfilled 0 orders', app(ProfitSync::class)->run($store->fresh()));
         $this->assertNotNull(ProfitSetting::for($store->id)->backfilled_at);
     }
+
+    public function test_test_orders_count_on_development_stores_only(): void
+    {
+        $live = $this->installedStore(['timezone' => 'UTC']);
+        $dev = $this->installedStore(['shop_domain' => 'dev.myshopify.com', 'timezone' => 'UTC', 'capabilities' => ['development_store' => true]]);
+        $test = ['test' => true] + $this->order();
+        $this->assertTrue(app(OrderSync::class)->fromWebhook($live, $test)->excluded, 'A live store leaves test orders out.');
+        $this->assertFalse(app(OrderSync::class)->fromWebhook($dev, $test)->excluded, 'A development store counts them.');
+    }
 }

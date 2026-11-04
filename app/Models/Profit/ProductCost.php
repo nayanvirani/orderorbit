@@ -11,7 +11,7 @@ class ProductCost extends Model
 
     protected function casts(): array
     {
-        return ['shopify_cost' => 'float', 'cost' => 'float'];
+        return ['shopify_cost' => 'float', 'cost' => 'float', 'price' => 'float'];
     }
 
     /** The cost used for profit: Growvia's own, else Shopify's. */
