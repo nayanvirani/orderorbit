@@ -4,7 +4,12 @@ import { Page } from '../../components/ui.jsx';
 import { appUrl, route } from '../../router.jsx';
 import { money, pct, ProfitNotices, Ranges } from './_profit.jsx';
 
-const change = (now, before) => (before ? Math.round(((now - before) / Math.abs(before)) * 100) : null);
+// A % change only when the earlier period means something; otherwise "up from $0.02" says it better.
+const change = (now, before) => {
+  if (before === null || before === undefined || Math.abs(before) < 1) return null;
+  const pct = Math.round(((now - before) / Math.abs(before)) * 100);
+  return Math.abs(pct) > 999 ? null : pct;
+};
 
 export default function ProfitDashboard({ range, ranges, totals: t, previous: p, daily, products, adsEntered, currency, access, syncing, locked, snapshot }) {
   const m = (v) => money(v, currency);
@@ -12,14 +17,23 @@ export default function ProfitDashboard({ range, ranges, totals: t, previous: p,
     ['Net sales', t.net_sales, p.net_sales, 'After discounts and refunds, before tax'],
     ['Gross profit', t.gross_profit, p.gross_profit, 'Net sales − product cost'],
     ['Contribution', t.contribution, p.contribution, '− payment fees and shipping'],
-    ['Profit after ads', adsEntered ? t.after_ads : null, p.after_ads, adsEntered ? '− ad spend' : 'Add your ad spend'],
+    ['Profit after ads', adsEntered ? t.after_ads : null, p.after_ads, adsEntered ? '− ad spend' : 'Add your ad spend in Ad expenses'],
   ];
+  // Each line adds (+) or takes away (−); bold lines are the profit levels.
   const steps = [
-    ['Net sales', t.net_sales, 'level'], ['Product cost', -t.cogs, 'cost'], ['Gross profit', t.gross_profit, 'level'],
-    ['Fees and shipping', -t.fees_and_shipping, 'cost'], ['Contribution', t.contribution, 'level'],
-    ['Ad spend', -t.ad_spend, 'cost'], ['Profit after ads', t.after_ads, 'level'], ['Fixed costs', -t.fixed_costs, 'cost'], ['Estimated net', t.estimated_net, 'level'],
+    ['Net sales', t.net_sales, 'level'],
+    ['Product cost', -t.cogs, 'cost'],
+    ['Gross profit', t.gross_profit, 'level'],
+    ['Shipping charged to customers', t.shipping, 'add'],
+    ['Payment fees', -t.fees, 'cost'],
+    ['Your shipping cost', -t.shipping_cost, 'cost'],
+    ['Contribution', t.contribution, 'level'],
+    ['Ad spend', adsEntered ? -t.ad_spend : null, 'cost'],
+    ['Profit after ads', t.after_ads, 'level'],
+    ['Fixed costs', -t.fixed_costs, 'cost'],
+    ['Estimated net', t.estimated_net, 'level'],
   ];
-  const top = Math.max(1, ...steps.map((s) => Math.abs(s[1])));
+  const top = Math.max(1, ...steps.map((s) => Math.abs(s[1] || 0)));
   const peak = Math.max(1, ...daily.map((d) => Math.abs(d.after_ads)));
 
   return (
@@ -47,12 +61,13 @@ export default function ProfitDashboard({ range, ranges, totals: t, previous: p,
                 <div className="pf-kpi" key={label}>
                   <small>{label}</small>
                   <b>{value === null ? '—' : m(value)}</b>
-                  {c !== null && <span className={c >= 0 ? 'up' : 'down'}>{c >= 0 ? '+' : ''}{c}% vs before</span>}
+                  {c !== null && <span className={c >= 0 ? 'up' : 'down'}>{c >= 0 ? '+' : ''}{c}% vs the 30 days before</span>}
+              {c === null && value !== null && before !== null && before !== undefined && Math.abs(before) < 1 && value !== before && <span className="oo-muted">{value > before ? 'up' : 'down'} from {m(before)}</span>}
                   <em>{level}</em>
                 </div>
               );
             })}
-            <div className="pf-kpi"><small>Margin after ads</small><b>{pct(t.margin)}</b><em>Profit after ads ÷ net sales</em></div>
+            <div className="pf-kpi"><small>Margin after ads</small><b>{adsEntered ? pct(t.margin) : '—'}</b><em>{adsEntered ? 'Profit after ads ÷ net sales' : `Contribution margin ${pct(t.contribution_margin)} until ad spend is added`}</em></div>
           </div>
 
           <div className="pf-two">
@@ -61,12 +76,12 @@ export default function ProfitDashboard({ range, ranges, totals: t, previous: p,
                 {steps.map(([label, value, kind]) => (
                   <div className={`pf-step ${kind}`} key={label}>
                     <span>{label}</span>
-                    <i style={{ width: `${Math.round((Math.abs(value) / top) * 100)}%` }} />
-                    <b>{kind === 'cost' && value ? '−' : ''}{m(Math.abs(value))}</b>
+                    <i style={{ width: `${Math.round((Math.abs(value || 0) / top) * 100)}%` }} />
+                    <b>{value === null ? 'Not entered' : `${kind === 'cost' && value ? '− ' : kind === 'add' && value ? '+ ' : ''}${m(Math.abs(value))}`}</b>
                   </div>
                 ))}
               </div>
-              <p className="oo-muted pf-small">Profit levels in bold; costs taken away in between. Fixed costs only come off in Estimated net.</p>
+              <p className="oo-muted pf-small">Profit levels in bold. In between, + adds to profit and − takes away. Fixed costs only come off in Estimated net. Taxes aren't counted: they're not your money.</p>
             </s-section>
 
             <s-section heading="Profit after ads, by day">

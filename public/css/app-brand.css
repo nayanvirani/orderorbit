@@ -401,3 +401,4 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 @media (max-width: 900px) { .pt-layout { grid-template-columns: 1fr; } }
 .pf-kpi-btn { border: 0; font: inherit; text-align: left; cursor: pointer; color: inherit; }
 .pf-kpi-btn:hover { box-shadow: 0 0 0 2px var(--ob-accent) inset, var(--ob-card-shadow); }
+.pf-step.add i { background: #8fd1a8; } .pf-step.add span, .pf-step.add b { color: #17663a; font-weight: 400; }
