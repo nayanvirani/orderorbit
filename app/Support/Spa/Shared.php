@@ -43,13 +43,15 @@ class Shared
             'announcements' => $store && $user ? \App\Support\Announcements::forPage($store, $user, $request->routeIs('app.dashboard')) : [],
             // The live chat button (G43), released with the live_chat flag.
             'chat' => $store && $user && \App\Support\Features::enabled('live_chat', $store),
+            // The new menu and offer names (flag new_menu).
+            'newMenu' => $store && Registry::newMenu(),
         ];
     }
 
     private static function nav(Request $request, Store $store): ?array
     {
         if ($request->routeIs('app.cro.*', 'app.bundles.*', 'app.gifts.*', 'app.features.*')) {
-            return ['section' => 'cro', 'label' => 'CRO', 'groups' => self::croGroups($request, $store)];
+            return ['section' => 'cro', 'label' => Registry::newMenu() ? 'Offers' : 'CRO', 'groups' => self::croGroups($request, $store)];
         }
 
         $tab = $request->query('tab');
@@ -101,8 +103,26 @@ class Shared
             return null;
         }
         [$label, $items] = $modules[$section];
+        $new = Registry::newMenu();
+        if ($new) {
+            // The new menu (flag new_menu): friendlier names; A/B tests and Audiences are one item.
+            $rename = ['Overview' => 'Widget results', 'Revenue & attribution' => 'Attribution', 'Personalization rules' => 'Personalization',
+                'Users & roles' => 'Team and permissions', 'Billing' => 'Plan and billing', 'Activity' => 'Activity log'];
+            $items = array_map(fn ($i) => [$rename[$i[0]] ?? $i[0], ...array_slice($i, 1)], $items);
+            $label = ['analytics' => 'Insights', 'experiments' => 'Audiences and tests', 'audiences' => 'Audiences and tests'][$section] ?? $label;
+            if (in_array($section, ['experiments', 'audiences'], true)) {
+                $tests = array_map(fn ($i) => [$i[0] === 'Active tests' ? 'Active tests' : $i[0], ...array_slice($i, 1)], $modules['experiments'][1]);
+                $audiences = array_map(fn ($i) => [$rename[$i[0]] ?? $i[0], ...array_slice($i, 1)], $modules['audiences'][1]);
+                $row = fn ($i) => ['label' => $i[0], 'icon' => $i[1], 'tone' => 'default', 'href' => self::path($i[2], $i[3]), 'active' => (bool) $i[4]()];
+
+                return ['section' => 'tests', 'label' => $label, 'groups' => [
+                    ['heading' => 'A/B tests', 'items' => array_map($row, $tests)],
+                    ['heading' => 'Audiences', 'items' => array_map($row, $audiences)],
+                ]];
+            }
+        }
         // The automation redesign renames three items (labels only), released with the flow_editor flag.
-        if ($section === 'automation' && \App\Support\Features::enabled('flow_editor', $store)) {
+        if ($section === 'automation' && ($new || \App\Support\Features::enabled('flow_editor', $store))) {
             $rename = ['Runs' => 'Run history', 'Inbox' => 'Team inbox', 'Emails' => 'Emails sent'];
             $items = array_map(fn ($i) => [$rename[$i[0]] ?? $i[0], ...array_slice($i, 1)], $items);
         }
@@ -140,15 +160,20 @@ class Shared
             },
         ];
         $order = ['bundles', 'progressive-gifts', 'cart-upsells'];
+        $new = Registry::newMenu();
         $checkout = ['checkout', 'post-purchase', 'thank-you', 'customer-accounts'];
 
         return [
-            ['heading' => null, 'items' => [['label' => 'CRO overview', 'icon' => 'grid', 'tone' => 'default', 'href' => self::path('app.cro.overview'), 'active' => $request->routeIs('app.cro.overview')]]],
+            ['heading' => null, 'items' => array_values(array_filter([
+                ['label' => $new ? 'Offers overview' : 'CRO overview', 'icon' => 'grid', 'tone' => 'default', 'href' => self::path('app.cro.overview'), 'active' => $request->routeIs('app.cro.overview')],
+                // The new menu's picker by shopper step.
+                $new ? ['label' => 'Create an offer', 'icon' => 'plus', 'tone' => 'default', 'href' => self::path('app.cro.create'), 'active' => $request->routeIs('app.cro.create')] : null,
+            ]))],
             ['heading' => 'Order value', 'items' => array_map($link, array_values(array_filter($order, fn ($k) => isset($features[$k]))))],
             ['heading' => 'Conversion', 'items' => array_map($link, array_values(array_filter(array_keys($features), fn ($k) => ! in_array($k, array_merge($order, $checkout), true))))],
-            ['heading' => 'Checkout', 'items' => array_map($link, array_values(array_filter($checkout, fn ($k) => isset($features[$k]))))],
+            ['heading' => $new ? 'Checkout and after' : 'Checkout', 'items' => array_map($link, array_values(array_filter($checkout, fn ($k) => isset($features[$k]))))],
             ['heading' => 'Manage', 'items' => [
-                ['label' => 'All widgets', 'icon' => 'list', 'tone' => 'default', 'href' => self::path('app.cro.experiences.index'), 'active' => $request->routeIs('app.cro.experiences.*') && ! $experienceFeature],
+                ['label' => $new ? 'All offers' : 'All widgets', 'icon' => 'list', 'tone' => 'default', 'href' => self::path('app.cro.experiences.index'), 'active' => $request->routeIs('app.cro.experiences.*') && ! $experienceFeature],
                 ['label' => 'Templates', 'icon' => 'palette', 'tone' => 'default', 'href' => self::path('app.cro.templates'), 'active' => $request->routeIs('app.cro.templates')],
             ]],
         ];

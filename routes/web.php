@@ -163,6 +163,8 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
         // CRO experiences (section 15, D2)
         Route::prefix('cro')->name('cro.')->group(function () {
             Route::get('/', [ExperienceController::class, 'overview'])->middleware('store.can:view_dashboard')->name('overview');
+            // New menu: Offers › Create an offer (a picker by shopper step).
+            Route::get('/create', \App\Http\Controllers\App\OfferCatalogController::class)->middleware('store.can:manage_experiences')->name('create');
 
             Route::prefix('experiences')->name('experiences.')->group(function () {
                 Route::get('/', [ExperienceController::class, 'index'])->name('index');

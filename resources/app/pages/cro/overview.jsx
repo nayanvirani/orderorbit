@@ -4,13 +4,14 @@ import { appUrl, route, useShared } from '../../router.jsx';
 import ExperienceStatus from './_status.jsx';
 
 export default function CroOverview({ counts, notPlaced, recent, activeLimit, activeUsed, revenue, features }) {
-  const { currency } = useShared();
+  const { currency, newMenu } = useShared();
   const ready = useRuntime({ checkout: true });
   const context = { currency, cartTotal: 6000, productPrice: 2900, productTitle: 'Glow Serum', page: 'product' };
   return (
-    <Page heading="CRO overview">
-      <Hero eyebrow="CRO" icon="sparkle" title="Every conversion tool, <em>one design.</em>" lead="Bundles, progressive gifts, cart upsells, countdowns, sticky add to cart and trust badges — sharing your brand, with savings applied at checkout and one set of numbers.">
-        <s-button variant="primary" href={appUrl(route('app.bundles.types'))}>Create a bundle</s-button>
+    <Page heading={newMenu ? 'Offers overview' : 'CRO overview'}>
+      <Hero eyebrow={newMenu ? 'Offers' : 'CRO'} icon="sparkle" title="Every conversion tool, <em>one design.</em>" lead={newMenu ? 'Bundles, rewards, cart recommendations, countdowns, sticky buy buttons and trust badges — sharing your brand, with savings applied at checkout and one set of numbers.' : 'Bundles, progressive gifts, cart upsells, countdowns, sticky add to cart and trust badges — sharing your brand, with savings applied at checkout and one set of numbers.'}>
+        {newMenu ? <s-button variant="primary" href={appUrl(route('app.cro.create'))}>Create an offer</s-button>
+          : <s-button variant="primary" href={appUrl(route('app.bundles.types'))}>Create a bundle</s-button>}
         <s-button href={appUrl(route('app.analytics'))}>View analytics</s-button>
       </Hero>
 

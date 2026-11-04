@@ -1,5 +1,6 @@
 // Feature and navigation icons for the React admin (Icon in components/ui.jsx).
 export const ICONS = {
+  "plus": "<path d=\"M12 5v14M5 12h14\"\/>",
   "package": "<path d=\"m12 3 8 4.5v9L12 21l-8-4.5v-9z\"\/><path d=\"m4 7.5 8 4.5 8-4.5M12 12v9\"\/>",
   "gift": "<rect x=\"3.5\" y=\"8\" width=\"17\" height=\"4\" rx=\"1\"\/><path d=\"M5 12v7.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V12M12 8v12.5M8 8a2.5 2.5 0 1 1 4-2.5V8M16 8a2.5 2.5 0 1 0-4-2.5\"\/>",
   "sparkle": "<path d=\"M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18\"\/>",

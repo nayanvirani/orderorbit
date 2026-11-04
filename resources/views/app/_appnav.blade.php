@@ -9,11 +9,19 @@
     @if (! request()->attributes->get('store')?->goal)
         <s-link href="{{ app_route('app.onboarding') }}">Get started</s-link>
     @endif
-    <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
-    <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
-    <s-link href="{{ app_route('app.experiments.index') }}">A/B tests</s-link>
-    <s-link href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>
-    <s-link href="{{ app_route('app.analytics') }}">Analytics</s-link>
+    @if (\App\Experiences\Registry::newMenu())
+        {{-- The new menu (flag new_menu): same pages, new names; A/B tests and Audiences are one item. --}}
+        <s-link href="{{ app_route('app.cro.overview') }}">Offers</s-link>
+        <s-link href="{{ app_route('app.analytics') }}">Insights</s-link>
+        <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
+        <s-link href="{{ app_route('app.experiments.index') }}">Audiences and tests</s-link>
+    @else
+        <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
+        <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
+        <s-link href="{{ app_route('app.experiments.index') }}">A/B tests</s-link>
+        <s-link href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>
+        <s-link href="{{ app_route('app.analytics') }}">Analytics</s-link>
+    @endif
     <s-link href="{{ app_route('app.settings.store') }}">Settings</s-link>
     <s-link href="{{ app_route('app.support.index') }}">Support</s-link>
 </s-app-nav>
