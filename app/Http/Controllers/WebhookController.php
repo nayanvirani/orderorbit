@@ -35,6 +35,7 @@ class WebhookController extends Controller
             // Sales pop: products from real orders (no customer details are kept).
             'orders/create' => $store && $store->isInstalled() && $this->orderChanged($store, $payload, $orders, true),
             'orders/updated', 'orders/cancelled' => $store && $store->isInstalled() && $this->orderChanged($store, $payload, $orders, false),
+            // Refunds also arrive as orders/updated, which Profit reads.
             // Workflow triggers only.
             'orders/paid', 'orders/fulfilled', 'refunds/create', 'customers/create', 'customers/update' => $store && $store->isInstalled() && $this->automation($store, $topic, $payload),
             'shop/redact' => $this->redactShop($store),
@@ -54,6 +55,12 @@ class WebhookController extends Controller
     /** A new or changed order: a new order's products feed Sales pop, and either can start workflows. */
     private function orderChanged(Store $store, array $payload, RecentOrders $orders, bool $created): void
     {
+        // Profit (phase 3): the order's numbers and its day, kept current.
+        try {
+            app(\App\Services\Profit\ProfitSync::class)->orderWebhook($store, $payload);
+        } catch (\Throwable $e) {
+            report($e);
+        }
         if ($created) {
             $orders->fromWebhook($store, $payload);
             // Subscription renewals never reach checkout, so the pixel can't count them.
@@ -74,6 +81,8 @@ class WebhookController extends Controller
         if ($store && $id !== '') {
             app(\App\Automation\Triggers::class)->forget($store, $id);
             \App\Services\Analytics\Journeys::forget($store, $id);
+            // Profit keeps no names or contact details; the customer id is removed from their orders.
+            \App\Models\Profit\ProfitOrder::where('store_id', $store->id)->where('customer_id', (int) $id)->update(['customer_id' => null]);
         }
         AuditLog::record('compliance.customers/redact', $store, ['customer_id' => $id ?: null]);
     }

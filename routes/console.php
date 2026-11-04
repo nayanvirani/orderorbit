@@ -21,6 +21,7 @@ Schedule::command('orderorbit:prune-analytics')->dailyAt('03:15');
 Schedule::command('orderorbit:ops-check')->everyFiveMinutes()->withoutOverlapping(10);
 Schedule::command('orderorbit:ops-check --digest')->dailyAt('03:30'); // 09:00 in India
 // Announcements (G41): email store owners when an announcement marked "email owners" starts.
+Schedule::command('orderorbit:profit-sync')->everyFiveMinutes()->withoutOverlapping(60); // Profit (phase 3)
 Schedule::command('orderorbit:lifecycle-emails')->hourly()->withoutOverlapping(30); // G24
 Schedule::command('orderorbit:announcement-emails')->everyFiveMinutes()->withoutOverlapping(10);
 
