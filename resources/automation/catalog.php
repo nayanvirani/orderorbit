@@ -71,6 +71,9 @@ return [
             'documents' => ['type' => 'select', 'label' => 'Product documents', 'default' => 'none', 'options' => [
                 'none' => 'Don\'t add documents', 'attach' => 'Attach documents for the products in this order', 'link' => 'Add download links for the products in this order',
             ], 'help' => 'From Automation › Product documents. Attachments over 10 MB in total switch to links; links work for 30 days.'],
+            // Which documents this email sends; none ticked = every document that matches the order's products.
+            'document_ids' => ['type' => 'documents', 'label' => 'Which documents', 'show_with' => 'documents', 'options' => [],
+                'help' => 'Tick the certificates or PDFs this email sends. Leave all unticked to send every document that matches the products in the order.'],
         ], 'note' => 'Emails are prepared and kept in Automation → Emails. Sending starts once an email provider is connected.'],
         'notify' => ['label' => 'Notify your team', 'group' => 'Messages', 'params' => [
             'title' => ['type' => 'text', 'label' => 'Title', 'required' => true, 'max' => 200],

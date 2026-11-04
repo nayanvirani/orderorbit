@@ -287,6 +287,25 @@ function Field({ ctx, def, path }) {
   if (def.type === 'textarea') {
     return <label className="fl-field">{label}<textarea rows={7} value={value} onChange={(e) => set(e.target.value)} data-path={path} />{help}</label>;
   }
+  if (def.type === 'documents') {
+    // Product documents (G42): tick which this email sends; none ticked = every matching one.
+    const ids = Array.isArray(raw) ? raw.map(Number) : [];
+    const list = def.options || [];
+    const toggle = (id, on) => set(on ? [...ids, id] : ids.filter((x) => x !== id));
+    return (
+      <div className="fl-field">
+        {label}
+        {list.length ? list.map((d) => (
+          <label className="fl-doc" key={d.id}>
+            <input type="checkbox" checked={ids.includes(d.id)} onChange={(e) => toggle(d.id, e.target.checked)} />
+            <span>{d.name} <small className="oo-muted">· {d.kind}{d.active ? '' : ' · off'}</small></span>
+          </label>
+        )) : <span className="oo-muted">No documents yet. Add them in Automation › Product documents.</span>}
+        {list.length > 0 && <small>{ids.length ? `Sends ${ids.length} chosen ${ids.length === 1 ? 'document' : 'documents'}, each for the products it's set up for.` : 'None ticked: sends every document that matches the products in the order.'}</small>}
+        {help}
+      </div>
+    );
+  }
   if (def.type === 'products' || def.type === 'collections') {
     const items = Array.isArray(raw) ? raw : [];
     const pick = async () => {
@@ -397,7 +416,7 @@ function StepPanel({ ctx, path, onRemove, onMove }) {
           </select>
         </label>
         {step.action === 'webhook' && !ctx.gates.webhooks && <s-banner tone="warning">Webhooks need a plan that includes them. You can build and test now; publishing needs an upgrade.</s-banner>}
-        {Object.entries(action.params || {}).map(([k, def]) => <Field key={k} ctx={ctx} def={def} path={`${path}.params.${k}`} />)}
+        {Object.entries(action.params || {}).filter(([, def]) => !def.show_with || ![undefined, '', 'none'].includes(step.params?.[def.show_with])).map(([k, def]) => <Field key={k} ctx={ctx} def={def} path={`${path}.params.${k}`} />)}
         {['send_email', 'notify', 'create_task'].includes(step.action) && <Variables ctx={ctx} path={`${path}.params.body`} />}
         {action.note && <p className="fl-note">{action.note}</p>}
       </>

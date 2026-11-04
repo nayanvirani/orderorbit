@@ -38,7 +38,7 @@ class Actions
                 $documents = [];
                 $as = in_array($p['documents'] ?? 'none', ['attach', 'link'], true) && $order && \App\Support\Features::enabled('product_documents', $run->store) && $run->store->planIncludes('product_documents') ? $p['documents'] : null;
                 if ($as) {
-                    $documents = app(\App\Services\Documents\ProductDocuments::class)->forOrder($run->store, $order, $customer)->pluck('id')->all();
+                    $documents = app(\App\Services\Documents\ProductDocuments::class)->forOrder($run->store, $order, $customer, array_map('intval', (array) ($p['document_ids'] ?? [])))->pluck('id')->all();
                 }
                 // Queued here; orderorbit:send-emails sends it within a minute through the email providers.
                 $email = AutomationEmail::create([

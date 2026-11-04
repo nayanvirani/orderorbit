@@ -31,9 +31,10 @@ class ProductDocuments
      *
      * @return Collection<int, IssuedDocument>
      */
-    public function forOrder(Store $store, array $order, ?array $customer = null): Collection
+    public function forOrder(Store $store, array $order, ?array $customer = null, array $only = []): Collection
     {
-        $documents = ProductDocument::where('store_id', $store->id)->where('active', true)->get();
+        // A workflow can send chosen documents; each still goes only to orders with its products.
+        $documents = ProductDocument::where('store_id', $store->id)->where('active', true)->when($only, fn ($q) => $q->whereIn('id', $only))->get();
         $lines = array_values(array_filter((array) ($order['lines'] ?? []), fn ($l) => ($l['product_id'] ?? '') !== ''));
         if ($documents->isEmpty() || ! $lines || empty($order['id'])) {
             return collect();

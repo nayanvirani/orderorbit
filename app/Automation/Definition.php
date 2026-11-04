@@ -196,6 +196,9 @@ class Definition
                 return [$n, null];
             case 'select':
                 return [isset($field['options'][$raw]) ? $raw : ($field['default'] ?? array_key_first($field['options'])), null];
+            case 'documents':
+                // Product document ids (G42), checked against the store when the email is sent.
+                return [array_values(array_unique(array_map('intval', array_filter((array) $raw, fn ($v) => is_numeric($v) && (int) $v > 0)))), null];
             case 'products':
             case 'collections':
                 $list = array_values(array_filter(array_map(fn ($v) => is_array($v) && preg_match('#^gid://shopify/(Product|Collection)/\d+$#', (string) ($v['id'] ?? '')) ? array_intersect_key($v, array_flip(['id', 'title', 'handle', 'image'])) : null, (array) $raw)));

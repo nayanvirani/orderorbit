@@ -148,6 +148,25 @@ function Field({ def, path, wide }) {
       </div>
     );
   }
+  if (def.type === 'documents') {
+    // Product documents (G42): tick which this email sends; none ticked = every matching one.
+    const ids = Array.isArray(raw) ? raw.map(Number) : [];
+    const list = def.options || [];
+    const toggle = (id, on) => set(on ? [...ids, id] : ids.filter((x) => x !== id));
+    return (
+      <div className="wf-field wf-wide">
+        {label}
+        {list.length ? list.map((d) => (
+          <label className="fl-doc" key={d.id}>
+            <input type="checkbox" checked={ids.includes(d.id)} onChange={(e) => toggle(d.id, e.target.checked)} />
+            <span>{d.name} <small className="oo-muted">· {d.kind}{d.active ? '' : ' · off'}</small></span>
+          </label>
+        )) : <span className="oo-muted">No documents yet. Add them in Automation › Product documents.</span>}
+        {list.length > 0 && <small>{ids.length ? `Sends ${ids.length} chosen ${ids.length === 1 ? 'document' : 'documents'}, each for the products it's set up for.` : 'None ticked: sends every document that matches the products in the order.'}</small>}
+        {help}
+      </div>
+    );
+  }
   if (def.type === 'workflow') {
     return <label className="wf-field">{label}<select value={value} onChange={(e) => set(e.target.value)}><option value="">Choose…</option>{workflows.map((w) => <option key={w.handle} value={w.handle}>{w.name}</option>)}</select>{help}</label>;
   }
@@ -273,7 +292,7 @@ function StepCard({ step, path, index, count }) {
           </select>
           {action.note && <small>{action.note}</small>}
         </label>
-        {Object.entries(action.params || {}).map(([k, def]) => <Field key={k} def={def} path={`${path}.params.${k}`} />)}
+        {Object.entries(action.params || {}).filter(([, def]) => !def.show_with || ![undefined, '', 'none'].includes(step.params?.[def.show_with])).map(([k, def]) => <Field key={k} def={def} path={`${path}.params.${k}`} />)}
       </>
     );
   }

@@ -71,6 +71,9 @@ class ProductDocumentsTest extends TestCase
         $this->assertSame('Priya Sharma', $issued[0]->customer_name);
         $this->assertSame($guide->id, $issued[2]->product_document_id);
 
+        // A workflow that chose only the care guide sends just that one.
+        $this->assertSame([$guide->id], $documents->forOrder($store, $this->order(), null, [$guide->id])->pluck('product_document_id')->unique()->values()->all());
+
         // Again (a retry or a second email): the same documents.
         $this->assertSame($issued->pluck('id')->all(), $documents->forOrder($store, $this->order(), ['name' => 'Priya Sharma'])->pluck('id')->all());
         $this->assertSame(3, IssuedDocument::count());

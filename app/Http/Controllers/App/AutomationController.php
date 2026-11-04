@@ -333,7 +333,11 @@ class AutomationController extends Controller
         $segments = \App\Models\Audiences\Segment::where('store_id', $store->id)->active()->orderBy('name')->pluck('name', 'id')->mapWithKeys(fn ($n, $id) => [(string) $id => $n])->all();
         $catalog['conditions']['segment'] = ['type' => 'select', 'options' => $segments ?: ['' => 'No segments yet: create one in Audiences']] + $catalog['conditions']['segment'];
         if (! \App\Support\Features::enabled('product_documents', $store)) {
-            unset($catalog['actions']['send_email']['params']['documents']);
+            unset($catalog['actions']['send_email']['params']['documents'], $catalog['actions']['send_email']['params']['document_ids']);
+        } else {
+            // The store's documents to choose from, with what each is sent for.
+            $catalog['actions']['send_email']['params']['document_ids']['options'] = \App\Models\Documents\ProductDocument::where('store_id', $store->id)->orderBy('name')
+                ->get(['id', 'name', 'kind', 'active'])->map(fn ($d) => ['id' => $d->id, 'name' => $d->name, 'kind' => $d->kind === 'certificate' ? 'Certificate' : 'PDF', 'active' => $d->active])->all();
         }
 
         return $catalog;
