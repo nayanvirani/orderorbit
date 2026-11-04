@@ -97,11 +97,12 @@ class ProtectTest extends TestCase
         $alert = ProtectAlert::where('rule', 'sold_out')->sole();
         $this->send("/app/protect/alerts/{$alert->id}", ['action' => 'mute'], $owner)->assertOk();
         $this->assertSame('muted', $alert->fresh()->status);
+        $csv = $this->get('/app/protect/inventory/reorder', $this->as($owner))->assertOk()->streamedContent();
+        $this->assertStringContainsString('Serum', $csv);
+
         // Check now: re-reads Shopify, at most once every 5 minutes.
         \Illuminate\Support\Facades\Http::fake(fn () => \Illuminate\Support\Facades\Http::response(['data' => ['productVariants' => ['nodes' => [], 'pageInfo' => ['hasNextPage' => false]]]]));
         $this->send('/app/protect/refresh', ['from' => 'products'], $owner)->assertOk();
         $this->send('/app/protect/refresh', ['from' => 'products'], $owner)->assertStatus(422);
-        $csv = $this->get('/app/protect/inventory/reorder', $this->as($owner))->assertOk()->streamedContent();
-        $this->assertStringContainsString('Serum', $csv);
     }
 }

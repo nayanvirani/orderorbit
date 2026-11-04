@@ -20,18 +20,14 @@ class CostSync
     /** Pulls every variant; returns how many were seen. */
     public function sync(Store $store, int $maxPages = 400): int
     {
-        $locations = $store->hasScope('read_locations');
         // Stock per location makes each variant cost more to ask for, so pages are smaller then.
-        $first = $locations ? 50 : 250;
-        $levels = $locations ? 'inventoryLevels(first: 10) { nodes { location { id name } quantities(names: ["available"]) { quantity } } }' : '';
+        $first = $store->hasScope('read_locations') ? 50 : 250;
         $after = null;
         $seen = 0;
         $started = now();
         for ($page = 0; $page < $maxPages; $page++) {
             $data = $this->api->graphql($store, "query (\$after: String) { productVariants(first: {$first}, after: \$after) { pageInfo { hasNextPage endCursor }
-                nodes { id displayName price sku barcode inventoryQuantity image { id }
-                    product { id title status description(truncateAt: 5) featuredMedia { id } }
-                    inventoryItem { tracked unitCost { amount } measurement { weight { value } } {$levels} } } } }", ['after' => $after]);
+                nodes { ".$this->fields($store).' } } }', ['after' => $after]);
             foreach ((array) ($data['productVariants']['nodes'] ?? []) as $v) {
                 if ($this->save($store, $v)) {
                     $seen++;
@@ -46,6 +42,44 @@ class CostSync
         }
 
         return $seen;
+    }
+
+    /** The variant fields read from Shopify (stock per location only with read_locations). */
+    private function fields(Store $store): string
+    {
+        $levels = $store->hasScope('read_locations') ? 'inventoryLevels(first: 10) { nodes { location { id name } quantities(names: ["available"]) { quantity } } }' : '';
+
+        return "id displayName price sku barcode inventoryQuantity image { id }
+            product { id title status description(truncateAt: 5) featuredMedia { id } }
+            inventoryItem { tracked unitCost { amount } measurement { weight { value } } {$levels} }";
+    }
+
+    /**
+     * One product again (from a products/* or inventory webhook): its variants as Shopify has them
+     * now. Variants no longer on the product are marked deleted. Returns whether anything was read.
+     */
+    public function syncProduct(Store $store, int $productId): bool
+    {
+        $data = $this->api->graphql($store, 'query ($id: ID!) { product(id: $id) { variants(first: 100) { nodes { '.$this->fields($store).' } } } }', ['id' => 'gid://shopify/Product/'.$productId]);
+        $nodes = (array) ($data['product']['variants']['nodes'] ?? []);
+        $seen = [];
+        foreach ($nodes as $v) {
+            if ($this->save($store, $v)) {
+                $seen[] = (int) Str::afterLast((string) $v['id'], '/');
+            }
+        }
+        ProductCost::where('store_id', $store->id)->where('product_id', $productId)->whereNotIn('variant_id', $seen ?: [0])->update(['product_status' => 'DELETED']);
+
+        return $nodes !== [];
+    }
+
+    /** The product an inventory item belongs to (inventory webhooks only send the item id). */
+    public function productForInventoryItem(Store $store, int $itemId): ?int
+    {
+        $data = $this->api->graphql($store, 'query ($id: ID!) { inventoryItem(id: $id) { variant { product { id } } } }', ['id' => 'gid://shopify/InventoryItem/'.$itemId]);
+        $product = $data['inventoryItem']['variant']['product']['id'] ?? null;
+
+        return $product ? (int) Str::afterLast((string) $product, '/') : null;
     }
 
     private function save(Store $store, array $v): bool

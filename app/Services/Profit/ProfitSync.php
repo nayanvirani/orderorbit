@@ -63,6 +63,15 @@ class ProfitSync
 
                 return 'costs refreshed';
             }
+            // Products changed through webhooks since the last run: recalculate profit and alerts once.
+            if (\Illuminate\Support\Facades\Cache::pull("profit-dirty:{$store->id}")) {
+                $this->engine->recalculateAll($store);
+                if (\App\Support\Features::enabled('protect', $store) && $store->planIncludes('protect')) {
+                    app(\App\Services\Protect\Alerts::class)->check($store);
+                }
+
+                return 'recalculated after product changes';
+            }
             // A development store that went live: its test orders leave profit (and the reverse).
             // Development stores are re-checked with Shopify once a day to notice the switch.
             if (OrderSync::devStore($store) && (! $store->capabilities_checked_at || $store->capabilities_checked_at->lt(now()->subDay()))) {
@@ -112,6 +121,27 @@ class ProfitSync
         }
 
         return $changed > 0;
+    }
+
+    /**
+     * A product or inventory webhook: re-read that one product now; profit and alerts recalculate
+     * on the next 5-minute run (batched, so a bulk edit doesn't recalculate hundreds of times).
+     */
+    public function productWebhook(Store $store, string $topic, array $payload): void
+    {
+        if (! self::enabled($store) || ! $store->hasScope('read_inventory') || ! \App\Models\Profit\ProfitSetting::where('store_id', $store->id)->whereNotNull('backfilled_at')->exists()) {
+            return;
+        }
+        if ($topic === 'products/delete') {
+            \App\Models\Profit\ProductCost::where('store_id', $store->id)->where('product_id', (int) ($payload['id'] ?? 0))->update(['product_status' => 'DELETED']);
+        } else {
+            $product = str_starts_with($topic, 'products/') ? (int) ($payload['id'] ?? 0)
+                : $this->costs->productForInventoryItem($store, (int) ($payload['inventory_item_id'] ?? $payload['id'] ?? 0));
+            if (! $product || ! $this->costs->syncProduct($store, $product)) {
+                return;
+            }
+        }
+        \Illuminate\Support\Facades\Cache::put("profit-dirty:{$store->id}", true, now()->addDay());
     }
 
     /** After costs or rules change: everything again, so history matches the new numbers. */

@@ -38,6 +38,8 @@ class WebhookController extends Controller
             // Refunds also arrive as orders/updated, which Profit reads.
             // Workflow triggers only.
             'orders/paid', 'orders/fulfilled', 'refunds/create', 'customers/create', 'customers/update' => $store && $store->isInstalled() && $this->automation($store, $topic, $payload),
+            // Profit and Protect: a product's cost, price, stock or details changed in Shopify.
+            'products/create', 'products/update', 'products/delete', 'inventory_items/update', 'inventory_levels/update' => $store && $store->isInstalled() && $this->productChanged($store, $topic, $payload),
             'shop/redact' => $this->redactShop($store),
             'customers/redact' => $this->redactCustomer($store, $payload),
             'customers/data_request' => AuditLog::record("compliance.{$topic}", $store, [
@@ -50,6 +52,15 @@ class WebhookController extends Controller
         $receipt->forceFill(['processed_at' => now()])->save();
 
         return response()->noContent();
+    }
+
+    private function productChanged(Store $store, string $topic, array $payload): void
+    {
+        try {
+            app(\App\Services\Profit\ProfitSync::class)->productWebhook($store, $topic, $payload);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** A new or changed order: a new order's products feed Sales pop, and either can start workflows. */
