@@ -67,6 +67,10 @@ return [
         'send_email' => ['label' => 'Send email', 'group' => 'Messages', 'params' => [
             'subject' => ['type' => 'text', 'label' => 'Subject', 'required' => true, 'max' => 200],
             'body' => ['type' => 'textarea', 'label' => 'Message', 'required' => true, 'max' => 5000],
+            // Product documents (G42): shown in the editor with the product_documents flag.
+            'documents' => ['type' => 'select', 'label' => 'Product documents', 'default' => 'none', 'options' => [
+                'none' => 'Don\'t add documents', 'attach' => 'Attach documents for the products in this order', 'link' => 'Add download links for the products in this order',
+            ], 'help' => 'From Automation › Product documents. Attachments over 10 MB in total switch to links; links work for 30 days.'],
         ], 'note' => 'Emails are prepared and kept in Automation → Emails. Sending starts once an email provider is connected.'],
         'notify' => ['label' => 'Notify your team', 'group' => 'Messages', 'params' => [
             'title' => ['type' => 'text', 'label' => 'Title', 'required' => true, 'max' => 200],

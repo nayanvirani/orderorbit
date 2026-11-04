@@ -64,6 +64,7 @@ class Shared
                 ['Runs', 'play', 'app.automation.runs', [], $is('app.automation.runs', 'app.automation.runs.show')],
                 ['Inbox', 'inbox', 'app.automation.inbox', [], $is('app.automation.inbox')],
                 ['Emails', 'mail', 'app.automation.emails', [], $is('app.automation.emails')],
+                ['Product documents', 'draft', 'app.automation.documents', [], $is('app.automation.documents'), null, 'product_documents'],
             ]],
             'experiments' => ['A/B tests', [
                 ['Active tests', 'play', 'app.experiments.index', ['tab' => 'active'], fn () => $request->routeIs('app.experiments.index') && in_array($tab, [null, 'active'], true) || $request->routeIs('app.experiments.show')],
@@ -126,7 +127,7 @@ class Shared
             $rename = ['Runs' => 'Run history', 'Inbox' => 'Team inbox', 'Emails' => 'Emails sent'];
             $items = array_map(fn ($i) => [$rename[$i[0]] ?? $i[0], ...array_slice($i, 1)], $items);
         }
-        $items = array_values(array_filter($items, fn ($i) => ! isset($i[5]) || $user?->can($i[5])));
+        $items = array_values(array_filter($items, fn ($i) => (! isset($i[5]) || $user?->can($i[5])) && (! isset($i[6]) || \App\Support\Features::enabled($i[6], $store))));
 
         return ['section' => $section, 'label' => $label, 'groups' => [['heading' => null, 'items' => array_map(fn ($i) => [
             'label' => $i[0], 'icon' => $i[1], 'tone' => 'default', 'href' => self::path($i[2], $i[3]), 'active' => (bool) $i[4](),

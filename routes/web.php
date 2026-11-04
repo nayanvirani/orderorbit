@@ -39,6 +39,9 @@ Route::middleware('throttle:300,1')->group(function () {
     Route::options('/api/post-purchase/{any}', fn () => response('', 204)->header('Access-Control-Allow-Origin', '*')->header('Access-Control-Allow-Methods', 'POST')->header('Access-Control-Allow-Headers', 'Content-Type'))->where('any', 'offer|sign|decline');
 });
 Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, 'feed'])->middleware('throttle:600,1')->name('sales-pop.feed');
+// Product documents (G42): private download links from emails and the certificate check its QR code opens.
+Route::get('/documents/{token}', [\App\Http\Controllers\DocumentController::class, 'download'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:60,1')->name('documents.download');
+Route::get('/verify/{code}', [\App\Http\Controllers\DocumentController::class, 'verify'])->where('code', '[a-z0-9]{1,24}')->middleware('throttle:60,1')->name('documents.verify');
 });
 
 // Owner access to the public website while it's "coming soon".
@@ -255,6 +258,17 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
                 Route::post('/workflows/{workflow}/versions/{version}/restore', 'restore')->whereNumber(['workflow', 'version'])->name('restore');
                 Route::post('/inbox/{item}/done', 'done')->whereNumber('item')->name('inbox.done');
                 Route::post('/runs/{run}/retry', 'retry')->whereNumber('run')->name('runs.retry');
+            });
+        });
+        // Automation › Product documents (G42).
+        Route::prefix('automation/documents')->name('automation.documents')->controller(\App\Http\Controllers\App\ProductDocumentController::class)->group(function () {
+            Route::get('/', 'index')->middleware('store.can:view_dashboard');
+            Route::middleware('store.can:manage_experiences')->group(function () {
+                Route::post('/', 'store')->name('.store');
+                Route::get('/{document}/preview', 'preview')->whereNumber('document')->name('.preview');
+                Route::post('/{document}', 'update')->whereNumber('document')->name('.update');
+                Route::post('/{document}/delete', 'destroy')->whereNumber('document')->name('.destroy');
+                Route::post('/{document}/test', 'test')->whereNumber('document')->name('.test');
             });
         });
 

@@ -34,14 +34,20 @@ class Actions
                 if (empty($customer['email'])) {
                     return ['skipped', 'This customer has no email address.', []];
                 }
+                // Product documents (G42) for the products in this order: made once, sent as attachments or links.
+                $documents = [];
+                $as = in_array($p['documents'] ?? 'none', ['attach', 'link'], true) && $order && \App\Support\Features::enabled('product_documents', $run->store) ? $p['documents'] : null;
+                if ($as) {
+                    $documents = app(\App\Services\Documents\ProductDocuments::class)->forOrder($run->store, $order, $customer)->pluck('id')->all();
+                }
                 // Queued here; orderorbit:send-emails sends it within a minute through the email providers.
                 $email = AutomationEmail::create([
                     'store_id' => $run->store_id, 'run_id' => $run->id, 'customer_id' => $customer['id'] ?? null,
                     'to_email' => $customer['email'], 'subject' => $text('subject'), 'body' => $text('body'),
-                    'status' => 'queued',
+                    'status' => 'queued', 'documents' => $documents ?: null, 'documents_as' => $documents ? $as : null,
                 ]);
 
-                return ['ok', 'Email queued to send: “'.Str::limit($email->subject, 80).'”.', ['email_id' => $email->id]];
+                return ['ok', 'Email queued to send: “'.Str::limit($email->subject, 80).'”'.($documents ? ' with '.count($documents).' '.Str::plural('document', count($documents)) : '').'.', ['email_id' => $email->id]];
 
             case 'notify':
             case 'create_task':

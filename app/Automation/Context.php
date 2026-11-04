@@ -31,6 +31,11 @@ class Context
                 'variants' => array_values(array_unique(array_filter(array_map(fn ($l) => (string) ($l['variant_id'] ?? ''), $lines)))),
                 'skus' => array_values(array_filter(array_map(fn ($l) => (string) ($l['sku'] ?? ''), $lines))),
                 'titles' => array_values(array_unique(array_filter(array_map(fn ($l) => (string) ($l['title'] ?? ''), $lines)))),
+                // Each line, for product documents (G42): one certificate per item, line or order.
+                'lines' => array_values(array_map(fn ($l) => [
+                    'product_id' => (string) ($l['product_id'] ?? ''), 'variant_id' => (string) ($l['variant_id'] ?? ''),
+                    'title' => (string) ($l['title'] ?? ''), 'variant_title' => (string) ($l['variant_title'] ?? ''), 'quantity' => (int) ($l['quantity'] ?? 1),
+                ], array_slice($lines, 0, 100))),
                 'shipping_method' => (string) ($o['shipping_lines'][0]['title'] ?? ''),
                 'payment_methods' => array_values((array) ($o['payment_gateway_names'] ?? [])),
                 'fulfillment_status' => match ($o['fulfillment_status'] ?? null) {
@@ -43,6 +48,8 @@ class Context
             'customer' => $customer ? [
                 'id' => (string) ($customer['id'] ?? ''),
                 'email' => $customer['email'] ?? $o['email'] ?? null,
+                // For certificates that print the owner's name (same customer data access as emails).
+                'name' => trim(($customer['first_name'] ?? '').' '.($customer['last_name'] ?? '')) ?: null,
                 'tags' => self::tags($customer['tags'] ?? ''),
                 'orders_count' => $ordersCount !== null ? (int) $ordersCount : null,
                 'total_spent' => isset($customer['total_spent']) ? (float) $customer['total_spent'] : null,

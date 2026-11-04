@@ -36,6 +36,7 @@
   "estimated": "Estimated delivery: {{date}}",
   "latest": "{{name}} · {{date}}",
   "orderTotal": "Total {{total}}",
+  "documents": "Your documents",
   "carrier": "{{company}} · {{number}}",
   "chooseItems": "Choose what to add to your cart:",
   "addItems": "Add {{count}} to cart",

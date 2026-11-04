@@ -53,6 +53,21 @@ export async function loadOrder(id) {
   return data.order || null;
 }
 
+/**
+ * Product documents for an order (G42): Growvia saves the links in an app-owned order metafield.
+ * Asked separately and never fatal, so the blocks work the same without it.
+ */
+export async function loadDocuments(id) {
+  try {
+    const data = await customerApi(`query ($id: ID!) { order(id: $id) { metafield(namespace: "${NAMESPACE}", key: "documents") { value } } }`, { id });
+    const value = data.order && data.order.metafield && data.order.metafield.value;
+    const list = value ? JSON.parse(value) : [];
+    return Array.isArray(list) ? list.filter((d) => d && d.url && /^https:\/\//.test(d.url)) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 /** Product handles, links and images for product ids (Storefront API). */
 export async function loadProducts(ids) {
   const unique = Array.from(new Set((ids || []).filter(Boolean))).slice(0, 20);

@@ -332,6 +332,9 @@ class AutomationController extends Controller
         $catalog = Definition::catalog();
         $segments = \App\Models\Audiences\Segment::where('store_id', $store->id)->active()->orderBy('name')->pluck('name', 'id')->mapWithKeys(fn ($n, $id) => [(string) $id => $n])->all();
         $catalog['conditions']['segment'] = ['type' => 'select', 'options' => $segments ?: ['' => 'No segments yet: create one in Audiences']] + $catalog['conditions']['segment'];
+        if (! \App\Support\Features::enabled('product_documents', $store)) {
+            unset($catalog['actions']['send_email']['params']['documents']);
+        }
 
         return $catalog;
     }

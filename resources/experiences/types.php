@@ -827,6 +827,7 @@ return [
             'message' => ['type' => 'text', 'label' => 'Message', 'default' => 'You\'ve placed {count} orders with us.', 'max' => 160, 'help' => 'Placeholders: {count} orders, {spent} total spent, {first_name}.'],
             'show_latest' => ['type' => 'toggle', 'label' => 'Show the latest order and its status', 'default' => true],
             'show_tracking' => ['type' => 'toggle', 'label' => 'Show tracking for the latest order', 'default' => true],
+            'show_documents' => ['type' => 'toggle', 'label' => 'Show the order\'s product documents', 'default' => true, 'help' => 'Certificates and guides from Automation › Product documents, while their links work.'],
             'show_reorder' => ['type' => 'toggle', 'label' => 'Show a buy again button', 'default' => true],
             'button_text' => ['type' => 'text', 'label' => 'Buy again button', 'default' => 'Buy again', 'max' => 30],
         ],

@@ -57,8 +57,10 @@ class SendEmails extends Command
                 continue;
             }
 
-            $result = $sender->send(OutgoingEmail::fromText($row->to_email, $row->subject, $row->body, [
+            [$body, $attachments] = $this->documents($row);
+            $result = $sender->send(OutgoingEmail::fromText($row->to_email, $row->subject, $body, [
                 'fromName' => $store->name ?: null, 'replyTo' => $store->email ?: null, 'category' => 'automation', 'storeId' => $store->id,
+                'attachments' => $attachments,
             ]));
 
             if ($result->ok()) {
@@ -79,5 +81,41 @@ class SendEmails extends Command
         $this->info(collect($counts)->map(fn ($n, $k) => "{$n} {$k}")->implode(', '));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Product documents (G42) for this email: PDFs attached when chosen and 10 MB or less in total,
+     * otherwise a download link per document added under the message.
+     *
+     * @return array{0: string, 1: array}
+     */
+    private function documents(AutomationEmail $row): array
+    {
+        if (! $row->documents) {
+            return [$row->body, []];
+        }
+        $issued = \App\Models\Documents\IssuedDocument::with('document')->where('store_id', $row->store_id)->whereIn('id', (array) $row->documents)->get()
+            ->filter(fn ($d) => $d->document !== null)->values();
+        if ($issued->isEmpty()) {
+            return [$row->body, []];
+        }
+
+        $documents = app(\App\Services\Documents\ProductDocuments::class);
+        if ($row->documents_as === 'attach') {
+            $files = [];
+            $total = 0;
+            foreach ($issued as $d) {
+                $data = $documents->pdf($d);
+                $total += strlen($data);
+                $files[] = ['name' => $d->fileName(), 'mime' => 'application/pdf', 'data' => $data];
+            }
+            if ($total <= \App\Services\Documents\ProductDocuments::MAX_ATTACH) {
+                return [$row->body, $files];
+            }
+        }
+
+        $links = $issued->map(fn ($d) => '- '.$d->document->name.($d->serial ? ' ('.$d->serial.')' : '').': '.$d->url())->implode("\n");
+
+        return [rtrim($row->body)."\n\nYour documents (links work until ".$issued->min('expires_at')->format('j M Y')."):\n".$links, []];
     }
 }

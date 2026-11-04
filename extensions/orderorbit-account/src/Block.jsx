@@ -7,7 +7,7 @@ import '@shopify/ui-extensions/preact';
 import { createContext, render } from 'preact';
 import { useContext, useEffect, useState } from 'preact/hooks';
 import { applyTest, boxStyle, cartLink, choose, pickVersion, fill, link, pageFor, purchasedProducts, reviewLink, rewardTier, shipmentStep, totalSpent, activeOrders } from './logic.js';
-import { loadCustomer, loadOrder, loadPayload, loadProducts, track } from './data.js';
+import { loadCustomer, loadDocuments, loadOrder, loadPayload, loadProducts, track } from './data.js';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -49,6 +49,10 @@ function Extension() {
         order = current ? (customer.orders.find((o) => o.id === current) || await loadOrder(current)) : activeOrders(customer.orders)[0] || null;
       } catch (e) {
         /* signed out or the API is unavailable: blocks that need orders hide */
+      }
+      // My orders lists the order's product documents (certificates, guides) when it has any.
+      if (order && exp.type === 'account-orders' && (exp.content || {}).show_documents !== false) {
+        order = { ...order, documents: await loadDocuments(order.id) };
       }
       // A/B test: this customer's version; a hidden version shows nothing (and is counted).
       if (exp && exp.x && exp.x.variants && customer.id) {
@@ -142,6 +146,19 @@ function firstImage(order) {
 
 // ------------------------------------------------------------------ blocks
 
+/** The order's product documents (G42): a link per certificate or guide, while the link works. */
+function Documents({ order }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const list = ((order && order.documents) || []).filter((d) => !d.expires || d.expires >= today);
+  if (!list.length) return null;
+  return (
+    <s-stack gap="small-100">
+      <T type="strong">{t('documents')}</T>
+      {list.map((d) => <s-link key={d.url} href={d.url} target="_blank">{d.serial ? `${d.name} (${d.serial})` : d.name}</s-link>)}
+    </s-stack>
+  );
+}
+
 function MyOrders({ exp, c, shopUrl, customer, order }) {
   const orders = activeOrders(customer.orders);
   const spent = totalSpent(customer.orders);
@@ -165,6 +182,7 @@ function MyOrders({ exp, c, shopUrl, customer, order }) {
         <s-badge icon="delivery">{orderStatus(order)}</s-badge>
       </Row>
       {c.show_tracking ? <Tracking order={order} buttonText={t('steps.shipped')} /> : null}
+      <Documents order={order} />
     </s-stack>
   ) : null;
 

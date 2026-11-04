@@ -64,29 +64,31 @@ class Drivers
                     'to' => [array_filter(['email' => $email->to, 'name' => $email->toName])],
                     'subject' => $email->subject, 'htmlContent' => $email->html, 'textContent' => $email->text,
                     'replyTo' => $email->replyTo ? ['email' => $email->replyTo] : null,
+                    'attachment' => $email->attachmentsAs(fn ($name, $mime, $b64) => ['name' => $name, 'content' => $b64]),
                 ])), 'messageId'),
                 'resend' => $this->ok($this->http()->withToken($c['api_key'] ?? '')->post('https://api.resend.com/emails', array_filter([
                     'from' => $from, 'to' => [$email->to], 'subject' => $email->subject, 'html' => $email->html, 'text' => $email->text, 'reply_to' => $email->replyTo,
+                    'attachments' => $email->attachmentsAs(fn ($name, $mime, $b64) => ['filename' => $name, 'content' => $b64]),
                 ])), 'id'),
                 'mailjet' => $this->ok($this->http()->withBasicAuth($c['api_key'] ?? '', $c['secret_key'] ?? '')->post('https://api.mailjet.com/v3.1/send', ['Messages' => [array_filter([
                     'From' => ['Email' => $fromEmail, 'Name' => $fromName], 'To' => [array_filter(['Email' => $email->to, 'Name' => $email->toName])],
                     'Subject' => $email->subject, 'TextPart' => $email->text, 'HTMLPart' => $email->html,
                     'ReplyTo' => $email->replyTo ? ['Email' => $email->replyTo] : null,
+                    'Attachments' => $email->attachmentsAs(fn ($name, $mime, $b64) => ['ContentType' => $mime, 'Filename' => $name, 'Base64Content' => $b64]),
                 ])]]), 'Messages.0.To.0.MessageID'),
-                'mailgun' => $this->ok($this->http()->asForm()->withBasicAuth('api', $c['api_key'] ?? '')->post(
-                    'https://'.(($c['region'] ?? 'us') === 'eu' ? 'api.eu.mailgun.net' : 'api.mailgun.net').'/v3/'.($c['domain'] ?? '').'/messages',
-                    array_filter(['from' => $from, 'to' => $email->to, 'subject' => $email->subject, 'html' => $email->html, 'text' => $email->text, 'h:Reply-To' => $email->replyTo])
-                ), 'id'),
+                'mailgun' => $this->mailgun($c, $email, $from),
                 'sendgrid' => $this->ok($this->http()->withToken($c['api_key'] ?? '')->post('https://api.sendgrid.com/v3/mail/send', array_filter([
                     'personalizations' => [['to' => [array_filter(['email' => $email->to, 'name' => $email->toName])]]],
                     'from' => ['email' => $fromEmail, 'name' => $fromName],
                     'reply_to' => $email->replyTo ? ['email' => $email->replyTo] : null,
                     'subject' => $email->subject,
                     'content' => array_values(array_filter([$email->text ? ['type' => 'text/plain', 'value' => $email->text] : null, ['type' => 'text/html', 'value' => $email->html]])),
+                    'attachments' => $email->attachmentsAs(fn ($name, $mime, $b64) => ['content' => $b64, 'filename' => $name, 'type' => $mime, 'disposition' => 'attachment']),
                 ])), null, 'X-Message-Id'),
                 'postmark' => $this->ok($this->http()->withHeaders(['X-Postmark-Server-Token' => $c['server_token'] ?? ''])->post('https://api.postmarkapp.com/email', array_filter([
                     'From' => $from, 'To' => $email->to, 'Subject' => $email->subject, 'HtmlBody' => $email->html, 'TextBody' => $email->text,
                     'ReplyTo' => $email->replyTo, 'MessageStream' => ($c['stream'] ?? '') ?: 'outbound',
+                    'Attachments' => $email->attachmentsAs(fn ($name, $mime, $b64) => ['Name' => $name, 'Content' => $b64, 'ContentType' => $mime]),
                 ])), 'MessageID'),
                 'smtp2go' => $this->smtp2go($c, $email, $from),
                 'smtp' => $this->smtp($c, $email, $fromEmail, $fromName),
@@ -116,11 +118,28 @@ class Drivers
         throw self::classify($response->status(), $response->body(), $response->header('Retry-After'));
     }
 
+    private function mailgun(array $c, OutgoingEmail $email, string $from): ?string
+    {
+        $url = 'https://'.(($c['region'] ?? 'us') === 'eu' ? 'api.eu.mailgun.net' : 'api.mailgun.net').'/v3/'.($c['domain'] ?? '').'/messages';
+        $fields = array_filter(['from' => $from, 'to' => $email->to, 'subject' => $email->subject, 'html' => $email->html, 'text' => $email->text, 'h:Reply-To' => $email->replyTo]);
+        $request = Http::acceptJson()->timeout(30)->connectTimeout(8)->withBasicAuth('api', $c['api_key'] ?? '');
+        if (! $email->attachments) {
+            return $this->ok($request->asForm()->post($url, $fields), 'id');
+        }
+        // With files Mailgun takes multipart form data, one "attachment" part per file.
+        foreach ($email->attachments as $a) {
+            $request = $request->attach('attachment', $a['data'], $a['name'], ['Content-Type' => $a['mime'] ?? 'application/pdf']);
+        }
+
+        return $this->ok($request->post($url, $fields), 'id');
+    }
+
     private function smtp2go(array $c, OutgoingEmail $email, string $from): ?string
     {
         $response = $this->http()->withHeaders(['X-Smtp2go-Api-Key' => $c['api_key'] ?? ''])->post('https://api.smtp2go.com/v3/email/send', array_filter([
             'sender' => $from, 'to' => [$email->to], 'subject' => $email->subject, 'html_body' => $email->html, 'text_body' => $email->text,
             'custom_headers' => $email->replyTo ? [['header' => 'Reply-To', 'value' => $email->replyTo]] : null,
+            'attachments' => $email->attachmentsAs(fn ($name, $mime, $b64) => ['filename' => $name, 'fileblob' => $b64, 'mimetype' => $mime]),
         ]));
         // SMTP2GO answers 200 with "failed" counts when it refuses a message.
         if ($response->successful() && (int) $response->json('data.failed', 0) > 0) {
@@ -146,6 +165,9 @@ class Drivers
                 }
                 if ($email->text) {
                     $m->text($email->text);
+                }
+                foreach ($email->attachments as $a) {
+                    $m->attachData($a['data'], $a['name'], ['mime' => $a['mime'] ?? 'application/pdf']);
                 }
             });
         } catch (TransportExceptionInterface $e) {

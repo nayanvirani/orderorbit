@@ -9,10 +9,10 @@ class AutomationEmail extends Model
 {
     protected $table = 'automation_emails';
 
-    protected $fillable = ['store_id', 'run_id', 'customer_id', 'to_email', 'subject', 'body', 'status', 'provider', 'error', 'sent_at'];
+    protected $fillable = ['store_id', 'run_id', 'customer_id', 'to_email', 'subject', 'body', 'status', 'provider', 'error', 'sent_at', 'documents', 'documents_as'];
 
     protected function casts(): array
     {
-        return ['sent_at' => 'datetime', 'next_attempt_at' => 'datetime'];
+        return ['sent_at' => 'datetime', 'next_attempt_at' => 'datetime', 'documents' => 'array'];
     }
 }

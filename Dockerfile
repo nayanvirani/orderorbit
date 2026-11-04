@@ -8,7 +8,7 @@ FROM dunglas/frankenphp:1.13.2-php8.5.12
 RUN apt-get update \
     && apt-get install -y --no-install-recommends unzip \
     && rm -rf /var/lib/apt/lists/* \
-    && install-php-extensions pdo_pgsql opcache zip pcntl \
+    && install-php-extensions pdo_pgsql opcache zip pcntl gd \
     && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && printf 'memory_limit=512M\nupload_max_filesize=25M\npost_max_size=30M\nexpose_php=Off\n' > "$PHP_INI_DIR/conf.d/zz-orderorbit.ini"
 
