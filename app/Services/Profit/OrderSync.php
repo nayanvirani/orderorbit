@@ -68,6 +68,7 @@ class OrderSync
             'taxes' => $money($o['total_tax_set'] ?? null, $o['total_tax'] ?? 0),
             'total' => $money($o['total_price_set'] ?? null, $o['total_price'] ?? 0),
             'test' => ! empty($o['test']), 'cancelled' => ! empty($o['cancelled_at']),
+            'codes' => array_values(array_filter(array_map(fn ($c) => mb_strtoupper((string) ($c['code'] ?? '')), (array) ($o['discount_codes'] ?? [])))) ?: null,
             'excluded' => ! empty($o['cancelled_at']) || (! empty($o['test']) && ! self::devStore($store)),
         ], $lines);
     }
@@ -115,6 +116,7 @@ class OrderSync
             'shipping' => max(0, $num($o['totalShippingPriceSet'] ?? null) - $shippingRefund),
             'taxes' => $num($o['totalTaxSet'] ?? null), 'total' => $num($o['totalPriceSet'] ?? null),
             'test' => ! empty($o['test']), 'cancelled' => ! empty($o['cancelledAt']),
+            'codes' => array_values(array_filter(array_map(fn ($c) => mb_strtoupper((string) $c), (array) ($o['discountCodes'] ?? [])))) ?: null,
             'excluded' => ! empty($o['cancelledAt']) || (! empty($o['test']) && ! self::devStore($store)),
         ], $lines);
     }
@@ -129,7 +131,7 @@ class OrderSync
     }
 
     public const ORDER_FIELDS = <<<'GQL'
-        id name processedAt cancelledAt test sourceName paymentGatewayNames
+        id name processedAt cancelledAt test sourceName paymentGatewayNames discountCodes
         customer { id numberOfOrders }
         shippingAddress { countryCodeV2 } billingAddress { countryCodeV2 }
         totalPriceSet { shopMoney { amount currencyCode } } totalShippingPriceSet { shopMoney { amount } } totalTaxSet { shopMoney { amount } }

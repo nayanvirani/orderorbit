@@ -381,3 +381,21 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .si-week i { display: block; width: 100%; } .si-week i.new { background: var(--ob-accent); border-radius: 3px 3px 0 0; } .si-week i.ret { background: #a9a1f3; }
 .si-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; vertical-align: -1px; }
 .si-key.new { background: var(--ob-accent); } .si-key.ret { background: #a9a1f3; }
+
+/* Protect (phase 4). */
+.pt-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.pt-list { display: flex; flex-direction: column; gap: 12px; }
+.pt-counts { margin: 0; }
+.pt-alert { padding: 16px 18px; border-radius: 14px; background: var(--ob-surface); box-shadow: var(--ob-card-shadow); }
+.pt-alert-head { display: flex; gap: 8px; align-items: center; font-size: 12.5px; }
+.pt-alert h2 { margin: 8px 0 10px; font-size: 16px; }
+.pt-alert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px; font-size: 13.5px; line-height: 1.5; }
+.pt-alert-grid small { display: block; font-size: 12px; font-weight: 700; color: var(--ob-muted); }
+.pt-empty { padding: 32px; text-align: center; border: 1px dashed var(--ob-line); border-radius: 14px; color: var(--ob-muted); background: var(--ob-surface); }
+.pt-snoozed summary { cursor: pointer; font-weight: 600; margin: 6px 0 10px; }
+.pt-rule { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--ob-line); }
+.pt-rule small { display: block; color: var(--ob-muted); font-size: 12px; } .pt-rule input { width: 18px; height: 18px; flex: none; }
+.pt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.pt-chips button { padding: 6px 12px; border: 1px solid var(--ob-line); border-radius: 999px; background: var(--ob-surface); font: inherit; font-size: 13px; cursor: pointer; }
+.pt-chips button[aria-pressed="true"] { border-color: var(--ob-accent); background: color-mix(in srgb, var(--ob-accent) 10%, var(--ob-surface)); font-weight: 600; }
+@media (max-width: 900px) { .pt-layout { grid-template-columns: 1fr; } }

@@ -266,6 +266,18 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
                 Route::post('/runs/{run}/retry', 'retry')->whereNumber('run')->name('runs.retry');
             });
         });
+        // Protect (phase 4), behind the protect flag.
+        Route::prefix('protect')->name('protect.')->middleware('store.can:view_dashboard')->controller(\App\Http\Controllers\App\ProtectController::class)->group(function () {
+            Route::get('/', fn () => redirect()->to(app_route('app.protect.alerts')))->name('index');
+            Route::get('/alerts', 'alerts')->name('alerts');
+            Route::get('/inventory', 'inventory')->name('inventory');
+            Route::get('/inventory/reorder', 'reorderList')->name('inventory.reorder');
+            Route::get('/products', 'products')->name('products');
+            Route::middleware('store.can:manage_settings')->group(function () {
+                Route::post('/alerts/{alert}', 'alertAction')->whereNumber('alert')->name('alerts.action');
+                Route::post('/settings', 'saveSettings')->name('settings');
+            });
+        });
         // Insights › Sales (G14), behind the sales_insights flag.
         Route::get('/insights/sales', [\App\Http\Controllers\App\InsightsController::class, 'sales'])->middleware('store.can:view_dashboard')->name('insights.sales');
         // Profit (phase 3), behind the profit flag.

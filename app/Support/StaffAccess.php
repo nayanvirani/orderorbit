@@ -17,6 +17,7 @@ class StaffAccess
         'offers' => ['Offers and widgets', ['app.cro.*', 'app.bundles.*', 'app.gifts.*', 'app.features.*'], true],
         'analytics' => ['Analytics', ['app.analytics', 'app.analytics.*'], true],
         'profit' => ['Profit and costs', ['app.profit.*'], false],
+        'protect' => ['Protect', ['app.protect.*'], true],
         'insights' => ['Insights', ['app.insights.*'], true],
     ];
 

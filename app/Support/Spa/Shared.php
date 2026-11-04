@@ -83,6 +83,11 @@ class Shared
                 ['Revenue & attribution', 'tag', 'app.analytics.revenue', [], $is('app.analytics.revenue')],
                 ['Customer journeys', 'route', 'app.analytics.journeys', [], $is('app.analytics.journeys', 'app.analytics.journey')],
             ]],
+            'protect' => ['Protect', [
+                ['Alerts', 'shield', 'app.protect.alerts', [], $is('app.protect.alerts')],
+                ['Inventory', 'package', 'app.protect.inventory', [], $is('app.protect.inventory')],
+                ['Product data', 'list', 'app.protect.products', [], $is('app.protect.products')],
+            ]],
             'profit' => ['Profit', [
                 ['Dashboard', 'chart', 'app.profit.dashboard', [], $is('app.profit.dashboard')],
                 ['Breakdowns', 'list', 'app.profit.breakdowns', [], $is('app.profit.breakdowns')],
@@ -107,6 +112,7 @@ class Shared
             $request->routeIs('app.analytics', 'app.analytics.*', 'app.insights.*') => 'analytics',
             $request->routeIs('app.settings.*') => 'settings',
             $request->routeIs('app.profit.*') => 'profit',
+            $request->routeIs('app.protect.*') => 'protect',
             default => null,
         };
         if (! $section) {

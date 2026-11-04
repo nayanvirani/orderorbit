@@ -11,7 +11,8 @@ class ProductCost extends Model
 
     protected function casts(): array
     {
-        return ['shopify_cost' => 'float', 'cost' => 'float', 'price' => 'float'];
+        return ['shopify_cost' => 'float', 'cost' => 'float', 'price' => 'float', 'previous_price' => 'float', 'weight' => 'float', 'locations' => 'array',
+            'tracked' => 'boolean', 'has_image' => 'boolean', 'has_description' => 'boolean', 'price_changed_at' => 'datetime', 'seen_at' => 'datetime'];
     }
 
     /** The cost used for profit: Growvia's own, else Shopify's. */
