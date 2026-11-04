@@ -12,7 +12,7 @@ class ProfitOrder extends Model
 
     protected function casts(): array
     {
-        return ['processed_at' => 'datetime', 'returning' => 'boolean', 'excluded' => 'boolean',
+        return ['processed_at' => 'datetime', 'returning' => 'boolean', 'excluded' => 'boolean', 'test' => 'boolean', 'cancelled' => 'boolean',
             'gross' => 'float', 'discounts' => 'float', 'refunded' => 'float', 'shipping' => 'float', 'taxes' => 'float', 'total' => 'float'];
     }
 

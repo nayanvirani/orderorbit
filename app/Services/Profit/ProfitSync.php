@@ -63,6 +63,14 @@ class ProfitSync
 
                 return 'costs refreshed';
             }
+            // A development store that went live: its test orders leave profit (and the reverse).
+            // Development stores are re-checked with Shopify once a day to notice the switch.
+            if (OrderSync::devStore($store) && (! $store->capabilities_checked_at || $store->capabilities_checked_at->lt(now()->subDay()))) {
+                $store = app(\App\Services\Shopify\StoreSync::class)->sync($store);
+            }
+            if ($this->applyStoreType($store)) {
+                return 'test orders updated for the store type';
+            }
             // Today's (and yesterday's) ad spend and fixed costs, even without new orders.
             $today = now($store->timezone ?: 'UTC');
             $this->engine->recalculate($store, $today->copy()->subDay()->toDateString(), $today->toDateString());
@@ -88,6 +96,22 @@ class ProfitSync
         }
         $days = array_filter([substr((string) $order->day, 0, 10), $order->previousDay ?? null]);
         $this->engine->recalculate($store, min($days), max($days));
+    }
+
+    /**
+     * Test orders count only on development stores. When the store's type changes, the orders that
+     * no longer match are switched and all days recalculated. Returns whether anything changed.
+     */
+    public function applyStoreType(Store $store): bool
+    {
+        $dev = OrderSync::devStore($store);
+        $changed = ProfitOrder::where('store_id', $store->id)->where('test', true)->where('cancelled', false)
+            ->where('excluded', $dev)->update(['excluded' => ! $dev]);
+        if ($changed) {
+            $this->engine->recalculateAll($store);
+        }
+
+        return $changed > 0;
     }
 
     /** After costs or rules change: everything again, so history matches the new numbers. */

@@ -105,5 +105,11 @@ class ProfitEngineTest extends TestCase
         $test = ['test' => true] + $this->order();
         $this->assertTrue(app(OrderSync::class)->fromWebhook($live, $test)->excluded, 'A live store leaves test orders out.');
         $this->assertFalse(app(OrderSync::class)->fromWebhook($dev, $test)->excluded, 'A development store counts them.');
+
+        // The development store goes live: its test orders leave profit on the next sync.
+        $dev->forceFill(['capabilities' => ['development_store' => false]])->save();
+        $this->assertTrue(app(ProfitSync::class)->applyStoreType($dev->fresh()));
+        $this->assertTrue(\App\Models\Profit\ProfitOrder::where('store_id', $dev->id)->sole()->excluded);
+        $this->assertFalse(app(ProfitSync::class)->applyStoreType($dev->fresh()), 'Nothing left to change.');
     }
 }

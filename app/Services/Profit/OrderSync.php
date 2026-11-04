@@ -67,6 +67,7 @@ class OrderSync
             'shipping' => max(0, $money($o['total_shipping_price_set'] ?? null, 0) - $shippingRefund),
             'taxes' => $money($o['total_tax_set'] ?? null, $o['total_tax'] ?? 0),
             'total' => $money($o['total_price_set'] ?? null, $o['total_price'] ?? 0),
+            'test' => ! empty($o['test']), 'cancelled' => ! empty($o['cancelled_at']),
             'excluded' => ! empty($o['cancelled_at']) || (! empty($o['test']) && ! self::devStore($store)),
         ], $lines);
     }
@@ -113,6 +114,7 @@ class OrderSync
             'gateway' => $o['paymentGatewayNames'][0] ?? null,
             'shipping' => max(0, $num($o['totalShippingPriceSet'] ?? null) - $shippingRefund),
             'taxes' => $num($o['totalTaxSet'] ?? null), 'total' => $num($o['totalPriceSet'] ?? null),
+            'test' => ! empty($o['test']), 'cancelled' => ! empty($o['cancelledAt']),
             'excluded' => ! empty($o['cancelledAt']) || (! empty($o['test']) && ! self::devStore($store)),
         ], $lines);
     }
