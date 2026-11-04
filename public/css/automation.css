@@ -252,5 +252,7 @@ a.fl-chip { text-decoration: none; }
 /* Both branch columns run down to where they join, so the shorter one keeps its line. */
 .fl-branches { align-items: stretch; }
 .fl-branches > .fl-col::after { content: ""; flex: 1 1 auto; width: 2px; min-height: 12px; background: #cfcbdc; }
-/* The split and join reach the centre of each branch column (the columns have a 24px gap). */
-.fl-split, .fl-join { width: calc(50% + 24px); }
+/* The split and join span the branch grid from the centre of one column to the centre of the other
+   (columns of equal width with a 24px gap), so the lines always meet whatever the widths. */
+.fl-branches { row-gap: 0; }
+.fl-branches > .fl-split, .fl-branches > .fl-join { grid-column: 1 / -1; width: auto; margin: 0 calc((100% - 24px) / 4); }

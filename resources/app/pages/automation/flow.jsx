@@ -234,8 +234,8 @@ function Flow({ ctx, list, path, root, emptyText }) {
             {step.type === 'condition' && (
               <>
                 <div className="fl-wire" />
-                <div className="fl-split" />
                 <div className="fl-branches">
+                  <div className="fl-split" />
                   <div className="fl-col">
                     <span className="fl-branch then">Then</span>
                     <Flow ctx={ctx} list={step.then || []} path={`${p}.then`} />
@@ -244,9 +244,9 @@ function Flow({ ctx, list, path, root, emptyText }) {
                     <span className="fl-branch else">Otherwise</span>
                     <Flow ctx={ctx} list={step.else || []} path={`${p}.else`} emptyText="Nothing happens for the others." />
                   </div>
+                  {/* The two branches meet again, also after the last step, where the + adds a step for everyone. */}
+                  <div className="fl-join" />
                 </div>
-                {/* The two branches meet again, also after the last step, where the + adds a step for everyone. */}
-                <div className="fl-join" />
               </>
             )}
           </div>
