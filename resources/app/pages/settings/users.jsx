@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { ActionButton, Field, Form, useForm } from '../../components/form.jsx';
 import { ago, Page } from '../../components/ui.jsx';
 import { route, useRouter } from '../../router.jsx';
 
 const STATUS = { active: ['success', 'Active'], pending: ['info', 'Pending invite'], removed: ['critical', 'Access removed'] };
 
-export default function Users({ users, assignable, roles, matrix }) {
+export default function Users({ users, assignable, roles, matrix, staffAccess }) {
   const { submit } = useRouter();
   const invite = useForm({ email: '', role: assignable.includes('staff') ? 'staff' : assignable[0] });
 
@@ -48,6 +49,8 @@ export default function Users({ users, assignable, roles, matrix }) {
         </div>
       </s-section>
 
+      {staffAccess && <StaffAccess data={staffAccess} />}
+
       <s-section heading="Invite staff">
         <Form className="oo-form-row" onSubmit={async () => { const r = await invite.post(route('app.settings.users.invite')); if (r.ok) invite.set('email', ''); }}>
           <Field label="Shopify staff email" className="grow" error={invite.errors.email}>
@@ -79,3 +82,49 @@ export default function Users({ users, assignable, roles, matrix }) {
     </Page>
   );
 }
+
+/** Staff access (G28): which parts of Growvia each person opens; Profit by plan seats. */
+function StaffAccess({ data }) {
+  const { submit } = useRouter();
+  const [people, setPeople] = useState(data.people);
+  const [error, setError] = useState(null);
+  const modules = Object.entries(data.modules).filter(([k]) => k !== 'profit' || data.profit);
+  const seeing = people.filter((p) => p.access.profit).length;
+  const [, limit] = data.seats;
+  const flip = (id, key, value) => setPeople((ps) => ps.map((p) => (p.id === id ? (key === 'weekly_email' ? { ...p, weekly_email: value } : { ...p, access: { ...p.access, [key]: value } }) : p)));
+  const save = async () => {
+    const r = await submit(route('app.settings.users.access'), {
+      access: Object.fromEntries(people.filter((p) => !p.owner).map((p) => [p.id, p.access])),
+      weekly: Object.fromEntries(people.map((p) => [p.id, p.weekly_email])),
+    });
+    setError(r.errors?.access || null);
+  };
+  return (
+    <s-section heading="Staff access">
+      <s-paragraph>Choose which parts of Growvia each staff member can open. Cost and profit numbers can stay with the owner. The store owner always has full access.</s-paragraph>
+      {data.profit && <s-paragraph><b>{data.plan} plan: {seeing} of {limit === null ? 'unlimited' : limit} {limit === 1 ? 'person' : 'people'} can see profit.</b></s-paragraph>}
+      <div className="oo-scroll">
+        <table className="oo-table stack">
+          <thead><tr><th>Staff member</th>{modules.map(([k, l]) => <th key={k}>{l}</th>)}{data.profit && <th>Weekly email</th>}</tr></thead>
+          <tbody>
+            {people.map((p) => (
+              <tr key={p.id}>
+                <td data-label="Staff member">{p.name} <span className="oo-muted">· {p.role}</span></td>
+                {modules.map(([k, l]) => (
+                  <td key={k} data-label={l}>
+                    <input type="checkbox" aria-label={`${p.name}: ${l}`} checked={!!p.access[k]} disabled={p.owner} onChange={(e) => flip(p.id, k, e.target.checked)} />
+                  </td>
+                ))}
+                {data.profit && <td data-label="Weekly email"><input type="checkbox" aria-label={`${p.name}: weekly email`} checked={!!p.weekly_email} disabled={!p.access.profit} onChange={(e) => flip(p.id, 'weekly_email', e.target.checked)} /></td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {error && <s-banner tone="warning">{error}</s-banner>}
+      <s-paragraph><span className="oo-muted">People who can see profit also get the Monday summary email; each person can turn it off here or from the email.</span></s-paragraph>
+      <s-button variant="primary" onClick={save}>Save access</s-button>
+    </s-section>
+  );
+}
+

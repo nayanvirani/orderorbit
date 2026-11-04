@@ -64,12 +64,12 @@ class OutgoingEmail
             .(! empty($p['help']) ? '<p style="margin:0;font-size:13px;color:#55606b">'.$e($p['help']).'</p>' : '')
             .'</td></tr>'
             .'<tr><td style="padding:14px 24px;border-top:1px solid #f0eef5;font-size:12px;color:#6b6880">'.$e($p['footer'] ?? '')
-            .(! empty($p['unsubscribe']) ? ' <a href="'.$e($p['unsubscribe']).'" style="color:#4a36d6">Stop setup tips</a>' : '').'</td></tr>'
+            .(! empty($p['unsubscribe']) ? ' <a href="'.$e($p['unsubscribe']).'" style="color:#4a36d6">'.$e($p['unsubscribe_label'] ?? 'Stop setup tips').'</a>' : '').'</td></tr>'
             .'</table></td></tr></table></body></html>';
         $text = $p['heading']."\n\n".$p['intro']."\n\n"
             .implode("\n", array_map(fn ($s) => ($s[1] ? '[x] ' : '[ ] ').$s[0], $p['steps'] ?? []))
             .(! empty($p['cta']) ? "\n\n{$p['cta'][0]}: {$p['cta'][1]}" : '').(! empty($p['help']) ? "\n\n{$p['help']}" : '')
-            ."\n\n".($p['footer'] ?? '').(! empty($p['unsubscribe']) ? "\nStop setup tips: {$p['unsubscribe']}" : '');
+            ."\n\n".($p['footer'] ?? '').(! empty($p['unsubscribe']) ? "\n".($p['unsubscribe_label'] ?? 'Stop setup tips').": {$p['unsubscribe']}" : '');
 
         return new self($to, $subject, $html, trim($text), ...$extra);
     }

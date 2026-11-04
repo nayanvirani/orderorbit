@@ -76,6 +76,7 @@ class Shared
                 ['Personalization rules', 'rules', 'app.audiences.rules', [], $is('app.audiences.rules', 'app.audiences.rules.*')],
             ]],
             'analytics' => ['Analytics', [
+                ['Sales', 'bag', 'app.insights.sales', [], $is('app.insights.sales'), null, 'sales_insights'],
                 ['Overview', 'chart', 'app.analytics', [], $is('app.analytics')],
                 ['Events', 'activity', 'app.analytics.events', [], $is('app.analytics.events')],
                 ['Funnels', 'funnel', 'app.analytics.funnels', [], $is('app.analytics.funnels', 'app.analytics.funnel')],
@@ -103,7 +104,7 @@ class Shared
             $request->routeIs('app.automation.*') => 'automation',
             $request->routeIs('app.experiments.*') => 'experiments',
             $request->routeIs('app.audiences', 'app.audiences.*') => 'audiences',
-            $request->routeIs('app.analytics', 'app.analytics.*') => 'analytics',
+            $request->routeIs('app.analytics', 'app.analytics.*', 'app.insights.*') => 'analytics',
             $request->routeIs('app.settings.*') => 'settings',
             $request->routeIs('app.profit.*') => 'profit',
             default => null,

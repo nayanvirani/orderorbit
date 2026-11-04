@@ -41,6 +41,7 @@ Route::middleware('throttle:300,1')->group(function () {
 Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, 'feed'])->middleware('throttle:600,1')->name('sales-pop.feed');
 // Product documents (G42): private download links from emails and the certificate check its QR code opens.
 Route::get('/documents/{token}', [\App\Http\Controllers\DocumentController::class, 'download'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:60,1')->name('documents.download');
+Route::get('/emails/weekly-off/{user}', [\App\Http\Controllers\LifecycleController::class, 'weeklyOff'])->whereNumber('user')->middleware('throttle:30,1')->name('weekly.off');
 Route::get('/emails/off/{store}', [\App\Http\Controllers\LifecycleController::class, 'unsubscribe'])->whereNumber('store')->middleware('throttle:30,1')->name('lifecycle.unsubscribe');
 // Usage insights (G27): the optional question in the goodbye email (signed link, no session).
 Route::get('/goodbye/{store}', [\App\Http\Controllers\GoodbyeController::class, 'show'])->whereNumber('store')->middleware('throttle:30,1')->name('goodbye');
@@ -85,7 +86,7 @@ Route::controller(SiteController::class)->name('site.')->middleware([\App\Http\M
 });
 
 // Merchant embedded app (Part B)
-Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(function () {
+Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\StaffModules::class])->name('app.')->group(function () {
     // Updated Terms/policies: the merchant confirms they've reviewed them (recorded per store).
     Route::post('/legal/acknowledge', function (\Illuminate\Http\Request $request) {
         $store = $request->attributes->get('store');
@@ -265,6 +266,8 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
                 Route::post('/runs/{run}/retry', 'retry')->whereNumber('run')->name('runs.retry');
             });
         });
+        // Insights › Sales (G14), behind the sales_insights flag.
+        Route::get('/insights/sales', [\App\Http\Controllers\App\InsightsController::class, 'sales'])->middleware('store.can:view_dashboard')->name('insights.sales');
         // Profit (phase 3), behind the profit flag.
         Route::prefix('profit')->name('profit.')->middleware('store.can:view_dashboard')->controller(\App\Http\Controllers\App\ProfitController::class)->group(function () {
             Route::get('/', 'dashboard')->name('dashboard');
@@ -332,6 +335,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
                 Route::post('/users/{user}/role', [UsersController::class, 'updateRole'])->name('users.role');
                 Route::post('/users/{user}/remove', [UsersController::class, 'remove'])->name('users.remove');
                 Route::post('/users/{user}/restore', [UsersController::class, 'restore'])->name('users.restore');
+                Route::post('/users/access', [UsersController::class, 'access'])->name('users.access');
             });
 
             Route::get('/branding', [BrandingController::class, 'show'])->name('branding');

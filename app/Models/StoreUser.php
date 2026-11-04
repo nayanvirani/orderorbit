@@ -12,13 +12,15 @@ class StoreUser extends Model
 
     protected $fillable = [
         'store_id', 'shopify_user_id', 'first_name', 'last_name', 'email', 'account_owner',
-        'role', 'invited_at', 'invited_by', 'disabled_at', 'last_active_at',
+        'role', 'invited_at', 'invited_by', 'disabled_at', 'last_active_at', 'access', 'weekly_email',
     ];
 
     protected function casts(): array
     {
         return [
             'account_owner' => 'boolean',
+            'access' => 'array',
+            'weekly_email' => 'boolean',
             'invited_at' => 'datetime',
             'disabled_at' => 'datetime',
             'last_active_at' => 'datetime',

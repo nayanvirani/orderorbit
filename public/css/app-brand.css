@@ -375,3 +375,9 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 @media (max-width: 900px) { .pf-two { grid-template-columns: 1fr; } .pf-step { grid-template-columns: 110px minmax(0, 1fr) 90px; } .pf-form { grid-template-columns: 1fr; } }
 .pf-bar .pf-ranges { margin: 0; }
 .pf-bar > s-button { align-self: center; }
+/* Insights › Sales (G14). */
+.si-weeks { display: flex; align-items: flex-end; gap: 6px; height: 180px; padding: 6px 0; border-bottom: 1px solid var(--ob-line); }
+.si-week { flex: 1; display: flex; flex-direction: column-reverse; height: 100%; }
+.si-week i { display: block; width: 100%; } .si-week i.new { background: var(--ob-accent); border-radius: 3px 3px 0 0; } .si-week i.ret { background: #a9a1f3; }
+.si-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 8px; vertical-align: -1px; }
+.si-key.new { background: var(--ob-accent); } .si-key.ret { background: #a9a1f3; }

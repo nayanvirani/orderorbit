@@ -29,7 +29,51 @@ class UsersController extends Controller
             'assignable' => Permissions::assignableBy($me->role),
             'roles' => Permissions::ROLES,
             'matrix' => array_values(Permissions::MATRIX),
+            // Staff access (G28): parts of Growvia per person; Profit seats by plan.
+            'staffAccess' => [
+                'modules' => array_map(fn ($m) => $m[0], \App\Support\StaffAccess::MODULES),
+                'people' => $users->filter(fn ($u) => $u->disabled_at === null)->map(fn (StoreUser $u) => [
+                    'id' => $u->id, 'name' => $u->displayName(), 'role' => $u->role, 'owner' => $u->role === 'owner',
+                    'access' => collect(\App\Support\StaffAccess::MODULES)->mapWithKeys(fn ($m, $k) => [$k => \App\Support\StaffAccess::can($u, $k)])->all(),
+                    'weekly_email' => (bool) $u->weekly_email,
+                ])->values()->all(),
+                'seats' => \App\Support\StaffAccess::profitSeats($store),
+                'plan' => config('shopify.billing.plans.'.$store->effectivePlan().'.name'),
+                'profit' => \App\Support\Features::enabled('profit', $store),
+            ],
         ]);
+    }
+
+    /** Staff access (G28): {user id: {module: bool}}; owners always keep everything. */
+    public function access(Request $request, Store $store): RedirectResponse
+    {
+        $data = $request->validate(['access' => ['required', 'array'], 'access.*' => ['array'], 'access.*.*' => ['boolean'], 'weekly' => ['array'], 'weekly.*' => ['boolean']]);
+        $modules = array_keys(\App\Support\StaffAccess::MODULES);
+        $users = $store->users()->whereNull('disabled_at')->get()->keyBy('id');
+        $profit = 0;
+        foreach ($users as $id => $u) {
+            $wanted = array_intersect_key((array) ($data['access'][$id] ?? []), array_flip($modules));
+            $profit += $u->role === 'owner' || ($wanted['profit'] ?? \App\Support\StaffAccess::can($u, 'profit')) ? 1 : 0;
+        }
+        $limit = $store->planLimit('profit_viewers');
+        if ($limit !== null && $profit > $limit) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['access' => "Your plan lets {$limit} ".($limit === 1 ? 'person' : 'people').' see profit. Turn it off for someone, or upgrade for more.']);
+        }
+        foreach ($users as $id => $u) {
+            $changes = [];
+            if ($u->role !== 'owner' && isset($data['access'][$id])) {
+                $changes['access'] = array_map('boolval', array_intersect_key((array) $data['access'][$id], array_flip($modules)));
+            }
+            if (isset($data['weekly'][$id])) {
+                $changes['weekly_email'] = (bool) $data['weekly'][$id];
+            }
+            if ($changes) {
+                $u->forceFill($changes)->save();
+            }
+        }
+        \App\Models\AuditLog::record('store.staff_access_changed', $store, ['by' => $request->attributes->get('storeUser')?->id]);
+
+        return redirect()->to(app_route('app.settings.users', ['notice' => 'saved']));
     }
 
     public function invite(Request $request, Store $store): RedirectResponse
