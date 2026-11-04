@@ -399,3 +399,5 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .pt-chips button { padding: 6px 12px; border: 1px solid var(--ob-line); border-radius: 999px; background: var(--ob-surface); font: inherit; font-size: 13px; cursor: pointer; }
 .pt-chips button[aria-pressed="true"] { border-color: var(--ob-accent); background: color-mix(in srgb, var(--ob-accent) 10%, var(--ob-surface)); font-weight: 600; }
 @media (max-width: 900px) { .pt-layout { grid-template-columns: 1fr; } }
+.pf-kpi-btn { border: 0; font: inherit; text-align: left; cursor: pointer; color: inherit; }
+.pf-kpi-btn:hover { box-shadow: 0 0 0 2px var(--ob-accent) inset, var(--ob-card-shadow); }

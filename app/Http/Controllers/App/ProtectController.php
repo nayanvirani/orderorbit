@@ -102,7 +102,7 @@ class ProtectController extends Controller
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Product', 'SKU', 'Available', 'Sold per day', 'Days of stock', 'Reorder by', 'Suggested quantity']);
+            fputcsv($out, ['Product', 'SKU', 'In stock', 'Units sold a day (30-day average)', 'Days it lasts', 'Order by', 'Quantity to order']);
             foreach ($rows as $r) {
                 fputcsv($out, [$r['name'], $r['sku'], $r['available'], $r['rate'], $r['days'], $r['reorder_by'], $r['qty']]);
             }
