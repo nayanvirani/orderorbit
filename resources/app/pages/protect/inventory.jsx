@@ -47,7 +47,7 @@ export default function ProtectInventory({ rows, location, locations, settings, 
           <s-section>
             <div className="oo-scroll">
               <table className="oo-table">
-                <thead><tr><th>Product</th><th>Available{location ? '' : ', all locations'}</th><th>Sold per day</th><th>Days of stock</th><th>Reorder by</th><th>Suggested qty</th></tr></thead>
+                <thead><tr><th>Product</th><th>Available{location ? '' : ', all locations'}</th><th>Units sold a day <span className="oo-muted">(30-day average)</span></th><th>Days of stock</th><th>Reorder by</th><th>Suggested qty</th></tr></thead>
                 <tbody>
                   {shown.map((r) => (
                     <tr key={r.variant_id}>
@@ -65,7 +65,7 @@ export default function ProtectInventory({ rows, location, locations, settings, 
               <label className="pf-inline">Cover <input type="number" min="1" max="365" value={cover} onChange={(e) => setCover(e.target.value)} /> days of sales</label>
               <s-button onClick={() => submit(route('app.protect.settings'), { lead_days: lead, cover_days: cover, from: 'inventory' })}>Save</s-button>
             </div>
-            <p className="oo-muted pf-small">Suggested quantity covers {settings.cover_days} days of sales plus your {settings.lead_days}-day supplier lead time. Only products that track inventory are listed.</p>
+            <p className="oo-muted pf-small">Units sold a day is the average over the last 30 days (0.3 = about 9 units a month). Days of stock = available ÷ units sold a day. Suggested quantity covers {settings.cover_days} days of sales plus your {settings.lead_days}-day supplier lead time. Only products that track inventory are listed.</p>
           </s-section>
         </>
       )}
