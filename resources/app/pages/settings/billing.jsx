@@ -1,4 +1,5 @@
 import { date, Hero, number, Page } from '../../components/ui.jsx';
+import { appUrl, route } from '../../router.jsx';
 
 const price = (v) => (v > 0 ? `$${Number(v).toFixed(2)}` : 'Free');
 const STATUS = {
@@ -86,6 +87,8 @@ export default function Billing(p) {
           })}
         </div>
         {!pricingUrl && <s-paragraph><span className="oo-muted">Only store owners can change the plan.</span></s-paragraph>}
+        {/* Custom plan requests (G34), with the premium_plan flag. */}
+        {p.customPlans && <s-paragraph>Need a different mix of modules? <s-link href={appUrl(route('app.support.index', { category: 'custom_plan' }))}>Ask for a custom plan</s-link></s-paragraph>}
       </s-section>
 
       <s-section heading={pricingPage.compare_title || 'Compare plans'}>

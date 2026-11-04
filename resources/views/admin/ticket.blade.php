@@ -14,6 +14,20 @@
                 @foreach ($m->attachments as $a)<div><a href="{{ route('admin.attachment', $a->id) }}" target="_blank">📎 {{ $a->filename }}</a> <span class="ad-muted">{{ round($a->size / 1024) }} KB</span></div>@endforeach
             </div>
         @endforeach
+        @if ($customPlan)
+            <div class="ad-card" style="margin:12px 0;padding:12px">
+                <h2>Custom plan request</h2>
+                <p class="ad-muted">Their plan: {{ $customPlan['plan'] }} · closest plan: {{ $customPlan['closest'] ?? 'none, needs a private plan' }}@if ($customPlan['widgets'] !== null) · {{ $customPlan['widgets'] }} live widgets @endif @if ($customPlan['runs'] !== null) · {{ number_format($customPlan['runs']) }} runs/month @endif @if ($customPlan['budget'] !== null) · budget ${{ $customPlan['budget'] }}/month @endif</p>
+                <table class="ad-table"><thead><tr><th>Module</th><th>Status</th></tr></thead><tbody>
+                    @foreach ($customPlan['rows'] as $r)<tr><td>{{ $r['label'] }}</td><td>{{ $r['has'] ? 'Included in their plan' : 'Needs '.$r['needs'] }}</td></tr>@endforeach
+                </tbody></table>
+                <p style="margin:10px 0 4px"><b>Reply templates</b> (fills the reply box; edit before sending)</p>
+                @foreach ($customPlan['templates'] as $label => $text)
+                    <button type="button" class="ad-btn" data-template="{{ $text }}" onclick="document.querySelector('textarea[name=body]').value = this.dataset.template">{{ $label }}</button>
+                @endforeach
+                <p class="ad-muted" style="margin-top:8px">To turn modules on, raise a limit or override the plan until a date, use the <a href="{{ route('admin.store', $ticket->store_id) }}">store's access panel</a>; changes take effect at once and are in the audit log.</p>
+            </div>
+        @endif
         @include('admin._suggestions', ['suggestUrl' => route('admin.ticket', ['ticket' => $ticket->id, 'suggest' => 1]), 'suggestions' => $suggestions])
         <form method="POST" action="{{ route('admin.ticket.reply', $ticket->id) }}" enctype="multipart/form-data" class="ad-form">
             @csrf

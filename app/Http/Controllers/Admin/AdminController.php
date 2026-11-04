@@ -237,7 +237,34 @@ class AdminController extends Controller
                 \App\Support\ReplySuggester::context(trim(($ticket->requester?->first_name ?? '')) ?: null, $ticket->store));
         }
 
-        return view('admin.ticket', ['ticket' => $ticket, 'team' => User::where('is_admin', true)->orderBy('name')->get(), 'suggestions' => $suggestions]);
+        return view('admin.ticket', ['ticket' => $ticket, 'team' => User::where('is_admin', true)->orderBy('name')->get(), 'suggestions' => $suggestions,
+            'customPlan' => $this->customPlanReview($ticket)]);
+    }
+
+    /**
+     * A custom plan request (G34): each module marked "In their plan" or the plan it needs, the
+     * closest plan, and reply templates the team edits before sending.
+     */
+    private function customPlanReview(Ticket $ticket): ?array
+    {
+        $request = $ticket->diagnostics['custom_plan'] ?? null;
+        if (! is_array($request)) {
+            return null;
+        }
+        $store = $ticket->store;
+        $first = \App\Support\Plans::firstWith();
+        $rows = array_map(fn ($key) => ['label' => \App\Support\Modules::label($key), 'has' => $store->planIncludes($key), 'needs' => $first[$key] ?? 'a private plan'], (array) ($request['modules'] ?? []));
+        $missing = array_values(array_filter($rows, fn ($r) => ! $r['has']));
+        $name = trim((string) ($ticket->requester?->first_name ?? '')) ?: 'there';
+        $plan = config('shopify.billing.plans.'.$store->effectivePlan().'.name') ?: 'no plan yet';
+        $closest = $request['closest'] ?? null;
+
+        return ['rows' => $rows, 'closest' => $closest, 'widgets' => $request['widgets'] ?? null, 'runs' => $request['runs'] ?? null, 'budget' => $request['budget'] ?? null, 'plan' => $plan,
+            'templates' => array_filter([
+                'Already in your plan' => ! $missing ? "Hi {$name},\n\nGood news: your {$plan} plan already includes everything you asked for. You can turn each module on from its page in Growvia.\n\nIf anything doesn't work as expected, reply here and we'll help." : null,
+                'Suggest '.($closest ?? 'a plan') => $closest && $closest !== $plan ? "Hi {$name},\n\nThanks for telling us what you need. The {$closest} plan includes ".implode(', ', array_column($missing, 'label')).". You can switch in Settings › Plan and billing; your settings and data stay as they are.\n\nWould that work for you?" : null,
+                'Private plan' => "Hi {$name},\n\nNo standard plan fits this mix exactly, so we can set up a plan for your store: ".implode(', ', array_column($rows, 'label')).". We'll confirm the price and turn it on for you.\n\nDoes that sound good?",
+            ])];
     }
 
     public function replyTicket(Request $request, int $ticket, SupportDesk $desk): RedirectResponse

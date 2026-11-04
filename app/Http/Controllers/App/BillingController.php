@@ -39,6 +39,7 @@ class BillingController extends Controller
 
         return page('settings/billing', [
             'effective' => $store->effectivePlan(),
+            'customPlans' => \App\Support\Features::enabled('premium_plan', $store),
             'plan' => $store->plan,
             'planExpiresAt' => $store->plan_expires_at?->isFuture() ? $store->plan_expires_at : null,
             'testShop' => $store->isTestShop(),

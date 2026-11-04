@@ -20,7 +20,7 @@ return [
         'new_menu' => ['New menu and names', 'The new menu (Offers, Insights, Automation, Audiences and tests), friendly offer names and Offers › Create an offer. Labels only: routes, keys and saved offers are unchanged. Profit and Protect join the menu when they ship.', 'App', 'Phase 2', true],
         'flow_editor' => ['Flow-style automation editor', 'The canvas editor for workflows (same saved format).', 'Automation', 'Phase 2', true],
         'live_chat' => ['Live chat with Growvia support', 'The chat button on every page for the stores you choose. The team console is always on.', 'Support', 'Phase 2', true],
-        'premium_plan' => ['Premium plan', 'The Premium plan above Scale and new-module limits.', 'Billing', 'Phase 2', false],
+        'premium_plan' => ['Premium plan and custom plans', 'Shows the Premium plan ($129.99, above Scale) on the plans page and lets owners ask for a custom plan from Settings › Plan and billing. Set up Premium in the Partner Dashboard (managed pricing, name "Premium") before turning it on. New-module limits and Free previews apply without the flag.', 'Billing', 'Phase 2', true],
         'profit' => ['Profit module', 'Profit dashboard, costs, ad expenses, breakdowns, ROAS and POAS.', 'Profit', 'Phase 3', false],
         'sales_insights' => ['Sales insights and reports', 'Sales page, weekly email and Monthly Business Report.', 'Insights', 'Phase 3', false],
         'protect' => ['Protect module', 'Alerts, stock, product data, URL monitor, Health Score, Action Center.', 'Protect', 'Phase 4', false],

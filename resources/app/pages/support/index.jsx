@@ -2,13 +2,14 @@ import { useRef, useState } from 'react';
 import { Field, Form } from '../../components/form.jsx';
 import { ago, Hero, Page } from '../../components/ui.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
+import CustomPlanForm from './_customPlan.jsx';
 
 export const TONE = { open: 'info', pending: 'warning', resolved: 'success', closed: 'neutral' };
 
-export default function Support({ tickets, categories, priorities, statuses, helpUrl, docsUrl }) {
+export default function Support({ tickets, categories, priorities, statuses, helpUrl, docsUrl, customPlan, category }) {
   const { submit, shared } = useRouter();
   const files = useRef(null);
-  const blank = { category: Object.keys(categories)[0], priority: 'normal', subject: '', body: '' };
+  const blank = { category: categories[category] ? category : Object.keys(categories)[0], priority: 'normal', subject: '', body: '' };
   const [data, setData] = useState(blank);
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
@@ -52,12 +53,13 @@ export default function Support({ tickets, categories, priorities, statuses, hel
         )}
       </s-section>
 
-      <s-section heading="Open a ticket">
+      <s-section heading={data.category === 'custom_plan' ? 'Ask for a custom plan' : 'Open a ticket'}>
+        <div className="oo-form-row" style={{ marginBottom: 12 }}>
+          <Field label="Category"><select value={data.category} onChange={set('category')}>{Object.entries(categories).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></Field>
+          {data.category !== 'custom_plan' && <Field label="Priority"><select value={data.priority} onChange={set('priority')}>{Object.entries(priorities).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></Field>}
+        </div>
+        {data.category === 'custom_plan' && customPlan ? <CustomPlanForm options={customPlan} /> : (
         <Form className="sp-form" onSubmit={send}>
-          <div className="oo-form-row">
-            <Field label="Category"><select value={data.category} onChange={set('category')}>{Object.entries(categories).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></Field>
-            <Field label="Priority"><select value={data.priority} onChange={set('priority')}>{Object.entries(priorities).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></Field>
-          </div>
           <Field label="Subject" error={errors.subject}>
             <input type="text" maxLength={160} value={data.subject} onChange={set('subject')} placeholder="The bundle doesn't show on my product page" aria-invalid={errors.subject ? true : undefined} />
           </Field>
@@ -69,6 +71,7 @@ export default function Support({ tickets, categories, priorities, statuses, hel
           </Field>
           <div><s-button type="submit" variant="primary" loading={busy || undefined}>Send ticket</s-button></div>
         </Form>
+        )}
       </s-section>
     </Page>
   );
