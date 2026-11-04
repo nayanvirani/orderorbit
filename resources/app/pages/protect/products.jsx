@@ -1,18 +1,19 @@
 // Protect › Product data (G9): gaps on active products that hurt sales, search or profit numbers.
 import { useState } from 'react';
 import { Page } from '../../components/ui.jsx';
-import { money, ProfitNotices } from '../profit/_profit.jsx';
+import { CheckNow, money, ProfitNotices } from '../profit/_profit.jsx';
 
 const LABELS = { cost: 'Missing cost', image: 'Missing image', description: 'No description', price: 'No price', sku: 'No SKU', barcode: 'No barcode', weight: 'No weight' };
 
-export default function ProtectProducts({ rows, active, counts, currency, access, syncing, locked }) {
+export default function ProtectProducts({ rows, active, counts, currency, access, syncing, locked, pending, checkedAt }) {
   const [only, setOnly] = useState(null);
   const shown = rows.filter((r) => !only || r.issues[only]);
   return (
     <Page heading="Product data">
       <p className="oo-muted" style={{ marginTop: 0 }}>Gaps on active products that hurt sales, search or profit numbers. Checked every hour.</p>
       <ProfitNotices access={access} syncing={syncing} locked={locked} />
-      {!access && (
+      {!access && <CheckNow from="products" checkedAt={checkedAt} pending={pending} />}
+      {!access && !pending && (
         <>
           <p><b>{active} active products · {rows.length} with an issue</b></p>
           <div className="pt-chips">

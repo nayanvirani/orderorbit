@@ -276,6 +276,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
             Route::middleware('store.can:manage_settings')->group(function () {
                 Route::post('/alerts/{alert}', 'alertAction')->whereNumber('alert')->name('alerts.action');
                 Route::post('/settings', 'saveSettings')->name('settings');
+                Route::post('/refresh', 'refresh')->name('refresh');
             });
         });
         // Insights › Sales (G14), behind the sales_insights flag.

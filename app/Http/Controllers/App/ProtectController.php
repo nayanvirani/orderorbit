@@ -35,7 +35,7 @@ class ProtectController extends Controller
             'snoozed' => $alerts->whereIn('status', ['snoozed', 'muted'])->values()->map(fn ($a) => $this->row($a))->all(),
             'rules' => collect(Alerts::RULES)->map(fn ($r, $key) => ['key' => $key, 'name' => $r[0], 'when' => $r[1], 'on' => $off[$key] ?? true,
                 'locked' => $store->planIncludes($r[2]) ? null : (Plans::firstWith()[$r[2]] ?? null)])->values()->all(),
-            'checkedAt' => $alerts->max('last_seen_at'),
+            'alertsCheckedAt' => $alerts->max('last_seen_at'),
         ], 'protect');
     }
 
@@ -124,13 +124,38 @@ class ProtectController extends Controller
         return $this->page($store, 'protect/products', ['rows' => array_slice($rows, 0, 500), 'active' => $active, 'counts' => $counts], 'product_data');
     }
 
+    /**
+     * "Check now": reads products, stock and costs from Shopify again and re-checks the alerts, for
+     * when something was just fixed in Shopify. At most once every 5 minutes per store.
+     */
+    public function refresh(Request $request, Store $store, \App\Services\Profit\CostSync $costs, ProfitSync $sync): RedirectResponse
+    {
+        $this->gate($store, 'protect');
+        $key = "protect-refresh:{$store->id}";
+        if (! \Illuminate\Support\Facades\Cache::add($key, true, 300)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['refresh' => 'Checked a moment ago. You can check again in a few minutes.']);
+        }
+        $costs->sync($store);
+        ProfitSetting::for($store->id)->forceFill(['costs_synced_at' => now()])->save();
+        $sync->costsChanged($store);
+        app(Alerts::class)->check($store);
+        $page = in_array($request->input('from'), ['alerts', 'inventory', 'products'], true) ? $request->input('from') : 'alerts';
+
+        return redirect()->to(app_route("app.protect.{$page}", ['notice' => 'saved']));
+    }
+
     /** Flag, Shopify access, then plan (a preview naming the plan that unlocks it). */
     private function page(Store $store, string $component, array $props, string $feature): Page
     {
         abort_unless(Features::enabled('protect', $store), 404);
         $missing = ProfitSync::missingAccess($store);
 
+        $settings = ProfitSetting::for($store->id);
+
         return page($component, $props + [
+            // Product details (stock, images, SKUs) come with the first Protect check.
+            'pending' => ! ProductCost::where('store_id', $store->id)->whereNotNull('seen_at')->exists(),
+            'checkedAt' => $settings->costs_synced_at,
             'access' => $missing ? ['missing' => $missing] : null,
             'syncing' => ! $missing && ! ProfitSetting::for($store->id)->backfilled_at,
             'locked' => $store->planIncludes($feature) ? null : Plans::unlockMessage($feature, 'see it', $store),

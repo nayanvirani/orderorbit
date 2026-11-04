@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { Page } from '../../components/ui.jsx';
 import { route, useRouter } from '../../router.jsx';
-import { ApproveButton, download, money, ProfitNotices } from '../profit/_profit.jsx';
+import { CheckNow, ApproveButton, download, money, ProfitNotices } from '../profit/_profit.jsx';
 
 const TABS = { reorder: 'Reorder soon', sold_out: 'Sold out', no_sales: 'No sales', all: 'All products' };
 
-export default function ProtectInventory({ rows, location, locations, settings, summary: s, canLocations, currency, access, syncing, locked }) {
+export default function ProtectInventory({ rows, location, locations, settings, summary: s, canLocations, currency, access, syncing, locked, pending, checkedAt }) {
   const { submit, visit } = useRouter();
   const [tab, setTab] = useState(s.reorder ? 'reorder' : 'all');
   const [lead, setLead] = useState(settings.lead_days);
@@ -18,7 +18,8 @@ export default function ProtectInventory({ rows, location, locations, settings, 
     <Page heading="Inventory">
       <p className="oo-muted" style={{ marginTop: 0 }}>Days of stock from the last 30 days of sales, so you know what to reorder and when.</p>
       <ProfitNotices access={access} syncing={syncing} locked={locked} />
-      {!access && (
+      {!access && <CheckNow from="inventory" checkedAt={checkedAt} pending={pending} />}
+      {!access && !pending && (
         <>
           <div className="pf-bar">
             {Object.keys(locations).length > 0 && (

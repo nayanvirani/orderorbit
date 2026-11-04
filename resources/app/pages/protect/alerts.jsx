@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ago, Page } from '../../components/ui.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
-import { ProfitNotices } from '../profit/_profit.jsx';
+import { CheckNow, ProfitNotices } from '../profit/_profit.jsx';
 
 const SEV = { urgent: ['critical', 'Urgent'], warning: ['warning', 'Warning'] };
 
@@ -32,7 +32,7 @@ function Alert({ a, act }) {
   );
 }
 
-export default function ProtectAlerts({ open, counts, snoozed, rules, checkedAt, access, syncing, locked }) {
+export default function ProtectAlerts({ open, counts, snoozed, rules, alertsCheckedAt, access, syncing, locked, pending, checkedAt }) {
   const { submit } = useRouter();
   const [on, setOn] = useState(Object.fromEntries(rules.map((r) => [r.key, r.on])));
   const act = (id, action) => submit(route('app.protect.alerts.action', { alert: id }), { action });
@@ -42,10 +42,11 @@ export default function ProtectAlerts({ open, counts, snoozed, rules, checkedAt,
     <Page heading="Alerts">
       <p className="oo-muted" style={{ marginTop: 0 }}>Problems that quietly cost money. Each one says what happened, what it costs and how to fix it, and closes itself once fixed.</p>
       <ProfitNotices access={access} syncing={syncing} locked={locked} />
-      {!access && (
+      {!access && <CheckNow from="alerts" checkedAt={checkedAt} pending={pending} />}
+      {!access && !pending && (
         <div className="pt-layout">
           <div className="pt-list">
-            <p className="pt-counts"><b>{open.length} open</b> <span className="oo-muted">· {counts.snoozed} snoozed · {counts.muted} muted · {counts.closed} closed this month{checkedAt ? ` · checked ${ago(checkedAt)}` : ''}</span></p>
+            <p className="pt-counts"><b>{open.length} open</b> <span className="oo-muted">· {counts.snoozed} snoozed · {counts.muted} muted · {counts.closed} closed this month{alertsCheckedAt ? ` · checked ${ago(alertsCheckedAt)}` : ''}</span></p>
             {!open.length && <div className="pt-empty">Nothing is leaking money right now. Growvia checks again every hour.</div>}
             {open.map((a) => <Alert key={a.id} a={a} act={act} />)}
             {snoozed.length > 0 && (

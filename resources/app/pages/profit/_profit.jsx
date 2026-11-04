@@ -74,6 +74,29 @@ export function ApproveButton({ scopes, children }) {
   return <s-button onClick={approve} loading={busy || undefined}>{children}</s-button>;
 }
 
+/** Protect pages: when products were last read, "Check now", and a note before the first check. */
+export function CheckNow({ from, checkedAt, pending }) {
+  const { submit } = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const run = async () => {
+    setBusy(true);
+    const r = await submit(route('app.protect.refresh'), { from });
+    setBusy(false);
+    setError(r.errors?.refresh || null);
+  };
+  return (
+    <>
+      {pending && <s-banner tone="info" heading="Reading your products">Growvia reads stock, images, SKUs and the rest from Shopify. This page fills in after the first check: click Check now or wait for the hourly check.</s-banner>}
+      <div className="pf-bar">
+        <span className="oo-muted pf-small">{checkedAt ? `Products last read ${new Date(checkedAt).toLocaleString()}` : 'Products not read yet'}</span>
+        <s-button onClick={run} loading={busy || undefined}>Check now</s-button>
+        {error && <span className="b-error">{error}</span>}
+      </div>
+    </>
+  );
+}
+
 /** The notes above every Profit page: access, the first import, the plan. */
 export function ProfitNotices({ access, syncing, locked }) {
   if (access) return <AccessCard access={access} />;

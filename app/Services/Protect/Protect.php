@@ -30,7 +30,9 @@ class Protect
     /** Variants that are on sale: active products still in Shopify. */
     public function variants(Store $store): Collection
     {
-        return ProductCost::where('store_id', $store->id)->where(fn ($q) => $q->whereNull('product_status')->orWhere('product_status', 'ACTIVE'))->get();
+        // Only variants read with their product details (seen_at): before that, image, SKU and the
+        // rest aren't known yet and would all look missing.
+        return ProductCost::where('store_id', $store->id)->whereNotNull('seen_at')->where('product_status', 'ACTIVE')->get();
     }
 
     /**

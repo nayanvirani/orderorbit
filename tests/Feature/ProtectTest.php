@@ -35,7 +35,7 @@ class ProtectTest extends TestCase
     {
         $store = $this->installedStore(['plan' => $plan, 'timezone' => 'UTC', 'scopes' => config('shopify.scopes').',read_inventory,read_all_orders']);
         ProfitSetting::for($store->id)->forceFill(['backfilled_at' => now(), 'costs_synced_at' => now(), 'fees' => ['percent' => 0, 'fixed' => 0, 'countries' => []]])->save();
-        $base = ['store_id' => $store->id, 'product_status' => 'ACTIVE', 'tracked' => true, 'has_image' => true, 'has_description' => true, 'sku' => 'X', 'barcode' => '1', 'weight' => 1];
+        $base = ['store_id' => $store->id, 'seen_at' => now(), 'product_status' => 'ACTIVE', 'tracked' => true, 'has_image' => true, 'has_description' => true, 'sku' => 'X', 'barcode' => '1', 'weight' => 1];
         ProductCost::create($base + ['variant_id' => 101, 'product_id' => 10, 'title' => 'Serum', 'price' => 40, 'shopify_cost' => 10, 'available' => 4]);
         ProductCost::create($base + ['variant_id' => 201, 'product_id' => 20, 'title' => 'Mask', 'price' => 20, 'shopify_cost' => 24, 'available' => 50]);
         ProductCost::create(['variant_id' => 301, 'product_id' => 30, 'title' => 'Toner', 'price' => 15, 'available' => 0, 'has_image' => false, 'sku' => null] + $base);
@@ -97,6 +97,10 @@ class ProtectTest extends TestCase
         $alert = ProtectAlert::where('rule', 'sold_out')->sole();
         $this->send("/app/protect/alerts/{$alert->id}", ['action' => 'mute'], $owner)->assertOk();
         $this->assertSame('muted', $alert->fresh()->status);
+        // Check now: re-reads Shopify, at most once every 5 minutes.
+        \Illuminate\Support\Facades\Http::fake(fn () => \Illuminate\Support\Facades\Http::response(['data' => ['productVariants' => ['nodes' => [], 'pageInfo' => ['hasNextPage' => false]]]]));
+        $this->send('/app/protect/refresh', ['from' => 'products'], $owner)->assertOk();
+        $this->send('/app/protect/refresh', ['from' => 'products'], $owner)->assertStatus(422);
         $csv = $this->get('/app/protect/inventory/reorder', $this->as($owner))->assertOk()->streamedContent();
         $this->assertStringContainsString('Serum', $csv);
     }
