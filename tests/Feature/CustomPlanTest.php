@@ -34,7 +34,7 @@ class CustomPlanTest extends TestCase
         $this->page('/app/settings/billing', $owner)->assertJsonPath('props.customPlans', true);
 
         $this->send('/app/support', ['category' => 'custom_plan', 'modules' => []], $owner)->assertStatus(422);
-        $this->send('/app/support', ['category' => 'custom_plan', 'modules' => ['cart_upsells', 'checkout'], 'widgets' => 20, 'budget' => 50, 'note' => 'Holiday season'], $owner)->assertOk();
+        $this->send('/app/support', ['category' => 'custom_plan', 'modules' => ['cart_upsells', 'checkout'], 'widgets' => 10, 'budget' => 50, 'note' => 'Holiday season'], $owner)->assertOk();
         $ticket = Ticket::sole();
         $this->assertSame('custom_plan', $ticket->category);
         $this->assertSame('Growth', $ticket->diagnostics['custom_plan']['closest']);
@@ -49,6 +49,6 @@ class CustomPlanTest extends TestCase
         $store->refresh();
         $this->assertTrue($store->planIncludes('checkout'));
         $this->assertSame(2000, $store->planLimit('automation_executions'));
-        $this->assertSame('Checkout blocks are on for you.', $ticket->messages()->latest('id')->first()->body);
+        $this->assertSame('Checkout blocks are on for you.', $ticket->messages()->reorder('id', 'desc')->first()->body);
     }
 }

@@ -179,7 +179,8 @@ class ExperienceEngineTest extends TestCase
     {
         $this->fakeShopify();
         // Free's per-type limits; the listing's 1-widget total is lifted for this store to test them together.
-        $store = $this->installedStore(['plan' => 'free', 'entitlements' => ['limits' => ['active_experiences' => 4]]]);
+        $store = $this->installedStore(['plan' => 'free']);
+        $store->forceFill(['entitlements' => ['limits' => ['active_experiences' => 4]]])->save();
         $manager = app(ExperienceManager::class);
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
         $manager->publish($manager->create($store, 'shipping-bar', 'minimal', null), null);

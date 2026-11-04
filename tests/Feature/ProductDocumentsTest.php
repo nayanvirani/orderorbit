@@ -77,7 +77,7 @@ class ProductDocumentsTest extends TestCase
         // Again (a retry or a second email): the same documents.
         $this->assertSame($issued->pluck('id')->all(), $documents->forOrder($store, $this->order(), ['name' => 'Priya Sharma'])->pluck('id')->all());
         $this->assertSame(3, IssuedDocument::count());
-        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'metafieldsSet') && str_contains(json_encode($r['variables'] ?? []), 'Order/4821000'));
+        Http::assertSent(fn (Request $r) => str_contains($r['query'] ?? '', 'metafieldsSet') && str_contains(json_encode($r['variables'] ?? [], JSON_UNESCAPED_SLASHES), 'Order/4821000'));
 
         // The link works for 30 days, then says it expired.
         $this->get('/documents/'.$issued[0]->token)->assertOk()->assertHeader('Content-Type', 'application/pdf');
