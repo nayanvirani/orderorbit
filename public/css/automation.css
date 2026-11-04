@@ -248,3 +248,7 @@ a.fl-chip { text-decoration: none; }
 /* Send email › Which documents (G42). */
 .fl-doc { display: flex; gap: 8px; align-items: center; padding: 3px 0; font-size: 13.5px; font-weight: 400; cursor: pointer; }
 .fl-doc input { width: 16px; height: 16px; flex: none; }
+
+/* Both branch columns run down to where they join, so the shorter one keeps its line. */
+.fl-branches { align-items: stretch; }
+.fl-branches > .fl-col::after { content: ""; flex: 1 1 auto; width: 2px; min-height: 12px; background: #cfcbdc; }

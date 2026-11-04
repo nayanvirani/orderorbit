@@ -245,15 +245,17 @@ function Flow({ ctx, list, path, root, emptyText }) {
                     <Flow ctx={ctx} list={step.else || []} path={`${p}.else`} emptyText="Nothing happens for the others." />
                   </div>
                 </div>
-                {i < list.length - 1 && <div className="fl-join" />}
+                {/* The two branches meet again, also after the last step, where the + adds a step for everyone. */}
+                <div className="fl-join" />
               </>
             )}
           </div>
         );
       })}
       <div className="fl-wire" />
-      <Plus ctx={ctx} path={path} index={list.length} label="Add a step at the end" />
+      <Plus ctx={ctx} path={path} index={list.length} label={list[list.length - 1]?.type === 'condition' ? 'Add a step after both branches' : 'Add a step at the end'} />
       {root && !list.length && <p className="fl-empty-note">Add the first step: an action, a condition or a wait.</p>}
+      {list[list.length - 1]?.type === 'condition' && <p className="fl-empty-note">Then and Otherwise meet here: a step added here runs for everyone.</p>}
     </>
   );
 }
