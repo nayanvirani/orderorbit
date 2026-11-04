@@ -29,12 +29,18 @@ class ReviewPrompt
             $year = $analytics->totals($store, now()->subDays(365), now());
             $currency = $store->currency ?: 'USD';
             if ((float) $year['influenced_revenue'] >= 1000 && $store->review_milestone !== 'first_1000') {
-                return ['key' => 'first_1000', 'title' => 'Your offers passed '.self::money(1000, $currency).' in sales', 'text' => 'Orders with a Growvia offer have now brought in '.self::money((float) $year['influenced_revenue'], $currency).'. Nice work.'];
+                return ['key' => 'first_1000', 'title' => 'Your offers passed '.self::money(1000, $currency).' in sales', 'text' => 'Orders with a Growvia offer have now brought in '.self::money((float) $year['influenced_revenue'], $currency).'. Nice work.',
+                    'results' => route('app.analytics', [], false), 'more' => route('app.cro.overview', [], false)];
             }
-            $week = $store->experiences()->where('status', 'published')->where('published_at', '<=', now()->subDays(7))->oldest('published_at')->first();
-            $month = $analytics->totals($store, now()->subDays(30), now());
-            if ($week && (float) $month['influenced_revenue'] > 0 && ! $store->review_milestone) {
-                return ['key' => 'widget_week', 'title' => '“'.$week->name.'” has been live for a week', 'text' => 'Orders with your offers brought in '.self::money((float) $month['influenced_revenue'], $currency).' in the last 30 days.'];
+            // The widget that earned the most in the last 30 days, live for at least a week.
+            $top = \App\Models\AnalyticsEvent::where('store_id', $store->id)->where('event', 'attributed')->where('occurred_at', '>=', now()->subDays(30))
+                ->whereNotNull('experience_handle')->selectRaw('experience_handle, coalesce(sum(value), 0) as total')->groupBy('experience_handle')->orderByDesc('total')->first();
+            $widget = $top ? $store->experiences()->where('handle', $top->experience_handle)->where('status', 'published')->where('published_at', '<=', now()->subDays(7))->first() : null;
+            if ($widget && (float) $top->total > 0 && ! $store->review_milestone) {
+                return ['key' => 'widget_week', 'title' => 'Your '.$widget->name.' widget earned '.self::money((float) $top->total, $currency).' in the last 30 days',
+                    'text' => 'Nice work. See which products it sold most, or add it to more pages.',
+                    'results' => route('app.cro.experiences.show', ['experience' => $widget->id], false),
+                    'more' => in_array($widget->type, ['bundles', 'progressive-gifts'], true) ? null : route('app.cro.experiences.edit', ['experience' => $widget->id], false)];
             }
 
             return null;

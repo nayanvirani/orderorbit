@@ -78,8 +78,10 @@ function Milestone({ milestone }) {
   }, [milestone.key]);
 
   return (
-    <s-banner tone="success" heading={milestone.title}>
+    <s-banner tone="success" heading={`Milestone: ${milestone.title}`}>
       <s-paragraph>{milestone.text}</s-paragraph>
+      {milestone.results && <s-button slot="secondary-actions" href={appUrl(milestone.results)}>See results</s-button>}
+      {milestone.more && <s-button slot="secondary-actions" href={appUrl(milestone.more)}>Add to more pages</s-button>}
     </s-banner>
   );
 }
