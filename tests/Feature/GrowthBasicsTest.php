@@ -71,7 +71,7 @@ class GrowthBasicsTest extends TestCase
         $draft = app(ExperienceManager::class)->create($store->fresh(), 'cart-upsells', array_key_first(\App\Experiences\Registry::type('cart-upsells')['templates']), null);
         $draft->forceFill(['created_at' => now()->subDays(2)])->save();
         $due = $emails->due($store->fresh());
-        $this->assertStringContainsString('Starter plan', $due['upgrade_preview'][1]);
+        $this->assertStringContainsString('Starter plan', $due['upgrade_preview'][1]['intro']);
 
         // The link in the email turns tips off.
         $this->get(URL::signedRoute('lifecycle.unsubscribe', ['store' => $store->id]))->assertOk();

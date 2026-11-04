@@ -301,6 +301,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
             Route::get('/store', [StoreSettingsController::class, 'show'])->name('store');
             Route::post('/store/recheck', [StoreSettingsController::class, 'recheck'])->middleware('store.can:manage_settings')->name('store.recheck');
             Route::post('/store/reconnect', [StoreSettingsController::class, 'reconnect'])->middleware('store.can:manage_settings')->name('store.reconnect');
+            Route::post('/store/emails', [StoreSettingsController::class, 'emails'])->middleware('store.can:manage_settings')->name('store.emails');
 
             Route::middleware('store.can:manage_users')->group(function () {
                 Route::get('/users', [UsersController::class, 'index'])->name('users');

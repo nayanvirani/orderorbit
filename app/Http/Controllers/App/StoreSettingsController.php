@@ -28,7 +28,17 @@ class StoreSettingsController extends Controller
             'missingScopes' => $store->missingScopes(),
             'grantedScopes' => array_values(array_filter(explode(',', (string) $store->scopes))),
             'themeEditorUrl' => $store->adminUrl('themes/current/editor'),
+            // Emails from Growvia (G24): setup tips and monthly results can be turned off.
+            'tips' => \App\Support\Features::enabled('lifecycle_emails', $store) ? ! $store->lifecycle_unsubscribed : null,
         ]);
+    }
+
+    /** Turns Growvia's setup tips and monthly results on or off for this store. */
+    public function emails(\Illuminate\Http\Request $request, Store $store): RedirectResponse
+    {
+        $store->forceFill(['lifecycle_unsubscribed' => ! $request->boolean('on')])->save();
+
+        return redirect()->to(app_route('app.settings.store', ['notice' => 'saved']));
     }
 
     public function recheck(Store $store, StoreSync $sync): RedirectResponse

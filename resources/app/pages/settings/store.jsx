@@ -5,7 +5,7 @@ import { appUrl, route, useShared } from '../../router.jsx';
 const yesNo = (value, yes, no, unknown = 'Not checked yet') => (value === null || value === undefined ? ['neutral', unknown] : value ? ['success', yes] : ['warning', no]);
 const badge = ([tone, text]) => <s-badge tone={tone}>{text}</s-badge>;
 
-export default function StoreSettings({ store, capabilities: cap, missingScopes, grantedScopes, themeEditorUrl }) {
+export default function StoreSettings({ store, capabilities: cap, missingScopes, grantedScopes, themeEditorUrl, tips }) {
   const { can } = useShared();
   const surfaces = [
     ['Storefront blocks', yesNo(cap.online_store_2, 'Supported', 'Theme update needed'), 'Bundles, upsells, shipping bar and more, placed in the Theme Editor.'],
@@ -39,6 +39,13 @@ export default function StoreSettings({ store, capabilities: cap, missingScopes,
           </s-stack>
         )}
       </s-section>
+
+      {tips !== null && tips !== undefined && (
+        <s-section heading="Emails from Growvia">
+          <s-paragraph>{tips ? 'Store owners get setup tips while something is left to do, and a monthly results email.' : 'Setup tips and monthly results are turned off. Account and billing emails still arrive.'}</s-paragraph>
+          <ActionButton url={route('app.settings.store.emails')} data={{ on: !tips }}>{tips ? 'Turn off tips and monthly results' : 'Turn them back on'}</ActionButton>
+        </s-section>
+      )}
 
       <s-section heading="Theme">
         <KeyValue rows={[
