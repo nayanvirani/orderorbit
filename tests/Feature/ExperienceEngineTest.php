@@ -133,14 +133,15 @@ class ExperienceEngineTest extends TestCase
             }
         };
 
-        // Free (trust pinned to 1 for this store): one live of each kind; cart upsells aren't included.
-        $store->forceFill(['entitlements' => ['limits' => ['trust' => 1]]])->save();
+        // Free (trust pinned to 1, no total cap for this store): one live of each kind; cart upsells aren't included.
+        $store->forceFill(['entitlements' => ['limits' => ['trust' => 1, 'active_experiences' => null]]])->save();
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
         $refused($manager->create($store, 'trust', 'trust-row', null), 'The Free plan includes 1 live trust block. Pause or archive one that\'s live, or upgrade for more.');
         $refused($ready('cart-upsells', 'grid'), 'Cart upsells & cross-sell is in the Starter plan. Your draft is saved: upgrade to publish it.');
 
-        // Starter: more of each, plus cart upsells.
-        $store->forceFill(['plan' => 'starter', 'entitlements' => null])->save();
+        // Starter: more of each, plus cart upsells (5 trust blocks and no total cap for this store).
+        $starter = ['limits' => ['trust' => 5, 'active_experiences' => null]];
+        $store->forceFill(['plan' => 'starter', 'entitlements' => $starter])->save();
         $manager->publish($store->experiences()->where('type', 'cart-upsells')->first()->fresh(), null);
         $manager->publish($ready('cart-upsells', 'carousel'), null);
         $manager->publish($ready('preorder', 'classic-card'), null);
@@ -149,13 +150,13 @@ class ExperienceEngineTest extends TestCase
         $manager->publish($store->experiences()->where('type', 'trust')->where('status', 'draft')->first()->fresh(), null);
         $this->assertSame(6, app(\App\Services\Usage::class)->current($store->fresh(), 'active_experiences'));
         // The total cap counts every live offer.
-        $store->forceFill(['entitlements' => ['limits' => ['active_experiences' => 6]]])->save();
+        $store->forceFill(['entitlements' => ['limits' => ['active_experiences' => 6, 'trust' => 5]]])->save();
         $refused($manager->create($store->fresh(), 'trust', 'rating-strip', null), 'The Starter plan includes 6 live widgets in total. Pause or archive one that\'s live, or upgrade for more.');
-        $store->forceFill(['entitlements' => null])->save();
+        $store->forceFill(['entitlements' => $starter])->save();
 
         // Back to Free: cart upsells and the older trust block are paused (marked, not deleted);
         // one of each kind Free includes stays live.
-        $store->forceFill(['plan' => 'free', 'entitlements' => ['limits' => ['trust' => 1]]])->save();
+        $store->forceFill(['plan' => 'free', 'entitlements' => ['limits' => ['trust' => 1, 'active_experiences' => null]]])->save();
         $this->assertSame(3, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
         $status = fn (string $type) => $store->experiences()->where('type', $type)->orderBy('id')->pluck('status')->all();
         $this->assertSame(['paused', 'paused'], $status('cart-upsells'));
@@ -167,7 +168,7 @@ class ExperienceEngineTest extends TestCase
         $this->assertSame(0, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()), 'Already within the plan.');
 
         // Upgrading again brings back what the plan change paused.
-        $store->forceFill(['plan' => 'starter', 'entitlements' => null])->save();
+        $store->forceFill(['plan' => 'starter', 'entitlements' => $starter])->save();
         $this->assertSame(3, app(\App\Services\Billing\PlanLimits::class)->apply($store->fresh()));
         $this->assertSame(['published', 'published'], $status('cart-upsells'));
         $this->assertSame(['published', 'published', 'draft'], $status('trust'));
@@ -177,7 +178,8 @@ class ExperienceEngineTest extends TestCase
     public function test_free_runs_one_bundle_gift_campaign_shipping_bar_and_widget_together(): void
     {
         $this->fakeShopify();
-        $store = $this->installedStore(['plan' => 'free']);
+        // Free's per-type limits; the listing's 1-widget total is lifted for this store to test them together.
+        $store = $this->installedStore(['plan' => 'free', 'entitlements' => ['limits' => ['active_experiences' => 4]]]);
         $manager = app(ExperienceManager::class);
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
         $manager->publish($manager->create($store, 'shipping-bar', 'minimal', null), null);

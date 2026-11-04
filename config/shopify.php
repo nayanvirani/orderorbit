@@ -1,6 +1,6 @@
 <?php
 
-// Plan defaults from "MVP Pricing & Plan Accessibility (2026)". Only defaults: the live plans,
+// Plan defaults, matching the live App Store listing (apps.shopify.com/orderorbit, 4 Nov 2026). Only defaults: the live plans,
 // features and limits are in the plans table and edited in the super admin.
 $free = ['bundles', 'progressive_gifts', 'countdown', 'sticky_atc', 'trust', 'preorder', 'sales_pop', 'offer_analytics', 'automation'];
 $starter = [...$free, 'quantity_breaks', 'product_upsells', 'cart_upsells'];
@@ -88,29 +88,29 @@ return [
                 'name' => 'Free', 'shopify_name' => env('SHOPIFY_PLAN_NAME_FREE', 'Free'), 'price' => 0,
                 'description' => 'New and testing stores', 'support' => 'Community / standard',
                 'includes' => [...$free, ...App\Support\Modules::NEXT_MVP['free']],
-                'features' => ['{active_experiences|widget} live at once', '{bundles|bundle}, {free_gifts|gift} & {shipping_bars|shipping bar}', 'Countdown timer & sticky add to cart', 'Trust badges & sales pop', '{preorders|pre-order campaign}', '{workflows|workflow}, {automation_executions} runs/month', 'Basic analytics: revenue per widget', 'Every template included'],
-                'limits' => $limits(['active_experiences' => 4, 'bundles' => 1, 'free_gifts' => 1, 'shipping_bars' => 1, 'countdowns' => 1, 'sticky_atc' => 1, 'trust' => 2, 'preorders' => 1, 'sales_pop' => 1, 'workflows' => 1, 'automation_executions' => 50] + $none) + App\Support\Modules::NEXT_MVP_LIMITS['free'],
+                'features' => ['1 widget live at once', '1 bundle and 1 free-gift campaign', 'Countdown timer and sticky add to cart', 'Trust badges and recent sales pop-ups', '1 pre-order campaign', '1 automation workflow, 50 runs a month', 'Revenue per widget analytics', 'Every template and full design settings'],
+                'limits' => $limits(['active_experiences' => 1, 'bundles' => 1, 'free_gifts' => 1, 'shipping_bars' => 1, 'countdowns' => 1, 'sticky_atc' => 1, 'trust' => 2, 'preorders' => 1, 'sales_pop' => 1, 'workflows' => 1, 'automation_executions' => 50] + $none) + App\Support\Modules::NEXT_MVP_LIMITS['free'],
             ],
             'starter' => [
                 'name' => 'Starter', 'shopify_name' => env('SHOPIFY_PLAN_NAME_STARTER', 'Starter'), 'price' => 14.99,
                 'description' => 'Growing stores', 'support' => 'Standard',
                 'includes' => [...$starter, ...App\Support\Modules::NEXT_MVP['starter']],
-                'features' => ['{active_experiences|widget} live at once', '{bundles|bundle} with quantity breaks', '{free_gifts|gift campaign} & {shipping_bars|shipping bar}', 'Product & cart upsells', '{countdowns|countdown}, trust & pre-order widgets', '{workflows|workflow}, {automation_executions} runs/month', 'Basic analytics: revenue per widget', 'Everything in Free'],
-                'limits' => $limits(['active_experiences' => 15, 'bundles' => 3, 'free_gifts' => 2, 'shipping_bars' => 2, 'product_upsells' => 3, 'cart_upsells' => 3, 'countdowns' => 5, 'sticky_atc' => 2, 'trust' => 5, 'preorders' => 5, 'sales_pop' => 2, 'workflows' => 5, 'automation_executions' => 500] + $none) + App\Support\Modules::NEXT_MVP_LIMITS['starter'],
+                'features' => ['5 widgets live at once', '1 bundle with quantity breaks', 'Product and cart upsells', '2 free-gift campaigns and shipping bars', '1 countdown, trust badges and pre-orders', '5 workflows, 500 runs a month', 'Revenue per widget analytics', 'Everything in Free'],
+                'limits' => $limits(['active_experiences' => 5, 'bundles' => 1, 'free_gifts' => 2, 'shipping_bars' => 2, 'product_upsells' => 3, 'cart_upsells' => 3, 'countdowns' => 1, 'sticky_atc' => 2, 'trust' => 1, 'preorders' => 1, 'sales_pop' => 2, 'workflows' => 5, 'automation_executions' => 500] + $none) + App\Support\Modules::NEXT_MVP_LIMITS['starter'],
             ],
             'growth' => [
                 'name' => 'Growth', 'shopify_name' => env('SHOPIFY_PLAN_NAME_GROWTH', 'Growth'), 'price' => 39.99,
                 'description' => 'Serious growth stores', 'support' => 'Priority', 'badge' => 'Most Popular',
                 'includes' => [...$growth, ...App\Support\Modules::NEXT_MVP['growth']],
-                'features' => ['{active_experiences|widget} live at once', 'Checkout & Thank You page blocks', 'Post-purchase one-click upsells', 'A/B/C tests with guardrails ({running_tests} live)', 'Funnels, attribution & journeys', 'Personalization by segment & UTM', '{workflows|workflow}, {automation_executions} runs/mo', 'Priority support'],
-                'limits' => $limits(['account_blocks' => 0, 'running_tests' => 5, 'personalization_rules' => 20, 'segments' => 20, 'automation_executions' => 3000]) + App\Support\Modules::NEXT_MVP_LIMITS['growth'],
+                'features' => ['15 widgets live at once', 'Checkout and Thank You page blocks', 'One-click upsell after payment', 'A/B/C tests for every offer (5 live)', 'Funnels, attribution & customer journeys', 'Personalization: 20 segments and rules', '15 workflows, 1,000 runs/mo', 'Certificates & PDFs in automation emails'],
+                'limits' => $limits(['active_experiences' => 15, 'account_blocks' => 0, 'running_tests' => 5, 'personalization_rules' => 20, 'segments' => 20, 'workflows' => 15, 'automation_executions' => 1000]) + App\Support\Modules::NEXT_MVP_LIMITS['growth'],
             ],
             'scale' => [
                 'name' => 'Scale', 'shopify_name' => env('SHOPIFY_PLAN_NAME_SCALE', 'Scale'), 'price' => 79.99,
                 'description' => 'Advanced and high-growth stores', 'support' => 'Priority / enhanced',
                 'includes' => [...$scale, ...App\Support\Modules::NEXT_MVP['scale']],
-                'features' => ['Everything in Growth', '{running_tests|A/B test} at once', 'Advanced targeting: VIP, device, cart', 'Customer account blocks', 'Reorder, rewards & reviews in accounts', '{automation_executions} automation runs/month', '{segments|segment} & {personalization_rules|rule}', 'Priority enhanced support'],
-                'limits' => $limits(['automation_executions' => 10000]) + App\Support\Modules::NEXT_MVP_LIMITS['scale'],
+                'features' => ['Everything in Growth', 'Customer account blocks', 'Reorder, rewards and reviews in accounts', 'Unlimited A/B tests', 'Tests and offers for chosen audiences', 'VIP, device and cart-value targeting', 'Unlimited segments and personalization', '5,000 automation runs a month'],
+                'limits' => $limits(['automation_executions' => 5000]) + App\Support\Modules::NEXT_MVP_LIMITS['scale'],
             ],
             // Next MVP (G29): the new top plan, shown with the premium_plan flag. Set up in the Partner
             // Dashboard's managed pricing with the same name before turning the flag on.
@@ -118,8 +118,8 @@ return [
                 'name' => 'Premium', 'shopify_name' => env('SHOPIFY_PLAN_NAME_PREMIUM', 'Premium'), 'price' => 129.99,
                 'description' => 'Large stores that want everything', 'support' => 'First in line',
                 'includes' => [...$scale, ...App\Support\Modules::NEXT_MVP['premium']],
-                'features' => ['Everything in Scale', '{automation_executions} automation runs/month', 'AI Morning Brief and AI offer ideas', 'Predictive reorder timing', 'Gorgias', 'URL monitor (100 pages)', 'Unlimited team members who see profit', 'First-in-line support'],
-                'limits' => $limits(['automation_executions' => 25000]) + App\Support\Modules::NEXT_MVP_LIMITS['premium'],
+                'features' => ['Everything in Scale', '10,000 automation runs a month', 'Unlimited live widgets and A/B tests', 'Customer account blocks', 'Checkout and after-payment offers', 'Unlimited segments and rules', 'Certificates and PDFs in emails', 'Priority enhanced support'],
+                'limits' => $limits(['automation_executions' => 10000]) + App\Support\Modules::NEXT_MVP_LIMITS['premium'],
             ],
         ],
     ],

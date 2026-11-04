@@ -44,7 +44,8 @@ class TotalWidgetLimitTest extends TestCase
 
     public function test_the_total_caps_live_widgets_across_types(): void
     {
-        $store = $this->installedStore(['plan' => 'free']); // Free: 4 in total, 1 of each type
+        // Free's listing total is 1; this store is given 4 to test the cap across types (1 of each type).
+        $store = $this->installedStore(['plan' => 'free', 'entitlements' => ['limits' => ['active_experiences' => 4]]]);
         $this->publish($store, 'trust', 'trust-row');
         $this->publish($store, 'sticky-atc', 'simple-sticky-bar');
         $this->publish($store, 'sales-pop', 'classic-card');

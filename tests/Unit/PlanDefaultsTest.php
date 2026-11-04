@@ -5,19 +5,19 @@ namespace Tests\Unit;
 use App\Support\Modules;
 use PHPUnit\Framework\TestCase;
 
-/** G29: today's four plans keep their prices, modules and limits; the next MVP only adds keys and Premium. */
+/** Plans match the live App Store listing (prices, modules, limits); the next MVP only adds keys. */
 class PlanDefaultsTest extends TestCase
 {
     private const TODAY = [
         'free' => [0, ['bundles', 'progressive_gifts', 'countdown', 'sticky_atc', 'trust', 'preorder', 'sales_pop', 'offer_analytics', 'automation'],
-            ['active_experiences' => 4, 'bundles' => 1, 'free_gifts' => 1, 'shipping_bars' => 1, 'countdowns' => 1, 'sticky_atc' => 1, 'trust' => 2, 'preorders' => 1, 'sales_pop' => 1, 'workflows' => 1, 'automation_executions' => 50,
+            ['active_experiences' => 1, 'bundles' => 1, 'free_gifts' => 1, 'shipping_bars' => 1, 'countdowns' => 1, 'sticky_atc' => 1, 'trust' => 2, 'preorders' => 1, 'sales_pop' => 1, 'workflows' => 1, 'automation_executions' => 50,
                 'product_upsells' => 0, 'cart_upsells' => 0, 'checkout_blocks' => 0, 'thank_you_blocks' => 0, 'post_purchase' => 0, 'account_blocks' => 0, 'running_tests' => 0, 'personalization_rules' => 0, 'segments' => 0]],
         'starter' => [14.99, ['quantity_breaks', 'product_upsells', 'cart_upsells'],
-            ['active_experiences' => 15, 'bundles' => 3, 'free_gifts' => 2, 'shipping_bars' => 2, 'product_upsells' => 3, 'cart_upsells' => 3, 'countdowns' => 5, 'sticky_atc' => 2, 'trust' => 5, 'preorders' => 5, 'sales_pop' => 2, 'workflows' => 5, 'automation_executions' => 500,
+            ['active_experiences' => 5, 'bundles' => 1, 'free_gifts' => 2, 'shipping_bars' => 2, 'product_upsells' => 3, 'cart_upsells' => 3, 'countdowns' => 1, 'sticky_atc' => 2, 'trust' => 1, 'preorders' => 1, 'sales_pop' => 2, 'workflows' => 5, 'automation_executions' => 500,
                 'checkout_blocks' => 0, 'thank_you_blocks' => 0, 'post_purchase' => 0, 'account_blocks' => 0, 'running_tests' => 0, 'personalization_rules' => 0, 'segments' => 0]],
         'growth' => [39.99, ['checkout', 'thank_you', 'post_purchase', 'advanced_analytics', 'funnels_attribution', 'customer_journeys', 'automation_branching', 'automation_webhooks', 'ab_testing', 'ab_traffic_guardrails', 'personalization', 'priority_support'],
-            ['account_blocks' => 0, 'running_tests' => 5, 'personalization_rules' => 20, 'segments' => 20, 'automation_executions' => 3000]],
-        'scale' => [79.99, ['customer_accounts', 'ab_testing_advanced', 'personalization_advanced'], ['automation_executions' => 10000]],
+            ['active_experiences' => 15, 'account_blocks' => 0, 'running_tests' => 5, 'personalization_rules' => 20, 'segments' => 20, 'workflows' => 15, 'automation_executions' => 1000]],
+        'scale' => [79.99, ['customer_accounts', 'ab_testing_advanced', 'personalization_advanced'], ['automation_executions' => 5000]],
     ];
 
     public function test_todays_plans_keep_prices_modules_and_limits(): void
@@ -45,7 +45,11 @@ class PlanDefaultsTest extends TestCase
         $plans = (require dirname(__DIR__, 2).'/config/shopify.php')['billing']['plans'];
         $this->assertSame(['free', 'starter', 'growth', 'scale', 'premium'], array_keys($plans));
         $this->assertSame(129.99, $plans['premium']['price']);
-        $this->assertSame(25000, $plans['premium']['limits']['automation_executions']);
+        $this->assertSame(10000, $plans['premium']['limits']['automation_executions']);
+        // Every plan shows 8 "What's included" lines, as the listing does.
+        foreach ($plans as $key => $plan) {
+            $this->assertCount(8, $plan['features'], $key);
+        }
         $this->assertEmpty(array_diff($plans['scale']['includes'], $plans['premium']['includes']), 'Premium includes everything in Scale.');
         $this->assertSame([100, null], [$plans['premium']['limits']['url_monitors'], $plans['premium']['limits']['profit_viewers']]);
         $this->assertSame([0, 0, 20, 50, 100], array_map(fn ($k) => $plans[$k]['limits']['url_monitors'], array_keys($plans)));

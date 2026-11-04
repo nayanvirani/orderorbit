@@ -19,20 +19,23 @@ class UsageTest extends TestCase
 
         $this->assertFalse($usage->allows($store, 'bundles'), 'No plan means nothing can be added.');
 
-        // "MVP Pricing & Plan Accessibility (2026)": limits per plan (null = unlimited).
+        // Limits per plan as the App Store listing states them (null = unlimited).
         $usage->register('bundles', fn () => 1);
         $store->plan = 'free';
         $this->assertFalse($usage->allows($store, 'bundles'), 'Free includes one live bundle.');
         $limits = fn (string $plan) => array_map(fn ($m) => tap($store, fn ($s) => $s->plan = $plan)->planLimit($m), ['active_experiences', 'bundles', 'free_gifts', 'shipping_bars', 'workflows', 'automation_executions']);
-        $this->assertSame([4, 1, 1, 1, 1, 50], $limits('free'));
-        $this->assertSame([15, 3, 2, 2, 5, 500], $limits('starter'));
+        $this->assertSame([1, 1, 1, 1, 1, 50], $limits('free'));
+        $this->assertSame([5, 1, 2, 2, 5, 500], $limits('starter'));
         $store->plan = 'free';
         $this->assertSame([1, 1, 2, 0, 0, 0], array_map(fn ($m) => $store->planLimit($m), ['countdowns', 'sticky_atc', 'trust', 'cart_upsells', 'checkout_blocks', 'running_tests']));
         $this->assertSame(['bundles', 'bundles', 'free_gifts', 'shipping_bars', 'checkout_blocks', 'thank_you_blocks', 'account_blocks', 'post_purchase'], array_map(fn ($t) => Usage::meterFor($t), ['bundles', 'bogo', 'progressive-gifts', 'shipping-bar', 'checkout-image', 'ty-survey', 'account-reorder', 'post-purchase']));
-        $this->assertSame([null, null, null, null, null, 3000], $limits('growth'));
-        $this->assertSame([null, null, null, null, null, 10000], $limits('scale'));
+        $this->assertSame([15, null, null, null, 15, 1000], $limits('growth'));
+        $this->assertSame([null, null, null, null, null, 5000], $limits('scale'));
+        $this->assertSame([null, null, null, null, null, 10000], $limits('premium'));
         $store->plan = 'starter';
-        $this->assertTrue($usage->allows($store, 'bundles'), 'Starter has two bundles.');
+        $this->assertFalse($usage->allows($store, 'bundles'), 'Starter has one bundle.');
+        $store->plan = 'growth';
+        $this->assertTrue($usage->allows($store, 'bundles'), 'Growth has unlimited bundles.');
 
         // Features per plan.
         $includes = fn (string $plan, string $feature) => tap($store, fn ($s) => $s->plan = $plan)->planIncludes($feature);
@@ -59,7 +62,7 @@ class UsageTest extends TestCase
         $store->entitlements = null;
 
         $store->plan = 'growth';
-        $usage->increment($store, 'automation_executions', 3000);
+        $usage->increment($store, 'automation_executions', 1000);
         $this->assertFalse($usage->allows($store, 'automation_executions'));
     }
 
