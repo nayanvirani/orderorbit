@@ -50,7 +50,7 @@ class CostSync
         $levels = $store->hasScope('read_locations') ? 'inventoryLevels(first: 10) { nodes { location { id name } quantities(names: ["available"]) { quantity } } }' : '';
 
         return "id displayName price sku barcode inventoryQuantity image { id }
-            product { id title status description(truncateAt: 5) featuredMedia { id } }
+            product { id title status isGiftCard description(truncateAt: 5) featuredMedia { id } }
             inventoryItem { tracked unitCost { amount } measurement { weight { value } } {$levels} }";
     }
 
@@ -110,7 +110,8 @@ class CostSync
             'tracked' => (bool) ($item['tracked'] ?? false),
             'has_image' => ! empty($v['image']['id']) || ! empty($v['product']['featuredMedia']['id']),
             'has_description' => trim((string) ($v['product']['description'] ?? '')) !== '',
-            'product_status' => $v['product']['status'] ?? null,
+            // Gift cards have no real stock or product data: kept out of Protect.
+            'product_status' => ! empty($v['product']['isGiftCard']) ? 'GIFT_CARD' : ($v['product']['status'] ?? null),
             'seen_at' => now(),
         ];
         // A price change is kept for the "price mistake" alert.

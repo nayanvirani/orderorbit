@@ -12,7 +12,11 @@ export default function ProtectInventory({ rows, location, locations, settings, 
   const [lead, setLead] = useState(settings.lead_days);
   const [cover, setCover] = useState(settings.cover_days);
   const shown = rows.filter((r) => tab === 'all' || r.status === tab);
-  const date = (d) => (d ? new Date(`${d}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '—');
+  const date = (d) => {
+    if (!d) return '—';
+    const x = new Date(`${d}T00:00:00`);
+    return x.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', ...(x.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' } : {}) });
+  };
 
   return (
     <Page heading="Inventory">
@@ -43,13 +47,13 @@ export default function ProtectInventory({ rows, location, locations, settings, 
           <s-section>
             <div className="oo-scroll">
               <table className="oo-table">
-                <thead><tr><th>Product</th><th>Available</th><th>Sold per day</th><th>Days of stock</th><th>Reorder by</th><th>Suggested qty</th></tr></thead>
+                <thead><tr><th>Product</th><th>Available{location ? '' : ', all locations'}</th><th>Sold per day</th><th>Days of stock</th><th>Reorder by</th><th>Suggested qty</th></tr></thead>
                 <tbody>
                   {shown.map((r) => (
                     <tr key={r.variant_id}>
                       <td>{r.name}{r.sku && <small className="oo-muted" style={{ display: 'block' }}>{r.sku}</small>}</td>
-                      <td className={r.available <= 0 ? 'pf-neg' : ''}>{r.available}</td><td>{r.rate}</td><td>{r.days ?? '—'}</td>
-                      <td>{r.status === 'sold_out' ? 'Now' : date(r.reorder_by)}</td><td>{r.qty || '—'}</td>
+                      <td className={r.available <= 0 ? 'pf-neg' : ''}>{r.available}</td><td>{r.rate}</td><td>{r.over_year ? 'Over a year' : r.days ?? '—'}</td>
+                      <td>{r.status === 'sold_out' ? 'Now' : r.over_year ? 'Not needed' : date(r.reorder_by)}</td><td>{r.qty || '—'}</td>
                     </tr>
                   ))}
                   {!shown.length && <tr><td colSpan={6} className="oo-muted">Nothing here.</td></tr>}

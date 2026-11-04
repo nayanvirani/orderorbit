@@ -81,15 +81,18 @@ class Protect
             $rate = round(($sales[(int) $v->variant_id][0] ?? 0) / 30, 2);
             $days = $rate > 0 ? (int) floor(max(0, $available) / $rate) : null;
             $status = match (true) {
-                $available <= 0 => 'sold_out',
+                // Sold out matters only for what was selling; out of stock and not selling is "no sales".
+                $available <= 0 && $rate > 0 => 'sold_out',
                 $rate <= 0 => 'no_sales',
                 $days - $s['lead_days'] <= 7 => 'reorder',
                 default => 'healthy',
             };
             $rows[] = [
                 'variant_id' => (int) $v->variant_id, 'name' => $v->title, 'sku' => $v->sku, 'available' => $available, 'rate' => $rate, 'days' => $days,
-                'reorder_by' => $days !== null ? $today->copy()->addDays(max(0, $days - $s['lead_days']))->toDateString() : null,
-                'qty' => $rate > 0 ? max(0, (int) ceil($rate * ($s['cover_days'] + $s['lead_days']) - max(0, $available))) : 0,
+                // Over a year of stock: no reorder date (a date years away isn't useful).
+                'reorder_by' => $days !== null && $days <= 365 ? $today->copy()->addDays(max(0, $days - $s['lead_days']))->toDateString() : null,
+                'over_year' => $days !== null && $days > 365,
+                'qty' => $rate > 0 && ($days === null || $days <= 365) ? max(0, (int) ceil($rate * ($s['cover_days'] + $s['lead_days']) - max(0, $available))) : 0,
                 'status' => $status, 'stock_value' => $available > 0 && $v->effective() !== null ? round($available * $v->effective(), 2) : 0,
             ];
         }
