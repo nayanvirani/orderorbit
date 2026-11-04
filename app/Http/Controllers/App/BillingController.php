@@ -40,6 +40,12 @@ class BillingController extends Controller
         return page('settings/billing', [
             'effective' => $store->effectivePlan(),
             'customPlans' => \App\Support\Features::enabled('premium_plan', $store),
+            // "Your plan: Free · 1 of 1 live widgets used · 1 draft waiting to publish".
+            'summary' => $store->effectivePlan() ? [
+                'live' => app(\App\Services\Usage::class)->current($store, 'active_experiences'), 'limit' => $store->planLimit('active_experiences'),
+                'drafts' => $store->experiences()->where('status', 'draft')->count(),
+                'locked' => $store->experiences()->where('status', 'draft')->get()->reject(fn ($e) => $store->allowsExperience($e->type, $e->draft_config))->count(),
+            ] : null,
             'plan' => $store->plan,
             'planExpiresAt' => $store->plan_expires_at?->isFuture() ? $store->plan_expires_at : null,
             'testShop' => $store->isTestShop(),

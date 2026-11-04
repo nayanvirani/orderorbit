@@ -70,6 +70,13 @@ export default function Billing(p) {
 
       <s-section heading={effective ? 'Plans' : 'Pick a plan'}>
         {effective && <s-paragraph>{pricingPage.lead}</s-paragraph>}
+        {p.summary && (
+          <p className="bl-summary">
+            <b>Your plan: {planName(effective)}</b>
+            {' · '}{number(p.summary.live)} of {p.summary.limit === null ? 'unlimited' : number(p.summary.limit)} live widgets used
+            {p.summary.drafts > 0 && <> · {number(p.summary.drafts)} {p.summary.drafts === 1 ? 'draft' : 'drafts'}{p.summary.locked > 0 ? `, ${p.summary.locked} waiting for a plan that unlocks ${p.summary.locked === 1 ? 'it' : 'them'}` : ''}</>}
+          </p>
+        )}
         <div className="ob-plans">
           {plans.map((plan) => {
             const current = effective === plan.key;
@@ -87,6 +94,7 @@ export default function Billing(p) {
           })}
         </div>
         {!pricingUrl && <s-paragraph><span className="oo-muted">Only store owners can change the plan.</span></s-paragraph>}
+        <s-paragraph><span className="oo-muted">Preview: anything your plan doesn't include opens with sample data and you can build drafts; Turn on names the plan that unlocks it. Downgrading keeps your data and settings; anything over the new limit pauses.</span></s-paragraph>
         {/* Custom plan requests (G34), with the premium_plan flag. */}
         {p.customPlans && <s-paragraph>Need a different mix of modules? <s-link href={appUrl(route('app.support.index', { category: 'custom_plan' }))}>Ask for a custom plan</s-link></s-paragraph>}
       </s-section>

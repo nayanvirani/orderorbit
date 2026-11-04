@@ -49,7 +49,7 @@ class PlanCatalog
         $support = collect($plans)->map(fn ($p) => $p['support'] ?? null);
         foreach (Modules::grouped() as $group => $features) {
             // With support levels set per plan, the support row below says it better than a tick.
-            $rows = collect($features)->filter(fn ($m, $key) => $m[4] && ! ($key === 'priority_support' && $support->filter()->isNotEmpty()))->map(fn ($m, $key) => [
+            $rows = collect($features)->filter(fn ($m, $key) => $m[4] && ! in_array($key, Modules::COMING, true) && ! ($key === 'priority_support' && $support->filter()->isNotEmpty()))->map(fn ($m, $key) => [
                 'label' => $m[0], 'help' => $m[2],
                 'values' => collect($plans)->map(fn ($p) => $includes($p, $key))->all(),
             ])->values()->all();

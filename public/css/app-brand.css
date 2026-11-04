@@ -332,3 +332,4 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .cp-side p { margin: 6px 0 0; font-size: 13.5px; }
 .cp-plan { font-weight: 700; font-size: 16px; }
 @media (max-width: 760px) { .cp-layout { grid-template-columns: 1fr; } .cp-side { position: static; } }
+.bl-summary { margin: 4px 0 12px; padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--ob-accent) 7%, var(--ob-surface)); font-size: 13.5px; }
