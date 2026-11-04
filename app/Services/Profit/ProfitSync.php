@@ -47,6 +47,7 @@ class ProfitSync
             return 'skipped';
         }
         $settings = ProfitSetting::for($store->id);
+        $this->ensureWebhooks($store);
         try {
             if (! $settings->backfilled_at) {
                 $variants = $this->costs->sync($store);
@@ -142,6 +143,27 @@ class ProfitSync
             }
         }
         \Illuminate\Support\Facades\Cache::put("profit-dirty:{$store->id}", true, now()->addDay());
+    }
+
+    /**
+     * Cost and stock webhooks for this store, once it has approved read_inventory (an optional scope
+     * can't be subscribed in the app config). Asked once; Shopify ignores duplicates.
+     */
+    public function ensureWebhooks(Store $store): void
+    {
+        $key = "inventory-webhooks:v1:{$store->id}";
+        if (! $store->hasScope('read_inventory') || \Illuminate\Support\Facades\Cache::get($key)) {
+            return;
+        }
+        try {
+            foreach (['INVENTORY_ITEMS_UPDATE', 'INVENTORY_LEVELS_UPDATE'] as $topic) {
+                app(\App\Services\Shopify\AdminApi::class)->graphql($store, 'mutation ($topic: WebhookSubscriptionTopic!, $sub: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: $topic, webhookSubscription: $sub) { userErrors { message } } }',
+                    ['topic' => $topic, 'sub' => ['callbackUrl' => rtrim((string) config('app.url'), '/').'/webhooks/shopify', 'format' => 'JSON']]);
+            }
+            \Illuminate\Support\Facades\Cache::forever($key, true);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** After costs or rules change: everything again, so history matches the new numbers. */

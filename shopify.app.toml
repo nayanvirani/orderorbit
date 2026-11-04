@@ -26,9 +26,11 @@ api_version = "2026-07"
   topics = [ "orders/paid", "orders/fulfilled", "refunds/create", "customers/create", "customers/update" ]
   uri = "https://growvia.orderorbit.space/webhooks/shopify"
 
-  # Profit and Protect: product costs, prices, stock and details as soon as they change.
+  # Profit and Protect: product prices and details as soon as they change. Cost and stock webhooks
+  # (inventory_items/update, inventory_levels/update) need read_inventory, an optional scope, so
+  # Growvia subscribes to them per store once the store approves it (ProfitSync::ensureWebhooks).
   [[webhooks.subscriptions]]
-  topics = [ "products/create", "products/update", "products/delete", "inventory_items/update", "inventory_levels/update" ]
+  topics = [ "products/create", "products/update", "products/delete" ]
   uri = "https://growvia.orderorbit.space/webhooks/shopify"
 
   [[webhooks.subscriptions]]
