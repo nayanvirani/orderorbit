@@ -2,7 +2,7 @@
 // with CSV export. Ad spend follows the tags on each expense; untagged spend is shared by sales.
 import { Page } from '../../components/ui.jsx';
 import { appUrl, route } from '../../router.jsx';
-import { money, pct, ProfitNotices, Ranges } from './_profit.jsx';
+import { download, money, pct, ProfitNotices, Ranges } from './_profit.jsx';
 
 const BY = { product: 'Product', variant: 'Variant', order: 'Order', channel: 'Sales channel', country: 'Country', day: 'Day' };
 
@@ -16,7 +16,7 @@ export default function ProfitBreakdowns({ range, ranges, by, rows, totals: t, c
         <>
           <div className="pf-bar">
             <Ranges ranges={ranges} range={range} name="app.profit.breakdowns" extra={{ by }} />
-            <s-button href={appUrl(route('app.profit.breakdowns.export', { range, by }))} target="_blank">Export CSV</s-button>
+            <s-button onClick={() => download(route('app.profit.breakdowns.export', { range, by }), `growvia-profit-by-${by}.csv`)}>Export CSV</s-button>
           </div>
           <nav className="pf-tabs" aria-label="Break down by">
             {Object.entries(BY).map(([k, l]) => <a key={k} href={appUrl(route('app.profit.breakdowns', { range, by: k }))} aria-current={k === by ? 'page' : undefined}>{l}</a>)}

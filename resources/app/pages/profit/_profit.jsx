@@ -4,6 +4,17 @@ import { useState } from 'react';
 import { appUrl, route, useRouter } from '../../router.jsx';
 
 export const money = (v, currency = 'USD') => new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: Math.abs(v) >= 1000 ? 0 : 2 }).format(v || 0);
+/** Downloads a file from the app (the session token is added by App Bridge), without leaving the page. */
+export async function download(path, filename) {
+  const res = await fetch(appUrl(path));
+  if (!res.ok) return window.shopify?.toast?.show('We couldn\'t download that. Please try again.', { isError: true });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(await res.blob()), download: filename });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 export const pct = (v) => (v === null || v === undefined ? '—' : `${v}%`);
 
 const WHY = {

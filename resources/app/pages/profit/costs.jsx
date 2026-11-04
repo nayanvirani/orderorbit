@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { Page } from '../../components/ui.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
-import { money, ProfitNotices } from './_profit.jsx';
+import { download, money, ProfitNotices } from './_profit.jsx';
 
 const SHIPPING = { none: 'Not counted', per_order: 'Per order', per_item: 'Per item', percent: '% of shipping charged' };
 
@@ -97,7 +97,7 @@ export default function ProfitCosts({ summary: s, missing, overrides, rules, cur
             <div className="pf-bar">
               <input ref={file} type="file" accept=".csv,text/csv" aria-label="Costs CSV" />
               <s-button onClick={importCsv}>Import CSV</s-button>
-              <s-button variant="tertiary" href={appUrl(route('app.profit.costs.template'))} target="_blank">Download template</s-button>
+              <s-button variant="tertiary" onClick={() => download(route('app.profit.costs.template'), 'growvia-costs.csv')}>Download template</s-button>
             </div>
             {errors.file && <p className="b-error">{errors.file}</p>}
           </s-section>
