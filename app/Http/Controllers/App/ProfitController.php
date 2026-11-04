@@ -281,7 +281,7 @@ class ProfitController extends Controller
     }
 
     /** After Shopify's approval window: read the granted access now rather than waiting for the webhook. */
-    public function accessGranted(Store $store, \App\Services\Shopify\AdminApi $api): RedirectResponse
+    public function accessGranted(Request $request, Store $store, \App\Services\Shopify\AdminApi $api): RedirectResponse
     {
         try {
             $scopes = array_column((array) ($api->graphql($store, '{ currentAppInstallation { accessScopes { handle } } }')['currentAppInstallation']['accessScopes'] ?? []), 'handle');
@@ -290,6 +290,13 @@ class ProfitController extends Controller
             }
         } catch (\Throwable $e) {
             report($e);
+        }
+
+        // Back to the page the approval was asked from (an app path only).
+        $back = (string) $request->input('back', '');
+
+        if (preg_match('#^/app(/[A-Za-z0-9/_\-]*)?$#', $back)) {
+            return redirect()->to(url($back).'?'.http_build_query(array_filter(['shop' => $request->query('shop') ?? $store->shop_domain, 'host' => $request->query('host'), 'notice' => 'saved'])));
         }
 
         return redirect()->to(app_route('app.profit.dashboard', ['notice' => 'saved']));

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Page } from '../../components/ui.jsx';
 import { route, useRouter } from '../../router.jsx';
-import { download, money, ProfitNotices } from '../profit/_profit.jsx';
+import { ApproveButton, download, money, ProfitNotices } from '../profit/_profit.jsx';
 
 const TABS = { reorder: 'Reorder soon', sold_out: 'Sold out', no_sales: 'No sales', all: 'All products' };
 
@@ -27,7 +27,7 @@ export default function ProtectInventory({ rows, location, locations, settings, 
                 {Object.entries(locations).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
               </select>
             )}
-            {!canLocations && <span className="oo-muted pf-small">Stock per location needs one more approval from Shopify.</span>}
+            {!canLocations && <><span className="oo-muted pf-small">See stock per location:</span><ApproveButton scopes={['read_locations']}>Approve locations in Shopify</ApproveButton></>}
             <s-button onClick={() => download(route('app.protect.inventory.reorder', { location: location || undefined }), 'growvia-reorder-list.csv')}>Export reorder list</s-button>
           </div>
           <div className="pf-kpis">

@@ -1,7 +1,7 @@
 // Shared parts of the Profit pages (phase 3): the Shopify access approval card, the "importing"
 // note while the first sync runs, the plan note, date ranges and money.
 import { useState } from 'react';
-import { appUrl, route, useRouter } from '../../router.jsx';
+import { appUrl, route, useRouter, useUrl } from '../../router.jsx';
 
 export const money = (v, currency = 'USD') => new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: Math.abs(v) >= 1000 ? 0 : 2 }).format(v || 0);
 /** Downloads a file from the app (the session token is added by App Bridge), without leaving the page. */
@@ -25,13 +25,14 @@ const WHY = {
 /** Shopify's own approval window for Profit's access (optional scopes), then the numbers import. */
 export function AccessCard({ access }) {
   const { submit, reload } = useRouter();
+  const url = useUrl();
   const [busy, setBusy] = useState(false);
   const approve = async () => {
     setBusy(true);
     try {
       const result = await window.shopify?.scopes?.request(access.missing);
       if (result?.result === 'granted-all' || result?.result === 'granted') {
-        await submit(route('app.profit.access'), {});
+        await submit(route('app.profit.access'), { back: url.split('?')[0] });
       }
     } finally {
       setBusy(false);
@@ -53,6 +54,24 @@ export function AccessCard({ access }) {
       </div>
     </s-section>
   );
+}
+
+/** Asks Shopify for optional access (its own approval window), then reloads with it. */
+export function ApproveButton({ scopes, children }) {
+  const { submit, reload } = useRouter();
+  const url = useUrl();
+  const [busy, setBusy] = useState(false);
+  const approve = async () => {
+    setBusy(true);
+    try {
+      const result = await window.shopify?.scopes?.request(scopes);
+      if (result?.result === 'granted-all' || result?.result === 'granted') await submit(route('app.profit.access'), { back: url.split('?')[0] });
+    } finally {
+      setBusy(false);
+      reload();
+    }
+  };
+  return <s-button onClick={approve} loading={busy || undefined}>{children}</s-button>;
 }
 
 /** The notes above every Profit page: access, the first import, the plan. */
