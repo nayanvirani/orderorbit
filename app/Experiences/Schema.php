@@ -236,6 +236,10 @@ class Schema
         if (Elements::for($type)) {
             $config['design']['elements'] = Elements::clean($type, (array) ($input['design']['elements'] ?? []));
         }
+        // Text and layout per screen size (G37 step 2).
+        if (Layout::for($type)) {
+            $config['design']['layout'] = Layout::clean($type, json_decode(json_encode($input['design']['layout'] ?? []), true) ?: []);
+        }
 
         return [$config, $errors];
     }

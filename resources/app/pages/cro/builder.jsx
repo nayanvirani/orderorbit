@@ -6,6 +6,7 @@ import SchemaField, { visible } from '../../components/SchemaField.jsx';
 import { Page } from '../../components/ui.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
 import ElementColours, { withElements } from '../../components/ElementColours.jsx';
+import TextLayout, { withLayout } from '../../components/TextLayout.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
 
 const STEPS = [['type', 'Type'], ['template', 'Template'], ['content', 'Content'], ['design', 'Design'], ['behavior', 'Behavior'], ['targeting', 'Targeting'], ['analytics', 'Analytics'], ['preview', 'Preview'], ['publish', 'Publish']];
@@ -15,7 +16,7 @@ const CUSTOMERS = { all: 'Everyone', new: 'New shoppers', returning: 'Returning 
 const DEVICES = { all: 'All devices', mobile: 'Mobile', desktop: 'Desktop' };
 
 export default function Builder(props) {
-  const { experience: x, type, fields, look, fieldErrors: errors, banner, templates, timezone, tzOffset, currency, segments, pageTypes, publishHelp, editor, designNote, checkout, elements, brand, designSources } = props;
+  const { experience: x, type, fields, look, fieldErrors: errors, banner, templates, timezone, tzOffset, currency, segments, pageTypes, publishHelp, editor, designNote, checkout, elements, layout, brand, designSources } = props;
   const { submit } = useRouter();
   const ready = useRuntime({ checkout });
   const [config, setConfig] = useState(props.config);
@@ -46,7 +47,7 @@ export default function Builder(props) {
 
   const experience = (key = template) => ({
     id: x.handle, type: x.type, template: key, style: styles[key] || 'card', version: 0, priority: 50,
-    content: config.content || {}, design: withElements(withLook(config.design || {}, look, config.content?.hide), elements), behavior: config.behavior || {},
+    content: config.content || {}, design: withLayout(withElements(withLook(config.design || {}, look, config.content?.hide), elements), layout, x.handle, device), behavior: config.behavior || {},
     targeting: config.targeting || {}, analytics: config.analytics || {},
   });
   const context = { currency, cartTotal: Math.round(Number(cart || 0) * 100), productPrice: 2900, productTitle: 'Sample product', page: 'product' };
@@ -114,6 +115,10 @@ export default function Builder(props) {
                     <ElementColours elements={elements} design={config.design || {}} brand={brand} sources={designSources}
                       onChange={(d) => { setConfig((c) => ({ ...c, design: d })); setDirty(true); }} />
                   )}
+                  {section === 'design' && (
+                    <TextLayout meta={layout} design={config.design || {}} device={device} onDevice={setDevice}
+                      onChange={(d) => { setConfig((c) => ({ ...c, design: d })); setDirty(true); }} />
+                  )}
                   {section === 'content' && (
                     <Look look={look} hide={config.content?.hide || []} words={config.content?.words || {}}
                       onChange={({ hide, words }) => { set('content', 'hide', hide); set('content', 'words', words); }} />
@@ -161,12 +166,13 @@ export default function Builder(props) {
           <div className="b-preview-bar">
             <div className="b-seg" role="group" aria-label="Preview device">
               <button type="button" aria-pressed={device === 'desktop'} onClick={() => setDevice('desktop')}>Desktop</button>
+              {Object.keys(layout || {}).length > 0 && <button type="button" aria-pressed={device === 'tablet'} onClick={() => setDevice('tablet')}>Tablet</button>}
               <button type="button" aria-pressed={device === 'mobile'} onClick={() => setDevice('mobile')}>Mobile</button>
             </div>
             <label className="b-cart">Cart value <input type="number" min="0" step="1" value={cart} onChange={(e) => setCart(e.target.value)} aria-label="Preview cart value" /></label>
           </div>
           <div className="b-stage">
-            <div className={`b-frame oo-preview ${device === 'mobile' ? 'oo-preview-mobile' : ''}`}>
+            <div className={`b-frame oo-preview ${device === 'mobile' ? 'oo-preview-mobile' : device === 'tablet' ? 'oo-preview-tablet' : ''}`}>
               <div className="b-fake-page" aria-hidden="true"><i /><i /><i className="short" /></div>
               <Preview ready={ready} experience={experience()} context={context} className="oo-root" empty="Nothing to show with these settings (for example, the countdown has ended and is set to hide)." />
               <div className="b-fake-page" aria-hidden="true"><i className="short" /><i /></div>

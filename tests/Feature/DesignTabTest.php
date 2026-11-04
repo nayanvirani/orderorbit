@@ -39,6 +39,7 @@ class DesignTabTest extends TestCase
         Features::forget();
         $this->page("/app/cro/experiences/{$timer->id}/edit", $owner)
             ->assertJsonPath('props.elements.digits.label', 'Digits')
+            ->assertJsonPath('props.layout.box_block.selector', '')
             ->assertJsonPath('props.brand.primary_color', '#303030')
             ->assertJsonPath('props.designSources.0.id', $other->id)
             ->assertJsonPath('props.designSources.0.same', true);
@@ -46,12 +47,15 @@ class DesignTabTest extends TestCase
         $config = $timer->draft_config;
         $config['content']['ends_at'] = now()->addDays(3)->format('Y-m-d\TH:i');
         $config['design']['elements'] = ['digits' => '#FFD166', 'boxes' => 'red', 'nope' => '#000000', 'units' => '#abc'];
+        $config['design']['layout'] = ['desktop' => ['title' => ['size' => 30]], 'mobile' => ['title' => ['size' => 20]]];
         $this->post("/app/cro/experiences/{$timer->id}", ['action' => 'publish', 'config' => $config], $this->as($owner))->assertRedirectContains('notice=published');
         $this->assertSame(['digits' => '#ffd166', 'units' => '#abc'], (array) $timer->fresh()->draft_config['design']['elements']);
 
         $shown = collect(app(StorefrontPublisher::class)->payload($store->fresh())['experiences'])->firstWhere('id', $timer->handle);
         $this->assertStringContainsString('.oo-u b{color:#ffd166!important}', $shown['design']['custom_css']);
         $this->assertStringContainsString('.oo-u small{color:#abc!important}', $shown['design']['custom_css']);
+        $this->assertStringContainsString('@media (max-width: 749px){[data-oo-exp="'.$timer->handle.'"] .oo-title{font-size:20px!important}}', $shown['design']['custom_css']);
         $this->assertArrayNotHasKey('elements', $shown['design']);
+        $this->assertArrayNotHasKey('layout', $shown['design']);
     }
 }

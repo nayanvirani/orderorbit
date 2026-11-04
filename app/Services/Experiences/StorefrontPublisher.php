@@ -150,7 +150,11 @@ class StorefrontPublisher
                 if ($colours = \App\Experiences\Elements::css($e->type, (array) ($config['design']['elements'] ?? []))) {
                     $config['design']['custom_css'] = trim(($config['design']['custom_css'] ?? '')."\n".$colours);
                 }
-                unset($config['design']['elements']);
+                // Text and layout per screen size (G37), scoped to this offer's block.
+                if ($layout = \App\Experiences\Layout::css($e->type, json_decode(json_encode($config['design']['layout'] ?? []), true) ?: [], $e->handle)) {
+                    $config['design']['custom_css'] = trim(($config['design']['custom_css'] ?? '')."\n".$layout);
+                }
+                unset($config['design']['elements'], $config['design']['layout']);
 
                 if ($e->type === 'sales-pop') {
                     // Real recent purchases come from Growvia's public feed for this store.

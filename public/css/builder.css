@@ -155,3 +155,12 @@ a.b-template *:not(.oo-preview, .oo-preview *), a.bx-type *:not(.oo-preview, .oo
 .el-row input[type="color"].el-unset { opacity: .35; }
 .el-row input[type="text"] { min-height: 32px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
 @media (max-width: 560px) { .el-row { grid-template-columns: minmax(0, 1fr) 40px 32px; } .el-row input[type="text"] { display: none; } }
+
+/* Design for every offer (G37): text and layout per screen size. */
+.b-frame.oo-preview-tablet { max-width: 600px; }
+.tl { margin-top: 18px; padding-top: 14px; border-top: 1px solid #ececec; }
+.tl h3 { margin: 0 0 4px; font-size: 15px; }
+.tl-devices { margin: 10px 0 12px; }
+.tl-note { margin: 0 0 10px; font-size: 13px; color: #616161; }
+.tl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0 14px; }
+.tl-note .b-link { padding: 0; border: 0; background: none; color: #005bd3; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
