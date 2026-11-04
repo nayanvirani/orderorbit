@@ -125,6 +125,18 @@ class LifecycleEmails
         return $this->notSent($store, $due);
     }
 
+    /** After an uninstall (G27): a short goodbye with one optional question, sent once. */
+    public function goodbye(Store $store): int
+    {
+        $name = $store->name ?: $store->shop_domain;
+
+        return $this->send($store, 'goodbye', 'Sorry to see you go', [
+            'heading' => 'Sorry to see you go', 'intro' => "Growvia has been removed from {$name}. Your offers have stopped showing to shoppers.\n\nWould you tell us why you left? It's one optional question and takes ten seconds.",
+            'cta' => ['Answer one question', URL::temporarySignedRoute('goodbye', now()->addDays(30), ['store' => $store->id])],
+            'footer' => "You get this once because {$name} removed Growvia.",
+        ], tips: false);
+    }
+
     /** Already sent (or being sent) kinds are left out; a failed one is tried again after an hour, for 3 days. */
     private function notSent(Store $store, array $due): array
     {
@@ -135,7 +147,7 @@ class LifecycleEmails
         return array_diff_key($due, array_flip($sent));
     }
 
-    private function send(Store $store, string $kind, string $subject, array $parts): int
+    private function send(Store $store, string $kind, string $subject, array $parts, bool $tips = true): int
     {
         // Claim the kind first: a second run (or worker) can't send it twice.
         DB::table('lifecycle_emails')->where('store_id', $store->id)->where('kind', $kind)->where('status', 'failed')->delete();
@@ -150,7 +162,7 @@ class LifecycleEmails
         $error = null;
         foreach ($recipients as [$email, $first]) {
             $email_parts = ['intro' => 'Hi'.($first ? " {$first}" : '').",\n\n".$parts['intro']] + $parts
-                + ($kind === 'welcome' ? [] : ['unsubscribe' => URL::signedRoute('lifecycle.unsubscribe', ['store' => $store->id])]);
+                + ($kind === 'welcome' || ! $tips ? [] : ['unsubscribe' => URL::signedRoute('lifecycle.unsubscribe', ['store' => $store->id])]);
             try {
                 $result = $this->sender->send(OutgoingEmail::designed($email, $subject, $email_parts, ['category' => 'lifecycle', 'storeId' => $store->id]));
                 $result->ok() ? $count++ : $error = $result->error;

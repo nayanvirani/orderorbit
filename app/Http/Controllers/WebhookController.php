@@ -123,6 +123,12 @@ class WebhookController extends Controller
         $store->subscriptions()->where('status', 'ACTIVE')->update(['status' => 'CANCELLED', 'cancelled_at' => now()]);
 
         AuditLog::record('store.uninstalled', $store);
+
+        // A goodbye email with one optional question (G27), after Shopify has its answer.
+        if (\App\Support\Features::enabled('lifecycle_emails', $store)) {
+            $id = $store->id;
+            dispatch(fn () => app(\App\Services\Lifecycle\LifecycleEmails::class)->goodbye(Store::findOrFail($id)))->afterResponse();
+        }
     }
 
     private function redactShop(?Store $store): void

@@ -42,6 +42,9 @@ Route::get('/api/sales-pop', [\App\Http\Controllers\SalesPopController::class, '
 // Product documents (G42): private download links from emails and the certificate check its QR code opens.
 Route::get('/documents/{token}', [\App\Http\Controllers\DocumentController::class, 'download'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:60,1')->name('documents.download');
 Route::get('/emails/off/{store}', [\App\Http\Controllers\LifecycleController::class, 'unsubscribe'])->whereNumber('store')->middleware('throttle:30,1')->name('lifecycle.unsubscribe');
+// Usage insights (G27): the optional question in the goodbye email (signed link, no session).
+Route::get('/goodbye/{store}', [\App\Http\Controllers\GoodbyeController::class, 'show'])->whereNumber('store')->middleware('throttle:30,1')->name('goodbye');
+Route::post('/goodbye/{store}', [\App\Http\Controllers\GoodbyeController::class, 'store'])->whereNumber('store')->middleware('throttle:10,1')->name('goodbye.store');
 Route::get('/verify/{code}', [\App\Http\Controllers\DocumentController::class, 'verify'])->where('code', '[a-z0-9]{1,24}')->middleware('throttle:60,1')->name('documents.verify');
 });
 
@@ -361,6 +364,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             });
             Route::get('/failures', 'failures')->middleware('admin.can:failures')->name('failures');
             Route::get('/ops', [\App\Http\Controllers\Admin\OpsController::class, 'index'])->middleware('admin.can:failures')->name('ops');
+            // Usage insights (G27).
+            Route::get('/usage', [\App\Http\Controllers\Admin\UsageInsightsController::class, 'index'])->middleware('admin.can:analytics')->name('usage');
+            Route::get('/usage/export', [\App\Http\Controllers\Admin\UsageInsightsController::class, 'export'])->middleware('admin.can:analytics')->name('usage.export');
             Route::post('/ops/{alert}/resolve', [\App\Http\Controllers\Admin\OpsController::class, 'resolve'])->whereNumber('alert')->middleware('admin.can:failures')->name('ops.resolve');
             Route::get('/analytics', 'analytics')->middleware('admin.can:analytics')->name('analytics');
             Route::middleware('admin.can:templates')->group(function () {
