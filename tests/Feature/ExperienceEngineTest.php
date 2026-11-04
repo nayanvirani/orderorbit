@@ -137,7 +137,7 @@ class ExperienceEngineTest extends TestCase
         $store->forceFill(['entitlements' => ['limits' => ['trust' => 1]]])->save();
         $manager->publish($manager->create($store, 'trust', 'trust-row', null), null);
         $refused($manager->create($store, 'trust', 'trust-row', null), 'The Free plan includes 1 live trust block. Pause or archive one that\'s live, or upgrade for more.');
-        $refused($ready('cart-upsells', 'grid'), 'Cart upsells & cross-sell isn\'t included in your plan. Upgrade to publish it.');
+        $refused($ready('cart-upsells', 'grid'), 'Cart upsells & cross-sell is in the Starter plan. Your draft is saved: upgrade to publish it.');
 
         // Starter: more of each, plus cart upsells.
         $store->forceFill(['plan' => 'starter', 'entitlements' => null])->save();

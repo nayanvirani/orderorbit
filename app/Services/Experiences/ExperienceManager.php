@@ -214,7 +214,7 @@ class ExperienceManager
         }
         foreach (\App\Support\Modules::forExperience($experience->type, $experience->draft_config) as $feature) {
             if (! $store->planIncludes($feature)) {
-                throw new PublishException(\App\Support\Modules::label($feature).' isn\'t included in your plan. Upgrade to publish it.', 'plan');
+                throw new PublishException(\App\Support\Plans::unlockMessage($feature, 'publish it', $store), 'plan');
             }
         }
 

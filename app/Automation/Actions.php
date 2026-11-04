@@ -36,7 +36,7 @@ class Actions
                 }
                 // Product documents (G42) for the products in this order: made once, sent as attachments or links.
                 $documents = [];
-                $as = in_array($p['documents'] ?? 'none', ['attach', 'link'], true) && $order && \App\Support\Features::enabled('product_documents', $run->store) ? $p['documents'] : null;
+                $as = in_array($p['documents'] ?? 'none', ['attach', 'link'], true) && $order && \App\Support\Features::enabled('product_documents', $run->store) && $run->store->planIncludes('product_documents') ? $p['documents'] : null;
                 if ($as) {
                     $documents = app(\App\Services\Documents\ProductDocuments::class)->forOrder($run->store, $order, $customer)->pluck('id')->all();
                 }

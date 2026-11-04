@@ -421,7 +421,7 @@ class ExperimentManager
         $store = $experiment->store;
         $experience = $experiment->experience;
         if (! $store->planIncludes('ab_testing')) {
-            $problems[] = 'A/B testing isn\'t included in your plan. Upgrade to launch.';
+            $problems[] = \App\Support\Plans::unlockMessage('ab_testing', 'launch it', $store);
         } elseif ($experiment->status !== 'running' && ! app(\App\Services\Usage::class)->allows($store, 'running_tests')) {
             $problems[] = \App\Services\Usage::limitMessage($store, 'running_tests');
         }

@@ -19,7 +19,7 @@ function matchLabel(d) {
   return items.length ? `${items.slice(0, 2).map((i) => i.title).join(', ')}${items.length > 2 ? ` +${items.length - 2} more` : ''}` : '—';
 }
 
-export default function ProductDocuments({ documents, linkDays }) {
+export default function ProductDocuments({ documents, linkDays, unlock }) {
   const { submit } = useRouter();
   const url = useUrl();
   const openId = Number(new URLSearchParams(url.split('?')[1] || '').get('open')) || null;
@@ -77,6 +77,7 @@ export default function ProductDocuments({ documents, linkDays }) {
   return (
     <Page heading="Product documents" back={route('app.automation.index')} backLabel="Workflows"
       primary={<s-button slot="primary-action" variant="primary" onClick={() => open(BLANK)}>Add document</s-button>}>
+      {unlock && <s-banner tone="info">{unlock} <a href={appUrl(route('app.settings.billing'))}>See plans</a></s-banner>}
       <p className="oo-muted" style={{ marginTop: 0 }}>Certificates, warranty cards and guides sent with your automation emails. Each order gets the documents for the products in it.</p>
 
       <div className="pd-layout">

@@ -46,10 +46,33 @@ class Plans
         self::boot();
     }
 
+    /**
+     * Free read-only previews (G29): what Publish or Turn on says for a module the plan doesn't
+     * include, naming the plan that unlocks it. Drafts are kept.
+     */
+    public static function unlockMessage(string $feature, string $action = 'publish it', ?\App\Models\Store $store = null): string
+    {
+        // Their plan has it, but it's switched off for this store in Internal Admin.
+        $own = $store ? (array) config('shopify.billing.plans.'.$store->effectivePlan().'.includes', []) : [];
+        if ($own && collect(Modules::chain($feature))->every(fn ($k) => in_array($k, $own, true))) {
+            return Modules::label($feature).' is switched off for your store. Contact Growvia support to turn it on.';
+        }
+        $plan = self::firstWith()[$feature] ?? null;
+
+        return Modules::label($feature).($plan ? " is in the {$plan} plan" : ' isn\'t in your plan').". Your draft is saved: upgrade to {$action}.";
+    }
+
     /** Plans shown to merchants (pricing pages and the in-app plan list). */
     public static function public(): array
     {
-        return array_filter((array) config('shopify.billing.plans'), fn ($p) => ($p['public'] ?? true) && ($p['active'] ?? true));
+        // Premium (G29) shows once the premium_plan flag is on for everyone (it's set up in Shopify first).
+        try {
+            $premium = Features::enabled('premium_plan');
+        } catch (Throwable) {
+            $premium = false; // no database yet
+        }
+
+        return array_filter((array) config('shopify.billing.plans'), fn ($p, $key) => ($p['public'] ?? true) && ($p['active'] ?? true) && ($key !== 'premium' || $premium), ARRAY_FILTER_USE_BOTH);
     }
 
     /** feature => name of the cheapest active public plan that includes it (for upgrade prompts). */

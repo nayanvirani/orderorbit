@@ -37,6 +37,8 @@ class ProductDocumentController extends Controller
                     'preview' => route('app.automation.documents.preview', ['document' => $d->id], false),
                 ]),
             'linkDays' => IssuedDocument::LINK_DAYS,
+            // Free read-only preview (G29): documents can be built; emails send them on the plan that has them.
+            'unlock' => $store->planIncludes('product_documents') ? null : \App\Support\Plans::unlockMessage('product_documents', 'send them with your emails', $store),
         ]);
     }
 

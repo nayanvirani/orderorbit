@@ -127,7 +127,7 @@ class AdminPlansAndAccessTest extends TestCase
             $manager->publish($bundle, null);
             $this->fail('Bundles are switched off for this store.');
         } catch (PublishException $e) {
-            $this->assertSame('Bundles isn\'t included in your plan. Upgrade to publish it.', $e->getMessage());
+            $this->assertSame('Bundles is switched off for your store. Contact Growvia support to turn it on.', $e->getMessage());
         }
 
         // A module removed from a store leaves its storefront at once.

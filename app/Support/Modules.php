@@ -51,6 +51,47 @@ class Modules
         'personalization_advanced' => ['Advanced personalization', 'Personalization', 'VIP, returning-customer, device, cart-value, product and lifecycle targeting.', 'personalization'],
 
         'priority_support' => ['Priority support', 'Service', 'Tickets answered first.', null],
+
+        // Next MVP modules (G29): added to every plan as section 8 sets out; today's keys are unchanged.
+        'product_documents' => ['Product documents in emails', 'Automation', 'Certificates and PDFs sent with workflow emails by product.', 'automation'],
+        'translations' => ['Widget translations', 'Storefront', 'Widget text per store language.', null],
+        'profit_snapshot' => ['Profit snapshot', 'Profit', 'The last 30 days of sales and profit.', null],
+        'profit' => ['Profit', 'Profit', 'Costs, ad spend, dashboard and breakdowns.', null],
+        'profit_roas' => ['ROAS and POAS', 'Profit', 'Return on ad spend and profit on ad spend.', 'profit'],
+        'profit_goals' => ['Profit goals', 'Profit', 'Monthly goals and pacing.', 'profit'],
+        'protect' => ['Protect', 'Protect', 'Health Score, Action Center, low stock and three alerts.', null],
+        'protect_alerts' => ['All alerts and days of stock', 'Protect', 'Every money-leak alert and days of stock.', 'protect'],
+        'product_data' => ['Product data quality', 'Protect', 'Missing images, costs, SKUs and more.', 'protect'],
+        'url_monitor' => ['URL monitor', 'Protect', 'Key pages checked around the clock.', 'protect'],
+        'sales_insights' => ['Sales insights and reports', 'Insights', 'Sales page, Monthly Business Report and all store questions.', null],
+        'customer_value' => ['Customer value insights', 'Insights', 'Repeat rate, time to second order and best first products.', null],
+        'morning_brief' => ['AI Morning Brief', 'Insights', 'A daily five-line brief.', null],
+        'ai_offer_ideas' => ['AI offer ideas', 'AI', 'Offer text and bundles from products bought together.', null],
+        'reorder_timing' => ['Predictive reorder timing', 'AI', 'Reorder reminders at each product\'s usual gap.', 'automation'],
+        'review_apps' => ['Judge.me, Yotpo and Loox', 'Integrations', 'Real star ratings and reviews in offers.', null],
+        'klaviyo_ga4' => ['Klaviyo and GA4', 'Integrations', 'Segments and events in Klaviyo and Google Analytics.', null],
+        'gorgias' => ['Gorgias', 'Integrations', 'Order and offer context in support tickets.', null],
+        'first_in_line_support' => ['First-in-line support', 'Service', 'Answered before every other plan.', 'priority_support'],
+    ];
+
+    /** The next MVP's module keys per plan (G29, section 8), added to each plan's own list. */
+    public const NEXT_MVP = [
+        'free' => ['profit_snapshot', 'protect'],
+        'starter' => ['profit_snapshot', 'protect', 'profit', 'protect_alerts', 'sales_insights', 'review_apps'],
+        'growth' => ['profit_snapshot', 'protect', 'profit', 'protect_alerts', 'sales_insights', 'review_apps', 'profit_roas', 'product_data', 'url_monitor', 'translations', 'klaviyo_ga4', 'product_documents'],
+        'scale' => ['profit_snapshot', 'protect', 'profit', 'protect_alerts', 'sales_insights', 'review_apps', 'profit_roas', 'product_data', 'url_monitor', 'translations', 'klaviyo_ga4', 'product_documents',
+            'profit_goals', 'customer_value'],
+        'premium' => ['profit_snapshot', 'protect', 'profit', 'protect_alerts', 'sales_insights', 'review_apps', 'profit_roas', 'product_data', 'url_monitor', 'translations', 'klaviyo_ga4', 'product_documents',
+            'profit_goals', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'gorgias', 'first_in_line_support'],
+    ];
+
+    /** The next MVP's limits per plan (null = unlimited): URL monitor pages, team members who see profit, days of history, store questions. */
+    public const NEXT_MVP_LIMITS = [
+        'free' => ['url_monitors' => 0, 'profit_viewers' => 1, 'history_days' => 30, 'store_questions' => 10],
+        'starter' => ['url_monitors' => 0, 'profit_viewers' => 2, 'history_days' => 365, 'store_questions' => null],
+        'growth' => ['url_monitors' => 20, 'profit_viewers' => 3, 'history_days' => 730, 'store_questions' => null],
+        'scale' => ['url_monitors' => 50, 'profit_viewers' => 10, 'history_days' => 1095, 'store_questions' => null],
+        'premium' => ['url_monitors' => 100, 'profit_viewers' => null, 'history_days' => 1095, 'store_questions' => null],
     ];
 
     /** Bundle types that need Quantity breaks. */
