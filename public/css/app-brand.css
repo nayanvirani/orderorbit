@@ -333,3 +333,43 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .cp-plan { font-weight: 700; font-size: 16px; }
 @media (max-width: 760px) { .cp-layout { grid-template-columns: 1fr; } .cp-side { position: static; } }
 .bl-summary { margin: 4px 0 12px; padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--ob-accent) 7%, var(--ob-surface)); font-size: 13.5px; }
+
+/* Profit (phase 3). */
+.pf-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+.pf-ranges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.pf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 0 0 16px; }
+.pf-kpi { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 14px; background: var(--ob-surface); box-shadow: var(--ob-card-shadow); }
+.pf-kpi small { color: var(--ob-muted); font-size: 12.5px; font-weight: 600; }
+.pf-kpi b { font-size: 22px; }
+.pf-kpi em { font-style: normal; color: var(--ob-muted); font-size: 12px; }
+.pf-kpi .up { color: #17663a; font-size: 12.5px; font-weight: 600; } .pf-kpi .down { color: #9f2222; font-size: 12.5px; font-weight: 600; }
+.pf-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.pf-fall { display: flex; flex-direction: column; gap: 6px; }
+.pf-step { display: grid; grid-template-columns: 140px minmax(0, 1fr) 110px; gap: 10px; align-items: center; font-size: 13.5px; }
+.pf-step i { display: block; height: 12px; border-radius: 6px; background: var(--ob-accent); }
+.pf-step.cost i { background: #e7a3a3; } .pf-step.cost span, .pf-step.cost b { color: var(--ob-muted); font-weight: 400; }
+.pf-step.level span, .pf-step.level b { font-weight: 700; } .pf-step b { text-align: right; }
+.pf-trend { display: flex; align-items: flex-end; gap: 2px; height: 160px; padding: 6px 0; border-bottom: 1px solid var(--ob-line); }
+.pf-trend i { flex: 1; min-width: 2px; border-radius: 3px 3px 0 0; background: var(--ob-accent); }
+.pf-trend i.neg { background: #e7a3a3; }
+.pf-small { font-size: 12.5px; }
+.pf-access { padding: 6px 0; } .pf-access h2 { margin: 0 0 8px; font-size: 20px; }
+.pf-scopes { list-style: none; margin: 12px 0 16px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pf-scopes li { display: flex; flex-direction: column; } .pf-scopes span { color: var(--ob-muted); font-size: 13px; }
+.pf-inline { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; } .pf-inline input { width: 80px; }
+.pf-cost { width: 110px; }
+.pf-rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.pf-rules fieldset { margin: 0; padding: 12px 14px; border: 1px solid var(--ob-line); border-radius: 12px; display: flex; flex-direction: column; gap: 8px; }
+.pf-rules legend { padding: 0 4px; font-weight: 700; font-size: 13.5px; }
+.pf-rules label, .pf-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; }
+.pf-country { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; } .pf-country input[type="number"] { width: 80px; }
+.pf-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; margin-bottom: 12px; }
+.pf-wide { grid-column: 1 / -1; } .pf-check { flex-direction: row !important; align-items: center; gap: 8px !important; grid-column: 1 / -1; }
+.pf-h3 { margin: 18px 0 4px; font-size: 14px; }
+.pf-total { margin: 0 0 8px; font-size: 24px; font-weight: 700; }
+.pf-row { display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--ob-line); font-size: 13.5px; }
+.pf-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin-bottom: 12px; border-radius: 12px; background: var(--ob-subdued, #f1f1f1); width: fit-content; }
+.pf-tabs a { padding: 8px 14px; border-radius: 9px; color: inherit; text-decoration: none; font-weight: 600; font-size: 13.5px; }
+.pf-tabs a[aria-current="page"] { background: var(--ob-surface); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.pf-neg { color: #9f2222; } .pf-total-row td { font-weight: 700; border-top: 2px solid var(--ob-line); }
+@media (max-width: 900px) { .pf-two { grid-template-columns: 1fr; } .pf-step { grid-template-columns: 110px minmax(0, 1fr) 90px; } .pf-form { grid-template-columns: 1fr; } }

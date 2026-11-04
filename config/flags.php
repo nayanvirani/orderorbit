@@ -21,7 +21,7 @@ return [
         'flow_editor' => ['Flow-style automation editor', 'The canvas editor for workflows (same saved format).', 'Automation', 'Phase 2', true],
         'live_chat' => ['Live chat with Growvia support', 'The chat button on every page for the stores you choose. The team console is always on.', 'Support', 'Phase 2', true],
         'premium_plan' => ['Premium plan and custom plans', 'Shows the Premium plan ($129.99, above Scale) on the plans page and lets owners ask for a custom plan from Settings › Plan and billing. Set up Premium in the Partner Dashboard (managed pricing, name "Premium") before turning it on. New-module limits and Free previews apply without the flag.', 'Billing', 'Phase 2', true],
-        'profit' => ['Profit module', 'Profit dashboard, costs, ad expenses, breakdowns, ROAS and POAS.', 'Profit', 'Phase 3', false],
+        'profit' => ['Profit module', 'Profit dashboard, costs and the missing-cost finder, ad expenses, breakdowns and ROAS/POAS from synced orders. Asks each store to approve product costs and order history (optional access) when Profit is opened. Free sees a 30-day snapshot.', 'Profit', 'Phase 3', true],
         'sales_insights' => ['Sales insights and reports', 'Sales page, weekly email and Monthly Business Report.', 'Insights', 'Phase 3', false],
         'protect' => ['Protect module', 'Alerts, stock, product data, URL monitor, Health Score, Action Center.', 'Protect', 'Phase 4', false],
         'ab_every_offer' => ['A/B tests for every offer', 'Tests for bundles, gift campaigns, the after-payment offer and account blocks, where versions change prices, rewards, products, layout, text or design; checkout charges each version\'s price.', 'Offers', 'Phase 2', true],

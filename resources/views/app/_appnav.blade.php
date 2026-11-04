@@ -12,11 +12,13 @@
     @if (\App\Experiences\Registry::newMenu())
         {{-- The new menu (flag new_menu): same pages, new names; A/B tests and Audiences are one item. --}}
         <s-link href="{{ app_route('app.cro.overview') }}">Offers</s-link>
+        @if (\App\Support\Features::enabled('profit', request()->attributes->get('store')))<s-link href="{{ app_route('app.profit.dashboard') }}">Profit</s-link>@endif
         <s-link href="{{ app_route('app.analytics') }}">Insights</s-link>
         <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
         <s-link href="{{ app_route('app.experiments.index') }}">Audiences and tests</s-link>
     @else
         <s-link href="{{ app_route('app.cro.overview') }}">CRO</s-link>
+        @if (\App\Support\Features::enabled('profit', request()->attributes->get('store')))<s-link href="{{ app_route('app.profit.dashboard') }}">Profit</s-link>@endif
         <s-link href="{{ app_route('app.automation.index') }}">Automation</s-link>
         <s-link href="{{ app_route('app.experiments.index') }}">A/B tests</s-link>
         <s-link href="{{ app_route('app.audiences.segments') }}">Audiences</s-link>

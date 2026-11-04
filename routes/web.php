@@ -265,6 +265,26 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa'])->name('app.')->group(f
                 Route::post('/runs/{run}/retry', 'retry')->whereNumber('run')->name('runs.retry');
             });
         });
+        // Profit (phase 3), behind the profit flag.
+        Route::prefix('profit')->name('profit.')->middleware('store.can:view_dashboard')->controller(\App\Http\Controllers\App\ProfitController::class)->group(function () {
+            Route::get('/', 'dashboard')->name('dashboard');
+            Route::get('/costs', 'costs')->name('costs');
+            Route::get('/costs/template', 'costTemplate')->name('costs.template');
+            Route::get('/ads', 'ads')->name('ads');
+            Route::get('/breakdowns', 'breakdowns')->name('breakdowns');
+            Route::get('/breakdowns/export', 'exportBreakdown')->name('breakdowns.export');
+            Route::get('/roas', 'roas')->name('roas');
+            Route::middleware('store.can:manage_settings')->group(function () {
+                Route::post('/access', 'accessGranted')->name('access');
+                Route::post('/costs', 'saveCosts')->name('costs.save');
+                Route::post('/costs/rules', 'saveRules')->name('costs.rules');
+                Route::post('/costs/import', 'importCosts')->name('costs.import');
+                Route::post('/ads', 'saveAd')->name('ads.store');
+                Route::post('/ads/import', 'importAds')->name('ads.import');
+                Route::post('/ads/{ad}', 'saveAd')->whereNumber('ad')->name('ads.update');
+                Route::post('/ads/{ad}/delete', 'deleteAd')->whereNumber('ad')->name('ads.delete');
+            });
+        });
         // Automation › Product documents (G42).
         Route::prefix('automation/documents')->name('automation.documents')->controller(\App\Http\Controllers\App\ProductDocumentController::class)->group(function () {
             Route::get('/', 'index')->middleware('store.can:view_dashboard');

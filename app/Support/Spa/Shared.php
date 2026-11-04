@@ -82,6 +82,13 @@ class Shared
                 ['Revenue & attribution', 'tag', 'app.analytics.revenue', [], $is('app.analytics.revenue')],
                 ['Customer journeys', 'route', 'app.analytics.journeys', [], $is('app.analytics.journeys', 'app.analytics.journey')],
             ]],
+            'profit' => ['Profit', [
+                ['Dashboard', 'chart', 'app.profit.dashboard', [], $is('app.profit.dashboard')],
+                ['Breakdowns', 'list', 'app.profit.breakdowns', [], $is('app.profit.breakdowns')],
+                ['Costs', 'tag', 'app.profit.costs', [], $is('app.profit.costs')],
+                ['Ad expenses', 'target', 'app.profit.ads', [], $is('app.profit.ads')],
+                ['ROAS and POAS', 'split', 'app.profit.roas', [], $is('app.profit.roas')],
+            ]],
             'settings' => ['Settings', [
                 ['Store', 'store', 'app.settings.store', [], $is('app.settings.store')],
                 ['Branding', 'palette', 'app.settings.branding', [], $is('app.settings.branding')],
@@ -98,6 +105,7 @@ class Shared
             $request->routeIs('app.audiences', 'app.audiences.*') => 'audiences',
             $request->routeIs('app.analytics', 'app.analytics.*') => 'analytics',
             $request->routeIs('app.settings.*') => 'settings',
+            $request->routeIs('app.profit.*') => 'profit',
             default => null,
         };
         if (! $section) {
