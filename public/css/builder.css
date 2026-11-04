@@ -142,3 +142,16 @@ a.b-template *:not(.oo-preview, .oo-preview *), a.bx-type *:not(.oo-preview, .oo
 .lk-part { display: flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
 .lk-part input { width: 16px; height: 16px; }
 .lk-words { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 14px; }
+
+/* Design for every offer (G37): a colour per part. */
+.el { margin-top: 18px; padding-top: 14px; border-top: 1px solid #ececec; }
+.el h3 { margin: 0 0 4px; font-size: 15px; }
+.el-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 12px; }
+.el-copy { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.el-copy select { min-height: 36px; max-width: 280px; }
+.el-list { display: flex; flex-direction: column; gap: 6px; }
+.el-row { display: grid; grid-template-columns: minmax(0, 1fr) 40px 150px 32px; gap: 8px; align-items: center; font-size: 13.5px; }
+.el-row input[type="color"] { width: 40px; height: 32px; padding: 2px; border: 1px solid #d4d4d4; border-radius: 8px; background: #fff; cursor: pointer; }
+.el-row input[type="color"].el-unset { opacity: .35; }
+.el-row input[type="text"] { min-height: 32px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+@media (max-width: 560px) { .el-row { grid-template-columns: minmax(0, 1fr) 40px 32px; } .el-row input[type="text"] { display: none; } }

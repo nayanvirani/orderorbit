@@ -446,6 +446,10 @@ class ExperienceController extends Controller
             'type' => ['label' => $type['label'], 'description' => $type['description'], 'surface' => $type['surface']],
             'fields' => Schema::fields($experience->type),
             'look' => \App\Experiences\Parts::meta($experience->type),
+            // Design for every offer (G37): a colour per element, brand colours and other offers to copy from.
+            'elements' => \App\Support\Features::enabled('design_tab', $store) ? (object) \App\Experiences\Elements::meta($experience->type) : (object) [],
+            'brand' => \App\Support\Features::enabled('design_tab', $store) ? array_intersect_key(\App\Models\CroSetting::brandingFor($store), Schema::shared()['design']) : null,
+            'designSources' => \App\Support\Features::enabled('design_tab', $store) && \App\Experiences\Elements::for($experience->type) ? $this->designSources($store, $experience) : [],
             'config' => array_map(fn ($section) => (object) $section, $config),
             'fieldErrors' => (object) $errors,
             'banner' => $banner,
@@ -460,6 +464,17 @@ class ExperienceController extends Controller
             'designNote' => empty(Schema::fields($experience->type)['design'] ?? []) ? 'checkout' : (isset(Schema::fields($experience->type)['design']['ck_background']) ? 'checkout-boxes' : 'brand'),
             'checkout' => in_array($type['surface'], Schema::CHECKOUT_SURFACES, true) || $type['surface'] === 'account',
         ], $errors ? 422 : 200);
+    }
+
+    /** Other storefront offers whose design can be copied: same-type offers also bring their element colours. */
+    private function designSources(Store $store, Experience $experience): array
+    {
+        return Experience::where('store_id', $store->id)->whereKeyNot($experience->id)
+            ->whereIn('type', array_keys(\App\Experiences\Elements::all()))->where('status', '!=', 'archived')
+            ->latest('updated_at')->limit(50)->get(['id', 'name', 'type', 'draft_config'])
+            ->map(fn (Experience $e) => ['id' => $e->id, 'name' => $e->name, 'type' => Registry::type($e->type)['label'], 'same' => $e->type === $experience->type,
+                'design' => (object) array_intersect_key((array) ($e->draft_config['design'] ?? []), Schema::shared()['design'] + ['elements' => true])])
+            ->values()->all();
     }
 
     /** What happens after publishing, for the Publish step (escaped HTML). */

@@ -5,6 +5,7 @@ import { Preview, useRuntime } from '../../components/runtime.jsx';
 import SchemaField, { visible } from '../../components/SchemaField.jsx';
 import { Page } from '../../components/ui.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
+import ElementColours, { withElements } from '../../components/ElementColours.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
 
 const STEPS = [['type', 'Type'], ['template', 'Template'], ['content', 'Content'], ['design', 'Design'], ['behavior', 'Behavior'], ['targeting', 'Targeting'], ['analytics', 'Analytics'], ['preview', 'Preview'], ['publish', 'Publish']];
@@ -14,7 +15,7 @@ const CUSTOMERS = { all: 'Everyone', new: 'New shoppers', returning: 'Returning 
 const DEVICES = { all: 'All devices', mobile: 'Mobile', desktop: 'Desktop' };
 
 export default function Builder(props) {
-  const { experience: x, type, fields, look, fieldErrors: errors, banner, templates, timezone, tzOffset, currency, segments, pageTypes, publishHelp, editor, designNote, checkout } = props;
+  const { experience: x, type, fields, look, fieldErrors: errors, banner, templates, timezone, tzOffset, currency, segments, pageTypes, publishHelp, editor, designNote, checkout, elements, brand, designSources } = props;
   const { submit } = useRouter();
   const ready = useRuntime({ checkout });
   const [config, setConfig] = useState(props.config);
@@ -45,7 +46,7 @@ export default function Builder(props) {
 
   const experience = (key = template) => ({
     id: x.handle, type: x.type, template: key, style: styles[key] || 'card', version: 0, priority: 50,
-    content: config.content || {}, design: withLook(config.design || {}, look, config.content?.hide), behavior: config.behavior || {},
+    content: config.content || {}, design: withElements(withLook(config.design || {}, look, config.content?.hide), elements), behavior: config.behavior || {},
     targeting: config.targeting || {}, analytics: config.analytics || {},
   });
   const context = { currency, cartTotal: Math.round(Number(cart || 0) * 100), productPrice: 2900, productTitle: 'Sample product', page: 'product' };
@@ -109,6 +110,10 @@ export default function Builder(props) {
                       error={errors[`${section}.${key}`]} rowErrors={Object.fromEntries(Object.entries(errors).filter(([k]) => k.startsWith(`${section}.${key}.`)).map(([k, m]) => [k.slice(`${section}.${key}.`.length), m]))}
                       currency={currency} timezone={timezone} tzOffset={tzOffset} segments={segments} />
                   ))}
+                  {section === 'design' && (
+                    <ElementColours elements={elements} design={config.design || {}} brand={brand} sources={designSources}
+                      onChange={(d) => { setConfig((c) => ({ ...c, design: d })); setDirty(true); }} />
+                  )}
                   {section === 'content' && (
                     <Look look={look} hide={config.content?.hide || []} words={config.content?.words || {}}
                       onChange={({ hide, words }) => { set('content', 'hide', hide); set('content', 'words', words); }} />

@@ -146,6 +146,11 @@ class StorefrontPublisher
                 if ($hidden = Parts::css($e->type, (array) ($config['content']['hide'] ?? []))) {
                     $config['design']['custom_css'] = trim(($config['design']['custom_css'] ?? '')."\n".$hidden);
                 }
+                // Element colours (G37) become scoped CSS too; the storefront doesn't need the list itself.
+                if ($colours = \App\Experiences\Elements::css($e->type, (array) ($config['design']['elements'] ?? []))) {
+                    $config['design']['custom_css'] = trim(($config['design']['custom_css'] ?? '')."\n".$colours);
+                }
+                unset($config['design']['elements']);
 
                 if ($e->type === 'sales-pop') {
                     // Real recent purchases come from Growvia's public feed for this store.

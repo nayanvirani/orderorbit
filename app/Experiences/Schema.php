@@ -232,6 +232,10 @@ class Schema
         $errors += self::crossFieldErrors($type, $config);
         // Texts and visibility (Parts): hidden parts and changed words.
         $config['content'] += Parts::clean($type, (array) ($input['content'] ?? []));
+        // Design for every offer (G37): a colour per element.
+        if (Elements::for($type)) {
+            $config['design']['elements'] = Elements::clean($type, (array) ($input['design']['elements'] ?? []));
+        }
 
         return [$config, $errors];
     }
