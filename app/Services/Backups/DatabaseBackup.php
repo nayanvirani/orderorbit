@@ -89,9 +89,13 @@ class DatabaseBackup
                 throw new RuntimeException('Backups need the PostgreSQL database.');
             }
             // Plain SQL, compressed; no owners or grants so it restores into any database.
-            $result = Process::timeout(1800)->env(['PGPASSWORD' => (string) $db['password']])->run([
-                'pg_dump', '--host='.$db['host'], '--port='.$db['port'], '--username='.$db['username'], '--dbname='.$db['database'],
-                '--no-owner', '--no-privileges', '--format=plain', '--compress=6', '--file='.$tmp,
+            // Production connects with a URL (DB_URL); host/port/user then aren't set separately.
+            // pg_dump takes the URL as --dbname, password included, so it's never on the command line twice.
+            $connection = ! empty($db['url'])
+                ? ['--dbname='.$db['url']]
+                : ['--host='.$db['host'], '--port='.$db['port'], '--username='.$db['username'], '--dbname='.$db['database']];
+            $result = Process::timeout(1800)->env(empty($db['url']) ? ['PGPASSWORD' => (string) $db['password']] : [])->run([
+                'pg_dump', ...$connection, '--no-owner', '--no-privileges', '--format=plain', '--compress=6', '--file='.$tmp,
             ]);
             if (! $result->successful()) {
                 throw new RuntimeException('pg_dump failed: '.trim(mb_substr($result->errorOutput(), 0, 500)));

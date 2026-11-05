@@ -66,4 +66,23 @@ class DatabaseBackupTest extends TestCase
         $this->actingAs($admin)->get('/admin/backups')->assertOk()->assertSee('bucket isn')->assertSee('connected yet');
         $this->actingAs($admin)->post('/admin/backups')->assertSessionHasErrors('backup');
     }
+
+    public function test_pg_dump_connects_with_the_database_url(): void
+    {
+        $this->bucket();
+        \Illuminate\Support\Facades\Process::fake();
+        $backups = app(DatabaseBackup::class);
+        $name = $backups->reserve();
+        // Postgres only for the backup call (the test's own database stays SQLite).
+        $default = config('database.default');
+        config(['database.default' => 'pgsql', 'database.connections.pgsql.url' => 'postgresql://u:p@db.internal:5432/railway']);
+        try {
+            $backups->create($name);
+        } finally {
+            config(['database.default' => $default]);
+        }
+        \Illuminate\Support\Facades\Process::assertRan(fn ($p) => in_array('--dbname=postgresql://u:p@db.internal:5432/railway', (array) $p->command, true) && ! in_array('--host=127.0.0.1', (array) $p->command, true));
+        $this->assertNotNull($backups->list()[0] ?? null, 'Uploaded to the bucket.');
+        $this->assertNull($backups->running());
+    }
 }
