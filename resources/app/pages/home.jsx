@@ -34,13 +34,9 @@ export default function Home({ overview: first }) {
           </div>
         </header>
 
-        {overview.data?.alerts?.map((a, i) => (
-          <s-banner key={i} tone={a.tone}>
-            {a.text} <s-button variant="tertiary" href={appUrl(a.href)}>{a.action}</s-button>
-          </s-banner>
-        ))}
-
-        {overview.data?.milestone && <Milestone milestone={overview.data.milestone} />}
+        {/* One banner at a time (Built for Shopify 4.3.4): alerts first, the milestone only when there are none. */}
+        {overview.data?.alerts?.length ? <Alerts alerts={overview.data.alerts} />
+          : overview.data?.milestone && <Milestone milestone={overview.data.milestone} />}
         {overview.data && !overview.data.setup.done && <SetupCard setup={overview.data.setup} />}
 
         <Kpis days={days} />
@@ -60,6 +56,23 @@ export default function Home({ overview: first }) {
  * A real milestone (G23). Once the card has been seen, Growvia asks Shopify for its review window:
  * never from a button, and Shopify decides whether to show it. Its answer is recorded either way.
  */
+// Every alert in one banner, in the tone of the most serious one.
+const SEVERITY = ['info', 'success', 'warning', 'critical'];
+function Alerts({ alerts }) {
+  const tone = alerts.reduce((t, a) => (SEVERITY.indexOf(a.tone) > SEVERITY.indexOf(t) ? a.tone : t), 'info');
+  if (alerts.length === 1) {
+    const [a] = alerts;
+    return <s-banner tone={tone}>{a.text} <s-button variant="tertiary" href={appUrl(a.href)}>{a.action}</s-button></s-banner>;
+  }
+  return (
+    <s-banner tone={tone} heading={`${alerts.length} things need your attention`}>
+      <ul style={{ margin: 0, paddingLeft: 18 }}>
+        {alerts.map((a, i) => <li key={i}>{a.text} <a href={appUrl(a.href)}>{a.action}</a></li>)}
+      </ul>
+    </s-banner>
+  );
+}
+
 function Milestone({ milestone }) {
   const asked = useRef(false);
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { clone, Ctx, F, getIn, Help, Picker, Row, Section, setIn } from '../../components/editorKit.jsx';
 import { Preview, useRuntime } from '../../components/runtime.jsx';
 import { Page } from '../../components/ui.jsx';
+import SaveBar from '../../components/SaveBar.jsx';
 import { appUrl, route, useRouter, useShared } from '../../router.jsx';
 import { ActionButton } from '../../components/form.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
@@ -11,6 +12,7 @@ import TieredPanel, { usesTiered } from './_tiered.jsx';
 import MixTiersPanel from './_mixtiers.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
 import { PreviewBanner, previewLabel } from '../../components/PlanPreview.jsx';
+import { confirmDialog } from '../../components/Confirm.jsx';
 
 export default function BundleEditor({ experience: x, config, fieldErrors: errors, banner, type, meta, subscriptionLayouts, testVersion, preview }) {
   const { submit } = useRouter();
@@ -57,6 +59,8 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
     setBusy(null);
     setDirty(false);
   };
+  // Discard (save bar): back to what was last saved.
+  const discard = () => { setState(config); setName(x.name); setDirty(false); };
 
   // The storefront payload (mirrors BundleSchema::payload); empty pickers use sample products.
   const payload = () => {
@@ -99,6 +103,7 @@ export default function BundleEditor({ experience: x, config, fieldErrors: error
   return (
     <Page heading={testVersion ? `${x.name} · Version ${testVersion.key}` : x.name}
       back={testVersion ? route('app.experiments.edit', { experiment: testVersion.experiment }) : route('app.bundles.index')} backLabel={testVersion ? 'A/B test' : 'Bundles'}>
+      <SaveBar dirty={dirty} saving={busy === 'save'} onSave={() => save('save')} onDiscard={discard} />
       {testVersion && (
         <s-banner tone="info" heading={`Editing version ${testVersion.key} of the test "${testVersion.name}"`}>
           <s-paragraph>Change prices, gifts, products, layout, text or design. Version A stays your live bundle, and where the bundle shows stays the same. Checkout charges each shopper the price of the version they saw.</s-paragraph>
@@ -478,8 +483,8 @@ function OffersPanel() {
                 <button type="button" className="bx-tool" title="Move up" aria-label="Move up" disabled={!i} onClick={() => update((s) => { const [m] = s.offers.splice(i, 1); s.offers.splice(i - 1, 0, m); return s; })}>↑</button>
                 <button type="button" className="bx-tool" title="Move down" aria-label="Move down" disabled={i >= state.offers.length - 1} onClick={() => update((s) => { const [m] = s.offers.splice(i, 1); s.offers.splice(i + 1, 0, m); return s; })}>↓</button>
                 <button type="button" className="bx-tool" title="Duplicate" aria-label="Duplicate" onClick={() => update((s) => { const c = clone(s.offers[i]); c.id = `o${Date.now().toString(36)}`; c.preselected = false; s.offers.splice(i + 1, 0, c); return s; })}>⧉</button>
-                <button type="button" className="bx-tool danger" title="Delete" aria-label="Delete" onClick={() => {
-                  if (!window.confirm('Delete this offer?')) return;
+                <button type="button" className="bx-tool danger" title="Delete" aria-label="Delete" onClick={async () => {
+                  if (!(await confirmDialog('Delete this offer?', { title: 'Delete offer', action: 'Delete' }))) return;
                   update((s) => { s.offers.splice(i, 1); if (s.offers.length && !s.offers.some((x) => x.preselected)) s.offers[0].preselected = true; return s; });
                 }}>🗑</button>
               </div>

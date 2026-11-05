@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { clone, Ctx, F, Help, Picker, Row, setIn } from '../../components/editorKit.jsx';
 import { Preview, useRuntime } from '../../components/runtime.jsx';
 import { money, Page } from '../../components/ui.jsx';
+import SaveBar from '../../components/SaveBar.jsx';
 import { appUrl, route, useRouter, useShared } from '../../router.jsx';
 import { ActionButton } from '../../components/form.jsx';
 import ExperienceStatus from '../cro/_status.jsx';
@@ -52,6 +53,8 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
     setBusy(null);
     setDirty(false);
   };
+  // Discard (save bar): back to what was last saved.
+  const discard = () => { setState(config); setName(x.name); setDirty(false); };
 
   // The storefront payload (mirrors GiftSchema::payload).
   const top = Math.max(...state.milestones.map((m) => Number(m.threshold) || 0), count ? 5 : 100);
@@ -73,6 +76,7 @@ export default function GiftEditor({ experience: x, config, fieldErrors: errors,
   return (
     <Page heading={testVersion ? `${x.name} · Version ${testVersion.key}` : x.name}
       back={testVersion ? route('app.experiments.edit', { experiment: testVersion.experiment }) : route('app.gifts.index')} backLabel={testVersion ? 'A/B test' : 'Progressive gifts'}>
+      <SaveBar dirty={dirty} saving={busy === 'save'} onSave={() => save('save')} onDiscard={discard} />
       {testVersion && (
         <s-banner tone="info" heading={`Editing version ${testVersion.key} of the test "${testVersion.name}"`}>
           <s-paragraph>Change the thresholds, gifts, discounts, layout, text or design. Version A stays your live campaign. Checkout gives each shopper the rewards of the version they saw.</s-paragraph>

@@ -2,6 +2,8 @@ import { appUrl, pageComponent, route, useRouter } from './router.jsx';
 import { Icon } from './components/ui.jsx';
 import { api } from './api.js';
 import Chat from './components/Chat.jsx';
+import ConfirmHost from './components/Confirm.jsx';
+import { useEffect, useState } from 'react';
 
 /** The frame around every page: section sidebar, plan-limit notice, then the page itself. */
 export default function App() {
@@ -14,12 +16,27 @@ export default function App() {
           <Limit limit={limit} />
           <Legal legal={legal} />
           <Announcements list={announcements} />
+          <ErrorBanner />
           <Current page={page} />
         </>
       )}
       {shared.chat && <Chat />}
+      <ConfirmHost />
     </>
   );
+}
+
+/** The page's error (from a form or a request), shown until it's closed or another page opens. */
+function ErrorBanner() {
+  const [message, setMessage] = useState(() => window.OO_ERROR || null);
+  useEffect(() => {
+    const on = (e) => setMessage(e.detail);
+    window.addEventListener('oo:error', on);
+    return () => window.removeEventListener('oo:error', on);
+  }, []);
+  useEffect(() => { if (message) window.scrollTo({ top: 0, behavior: 'smooth' }); }, [message]);
+  if (!message) return null;
+  return <s-banner tone="critical" dismissible onDismiss={() => setMessage(null)}>{message}</s-banner>;
 }
 
 function Framed({ nav, limit, legal, announcements, page }) {
@@ -30,6 +47,7 @@ function Framed({ nav, limit, legal, announcements, page }) {
         <Limit limit={limit} />
         <Legal legal={legal} />
         <Announcements list={announcements} />
+        <ErrorBanner />
         <Current page={page} />
       </div>
     </div>

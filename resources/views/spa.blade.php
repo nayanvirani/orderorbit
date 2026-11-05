@@ -36,7 +36,8 @@
     <div id="root"></div>
     @if ($notice = \App\Support\Notices::get(request('notice')))
         <script>
-            shopify.toast.show(@json($notice[0]), { isError: @json($notice[1]) });
+            // Errors become the page's error banner (they don't disappear); the rest are toasts.
+            if (@json($notice[1])) { window.OO_ERROR = @json($notice[0]); } else { shopify.toast.show(@json($notice[0])); }
             (() => { const u = new URL(location.href); u.searchParams.delete('notice'); history.replaceState(null, '', u); })();
         </script>
     @endif

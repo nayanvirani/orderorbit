@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { appUrl, useRouter } from '../router.jsx';
+import { confirmDialog } from './Confirm.jsx';
 
 /**
  * Live chat with the Growvia team (G43): a round button at the bottom-right of every page opens
@@ -67,7 +68,7 @@ export default function Chat() {
               <small><span className={`ob-chat-dot ${data.status}`} />{data.statusText}</small>
             </div>
             {chat && !starting && chat.state !== 'closed' && (
-              <button type="button" className="ob-chat-link" onClick={() => window.confirm('End this chat? A copy goes to your email.') && post('close')}>End chat</button>
+              <button type="button" className="ob-chat-link" onClick={async () => (await confirmDialog('End this chat? A copy goes to your email.', { title: 'End chat', action: 'End chat' })) && post('close')}>End chat</button>
             )}
             <button type="button" className="ob-chat-x" aria-label="Close chat" onClick={() => setOpen(false)}>✕</button>
           </header>

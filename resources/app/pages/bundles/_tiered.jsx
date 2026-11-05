@@ -2,6 +2,7 @@
 // sale header, gifts row, delivery bar and button. It edits the same config as the classic Offers panel.
 import { useContext, useState } from 'react';
 import { Ctx, F, Help, Picker, Row } from '../../components/editorKit.jsx';
+import { confirmDialog } from '../../components/Confirm.jsx';
 
 // The tiered templates' colour styles (BundleSchema models qg-tiered and qg-tiered-sage).
 const STYLES = {
@@ -69,7 +70,7 @@ function Tiers({ onPick }) {
             <input aria-label={`Tier ${i + 1} badge`} value={o.label} maxLength={40} placeholder="None" onChange={(e) => set(`offers.${i}.label`, e.target.value)} />
             <button type="button" className="tx-gifts" onClick={() => onPick(i)} title="Edit under What's in each tier">{giftNames(o) || ((o.gifts || []).length ? `${o.gifts.length} to choose` : 'None')}</button>
             <button type="button" className="b-icon-btn" aria-label={`Delete tier ${i + 1}`} disabled={state.offers.length < 2}
-              onClick={() => window.confirm(`Delete "${o.title}"?`) && update((s) => { s.offers.splice(i, 1); if (!s.offers.some((x) => x.preselected)) s.offers[0].preselected = true; return s; })}>×</button>
+              onClick={async () => (await confirmDialog(`Delete "${o.title}"?`, { title: 'Delete tier', action: 'Delete' })) && update((s) => { s.offers.splice(i, 1); if (!s.offers.some((x) => x.preselected)) s.offers[0].preselected = true; return s; })}>×</button>
           </div>
         ))}
       </div>

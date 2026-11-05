@@ -5,8 +5,10 @@
 import { useMemo, useState } from 'react';
 import { ActionButton } from '../../components/form.jsx';
 import { ago, Page } from '../../components/ui.jsx';
+import SaveBar from '../../components/SaveBar.jsx';
 import { appUrl, route, useRouter } from '../../router.jsx';
 import { PlanNote, RunStatus } from './_shared.jsx';
+import { confirmDialog } from '../../components/Confirm.jsx';
 
 const keyOf = (k) => (/^\d+$/.test(k) ? Number(k) : k);
 const getIn = (obj, path) => path.split('.').reduce((o, k) => (o == null ? o : o[keyOf(k)]), obj);
@@ -106,6 +108,8 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
     await submit(route('app.automation.update', { workflow: workflow.id }), { name, definition: state, action });
     setBusy(null);
   };
+  // Discard (save bar): back to the saved draft.
+  const discard = () => { setName(workflow.name); setState(initial); };
   const insert = (listPath, index, step) => {
     const list = [...(getIn(state, listPath) || [])];
     list.splice(index, 0, step);
@@ -132,6 +136,7 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
 
   return (
     <Page heading={name || 'Workflow'} back={route('app.automation.index')} backLabel="Workflows">
+      <SaveBar dirty={dirty} saving={busy === 'save'} onSave={() => save('save')} onDiscard={discard} />
       <PlanNote automationOn={automationOn} />
       {banner && <s-banner tone={errorCount ? 'warning' : 'info'}>{banner}</s-banner>}
 
@@ -367,7 +372,7 @@ function StepPanel({ ctx, path, onRemove, onMove }) {
     <div className="fl-panel-tools">
       {i > 0 && <button type="button" aria-label="Move up" title="Move up" onClick={() => onMove(-1)}>↑</button>}
       {i < count - 1 && <button type="button" aria-label="Move down" title="Move down" onClick={() => onMove(1)}>↓</button>}
-      <s-button tone="critical" onClick={() => (step.type !== 'condition' || (!(step.then || []).length && !(step.else || []).length) || window.confirm('Delete this condition and every step in its Then and Otherwise branches?')) && onRemove()}>Delete</s-button>
+      <s-button tone="critical" onClick={async () => (step.type !== 'condition' || (!(step.then || []).length && !(step.else || []).length) || (await confirmDialog('Delete this condition and every step in its Then and Otherwise branches?', { title: 'Delete condition', action: 'Delete' }))) && onRemove()}>Delete</s-button>
     </div>
   );
 

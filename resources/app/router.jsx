@@ -2,6 +2,7 @@
 // shared}; links and forms work without reloading the iframe. Pages that are still Blade answer
 // {legacy: true} and open with a normal page load.
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { confirmDialog } from './components/Confirm.jsx';
 
 const RouterContext = createContext(null);
 const pages = import.meta.glob('./pages/**/*.jsx');
@@ -114,8 +115,21 @@ export async function download(url, fallbackName = 'export.csv') {
   }
 }
 
+/**
+ * Success messages are toasts. Errors are a red banner at the top of the page that stays until it's
+ * closed or another page opens (Built for Shopify 4.2.4: errors don't disappear on their own).
+ */
 export function toast(message, error = false) {
-  if (message) window.shopify?.toast?.show(message, { isError: error });
+  if (!message) return;
+  if (error) {
+    showError(message);
+    return;
+  }
+  window.shopify?.toast?.show(message);
+}
+
+export function showError(message) {
+  window.dispatchEvent(new CustomEvent('oo:error', { detail: message || null }));
 }
 
 const loading = (on) => {
@@ -141,6 +155,7 @@ export function RouterProvider({ initial, children }) {
       window.history.pushState({ oo: true }, '', url);
     }
     if (!preserveScroll) window.scrollTo(0, 0);
+    if (!replace) showError(null); // a new page starts without the last page's error
   }, []);
 
   /** Handles any server answer to a visit or form submit. Returns {ok, errors}. */
@@ -152,6 +167,7 @@ export function RouterProvider({ initial, children }) {
       return { ok: res.ok, data };
     }
     if (data.redirect) {
+      showError(null);
       toast(data.notice?.message, data.notice?.error);
       if (data.external) {
         window.open(data.redirect, '_top');
@@ -205,7 +221,8 @@ export function RouterProvider({ initial, children }) {
   visitRef.current = visit;
 
   const submit = useCallback(async (url, body = {}, { method = 'POST', confirm } = {}) => {
-    if (confirm && !window.confirm(confirm)) return { ok: false, cancelled: true };
+    // eslint-disable-next-line no-use-before-define
+    if (confirm && !(await confirmDialog(confirm))) return { ok: false, cancelled: true };
     loading(true);
     try {
       const { res, data } = await request(url, { method, body });

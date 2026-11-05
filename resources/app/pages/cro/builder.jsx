@@ -4,6 +4,7 @@ import { ActionButton } from '../../components/form.jsx';
 import { Preview, useRuntime } from '../../components/runtime.jsx';
 import SchemaField, { visible } from '../../components/SchemaField.jsx';
 import { Page } from '../../components/ui.jsx';
+import SaveBar from '../../components/SaveBar.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
 import ElementColours, { withElements } from '../../components/ElementColours.jsx';
 import TextLayout, { withLayout } from '../../components/TextLayout.jsx';
@@ -59,9 +60,12 @@ export default function Builder(props) {
     setBusy(null);
     if (r.ok || r.data) setDirty(false);
   };
+  // Discard (save bar): back to what was last saved.
+  const discard = () => { setConfig(props.config); setTemplate(x.template_key); setMeta({ name: x.name, description: x.description || '', change_note: '' }); setDirty(false); };
 
   return (
     <Page heading={x.name} back={route('app.cro.experiences.show', { experience: x.id })} backLabel="Experience">
+      <SaveBar dirty={dirty} saving={busy === 'save'} onSave={() => save('save')} onDiscard={discard} />
       {banner && <s-banner tone={Object.keys(errors).length ? 'warning' : 'info'}>{banner}</s-banner>}
       <PreviewBanner preview={preview} />
 
