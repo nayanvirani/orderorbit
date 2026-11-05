@@ -34,6 +34,10 @@ class ProtectCheckCommand extends Command
                         $sync->costsChanged($store);
                     }
                     $r = $alerts->check($store);
+                    // Health Score (G12): today's score, for the 8-week trend.
+                    if (Features::enabled('protect_center', $store)) {
+                        app(\App\Services\Protect\Health::class)->record($store);
+                    }
                     $this->line("{$store->shop_domain}: {$r['opened']} opened, {$r['closed']} closed, {$r['open']} open");
                 } catch (Throwable $e) {
                     report($e);

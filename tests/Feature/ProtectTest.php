@@ -57,7 +57,7 @@ class ProtectTest extends TestCase
     {
         $store = $this->store();
         $r = app(Alerts::class)->check($store);
-        $rules = ProtectAlert::where('status', 'open')->pluck('rule')->sort()->values()->all();
+        $rules = ProtectAlert::where('status', 'open')->where('severity', '!=', 'idea')->pluck('rule')->sort()->values()->all();
         $this->assertSame(['below_cost', 'low_stock', 'missing_cost', 'negative_margin', 'sold_out'], $rules);
         $this->assertSame(5, $r['opened']);
         $this->assertStringContainsString('4 left', ProtectAlert::where('rule', 'low_stock')->sole()->what);

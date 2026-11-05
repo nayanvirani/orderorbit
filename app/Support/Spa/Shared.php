@@ -84,9 +84,12 @@ class Shared
                 ['Customer journeys', 'route', 'app.analytics.journeys', [], $is('app.analytics.journeys', 'app.analytics.journey')],
             ]],
             'protect' => ['Protect', [
+                ['Action Center', 'check', 'app.protect.actions', [], $is('app.protect.actions'), null, 'protect_center'],
                 ['Alerts', 'shield', 'app.protect.alerts', [], $is('app.protect.alerts')],
+                ['Health Score', 'activity', 'app.protect.health', [], $is('app.protect.health'), null, 'protect_center'],
                 ['Inventory', 'package', 'app.protect.inventory', [], $is('app.protect.inventory')],
                 ['Product data', 'list', 'app.protect.products', [], $is('app.protect.products')],
+                ['URL monitor', 'route', 'app.protect.urls', [], $is('app.protect.urls'), null, 'url_monitor'],
             ]],
             'profit' => ['Profit', [
                 ['Dashboard', 'chart', 'app.profit.dashboard', [], $is('app.profit.dashboard')],

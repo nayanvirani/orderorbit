@@ -409,6 +409,42 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .pf-step { grid-template-columns: 150px minmax(0, 1fr) 120px; }
 .pf-step span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 900px) { .pf-step { grid-template-columns: 120px minmax(0, 1fr) 96px; } }
+/* Protect › Action Center (G13) */
+.ac-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
+.ac-head .pt-chips { margin: 0; }
+.ac-n { display: inline-block; min-width: 18px; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: var(--ob-subdued, #f1f1f1); font-size: 12px; font-weight: 700; }
+.ac-risk { text-align: right; } .ac-risk small { display: block; color: var(--ob-muted); font-size: 12.5px; font-weight: 600; } .ac-risk b { font-size: 24px; }
+.ac-item { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 18px; border-radius: 14px; background: var(--ob-surface); box-shadow: var(--ob-card-shadow); }
+.ac-money b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; } .ac-money small { color: var(--ob-muted); font-size: 12px; }
+.ac-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.ac-body h2 { margin: 0 0 2px; font-size: 15px; } .ac-body p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ob-muted); }
+.ac-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+@media (max-width: 900px) { .ac-item { grid-template-columns: 1fr; gap: 8px; } .ac-actions { justify-content: flex-start; } .ac-risk { text-align: left; } }
+/* Protect › Health Score (G12) */
+.hs-top { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.hs-ring { position: relative; width: 160px; height: 160px; flex: none; }
+.hs-ring svg { width: 100%; height: 100%; } .hs-ring circle { fill: none; stroke-width: 14; stroke-linecap: round; }
+.hs-ring .track { stroke: var(--ob-subdued, #efedf7); }
+.hs-ring > div { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hs-ring b { font-size: 44px; line-height: 1; } .hs-ring small { color: var(--ob-muted); font-size: 12.5px; font-weight: 600; }
+.hs-ring.great .value, .hs-ring.good .value { stroke: var(--ob-accent); } .hs-ring.fair .value { stroke: #e08a3c; } .hs-ring.poor .value { stroke: #c62828; }
+.hs-says { flex: 1 1 200px; } .hs-says p { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.hs-label { font-size: 18px !important; font-weight: 700; } .hs-label .up { color: #17663a; font-size: 13px; } .hs-label .down { color: #9f2222; font-size: 13px; }
+.hs-weeks { display: flex; align-items: flex-end; gap: 6px; height: 56px; margin-top: 4px; }
+.hs-weeks i { width: 16px; border-radius: 3px; background: var(--ob-accent); } .hs-weeks i.fair { background: #e08a3c; } .hs-weeks i.poor { background: #c62828; }
+.hs-up { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--ob-line); }
+.hs-up:last-child { border-bottom: 0; } .hs-up small { display: block; color: var(--ob-muted); font-size: 12.5px; } .hs-up a { font-weight: 700; white-space: nowrap; }
+.hs-pts { display: inline-flex; align-items: center; justify-content: center; height: 32px; border-radius: 8px; background: #e3f4ea; color: #17663a; font-weight: 800; }
+.hs-cats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.hs-cat { display: flex; flex-direction: column; gap: 6px; } .hs-cat-head { display: flex; justify-content: space-between; font-size: 14px; } .hs-cat small { font-size: 12px; }
+.hs-bar { height: 10px; border-radius: 5px; background: var(--ob-subdued, #efedf7); overflow: hidden; }
+.hs-bar i { display: block; height: 100%; background: var(--ob-accent); } .hs-bar i.fair { background: #e08a3c; } .hs-bar i.poor { background: #c62828; }
+/* Protect › URL monitor (G10) */
+.um-add label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
+.um-add > div { display: flex; flex-wrap: wrap; gap: 8px; } .um-add input { flex: 1 1 280px; min-height: 36px; padding: 0 12px; border: 1px solid var(--ob-line); border-radius: 10px; font: inherit; }
+.um-sub { display: block; font-size: 12px; }
+.um-strip { display: flex; gap: 2px; } .um-strip i { width: 6px; height: 18px; border-radius: 2px; background: #8fd1a8; }
+.um-strip i.down { background: #c62828; } .um-strip i.slow { background: #e08a3c; } .um-strip i.none { background: var(--ob-subdued, #efedf7); }
 
 /* app-base.css */
 /* Embedded app base: fields, buttons, tables and helpers shared by the Blade pages and the React admin. */

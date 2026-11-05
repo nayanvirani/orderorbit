@@ -268,7 +268,10 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
         });
         // Protect (phase 4), behind the protect flag.
         Route::prefix('protect')->name('protect.')->middleware('store.can:view_dashboard')->controller(\App\Http\Controllers\App\ProtectController::class)->group(function () {
-            Route::get('/', fn () => redirect()->to(app_route('app.protect.alerts')))->name('index');
+            Route::get('/', fn (\App\Models\Store $store) => redirect()->to(app_route(\App\Support\Features::enabled('protect_center', $store) ? 'app.protect.actions' : 'app.protect.alerts')))->name('index');
+            Route::get('/actions', 'actions')->name('actions');
+            Route::get('/health', 'health')->name('health');
+            Route::get('/urls', 'urls')->name('urls');
             Route::get('/alerts', 'alerts')->name('alerts');
             Route::get('/inventory', 'inventory')->name('inventory');
             Route::get('/inventory/reorder', 'reorderList')->name('inventory.reorder');
@@ -277,6 +280,9 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
                 Route::post('/alerts/{alert}', 'alertAction')->whereNumber('alert')->name('alerts.action');
                 Route::post('/settings', 'saveSettings')->name('settings');
                 Route::post('/refresh', 'refresh')->name('refresh');
+                Route::post('/urls', 'urlAdd')->name('urls.add');
+                Route::post('/urls/check', 'urlCheck')->name('urls.check');
+                Route::post('/urls/{url}/remove', 'urlRemove')->whereNumber('url')->name('urls.remove');
             });
         });
         // Insights › Sales (G14), behind the sales_insights flag.

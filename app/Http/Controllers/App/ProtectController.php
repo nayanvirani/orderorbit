@@ -8,8 +8,11 @@ use App\Models\Profit\ProfitSetting;
 use App\Models\Protect\ProtectAlert;
 use App\Models\Store;
 use App\Services\Profit\ProfitSync;
+use App\Services\Protect\ActionCenter;
 use App\Services\Protect\Alerts;
+use App\Services\Protect\Health;
 use App\Services\Protect\Protect;
+use App\Services\Protect\UrlMonitor;
 use App\Support\Features;
 use App\Support\Plans;
 use App\Support\Spa\Page;
@@ -17,14 +20,18 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/** Protect (phase 4): money-leak alerts (G7), inventory and days of stock (G8), product data (G9). */
+/**
+ * Protect (phase 4): money-leak alerts (G7), inventory and days of stock (G8), product data (G9),
+ * URL monitor (G10), Health Score (G12) and Action Center (G13).
+ */
 class ProtectController extends Controller
 {
     public function __construct(private readonly Protect $protect) {}
 
     public function alerts(Store $store): Page
     {
-        $alerts = ProtectAlert::where('store_id', $store->id)->get();
+        // Suggestions (severity "idea") are only in the Action Center.
+        $alerts = ProtectAlert::where('store_id', $store->id)->where('severity', '!=', 'idea')->get();
         $active = app(Alerts::class)->activeRules($store);
         $off = (array) (Protect::settings($store)['rules'] ?? []);
 
@@ -57,7 +64,92 @@ class ProtectController extends Controller
             'restore' => $a->forceFill(['status' => 'open', 'snoozed_until' => null])->save(),
         };
 
-        return redirect()->to(app_route('app.protect.alerts', ['notice' => 'saved']));
+        return redirect()->to(app_route($request->input('from') === 'actions' ? 'app.protect.actions' : 'app.protect.alerts', ['notice' => 'saved']));
+    }
+
+    /** Action Center (G13): open issues and suggestions, sorted by money at risk. */
+    public function actions(Store $store, ActionCenter $center): Page
+    {
+        abort_unless(Features::enabled('protect_center', $store), 404);
+        $items = $center->items($store);
+
+        return $this->page($store, 'protect/actions', [
+            'items' => $items,
+            'atRisk' => round(array_sum(array_map(fn ($i) => $i['kind'] === 'issue' ? (float) $i['money'] : 0, $items)), 2),
+            'checkedAt' => ProtectAlert::where('store_id', $store->id)->max('last_seen_at'),
+        ], 'protect');
+    }
+
+    /** Health Score (G12): the score, the 8-week trend, what raises it most and each category. */
+    public function health(Store $store, Health $health): Page
+    {
+        abort_unless(Features::enabled('protect_center', $store), 404);
+        $now = $health->compute($store);
+        $history = $health->history($store, $now['score']);
+        $ups = $health->ups($now);
+
+        return $this->page($store, 'protect/health', [
+            'score' => $now['score'], 'label' => Health::label($now['score']), 'change' => $history['change'], 'weeks' => $history['weeks'], 'ups' => $ups,
+            'reach' => $now['score'] === null ? null : min(100, $now['score'] + array_sum(array_column($ups, 'pts'))),
+            'categories' => collect($now['categories'])->map(fn ($c, $key) => ['key' => $key, 'name' => Health::CATEGORIES[$key], 'value' => $c[0], 'note' => $c[1]])->values()->all(),
+        ], 'protect');
+    }
+
+    /** URL monitor (G10). Needs no profit access: only the storefront and product handles. */
+    public function urls(Store $store, UrlMonitor $monitor): Page
+    {
+        abort_unless(Features::enabled('url_monitor', $store), 404);
+        $locked = $store->planIncludes('url_monitor') ? null : Plans::unlockMessage('url_monitor', 'see it', $store);
+        // First visit: find the pages worth watching and check them, so the page isn't empty.
+        if (! $locked && ! \App\Models\Protect\MonitoredUrl::where('store_id', $store->id)->exists()) {
+            try {
+                $monitor->discover($store);
+                $monitor->check($store);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+        $rows = $locked ? [] : $monitor->rows($store);
+        $down = array_values(array_filter($rows, fn ($r) => $r['status'] === 'down'));
+
+        return page('protect/urls', [
+            'rows' => $rows, 'down' => $down, 'limit' => $monitor->limit($store), 'used' => count($rows), 'interval' => $monitor->interval($store),
+            'domain' => parse_url((string) (\App\Models\Protect\MonitoredUrl::where('store_id', $store->id)->where('kind', 'home')->value('url') ?: 'https://'.$store->shop_domain), PHP_URL_HOST),
+            'passwordProtected' => collect($rows)->contains('status', 'locked'), 'locked' => $locked,
+            'canEdit' => (bool) request()->user()?->can('manage_settings'),
+        ]);
+    }
+
+    public function urlAdd(Request $request, Store $store, UrlMonitor $monitor): RedirectResponse
+    {
+        $this->gate($store, 'url_monitor', 'url_monitor');
+        $data = $request->validate(['url' => ['required', 'string', 'max:500']]);
+        if ($error = $monitor->add($store, $data['url'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['url' => $error]);
+        }
+
+        return redirect()->to(app_route('app.protect.urls', ['notice' => 'saved']));
+    }
+
+    public function urlRemove(Store $store, UrlMonitor $monitor, int $url): RedirectResponse
+    {
+        $this->gate($store, 'url_monitor', 'url_monitor');
+        $monitor->remove($store, \App\Models\Protect\MonitoredUrl::where('store_id', $store->id)->findOrFail($url));
+
+        return redirect()->to(app_route('app.protect.urls', ['notice' => 'saved']));
+    }
+
+    /** "Check now": every page again, at most once a minute; also looks for new best sellers. */
+    public function urlCheck(Store $store, UrlMonitor $monitor): RedirectResponse
+    {
+        $this->gate($store, 'url_monitor', 'url_monitor');
+        if (! \Illuminate\Support\Facades\Cache::add("url-check:{$store->id}", true, 60)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['check' => 'Checked a moment ago. You can check again in a minute.']);
+        }
+        $monitor->discover($store);
+        $monitor->check($store, $monitor->active($store));
+
+        return redirect()->to(app_route('app.protect.urls', ['notice' => 'saved']));
     }
 
     /** Which rules run, and the supplier lead time and cover days for reorder suggestions. */
@@ -83,7 +175,8 @@ class ProtectController extends Controller
         $locations = ProductCost::where('store_id', $store->id)->whereNotNull('locations')->get()->flatMap(fn ($v) => collect($v->locations)->map(fn ($l) => $l[0]))->unique()->all();
 
         return $this->page($store, 'protect/inventory', [
-            'rows' => array_slice($rows, 0, 500), 'location' => $location, 'locations' => $locations, 'settings' => Protect::settings($store),
+            'rows' => array_slice($rows, 0, 500), 'location' => $location,
+            'status' => in_array($request->query('status'), ['reorder', 'sold_out', 'healthy', 'no_sales'], true) ? $request->query('status') : null, 'locations' => $locations, 'settings' => Protect::settings($store),
             'summary' => [
                 'reorder' => count(array_filter($rows, fn ($r) => $r['status'] === 'reorder')),
                 'sold_out' => count(array_filter($rows, fn ($r) => $r['status'] === 'sold_out')),
@@ -163,9 +256,9 @@ class ProtectController extends Controller
         ]);
     }
 
-    private function gate(Store $store, string $feature): void
+    private function gate(Store $store, string $feature, string $flag = 'protect'): void
     {
-        abort_unless(Features::enabled('protect', $store), 404);
+        abort_unless(Features::enabled($flag, $store), 404);
         abort_unless($store->planIncludes($feature), 403, Plans::unlockMessage($feature, 'use it', $store));
     }
 }

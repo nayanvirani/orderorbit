@@ -28,7 +28,11 @@ class Alerts
         'discount_margin' => ['Discount eats the margin', 'Discounted orders lose money', 'protect_alerts'],
         'refund_spike' => ['Refund spike', 'Over 2× the 30-day average', 'protect_alerts'],
         'loss_orders' => ['Loss-making orders spike', 'Over 10% of orders lose money', 'product_data'],
+        'page_down' => ['Page down', 'A monitored page fails two checks in a row', 'url_monitor'],
     ];
+
+    /** Rules whose alerts other checks open and close (the URL monitor), not this hourly pass. */
+    public const ELSEWHERE = ['page_down'];
 
     public function __construct(private readonly Protect $protect, private readonly EmailSender $sender) {}
 
@@ -43,8 +47,9 @@ class Alerts
     /** Checks every rule, opens what's new, keeps what's still true and closes what's fixed. */
     public function check(Store $store): array
     {
-        $rules = $this->activeRules($store);
-        $found = $rules ? $this->find($store, $rules) : [];
+        $rules = array_values(array_diff($this->activeRules($store), self::ELSEWHERE));
+        // Action Center suggestions (G13) are kept like alerts, with severity "idea".
+        $found = array_merge($rules ? $this->find($store, $rules) : [], app(ActionCenter::class)->ideas($store));
         $now = now();
         $opened = [];
         $seen = [];
@@ -59,18 +64,18 @@ class Alerts
                 $alert->status = 'open';
             }
             $alert->save();
-            if ($reopen) {
+            if ($reopen && $alert->severity !== 'idea') {
                 $opened[] = $alert;
             }
         }
         // Fixed: whatever is no longer found closes by itself (muted ones stay muted).
-        $closed = ProtectAlert::where('store_id', $store->id)->whereIn('status', ['open', 'snoozed'])->get()
+        $closed = ProtectAlert::where('store_id', $store->id)->whereIn('status', ['open', 'snoozed'])->whereNotIn('rule', self::ELSEWHERE)->get()
             ->reject(fn ($a) => in_array($a->rule.'|'.$a->subject, $seen, true))
             ->each(fn ($a) => $a->forceFill(['status' => 'closed', 'closed_at' => $now])->save())->count();
 
         $this->email($store);
 
-        return ['opened' => count($opened), 'closed' => $closed, 'open' => ProtectAlert::where('store_id', $store->id)->where('status', 'open')->count()];
+        return ['opened' => count($opened), 'closed' => $closed, 'open' => ProtectAlert::where('store_id', $store->id)->where('status', 'open')->where('severity', '!=', 'idea')->count()];
     }
 
     /** The alerts true right now, for the given rules. */
@@ -172,10 +177,10 @@ class Alerts
         return $out;
     }
 
-    /** New open alerts, at most once a day per alert, to the people who can see profit. */
-    private function email(Store $store): void
+    /** New open alerts (not suggestions), at most once a day per alert, to the people who can see profit. */
+    public function email(Store $store): void
     {
-        $due = ProtectAlert::where('store_id', $store->id)->where('status', 'open')
+        $due = ProtectAlert::where('store_id', $store->id)->where('status', 'open')->where('severity', '!=', 'idea')
             ->where(fn ($q) => $q->whereNull('emailed_at')->orWhere('emailed_at', '<', now()->subDay()))->whereNull('closed_at')
             ->where('opened_at', '>', now()->subDays(2))->orderByDesc('cost')->get();
         if ($due->isEmpty()) {

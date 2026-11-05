@@ -25,9 +25,9 @@ function lasts(r) {
   return `about ${Math.round(r.days / 30)} months`;
 }
 
-export default function ProtectInventory({ rows, location, locations, settings, summary: s, canLocations, currency, access, syncing, locked, pending, checkedAt }) {
+export default function ProtectInventory({ rows, status, location, locations, settings, summary: s, canLocations, currency, access, syncing, locked, pending, checkedAt }) {
   const { submit, visit } = useRouter();
-  const [tab, setTab] = useState(s.reorder ? 'reorder' : s.sold_out ? 'sold_out' : 'all');
+  const [tab, setTab] = useState(status || (s.reorder ? 'reorder' : s.sold_out ? 'sold_out' : 'all'));
   const [lead, setLead] = useState(settings.lead_days);
   const [cover, setCover] = useState(settings.cover_days);
   const shown = rows.filter((r) => tab === 'all' || r.status === tab);
