@@ -3,7 +3,7 @@
 # FrankenPHP (Caddy) with PHP 8.5, app in /app. Pinned to an exact PHP release (8.5.12 includes the
 # 21 Oct 2026 fixes for CVE-2026-109618 and CVE-2026-109619) so a cached base image can't keep an
 # older PHP. Dependabot opens a pull request when a newer image is published.
-FROM dunglas/frankenphp:1.13.2-php8.5.12
+FROM dunglas/frankenphp:1.13.3-php8.5.12
 
 # pg_dump for Super admin › Database backups, from PostgreSQL's own repository so it is at least
 # as new as the database server (Debian's client can be older and would refuse to dump).
