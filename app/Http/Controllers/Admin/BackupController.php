@@ -8,7 +8,7 @@ use App\Services\Backups\DatabaseBackup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 /** Super admin › Database backups: make one, download it (logged) and delete it, all by hand. */
@@ -18,15 +18,28 @@ class BackupController extends Controller
 
     public function index(): View
     {
-        return view('admin.backups', ['backups' => $this->backups->list(), 'running' => $this->backups->running(), 'error' => $this->backups->lastError(),
-            'persistent' => $this->backups->persistent(), 'free' => $this->backups->freeSpace()]);
+        $configured = $this->backups->configured();
+        $error = null;
+        try {
+            $backups = $this->backups->list();
+        } catch (Throwable $e) {
+            report($e);
+            $backups = [];
+            $error = 'Couldn\'t read the backups bucket: '.mb_substr($e->getMessage(), 0, 200);
+        }
+
+        return view('admin.backups', ['backups' => $backups, 'running' => $this->backups->running(), 'configured' => $configured,
+            'error' => $error ?? $this->backups->lastError()]);
     }
 
-    /** Starts a backup after the response is sent; the page shows it as running until it's ready. */
+    /** Starts a backup after the response is sent; the page shows it as running until it's in the bucket. */
     public function create(Request $request): RedirectResponse
     {
+        if (! $this->backups->configured()) {
+            return back()->withErrors(['backup' => 'Connect the backups bucket to this service in Railway first.']);
+        }
         if ($this->backups->running()) {
-            return back()->withErrors(['backup' => 'A backup is already running. It appears below when it\'s ready.']);
+            return back()->withErrors(['backup' => 'A backup is already running. Download and Delete appear when it\'s ready.']);
         }
         if (config('database.connections.'.config('database.default').'.driver') !== 'pgsql') {
             return back()->withErrors(['backup' => 'Backups need the PostgreSQL database.']);
@@ -34,7 +47,7 @@ class BackupController extends Controller
         $by = $request->user()->email;
         // Marked running before the response, so the page shows it at once.
         $name = $this->backups->reserve();
-        defer(function () use ($by, $name) {
+        defer(function () use ($name, $by) {
             set_time_limit(1800);
             try {
                 $this->backups->create($name);
@@ -44,16 +57,20 @@ class BackupController extends Controller
             }
         });
 
-        return redirect()->route('admin.backups')->with('status', 'Backup started. It appears below when it\'s ready; this page refreshes by itself.');
+        return redirect()->route('admin.backups')->with('status', 'Backup started. This page refreshes by itself until it\'s ready.');
     }
 
-    public function download(Request $request, string $name): BinaryFileResponse
+    public function download(string $name): StreamedResponse
     {
-        $file = $this->backups->file($name) ?? abort(404);
+        abort_unless($this->backups->exists($name), 404);
         // A backup holds every store's data: each download is on the record.
         AuditLog::viewed('database backup download', null, ['file' => $name]);
 
-        return response()->download($file, $name, ['Content-Type' => 'application/gzip', 'Cache-Control' => 'private, no-store']);
+        return response()->streamDownload(function () use ($name) {
+            $in = $this->backups->read($name);
+            fpassthru($in);
+            fclose($in);
+        }, $name, ['Content-Type' => 'application/gzip', 'Cache-Control' => 'private, no-store']);
     }
 
     public function destroy(Request $request, string $name): RedirectResponse
@@ -61,6 +78,6 @@ class BackupController extends Controller
         abort_unless($this->backups->delete($name), 404);
         AuditLog::record('admin.backup_deleted', null, ['file' => $name, 'by' => $request->user()->email]);
 
-        return back()->with('status', "Deleted {$name}.");
+        return back()->with('status', "Deleted {$name} from the bucket.");
     }
 }

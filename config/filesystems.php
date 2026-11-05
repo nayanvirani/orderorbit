@@ -60,6 +60,21 @@ return [
             'report' => false,
         ],
 
+        // Super admin › Database backups: a private Railway bucket. Connecting the bucket to the
+        // service in Railway adds its variables (any of these names works); nothing is in the code.
+        'backups' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_S3_KEY', env('ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID'))),
+            'secret' => env('BACKUP_S3_SECRET', env('SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY'))),
+            'region' => env('BACKUP_S3_REGION', env('REGION', env('AWS_DEFAULT_REGION', 'auto'))),
+            'bucket' => env('BACKUP_S3_BUCKET', env('BUCKET', env('AWS_S3_BUCKET_NAME', env('AWS_BUCKET')))),
+            'endpoint' => env('BACKUP_S3_ENDPOINT', env('ENDPOINT', env('AWS_ENDPOINT_URL', env('AWS_ENDPOINT')))),
+            'use_path_style_endpoint' => (bool) env('BACKUP_S3_PATH_STYLE', false),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*

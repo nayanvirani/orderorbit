@@ -6,51 +6,64 @@ use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\Backups\DatabaseBackup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/** Super admin › Database backups: listed, downloaded (logged) and deleted by hand. */
+/** Super admin › Database backups in the bucket: made, downloaded (logged) and deleted by hand. */
 class DatabaseBackupTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_backups_are_listed_downloaded_and_deleted(): void
+    /** A connected bucket (Railway's variables), faked locally. */
+    private function bucket(): void
     {
-        $dir = storage_path('framework/testing/backups-'.uniqid());
-        config(['backups.path' => $dir]);
-        File::ensureDirectoryExists($dir);
-        file_put_contents("{$dir}/growvia-2026-11-05-101500.sql.gz", gzencode('-- dump'));
-        file_put_contents("{$dir}/secret.txt", 'not a backup');
-
-        $admin = User::forceCreate(['name' => 'Ava', 'email' => 'owner@growvia.test', 'password' => 'secret-password-123', 'is_admin' => true, 'admin_role' => 'super_admin']);
-        $this->actingAs($admin)->get('/admin/backups')->assertOk()->assertSee('growvia-2026-11-05-101500.sql.gz')->assertDontSee('secret.txt');
-        $this->actingAs($admin)->get('/admin/backups/growvia-2026-11-05-101500.sql.gz')->assertOk()->assertDownload('growvia-2026-11-05-101500.sql.gz');
-        $this->assertSame('database backup download', AuditLog::where('action', 'personal_data.viewed')->sole()->context['what']);
-        $this->actingAs($admin)->get('/admin/backups/secret.txt')->assertNotFound();
-
-        $this->actingAs($admin)->post('/admin/backups/growvia-2026-11-05-101500.sql.gz/delete')->assertRedirect();
-        $this->assertFileDoesNotExist("{$dir}/growvia-2026-11-05-101500.sql.gz");
-        $this->assertSame([], app(DatabaseBackup::class)->list());
-        File::deleteDirectory($dir);
+        config(['filesystems.disks.backups.bucket' => 'growvia-backups', 'filesystems.disks.backups.key' => 'k', 'filesystems.disks.backups.secret' => 's']);
+        Storage::fake('backups');
     }
 
-    public function test_only_postgres_can_be_backed_up(): void
+    private function admin(): User
     {
-        $admin = User::forceCreate(['name' => 'Ava', 'email' => 'owner@growvia.test', 'password' => 'secret-password-123', 'is_admin' => true, 'admin_role' => 'super_admin']);
-        $this->actingAs($admin)->post('/admin/backups')->assertRedirect()->assertSessionHasErrors('backup');
+        return User::forceCreate(['name' => 'Ava', 'email' => 'owner@growvia.test', 'password' => 'secret-password-123', 'is_admin' => true, 'admin_role' => 'super_admin']);
+    }
+
+    public function test_backups_in_the_bucket_are_listed_downloaded_and_deleted(): void
+    {
+        $this->bucket();
+        $backups = app(DatabaseBackup::class);
+        $file = tempnam(sys_get_temp_dir(), 't');
+        file_put_contents($file, $content = gzencode('-- dump'));
+        $backups->upload('growvia-2026-11-05-101500.sql.gz', $file);
+        unlink($file);
+        Storage::disk('backups')->put('other.txt', 'not a backup');
+
+        $admin = $this->admin();
+        $this->actingAs($admin)->get('/admin/backups')->assertOk()->assertSee('growvia-2026-11-05-101500.sql.gz')->assertDontSee('other.txt');
+        $download = $this->actingAs($admin)->get('/admin/backups/growvia-2026-11-05-101500.sql.gz')->assertOk()->assertDownload('growvia-2026-11-05-101500.sql.gz');
+        $this->assertSame($content, $download->streamedContent());
+        $this->assertSame('database backup download', AuditLog::where('action', 'personal_data.viewed')->sole()->context['what']);
+        $this->actingAs($admin)->get('/admin/backups/other.txt')->assertNotFound();
+
+        // Delete removes it from the bucket.
+        $this->actingAs($admin)->post('/admin/backups/growvia-2026-11-05-101500.sql.gz/delete')->assertRedirect();
+        Storage::disk('backups')->assertMissing('growvia-2026-11-05-101500.sql.gz');
+        $this->assertSame([], $backups->list());
     }
 
     public function test_a_running_backup_shows_without_buttons_and_blocks_another(): void
     {
-        $dir = storage_path('framework/testing/backups-'.uniqid());
-        config(['backups.path' => $dir]);
-        $backups = app(DatabaseBackup::class);
-        $name = $backups->reserve();
-        $admin = User::forceCreate(['name' => 'Ava', 'email' => 'owner@growvia.test', 'password' => 'secret-password-123', 'is_admin' => true, 'admin_role' => 'super_admin']);
-
+        $this->bucket();
+        $name = app(DatabaseBackup::class)->reserve();
+        $admin = $this->admin();
         $page = $this->actingAs($admin)->get('/admin/backups')->assertOk()->assertSee('Backing up…')->assertSee('http-equiv="refresh"', false);
         $page->assertDontSee(route('admin.backups.download', $name));
         $this->actingAs($admin)->post('/admin/backups')->assertSessionHasErrors('backup');
-        File::deleteDirectory($dir);
+    }
+
+    public function test_without_the_bucket_the_page_says_how_to_connect_it(): void
+    {
+        config(['filesystems.disks.backups.bucket' => null, 'filesystems.disks.backups.key' => null]);
+        $admin = $this->admin();
+        $this->actingAs($admin)->get('/admin/backups')->assertOk()->assertSee('bucket isn')->assertSee('connected yet');
+        $this->actingAs($admin)->post('/admin/backups')->assertSessionHasErrors('backup');
     }
 }

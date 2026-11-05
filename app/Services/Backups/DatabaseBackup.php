@@ -2,137 +2,138 @@
 
 namespace App\Services\Backups;
 
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
+use Throwable;
 
 /**
  * Database backups the super admin makes, downloads and deletes by hand: a compressed SQL file
- * (pg_dump) in the backups folder. Nothing runs on a schedule and nothing is deleted
- * automatically. The folder is a Railway volume on the web service, so files survive deploys.
+ * (pg_dump) in a private Railway bucket, so it survives deploys. Delete removes it from the
+ * bucket. Nothing runs on a schedule and nothing is deleted automatically.
  *
- * Customers' names, emails and order details are encrypted in the database, so they stay
- * encrypted inside every backup file too.
+ * pg_dump only reads, so the app keeps working while it runs. Customers' names, emails and order
+ * details are encrypted in the database, so they stay encrypted inside every backup file too.
  */
 class DatabaseBackup
 {
-    public function path(): string
+    private const PATTERN = '/^growvia-[\d-]+\.sql\.gz$/';
+
+    /** A backup still "running" after this long died (server restart) and is cleared. */
+    private const STALE_SECONDS = 1800;
+
+    public function disk(): Filesystem
     {
-        return rtrim((string) config('backups.path'), '/');
+        return Storage::disk('backups');
     }
 
-    /** Whether the folder is its own mounted disk (a Railway volume), so files outlive deploys. */
-    public function persistent(): bool
+    /** Whether the bucket is connected (Railway added its variables to this service). */
+    public function configured(): bool
     {
-        $mounts = @file_get_contents('/proc/mounts');
+        $c = config('filesystems.disks.backups');
 
-        return is_string($mounts) && collect(explode("\n", $mounts))->contains(fn ($line) => (explode(' ', $line)[1] ?? null) === $this->path());
-    }
-
-    /**
-     * The backup being made right now (its .part file, less than 30 minutes old), or null. A
-     * .part older than that is a backup that died and is cleaned up.
-     */
-    public function running(): ?array
-    {
-        foreach (is_dir($this->path()) ? glob($this->path().'/growvia-*.sql.gz.part') : [] as $part) {
-            if (filemtime($part) < time() - 1800) {
-                @unlink($part);
-
-                continue;
-            }
-
-            return ['name' => basename($part, '.part'), 'size' => (int) filesize($part), 'started' => Carbon::createFromTimestamp(filectime($part))];
-        }
-
-        return null;
-    }
-
-    /** Names the next backup and marks it running (an empty .part file), before it starts. */
-    public function reserve(): string
-    {
-        File::ensureDirectoryExists($this->path(), 0700);
-        $name = 'growvia-'.now()->utc()->format('Y-m-d-His').'.sql.gz';
-        touch($this->path().'/'.$name.'.part');
-
-        return $name;
-    }
-
-    /** The last backup's error, if it failed. */
-    public function lastError(): ?string
-    {
-        return \Illuminate\Support\Facades\Cache::get('backup:last_error');
-    }
-
-    /**
-     * Makes a backup now (run after the response by the admin page, so the page never waits).
-     * pg_dump only reads: the app keeps working while it runs. Returns its file name.
-     */
-    public function create(?string $name = null): string
-    {
-        \Illuminate\Support\Facades\Cache::forget('backup:last_error');
-        $name ??= $this->reserve();
-        $part = $this->path().'/'.$name.'.part';
-        $db = config('database.connections.'.config('database.default'));
-        if (($db['driver'] ?? null) !== 'pgsql') {
-            throw new RuntimeException('Backups need the PostgreSQL database.');
-        }
-
-        // Plain SQL, compressed; no owners or grants so it restores into any database.
-        $result = Process::timeout(1800)->env(['PGPASSWORD' => (string) $db['password']])->run([
-            'pg_dump', '--host='.$db['host'], '--port='.$db['port'], '--username='.$db['username'], '--dbname='.$db['database'],
-            '--no-owner', '--no-privileges', '--format=plain', '--compress=6', '--file='.$part,
-        ]);
-        if (! $result->successful()) {
-            @unlink($part);
-            $error = 'pg_dump failed: '.trim(mb_substr($result->errorOutput(), 0, 500));
-            \Illuminate\Support\Facades\Cache::put('backup:last_error', $error, 86400);
-            throw new RuntimeException($error);
-        }
-        rename($part, $this->path().'/'.$name);
-        @chmod($this->path().'/'.$name, 0600);
-
-        return $name;
+        return ($c['driver'] ?? null) !== 's3' || (! empty($c['bucket']) && ! empty($c['key']) && ! empty($c['secret']));
     }
 
     /** @return list<array{name: string, size: int, at: Carbon}> newest first */
     public function list(): array
     {
-        if (! is_dir($this->path())) {
+        if (! $this->configured()) {
             return [];
         }
 
-        return collect(File::files($this->path()))
-            ->filter(fn ($f) => preg_match('/^growvia-[\d-]+\.sql\.gz$/', $f->getFilename()))
-            ->map(fn ($f) => ['name' => $f->getFilename(), 'size' => $f->getSize(), 'at' => Carbon::createFromTimestamp($f->getMTime())])
+        return collect($this->disk()->files())
+            ->filter(fn ($f) => preg_match(self::PATTERN, $f))
+            ->map(fn ($f) => ['name' => $f, 'size' => (int) $this->disk()->size($f), 'at' => Carbon::createFromTimestamp($this->disk()->lastModified($f))])
             ->sortByDesc('name')->values()->all();
     }
 
-    /** The full path of a backup by name, or null (names are checked, so no other file can be read). */
-    public function file(string $name): ?string
+    /** The backup being made now: [name, started], or null. */
+    public function running(): ?array
     {
-        if (! preg_match('/^growvia-[\d-]+\.sql\.gz$/', $name)) {
+        $r = Cache::get('backup:running');
+        if ($r && $r['started'] < time() - self::STALE_SECONDS) {
+            Cache::forget('backup:running');
+
             return null;
         }
-        $file = $this->path().'/'.$name;
 
-        return is_file($file) ? $file : null;
+        return $r ? ['name' => $r['name'], 'started' => Carbon::createFromTimestamp($r['started'])] : null;
+    }
+
+    public function lastError(): ?string
+    {
+        return Cache::get('backup:last_error');
+    }
+
+    /** Names the next backup and marks it running, before it starts. */
+    public function reserve(): string
+    {
+        $name = 'growvia-'.now()->utc()->format('Y-m-d-His').'.sql.gz';
+        Cache::put('backup:running', ['name' => $name, 'started' => time()], self::STALE_SECONDS);
+        Cache::forget('backup:last_error');
+
+        return $name;
+    }
+
+    /** pg_dump into a temporary file, uploaded to the bucket, then the temporary file is removed. */
+    public function create(string $name): void
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'growvia-backup-');
+        try {
+            $db = config('database.connections.'.config('database.default'));
+            if (($db['driver'] ?? null) !== 'pgsql') {
+                throw new RuntimeException('Backups need the PostgreSQL database.');
+            }
+            // Plain SQL, compressed; no owners or grants so it restores into any database.
+            $result = Process::timeout(1800)->env(['PGPASSWORD' => (string) $db['password']])->run([
+                'pg_dump', '--host='.$db['host'], '--port='.$db['port'], '--username='.$db['username'], '--dbname='.$db['database'],
+                '--no-owner', '--no-privileges', '--format=plain', '--compress=6', '--file='.$tmp,
+            ]);
+            if (! $result->successful()) {
+                throw new RuntimeException('pg_dump failed: '.trim(mb_substr($result->errorOutput(), 0, 500)));
+            }
+            $this->upload($name, $tmp);
+        } catch (Throwable $e) {
+            Cache::put('backup:last_error', 'The last backup failed: '.mb_substr($e->getMessage(), 0, 500), 86400);
+            throw $e;
+        } finally {
+            @unlink($tmp);
+            Cache::forget('backup:running');
+        }
+    }
+
+    /** Streams a local file into the bucket (never the whole file in memory). */
+    public function upload(string $name, string $file): void
+    {
+        $in = fopen($file, 'rb');
+        try {
+            $this->disk()->writeStream($name, $in, ['visibility' => 'private', 'ContentType' => 'application/gzip']);
+        } finally {
+            if (is_resource($in)) {
+                fclose($in);
+            }
+        }
+    }
+
+    /** Whether a backup with this name exists (names are checked, so no other file can be reached). */
+    public function exists(string $name): bool
+    {
+        return preg_match(self::PATTERN, $name) === 1 && $this->configured() && $this->disk()->exists($name);
+    }
+
+    /** @return resource */
+    public function read(string $name)
+    {
+        return $this->disk()->readStream($name);
     }
 
     public function delete(string $name): bool
     {
-        $file = $this->file($name);
-
-        return $file !== null && @unlink($file);
-    }
-
-    /** Free space on the backups disk, in bytes (null when unknown). */
-    public function freeSpace(): ?int
-    {
-        $free = @disk_free_space(is_dir($this->path()) ? $this->path() : dirname($this->path()));
-
-        return $free === false ? null : (int) $free;
+        return $this->exists($name) && $this->disk()->delete($name);
     }
 
     /** "12.4 MB" (no intl extension needed). */
