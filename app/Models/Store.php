@@ -46,6 +46,19 @@ class Store extends Model
         return $this->hasMany(Experience::class);
     }
 
+    /**
+     * The widget onboarding and Home's setup card follow: the one furthest along (published and
+     * placed, then published, then paused, then a draft), newest first within each; archived
+     * widgets never count. Before, it was simply the oldest, even after it was archived.
+     */
+    public function setupExperience(): ?Experience
+    {
+        return $this->experiences()->where('status', '!=', 'archived')
+            ->orderByRaw("CASE WHEN status = 'published' AND placement_status IN ('placed', 'external') THEN 0 WHEN status = 'published' THEN 1 WHEN status = 'paused' THEN 2 ELSE 3 END")
+            ->latest('updated_at')->latest('id')
+            ->first();
+    }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);

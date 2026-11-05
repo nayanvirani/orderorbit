@@ -34,7 +34,7 @@ class DashboardApiController extends Controller
      */
     public static function overviewData(Store $store, bool $check = false): array
     {
-        $first = $store->experiences()->oldest('id')->first();
+        $first = $store->setupExperience();
         $steps = [
             ['label' => 'Connect your store', 'done' => $store->isInstalled() && $store->missingScopes() === [], 'help' => 'Approve the permissions Growvia needs.', 'action' => 'Review connection', 'href' => '/app/settings/store'],
             ['label' => 'Choose your goal', 'done' => $store->goal !== null, 'help' => 'We recommend where to start based on it.', 'action' => 'Choose a goal', 'href' => '/app/onboarding?step=2'],

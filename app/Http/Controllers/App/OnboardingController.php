@@ -50,7 +50,7 @@ class OnboardingController extends Controller
 
     public function show(Request $request, Store $store): Page
     {
-        $first = $store->experiences()->oldest('id')->first();
+        $first = $store->setupExperience();
         $events = \App\Models\AnalyticsEvent::where('store_id', $store->id)->exists();
         // Progress through the eight steps, from what the store has actually done.
         $done = [

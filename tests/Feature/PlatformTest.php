@@ -132,6 +132,23 @@ class PlatformTest extends TestCase
         $this->assertNotNull($this->page('/app/onboarding?step=8', $owner)->assertOk()->json('props.lastEvent'));
     }
 
+    public function test_onboarding_follows_the_live_widget_not_the_oldest(): void
+    {
+        $owner = $this->member($this->store, 'owner');
+        $manager = app(\App\Services\Experiences\ExperienceManager::class);
+        $old = $manager->create($this->store, 'trust', 'trust-row', null, 'Old demo');
+        $old->forceFill(['status' => 'archived'])->save();
+        $draft = $manager->create($this->store, 'trust', 'trust-row', null, 'Draft');
+        $live = $manager->create($this->store, 'trust', 'trust-row', null, 'Live one');
+        $live->forceFill(['status' => 'published', 'placement_status' => 'placed'])->save();
+        $draft->forceFill(['updated_at' => now()->addMinute()])->save();
+
+        $this->page('/app/onboarding?step=7', $owner)->assertOk()->assertJsonPath('props.first.name', 'Live one')->assertJsonPath('props.done.7', true);
+        $this->assertSame($live->id, $this->store->setupExperience()->id);
+        $live->forceFill(['status' => 'archived'])->save();
+        $this->assertSame($draft->id, $this->store->fresh()->setupExperience()->id);
+    }
+
     public function test_security_headers(): void
     {
         $this->get('/admin/login')->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')->assertHeader('X-Frame-Options', 'SAMEORIGIN');

@@ -79,7 +79,7 @@ export default function Onboarding({ goals, goal, steps, step, done, store, miss
             <>
               <s-paragraph>{HELP[step]}</s-paragraph>
               <KeyValue rows={[
-                ['Your first widget', `${first.name} · ${first.type}`],
+                ['Your widget', `${first.name} · ${first.type}`],
                 ['Status', `${first.status[0].toUpperCase()}${first.status.slice(1)}${first.status === 'published' ? ` · placement: ${first.placement}` : ''}`],
               ]} />
               <div className="oo-inline" style={{ marginTop: 12 }}>
