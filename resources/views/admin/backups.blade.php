@@ -11,10 +11,11 @@
     </div>
 </div>
 
-@if ($error && ! $running)<div class="ad-flash bad">The last backup failed: {{ $error }}</div>@endif
+@if ($error && ! $running)<div class="ad-flash bad"><span>The last backup failed: {{ $error }}</span></div>@endif
 
 @unless ($persistent)
-    <div class="ad-flash bad">These files are on the server's temporary disk and are lost on the next deploy. In Railway, open the <b>orderorbit</b> service › Settings › Volumes, add a volume with mount path <code>/app/storage/backups</code>, then make backups here. Download any backup you want to keep before the next deploy.</div>
+    {{-- One span: .ad-flash is a flex row and would split the sentence into columns. --}}
+    <div class="ad-flash bad"><span>No backup volume yet, so files here are lost on the next deploy. In Railway, open the <b>orderorbit</b> service › Settings › Volumes and add a volume with mount path <code>/app/storage/backups</code>. Until then, download each backup right after making it.</span></div>
 @endunless
 
 <section class="ad-card flush">
