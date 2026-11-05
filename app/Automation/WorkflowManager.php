@@ -46,11 +46,13 @@ class WorkflowManager
     public function saveDraft(Workflow $workflow, array $input, ?string $name): array
     {
         [$definition, $errors] = Definition::normalize($input);
+        // Saving what's already published (e.g. Test right after Publish) isn't a change.
+        $published = $workflow->published_version_id ? $workflow->publishedVersion?->definition : null;
         $workflow->forceFill([
             'name' => trim((string) $name) !== '' ? mb_substr(trim((string) $name), 0, 120) : $workflow->name,
             'draft' => $definition,
             'trigger' => $definition['trigger'],
-            'has_unpublished_changes' => true,
+            'has_unpublished_changes' => $published === null || self::canonical($published) !== self::canonical($definition),
         ])->save();
 
         return $errors;
@@ -137,6 +139,23 @@ class WorkflowManager
     public function restore(Workflow $workflow, WorkflowVersion $version): void
     {
         $workflow->forceFill(['draft' => $version->definition, 'trigger' => $version->definition['trigger'], 'has_unpublished_changes' => true])->save();
+    }
+
+    /** A definition as JSON with its keys sorted, to compare two definitions by content. */
+    private static function canonical(array $value): string
+    {
+        $sort = function ($v) use (&$sort) {
+            if (! is_array($v)) {
+                return $v;
+            }
+            if (! array_is_list($v)) {
+                ksort($v);
+            }
+
+            return array_map($sort, $v);
+        };
+
+        return json_encode($sort($value));
     }
 
     /** A workflow that isn't on yet needs room under the plan's workflow limit. */

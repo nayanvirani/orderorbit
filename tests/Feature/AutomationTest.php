@@ -28,6 +28,9 @@ class AutomationTest extends TestCase
 
     private bool $noOrders = false;
 
+    /** Shopify refuses names, emails and addresses (no protected customer data approval). */
+    private bool $protectedDenied = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -55,11 +58,14 @@ class AutomationTest extends TestCase
                 return Http::response(['data' => ['discountCodeBasicCreate' => ['codeDiscountNode' => ['id' => 'gid://shopify/DiscountCodeNode/1'], 'userErrors' => []]]]);
             }
             // The customer's real totals (order webhooks leave them out) and the latest order for tests.
-            if (str_contains($query, 'customer(id: $id) { id email')) {
+            if (str_contains($query, 'customer(id: $id)') && ! str_contains($query, 'lastOrder')) {
                 return Http::response(['data' => ['customer' => ['id' => 'gid://shopify/Customer/900', 'email' => 'ana@example.com', 'firstName' => 'Ana', 'lastName' => 'B',
                     'tags' => ['newsletter'], 'numberOfOrders' => 4, 'amountSpent' => ['amount' => '420.00']]]]);
             }
             if (str_contains($query, 'orders(first: 1')) {
+                if ($this->protectedDenied && (str_contains($query, 'firstName') || str_contains($query, 'shippingAddress'))) {
+                    return Http::response(['errors' => [['message' => 'This app is not approved to access the Customer object.']]]);
+                }
                 if ($this->noOrders) {
                     return Http::response(['data' => ['orders' => ['nodes' => []]]]);
                 }
@@ -277,6 +283,31 @@ class AutomationTest extends TestCase
         $this->noOrders = true;
         $this->expectExceptionMessage('Order #9999 wasn\'t found');
         app(WorkflowManager::class)->test($workflow, null, '#9999');
+    }
+
+    public function test_the_order_lookup_works_without_protected_customer_data(): void
+    {
+        $store = $this->store();
+        $workflow = app(WorkflowManager::class)->create($store, 'vip-customer', null);
+        $this->protectedDenied = true;
+        $run = app(WorkflowManager::class)->test($workflow, null, '#1077');
+        $this->assertSame('#1077', $run->context['order']['name'], 'Asked again without names, emails and addresses.');
+        $this->assertEquals(420, $run->context['customer']['total_spent']);
+    }
+
+    public function test_testing_right_after_publishing_isnt_a_change(): void
+    {
+        $store = $this->store();
+        $manager = app(WorkflowManager::class);
+        $workflow = $manager->create($store, 'vip-customer', null);
+        $manager->publish($workflow->fresh(), null);
+        $this->assertFalse($workflow->fresh()->has_unpublished_changes);
+        $manager->saveDraft($workflow->fresh(), $workflow->fresh()->draft, $workflow->name);
+        $this->assertFalse($workflow->fresh()->has_unpublished_changes, 'The same draft again is not a change.');
+        $changed = $workflow->fresh()->draft;
+        $changed['steps'][0]['rules'][0]['value'] = 999;
+        $manager->saveDraft($workflow->fresh(), $changed, $workflow->name);
+        $this->assertTrue($workflow->fresh()->has_unpublished_changes);
     }
 
     public function test_variant_ids_match_whether_typed_short_or_as_gids(): void

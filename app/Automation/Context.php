@@ -80,7 +80,7 @@ class Context
     public static function sample(): array
     {
         return self::fromOrder([
-            'id' => 1001, 'name' => '#1001 (test)', 'current_total_price' => '120.00', 'currency' => 'USD', 'created_at' => now()->toIso8601String(),
+            'id' => 1001, 'name' => 'Sample order (no real orders yet)', 'current_total_price' => '120.00', 'currency' => 'USD', 'created_at' => now()->toIso8601String(),
             'line_items' => [['product_id' => 1, 'variant_id' => 11, 'sku' => 'SAMPLE-1', 'title' => 'Sample product', 'quantity' => 2]],
             'shipping_lines' => [['title' => 'Standard']], 'payment_gateway_names' => ['shopify_payments'], 'fulfillment_status' => null,
             'shipping_address' => ['country_code' => 'US', 'province_code' => 'NY'], 'tags' => '',
