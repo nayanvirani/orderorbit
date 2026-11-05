@@ -8,14 +8,13 @@
     @include('partials.favicons')
     <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
     <script src="https://cdn.shopify.com/shopifycloud/polaris.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    {{-- The same styles as the Blade pages, so both look alike while modules move to React. --}}
-    @foreach (['css/app-brand.css', 'css/app-base.css', 'css/analytics.css', 'css/audiences.css', 'css/automation.css', 'css/builder.css', 'css/bundles.css', 'css/checkout-preview.css', 'css/experiments.css'] as $css)
-        <link rel="stylesheet" href="{{ asset($css) }}?v={{ @filemtime(public_path($css)) }}">
-    @endforeach
+    {{-- The admin's styles in one file (built by scripts/build-admin-css.mjs from the same files the Blade pages use). --}}
+    <link rel="stylesheet" href="{{ asset('css/admin-app.css') }}?v={{ @filemtime(public_path('css/admin-app.css')) }}">
     @vite('main.jsx', 'spa')
+    {{-- The first page's own code, fetched alongside the main script instead of after it. --}}
+    @foreach (\App\Support\Spa\Page::preloads((string) ($page['component'] ?? '')) as $chunk)
+        <link rel="modulepreload" href="{{ $chunk }}">
+    @endforeach
     @php
         // Versioned so a new deploy is picked up: the storefront runtime and the checkout block likenesses.
         $assets = [

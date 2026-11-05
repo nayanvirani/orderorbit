@@ -41,4 +41,38 @@ class Page implements Responsable
 
         return '/'.ltrim($request->path(), '/').($query ? '?'.http_build_query($query) : '');
     }
+
+    /**
+     * The built files of a page component and the chunks it imports (from the Vite manifest), so
+     * the shell can ask for them alongside the main script. The main entry itself is left out.
+     *
+     * @return list<string>
+     */
+    public static function preloads(string $component): array
+    {
+        static $manifest = null;
+        $manifest ??= (function () {
+            $file = public_path('spa/manifest.json');
+
+            return is_file($file) ? (json_decode((string) file_get_contents($file), true) ?: []) : [];
+        })();
+        $key = 'pages/'.$component.'.jsx';
+        if ($component === '' || ! isset($manifest[$key])) {
+            return [];
+        }
+        $files = [];
+        $walk = function (string $k) use (&$walk, &$files, $manifest) {
+            $entry = $manifest[$k] ?? null;
+            if (! $entry || ! empty($entry['isEntry']) || isset($files[$entry['file']])) {
+                return;
+            }
+            $files[$entry['file']] = true;
+            foreach ((array) ($entry['imports'] ?? []) as $import) {
+                $walk($import);
+            }
+        };
+        $walk($key);
+
+        return array_map(fn ($f) => asset('spa/'.$f), array_keys($files));
+    }
 }

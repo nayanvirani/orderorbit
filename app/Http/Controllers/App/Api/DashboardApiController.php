@@ -24,6 +24,16 @@ class DashboardApiController extends Controller
     /** Setup progress, health alerts and recommended next steps. */
     public function overview(Store $store): JsonResponse
     {
+        return response()->json(self::overviewData($store, true));
+    }
+
+    /**
+     * The overview's data. In the first page (Home's HTML) it skips the Shopify calls (pixel and
+     * theme placement checks), so Home draws its setup card and alerts at once, with no jump when
+     * they arrive; the endpoint runs those checks and refreshes it.
+     */
+    public static function overviewData(Store $store, bool $check = false): array
+    {
         $first = $store->experiences()->oldest('id')->first();
         $steps = [
             ['label' => 'Connect your store', 'done' => $store->isInstalled() && $store->missingScopes() === [], 'help' => 'Approve the permissions Growvia needs.', 'action' => 'Review connection', 'href' => '/app/settings/store'],
@@ -36,8 +46,10 @@ class DashboardApiController extends Controller
 
         // The analytics pixel connects on install; this covers stores installed before it existed.
         $pixel = app(PixelConnector::class);
-        $pixel->ensure($store);
-        app(\App\Services\Experiences\PlacementDetector::class)->refreshIfStale($store);
+        if ($check) {
+            $pixel->ensure($store);
+            app(\App\Services\Experiences\PlacementDetector::class)->refreshIfStale($store);
+        }
 
         $alerts = [];
         if ($store->missingScopes() !== []) {
@@ -61,13 +73,13 @@ class DashboardApiController extends Controller
             $store->planIncludes('personalization') && ! PersonalizationRule::where('store_id', $store->id)->exists() ? ['text' => 'Show returning customers a different offer.', 'action' => 'Personalize', 'href' => '/app/audiences/rules'] : null,
         ])), 0, 4);
 
-        return response()->json([
+        return [
             'setup' => ['done' => ! $next, 'completed' => collect($steps)->where('done', true)->count(), 'total' => count($steps), 'next' => $next, 'steps' => array_map(fn ($s) => ['label' => $s['label'], 'done' => (bool) $s['done']], $steps)],
             'alerts' => $alerts,
             'next' => $nextActions,
             // Review request (G23): a milestone to celebrate, then Shopify's own review window.
             'milestone' => \App\Support\ReviewPrompt::milestone($store),
-        ]);
+        ];
     }
 
     /** What Shopify's review window answered (G23), so Growvia waits before asking again. */

@@ -130,7 +130,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
 
     Route::middleware('store.plan')->group(function () {
         // Home is the React admin (resources/app); its cards load from the JSON API below.
-        Route::get('/', fn () => page('home'))->middleware('store.can:view_dashboard')->name('dashboard');
+        Route::get('/', fn (\App\Models\Store $store) => page('home', ['overview' => \App\Http\Controllers\App\Api\DashboardApiController::overviewData($store)]))->middleware('store.can:view_dashboard')->name('dashboard');
         Route::prefix('api/dashboard')->name('api.dashboard.')->middleware('store.can:view_dashboard')->controller(DashboardApiController::class)->group(function () {
             Route::get('/overview', 'overview')->name('overview');
             Route::get('/kpis', 'kpis')->name('kpis');

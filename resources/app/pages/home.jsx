@@ -10,10 +10,12 @@ const RANGES = [7, 30, 90];
  * Home: what matters first. The page appears at once and each card loads on its own, so a slow
  * report never holds up the rest.
  */
-export default function Home() {
+export default function Home({ overview: first }) {
   const shared = useShared();
   const [days, setDays] = useState(30);
-  const overview = useApi('dashboard/overview');
+  // The first page already has the overview, so nothing moves when the refreshed one arrives.
+  const loaded = useApi('dashboard/overview');
+  const overview = { ...loaded, data: loaded.data || first || null };
 
   return (
     <s-page inlineSize="large" heading="Home">
