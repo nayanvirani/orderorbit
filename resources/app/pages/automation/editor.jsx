@@ -78,7 +78,7 @@ export default function WorkflowEditor({ workflow, catalog, errors, banner, vers
 
           <div className="wf-actions">
             <s-button onClick={() => save('save')} loading={busy === 'save' || undefined}>Save draft</s-button>
-            <s-button onClick={() => save('test')} loading={busy === 'test' || undefined}>Test with a sample order</s-button>
+            <s-button onClick={() => save('test')} loading={busy === 'test' || undefined}>Test with your latest order</s-button>
             <s-button variant="primary" onClick={() => save('publish')} loading={busy === 'publish' || undefined}>Publish</s-button>
           </div>
           <p className="oo-muted wf-foot">Publishing creates a new version and enables the workflow. Runs already in progress finish on the version they started with.</p>
@@ -94,7 +94,7 @@ export default function WorkflowEditor({ workflow, catalog, errors, banner, vers
             </s-section>
           )}
           <s-section heading="Recent runs">
-            {!recentRuns.length ? <s-paragraph><span className="oo-muted">No runs yet. Try "Test with a sample order".</span></s-paragraph> : recentRuns.map((r) => (
+            {!recentRuns.length ? <s-paragraph><span className="oo-muted">No runs yet. Try "Test with your latest order".</span></s-paragraph> : recentRuns.map((r) => (
               <s-paragraph key={r.id}>
                 <s-link href={appUrl(route('app.automation.runs.show', { run: r.id }))}>#{r.id}</s-link> {r.subject} · <RunStatus status={r.status} />{r.test && <> <s-badge>Test</s-badge></>}
               </s-paragraph>

@@ -98,6 +98,7 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
   const [picker, setPicker] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [busy, setBusy] = useState(null);
+  const [testOrder, setTestOrder] = useState(''); // empty: the latest order
   // Unsaved = different from what was last saved. Compared with our own copy of it, because the
   // draft the server sends back can differ in form only (key order, defaults filled in), which
   // would leave the save bar up after a successful save.
@@ -116,7 +117,7 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
 
   const save = async (action) => {
     setBusy(action);
-    const r = await submit(route('app.automation.update', { workflow: workflow.id }), { name, definition: state, action });
+    const r = await submit(route('app.automation.update', { workflow: workflow.id }), { name, definition: state, action, ...(action === 'test' ? { test_order: testOrder } : {}) });
     setBusy(null);
     if (r?.ok) setSaved(snapshot(name, state));
   };
@@ -168,7 +169,11 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
           <div className="fl-buttons">
             <s-button onClick={() => setSelected('workflow')}>Settings</s-button>
             <s-button href={appUrl(route('app.automation.runs', {}) + `?workflow=${workflow.id}`)}>Runs</s-button>
-            <s-button onClick={() => save('test')} loading={busy === 'test' || undefined}>Test with an order</s-button>
+            <span className="fl-test">
+              <input aria-label="Order number to test with (empty: your latest order)" placeholder="Latest order" value={testOrder} maxLength={40}
+                onChange={(e) => setTestOrder(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') save('test'); }} />
+              <s-button onClick={() => save('test')} loading={busy === 'test' || undefined}>Test with {testOrder.trim() ? `order ${testOrder.trim().replace(/^#?/, '#')}` : 'an order'}</s-button>
+            </span>
             <s-button onClick={() => save('save')} loading={busy === 'save' || undefined}>Save draft</s-button>
             <s-button variant="primary" onClick={() => save('publish')} loading={busy === 'publish' || undefined}>Publish changes</s-button>
           </div>

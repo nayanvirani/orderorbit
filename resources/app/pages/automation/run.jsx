@@ -10,7 +10,7 @@ export default function Run({ run }) {
     <Page heading={`Run #${run.id}${run.test ? ' (test)' : ''}`} back={route('app.automation.runs')} backLabel="Runs">
       {run.test && (
         <s-banner tone="info" heading="Test run">
-          <s-paragraph>This run used a sample order and changed nothing: waits were skipped and each action says what it would do.</s-paragraph>
+          <s-paragraph>This test used your latest order (or a sample order) and changed nothing: waits were skipped and each action says what it would do.</s-paragraph>
         </s-banner>
       )}
       <s-section heading="Summary">

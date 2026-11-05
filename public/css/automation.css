@@ -256,3 +256,6 @@ a.fl-chip { text-decoration: none; }
    (columns of equal width with a 24px gap), so the lines always meet whatever the widths. */
 .fl-branches { row-gap: 0; }
 .fl-branches > .fl-split, .fl-branches > .fl-join { grid-column: 1 / -1; width: auto; margin: 0 calc((100% - 24px) / 4); }
+/* "Test with an order": an order number (empty = the latest order) next to the button. */
+.fl-test { display: inline-flex; gap: 6px; align-items: center; }
+.fl-test input { width: 110px; min-height: 32px; padding: 0 10px; border: 1px solid var(--ob-line, #d9d6e6); border-radius: 8px; font: inherit; font-size: 13px; }

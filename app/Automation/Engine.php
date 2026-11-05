@@ -35,7 +35,13 @@ class Engine
         }
 
         $started = 0;
-        Workflow::with('publishedVersion')->where('store_id', $store->id)->where('status', 'enabled')->where('trigger', $trigger)->get()
+        $workflows = Workflow::with('publishedVersion')->where('store_id', $store->id)->where('status', 'enabled')->where('trigger', $trigger)->get();
+        if ($workflows->isEmpty()) {
+            return 0;
+        }
+        // Newer order webhooks leave out the customer's lifetime spend and order count: read them.
+        $context = app(ShopifyFacts::class)->withCustomer($store, $context);
+        $workflows
             ->filter(fn (Workflow $w) => $w->publishedVersion && $this->matches($w->publishedVersion->definition, $context, $facts))
             ->each(function (Workflow $w) use ($store, $context, $event, &$started) {
                 if ($this->start($store, $w, $context, $event.':'.$w->id)) {

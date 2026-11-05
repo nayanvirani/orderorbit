@@ -56,7 +56,8 @@ class Conditions
             case 'product':
                 return $this->includes($rule['op'], array_intersect($ids($value), $order['products'] ?? []) !== []);
             case 'variant':
-                return $this->includes($rule['op'], array_intersect($list($value), array_map('strtoupper', $order['variants'] ?? [])) !== []);
+                // Typed IDs: "123" or a full gid://shopify/ProductVariant/123 both match.
+                return $this->includes($rule['op'], array_intersect(array_map(fn ($v) => preg_match('/(\d+)$/', $v, $m) ? $m[1] : $v, $list($value)), $order['variants'] ?? []) !== []);
             case 'sku':
                 return $this->includes($rule['op'], array_intersect($list($value), array_map('strtoupper', $order['skus'] ?? [])) !== []);
             case 'collection':
@@ -111,7 +112,7 @@ class Conditions
     private function collections(WorkflowRun $run): array
     {
         $products = array_slice($run->context['order']['products'] ?? [], 0, 50);
-        if (! $products || $run->test) {
+        if (! $products) {
             return [];
         }
         $nodes = $this->api->graphql($run->store, 'query ($ids: [ID!]!) { nodes(ids: $ids) { ... on Product { collections(first: 50) { nodes { id } } } } }', [
@@ -125,7 +126,7 @@ class Conditions
     private function orderedAgain(WorkflowRun $run): bool
     {
         $customer = $run->context['customer']['id'] ?? null;
-        if (! $customer || $run->test) {
+        if (! $customer) {
             return false;
         }
         $last = $this->api->graphql($run->store, 'query ($id: ID!) { customer(id: $id) { lastOrder { id createdAt } } }', ['id' => "gid://shopify/Customer/{$customer}"])['customer']['lastOrder'] ?? null;

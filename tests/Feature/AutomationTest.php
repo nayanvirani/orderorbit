@@ -26,6 +26,8 @@ class AutomationTest extends TestCase
 
     private bool $tagsFail = false;
 
+    private bool $noOrders = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -51,6 +53,24 @@ class AutomationTest extends TestCase
                 $this->calls[] = ['discount', json_decode(json_encode($request['variables']), true)];
 
                 return Http::response(['data' => ['discountCodeBasicCreate' => ['codeDiscountNode' => ['id' => 'gid://shopify/DiscountCodeNode/1'], 'userErrors' => []]]]);
+            }
+            // The customer's real totals (order webhooks leave them out) and the latest order for tests.
+            if (str_contains($query, 'customer(id: $id) { id email')) {
+                return Http::response(['data' => ['customer' => ['id' => 'gid://shopify/Customer/900', 'email' => 'ana@example.com', 'firstName' => 'Ana', 'lastName' => 'B',
+                    'tags' => ['newsletter'], 'numberOfOrders' => 4, 'amountSpent' => ['amount' => '420.00']]]]);
+            }
+            if (str_contains($query, 'orders(first: 1')) {
+                if ($this->noOrders) {
+                    return Http::response(['data' => ['orders' => ['nodes' => []]]]);
+                }
+
+                return Http::response(['data' => ['orders' => ['nodes' => [[
+                    'id' => 'gid://shopify/Order/7001', 'name' => '#1077', 'createdAt' => now()->toIso8601String(), 'tags' => [], 'currencyCode' => 'USD',
+                    'displayFulfillmentStatus' => 'UNFULFILLED', 'paymentGatewayNames' => ['manual'], 'currentTotalPriceSet' => ['shopMoney' => ['amount' => '64.00']],
+                    'shippingAddress' => ['countryCodeV2' => 'IN', 'provinceCode' => 'GJ'], 'shippingLines' => ['nodes' => []],
+                    'lineItems' => ['nodes' => [['title' => 'Ski Wax', 'variantTitle' => null, 'quantity' => 1, 'sku' => 'W1', 'product' => ['id' => 'gid://shopify/Product/8'], 'variant' => ['id' => 'gid://shopify/ProductVariant/80']]]],
+                    'customer' => ['id' => 'gid://shopify/Customer/900', 'email' => 'ana@example.com', 'firstName' => 'Ana', 'lastName' => 'B', 'tags' => [], 'numberOfOrders' => 4, 'amountSpent' => ['amount' => '420.00']],
+                ]]]]]);
             }
             if (str_contains($query, 'lastOrder')) {
                 return Http::response(['data' => ['customer' => ['lastOrder' => ['id' => 'gid://shopify/Order/5001', 'createdAt' => now()->subDays(100)->toIso8601String()]]]]);
@@ -221,6 +241,53 @@ class AutomationTest extends TestCase
         $this->travel(91)->days();
         $engine->tick();
         $this->assertSame('Win back', InboxItem::sole()->title, 'The customer\'s latest order is still the one that started the run.');
+    }
+
+    public function test_customer_totals_missing_from_the_webhook_are_read_from_shopify(): void
+    {
+        $store = $this->store();
+        $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [
+            ['type' => 'condition', 'match' => 'all', 'rules' => [['field' => 'ltv', 'op' => 'gte', 'value' => 150]],
+                'then' => [['type' => 'action', 'action' => 'add_customer_tag', 'params' => ['tags' => 'vip']]], 'else' => []],
+        ]]);
+        // As newer order webhooks send it: the customer without total spent or order count.
+        $order = $this->order();
+        unset($order['customer']['total_spent'], $order['customer']['orders_count']);
+        app(Engine::class)->trigger($store, 'order_paid', Context::fromOrder($order), 'order_paid:5001');
+
+        $run = WorkflowRun::sole();
+        $this->assertEquals(420, $run->context['customer']['total_spent']);
+        $this->assertSame(4, $run->context['customer']['orders_count']);
+        $this->assertSame('tagsAdd', $this->calls[0][0] ?? null, 'Lifetime spend 420 ≥ 150: the Then branch ran.');
+    }
+
+    public function test_a_test_run_uses_the_latest_real_order(): void
+    {
+        $store = $this->store();
+        $workflow = app(WorkflowManager::class)->create($store, 'vip-customer', null);
+        $run = app(WorkflowManager::class)->test($workflow);
+        $this->assertSame('#1077', $run->context['order']['name']);
+        $this->assertEquals(420, $run->context['customer']['total_spent']);
+        $this->assertSame([], $this->calls, 'Nothing reaches Shopify in a test.');
+
+        // A chosen order, by its number; an unknown number says so.
+        $run = app(WorkflowManager::class)->test($workflow, null, '1077');
+        $this->assertSame('#1077', $run->context['order']['name']);
+        $this->assertSame(['8'], $run->context['order']['products']);
+        $this->noOrders = true;
+        $this->expectExceptionMessage('Order #9999 wasn\'t found');
+        app(WorkflowManager::class)->test($workflow, null, '#9999');
+    }
+
+    public function test_variant_ids_match_whether_typed_short_or_as_gids(): void
+    {
+        $store = $this->store();
+        $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [
+            ['type' => 'condition', 'match' => 'all', 'rules' => [['field' => 'variant', 'op' => 'contains', 'value' => 'gid://shopify/ProductVariant/70, 999']],
+                'then' => [['type' => 'action', 'action' => 'add_customer_tag', 'params' => ['tags' => 'serum']]], 'else' => []],
+        ]]);
+        app(Engine::class)->trigger($store, 'order_paid', Context::fromOrder($this->order()), 'order_paid:5001');
+        $this->assertSame('tagsAdd', $this->calls[0][0] ?? null);
     }
 
     public function test_test_runs_change_nothing_and_plan_gates_publishing(): void

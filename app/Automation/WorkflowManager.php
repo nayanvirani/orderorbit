@@ -104,11 +104,15 @@ class WorkflowManager
     }
 
     /**
-     * Runs the current draft against a sample order (or the given context) without changing
+     * Runs the current draft against the store's latest order (or a sample, or the given context) without changing
      * anything: conditions are evaluated, waits are skipped and actions say what they would do.
      */
-    public function test(Workflow $workflow, ?array $context = null): WorkflowRun
+    public function test(Workflow $workflow, ?array $context = null, ?string $orderName = null): WorkflowRun
     {
+        if ($context === null && $orderName !== null && trim($orderName) !== '') {
+            $context = app(ShopifyFacts::class)->order($workflow->store, $orderName)
+                ?? throw new RuntimeException('Order '.(str_starts_with(trim($orderName), '#') ? '' : '#').trim($orderName).' wasn\'t found in Shopify. Check the number, or leave it empty to use your latest order.');
+        }
         [$definition, $errors] = Definition::normalize($workflow->draft);
         if ($errors) {
             throw new RuntimeException('Fix the highlighted steps before testing.');
@@ -124,7 +128,10 @@ class WorkflowManager
         $test = $workflow->replicate()->forceFill(['published_version_id' => $version->id]);
         $test->id = $workflow->id;
 
-        return $this->engine->start($workflow->store, $test, $context ?? Context::sample(), '', 0, true);
+        // The store's latest real order (and its customer's real totals); the sample when there's none.
+        $context ??= app(ShopifyFacts::class)->latestOrder($workflow->store) ?? Context::sample();
+
+        return $this->engine->start($workflow->store, $test, $context, '', 0, true);
     }
 
     public function restore(Workflow $workflow, WorkflowVersion $version): void

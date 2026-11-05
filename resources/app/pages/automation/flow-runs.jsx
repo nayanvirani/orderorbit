@@ -62,7 +62,7 @@ export default function FlowRuns({ runs, status, workflow, workflowOptions, tota
                 </div>
                 <span className={`fl-status ${(RUN[run.status] || ['muted'])[0]}`}>{(RUN[run.status] || [null, run.status])[1]}{run.resume_at ? ` until ${utc(run.resume_at)} UTC` : ''}</span>
               </header>
-              {run.test && <p className="fl-note">A test run uses a sample order and changes nothing: waits are skipped and each action says what it would do.</p>}
+              {run.test && <p className="fl-note">A test run uses your latest order (a sample order when the store has none) and changes nothing: waits are skipped and each action says what it would do.</p>}
               <ol className="fl-steps">
                 {run.steps.map((s) => {
                   const [tone, mark, label] = STEP[s.status] || ['muted', '·', s.status];

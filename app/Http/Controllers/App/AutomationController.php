@@ -98,7 +98,7 @@ class AutomationController extends Controller
                 return redirect()->to(app_route('app.automation.edit', ['workflow' => $workflow->id, 'notice' => 'published', 'published' => $version->version]));
             }
             if ($action === 'test') {
-                $run = $this->workflows->test($workflow->fresh());
+                $run = $this->workflows->test($workflow->fresh(), null, mb_substr((string) $request->input('test_order', ''), 0, 40));
 
                 return redirect()->to(app_route('app.automation.runs.show', ['run' => $run->id]));
             }
