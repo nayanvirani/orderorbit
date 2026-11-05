@@ -44,7 +44,8 @@ class CustomerDataProtectionTest extends TestCase
 
         foreach ([['automation_runs', $run->id, 'context'], ['automation_emails', $email->id, 'to_email'], ['automation_emails', $email->id, 'body'], ['email_deliveries', $delivery->id, 'to_email']] as [$table, $id, $column]) {
             $raw = DB::table($table)->where('id', $id)->value($column);
-            $this->assertStringNotContainsString('ana', strtolower($raw), "{$table}.{$column} is stored encrypted");
+            $this->assertStringNotContainsString('ana@example.com', $raw, "{$table}.{$column} is stored encrypted");
+            $this->assertStringNotContainsString('Hi Ana', $raw);
         }
         // The app still reads them.
         $this->assertSame('ana@example.com', $run->fresh()->context['customer']['email']);

@@ -5,8 +5,12 @@
 # older PHP. Dependabot opens a pull request when a newer image is published.
 FROM dunglas/frankenphp:1.13.2-php8.5.12
 
+# pg_dump for Super admin › Database backups, from PostgreSQL's own repository so it is at least
+# as new as the database server (Debian's client can be older and would refuse to dump).
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends unzip \
+    && apt-get install -y --no-install-recommends unzip postgresql-common ca-certificates \
+    && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y \
+    && apt-get install -y --no-install-recommends postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
     && install-php-extensions pdo_pgsql opcache zip pcntl gd \
     && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \

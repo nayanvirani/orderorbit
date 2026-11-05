@@ -506,6 +506,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/finance/railway/refresh', 'railwayRefresh')->name('finance.railway.refresh');
         });
 
+        // Database backups, by hand: make, download (logged) and delete.
+        Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\BackupController::class)->group(function () {
+            Route::get('/backups', 'index')->name('backups');
+            Route::post('/backups', 'create')->middleware('throttle:3,1')->name('backups.create');
+            Route::get('/backups/{name}', 'download')->where('name', 'growvia-[0-9-]+\.sql\.gz')->name('backups.download');
+            Route::post('/backups/{name}/delete', 'destroy')->where('name', 'growvia-[0-9-]+\.sql\.gz')->name('backups.delete');
+        });
+
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\CrawlersController::class)->group(function () {
             Route::get('/crawlers', 'show')->name('crawlers');
             Route::post('/crawlers', 'update')->name('crawlers.update');
