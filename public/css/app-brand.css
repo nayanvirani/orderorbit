@@ -406,3 +406,4 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .pf-two { margin-bottom: 16px; }
 .pf-step { grid-template-columns: 150px minmax(0, 1fr) 120px; }
 .pf-step span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 900px) { .pf-step { grid-template-columns: 120px minmax(0, 1fr) 96px; } }
