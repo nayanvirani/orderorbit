@@ -2,7 +2,7 @@
 // canvas, conditions split into Then / Otherwise columns, and the chosen step's settings in a side
 // panel. It edits the same definition as the classic editor; the server validates it and reports
 // errors by path ("steps.1.then.0.params.url").
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActionButton } from '../../components/form.jsx';
 import { ago, Page } from '../../components/ui.jsx';
 import SaveBar from '../../components/SaveBar.jsx';
@@ -98,18 +98,30 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
   const [picker, setPicker] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [busy, setBusy] = useState(null);
-  const dirty = name !== workflow.name || JSON.stringify(state) !== JSON.stringify(initial);
+  // Unsaved = different from what was last saved. Compared with our own copy of it, because the
+  // draft the server sends back can differ in form only (key order, defaults filled in), which
+  // would leave the save bar up after a successful save.
+  const snapshot = (n, s) => JSON.stringify([n, s]);
+  const [saved, setSaved] = useState(() => snapshot(workflow.name, initial));
+  const dirty = snapshot(name, state) !== saved;
+  // After a save the page comes back with the stored draft: start from that.
+  useEffect(() => {
+    setName(workflow.name);
+    setState(initial);
+    setSaved(snapshot(workflow.name, initial));
+  }, [workflow.id, workflow.name, initial]);
   const update = (path, value) => setState((s) => setIn(s, path, value));
   const hasError = (prefix) => Object.keys(errors).some((k) => k === prefix || k.startsWith(`${prefix}.`));
   const errorsFor = (prefix) => [...new Set(Object.keys(errors).filter((k) => k === prefix || k.startsWith(`${prefix}.`)).map((k) => errors[k]))];
 
   const save = async (action) => {
     setBusy(action);
-    await submit(route('app.automation.update', { workflow: workflow.id }), { name, definition: state, action });
+    const r = await submit(route('app.automation.update', { workflow: workflow.id }), { name, definition: state, action });
     setBusy(null);
+    if (r?.ok) setSaved(snapshot(name, state));
   };
   // Discard (save bar): back to the saved draft.
-  const discard = () => { setName(workflow.name); setState(initial); };
+  const discard = () => { setName(workflow.name); setState(initial); setSaved(snapshot(workflow.name, initial)); };
   const insert = (listPath, index, step) => {
     const list = [...(getIn(state, listPath) || [])];
     list.splice(index, 0, step);
