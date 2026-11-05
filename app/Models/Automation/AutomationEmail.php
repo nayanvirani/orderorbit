@@ -13,6 +13,7 @@ class AutomationEmail extends Model
 
     protected function casts(): array
     {
-        return ['sent_at' => 'datetime', 'next_attempt_at' => 'datetime', 'documents' => 'array'];
+        // Customer personal data, encrypted at rest.
+        return ['to_email' => 'encrypted', 'subject' => 'encrypted', 'body' => 'encrypted', 'sent_at' => 'datetime', 'next_attempt_at' => 'datetime', 'documents' => 'array'];
     }
 }

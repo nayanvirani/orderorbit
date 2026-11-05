@@ -47,7 +47,8 @@ class Actions
                     'status' => 'queued', 'documents' => $documents ?: null, 'documents_as' => $documents ? $as : null,
                 ]);
 
-                return ['ok', 'Email queued to send: “'.Str::limit($email->subject, 80).'”'.($documents ? ' with '.count($documents).' '.Str::plural('document', count($documents)) : '').'.', ['email_id' => $email->id]];
+                // The subject isn't repeated in the run log: it can hold the customer's name (logs aren't encrypted).
+                return ['ok', 'Email queued to send'.($documents ? ' with '.count($documents).' '.Str::plural('document', count($documents)) : '').'.', ['email_id' => $email->id]];
 
             case 'notify':
             case 'create_task':

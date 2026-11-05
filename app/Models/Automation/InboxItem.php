@@ -13,6 +13,7 @@ class InboxItem extends Model
 
     protected function casts(): array
     {
-        return ['due_at' => 'datetime', 'done_at' => 'datetime'];
+        // May hold customer names and emails from placeholders: encrypted at rest.
+        return ['title' => 'encrypted', 'body' => 'encrypted', 'due_at' => 'datetime', 'done_at' => 'datetime'];
     }
 }

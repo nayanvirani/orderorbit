@@ -79,7 +79,7 @@ class AnnouncementsTest extends TestCase
 
         $this->artisan('orderorbit:announcement-emails')->assertSuccessful();
         $this->artisan('orderorbit:announcement-emails')->assertSuccessful();
-        $this->assertSame(1, EmailDelivery::where('category', 'announcement')->where('to_email', 'owner@example.com')->count(), 'Emailed once.');
+        $this->assertSame(1, EmailDelivery::where('category', 'announcement')->where('to_hash', EmailDelivery::hash('owner@example.com'))->count(), 'Emailed once.');
 
         $this->page('/app/automation', $owner)->assertJsonPath('shared.announcements.0.dismissible', false);
         $this->post("/app/announcements/{$a->id}/dismiss", [], $this->as($owner));

@@ -85,6 +85,7 @@ class AdminController extends Controller
     public function store(int $store): View
     {
         $store = Store::findOrFail($store);
+        AuditLog::viewed('store detail (Growvia admin)', $store);
 
         return view('admin.store', [
             'store' => $store,

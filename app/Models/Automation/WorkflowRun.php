@@ -15,7 +15,7 @@ class WorkflowRun extends Model
 
     protected function casts(): array
     {
-        return ['context' => 'array', 'results' => 'array', 'resume_at' => 'datetime', 'finished_at' => 'datetime', 'test' => 'boolean'];
+        return ['context' => 'encrypted:array', 'results' => 'array', 'resume_at' => 'datetime', 'finished_at' => 'datetime', 'test' => 'boolean'];
     }
 
     public function store(): BelongsTo

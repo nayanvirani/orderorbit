@@ -22,6 +22,7 @@ class DocumentController extends Controller
             return response()->view('documents.message', ['title' => 'This link has expired', 'text' => 'Download links work for '.IssuedDocument::LINK_DAYS.' days. Contact the store for a new copy.'], 410);
         }
         $issued->increment('downloads');
+        \App\Models\AuditLog::viewed('document download (customer link)', $issued->store, ['issued_document_id' => $issued->id]);
 
         return response($documents->pdf($issued), 200, [
             'Content-Type' => 'application/pdf',

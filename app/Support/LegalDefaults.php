@@ -21,6 +21,7 @@ class LegalDefaults
             'cookies' => ['Cookie & Storefront Storage Policy', 'What we store in browsers on our website and on your storefront.', false, true, self::COOKIES],
             'subprocessors' => ['Subprocessors', 'Third parties that help us run {{app_name}}.', false, true, self::SUBPROCESSORS],
             'support' => ['Support Policy', 'How to reach us, response times and what support covers.', false, true, self::SUPPORT],
+            'security' => ['Security & Incident Response Policy', 'How we protect data, who can access it, and what we do if something goes wrong.', false, true, self::SECURITY],
         ];
     }
 
@@ -245,6 +246,8 @@ Our providers may process data in countries other than yours, including the Unit
 | Storefront analytics events | The period the merchant chooses in Settings → Privacy (3, 6 or 13 months; 13 by default), then deleted automatically |
 | Store configuration, offers, workflows | While the App is installed |
 | Sales pop purchases (product and country) | 30 days |
+| Workflow runs, customer emails queued by workflows, team inbox items and the email delivery log (which can include shoppers' names and email addresses) | 12 months, then deleted automatically |
+| Certificates issued to shoppers (product documents) | While the App is installed, so the certificate stays verifiable; the owner's name is removed on a customer-deletion request |
 | Support tickets | While the App is installed, or longer if needed to resolve a dispute |
 | Billing and audit records | As long as needed for legal, tax and security purposes |
 | Contact-form messages | Up to 24 months |
@@ -258,10 +261,12 @@ Our providers may process data in countries other than yours, including the Unit
 We use the following measures:
 
 - encryption in transit (HTTPS) and encrypted storage of access tokens;
+- shoppers' names, email addresses and order details encrypted at rest (AES-256), so they stay unreadable in the database and in backups;
 - separation of each store's data;
 - role-based access for merchant staff and our own team;
-- verification of every request from Shopify; and
-- audit logs.
+- verification of every request from Shopify;
+- audit logs, including a log of every time shoppers' personal data is viewed; and
+- a written [Security & Incident Response Policy]({{url:security}}).
 
 No system is perfectly secure, but we work to protect data and will notify affected merchants of a personal data breach without undue delay.
 
@@ -326,6 +331,9 @@ The Processor implements appropriate technical and organisational measures, incl
 
 - encryption in transit;
 - encrypted storage of access credentials;
+- encryption at rest of Customers' names, email addresses and order details;
+- a log of access to Customers' personal data;
+- an incident response process (see the [Security & Incident Response Policy]({{url:security}}));
 - logical separation of each store's data;
 - role-based access control;
 - verification of requests from Shopify;
@@ -512,6 +520,53 @@ MD;
 | Google LLC (Google Fonts) | Fonts on our public website only | Website visitors' IP addresses | Global |
 
 When we add or replace a subprocessor that processes merchants' or shoppers' personal data, we will update this page and, where the change is material, notify merchants in the App. See the [Data Processing Addendum]({{url:dpa}}).
+MD;
+
+    private const SECURITY = <<<'MD'
+This policy describes how {{app_name}} protects the data it processes and what we do if a security incident happens. It applies to store data and to shoppers' personal data we process for merchants under the [Data Processing Addendum]({{url:dpa}}).
+
+## 1. Data we protect
+
+- **Store data:** settings, offers, workflows, costs and the access token Shopify gives the App.
+- **Shoppers' personal data:** customer IDs and tags, order details, and, where a merchant's workflows or product documents need them, names and email addresses. We do not request phone numbers or payment details.
+
+## 2. How we protect it
+
+- **Encryption in transit:** every connection to the App, to Shopify and to our email providers uses HTTPS (TLS).
+- **Encryption at rest:** access tokens, email-provider credentials, and shoppers' names, email addresses and order details are encrypted with AES-256 before they are stored, so they stay unreadable in the database and in every backup.
+- **Least data:** we only request the Shopify data each feature needs, and only optional access the merchant approves.
+- **Retention:** personal data is deleted automatically when it is no longer needed (see the [Privacy Policy]({{url:privacy}}), Retention). Store data is deleted after uninstall when Shopify sends a store-deletion request; a shopper's data is deleted or anonymised when Shopify sends a customer-deletion request.
+- **Separate environments:** development and testing use separate databases; production data is not copied to them.
+- **Backups:** the production database is backed up automatically. Backups are encrypted and expire on a fixed schedule.
+
+## 3. Who can access data
+
+- **Merchant staff** see only what their role in the App allows; Profit and similar pages are limited to the people the store owner chooses.
+- **Our team:** only {{operator}} (and any contractor bound by confidentiality) can access production systems, through accounts protected by strong passwords and limited sign-in attempts. Internal admin passwords are at least 12 characters with letters and numbers.
+- **Access logging:** every view of a page that shows shoppers' personal data, by merchant staff or by our team, is recorded with who, what and when. Changes to store settings and access are recorded in the audit log.
+
+## 4. Security incidents
+
+A security incident is any event that may have exposed, changed or destroyed store data or shoppers' personal data without authorisation, for example a leaked credential, unauthorised access, or data sent to the wrong recipient.
+
+**What we do**
+
+1. **Contain (as soon as it is detected):** revoke or rotate affected credentials and keys, block the access path, and pause affected features. Store owners can also pause any offer or workflow in the App at once.
+2. **Assess (within 24 hours):** find out what happened, which stores and which data are affected, and whether personal data was involved, using the audit and access logs.
+3. **Notify:**
+   - **Merchants:** affected stores are told without undue delay, and within 72 hours of us becoming aware of a personal data breach, by email to the store owner and in the App. The notice says what happened, which data is involved, what we have done and what the merchant should do.
+   - **Shopify:** we notify Shopify of incidents involving Shopify data as required by Shopify's Partner Program Agreement and API terms.
+   - **Authorities:** where the law requires it, we notify the relevant data protection authority.
+4. **Recover:** restore affected data from backups where needed and confirm the App is working correctly.
+5. **Review (within 2 weeks):** record the incident, its cause and the fix, and change our controls so it does not happen again. Incident records are kept for at least 3 years.
+
+## 5. Reporting a problem
+
+If you think you have found a security issue, or that data has been exposed, contact us at {{privacy_contact}}. Please include what you found and how to reproduce it. We confirm receipt within 2 business days and will not take action against good-faith reports.
+
+## 6. Reviews
+
+We review this policy and our security measures at least once a year and after any incident.
 MD;
 
     private const SUPPORT = <<<'MD'

@@ -90,7 +90,7 @@ class WebhookController extends Controller
     {
         $id = (string) ($payload['customer']['id'] ?? '');
         if ($store && $id !== '') {
-            app(\App\Automation\Triggers::class)->forget($store, $id);
+            app(\App\Automation\Triggers::class)->forget($store, $id, (array) ($payload['orders_to_redact'] ?? []));
             \App\Services\Analytics\Journeys::forget($store, $id);
             // Profit keeps no names or contact details; the customer id is removed from their orders.
             \App\Models\Profit\ProfitOrder::where('store_id', $store->id)->where('customer_id', (int) $id)->update(['customer_id' => null]);

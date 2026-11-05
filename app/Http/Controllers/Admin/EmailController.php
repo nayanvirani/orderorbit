@@ -124,10 +124,12 @@ class EmailController extends Controller
 
     public function log(Request $request): View
     {
+        AuditLog::viewed('email delivery log', null, array_filter(['search' => $request->query('q') ? 'by recipient' : null]));
         $deliveries = EmailDelivery::query()
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->query('provider'), fn ($q, $p) => $q->where('email_provider_id', $p))
-            ->when($request->query('q'), fn ($q, $term) => $q->where(fn ($w) => $w->where('to_email', 'like', "%{$term}%")->orWhere('subject', 'like', "%{$term}%")))
+            // Addresses and subjects are encrypted: find a delivery by its exact recipient.
+            ->when($request->query('q'), fn ($q, $term) => $q->where('to_hash', EmailDelivery::hash($term)))
             ->latest('id')->paginate(50)->withQueryString();
 
         return view('admin.email.log', ['deliveries' => $deliveries, 'providers' => EmailProvider::orderBy('priority')->pluck('name', 'id')]);

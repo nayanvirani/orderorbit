@@ -16,7 +16,7 @@ class IssuedDocument extends Model
 
     protected function casts(): array
     {
-        return ['ordered_at' => 'datetime', 'expires_at' => 'datetime'];
+        return ['customer_name' => 'encrypted', 'ordered_at' => 'datetime', 'expires_at' => 'datetime'];
     }
 
     public function document(): BelongsTo

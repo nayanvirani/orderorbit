@@ -53,7 +53,7 @@ class OpsAlertsTest extends TestCase
         $this->assertSame(['webhooks'], $monitor->run(), 'Still failing five minutes later.');
         $alert = OpsAlert::sole();
         $this->assertSame([2, null], [$alert->seen, $alert->resolved_at]);
-        $this->assertSame(1, EmailDelivery::where('category', 'team_alert')->where('subject', 'like', '%webhooks failed%')->count(), 'Emailed once, not every check.');
+        $this->assertSame(1, EmailDelivery::where('category', 'team_alert')->get()->filter(fn ($d) => str_contains($d->subject, 'webhooks failed'))->count(), 'Emailed once, not every check.');
 
         $this->travel(61)->minutes();
         $this->stuckWebhooks(3);
@@ -73,7 +73,7 @@ class OpsAlertsTest extends TestCase
         $this->assertSame(['site_down'], $monitor->run());
 
         $this->assertTrue($monitor->digest());
-        $digest = EmailDelivery::where('subject', 'like', 'Growvia daily summary%')->sole();
+        $digest = EmailDelivery::all()->filter(fn ($d) => str_starts_with($d->subject, 'Growvia daily summary'))->sole(); // subjects are encrypted
         $this->assertSame('team@orderorbit.space', $digest->to_email);
 
         $admin = User::forceCreate(['name' => 'Ava', 'email' => 'ava@orderorbit.space', 'password' => 'secret-password-123', 'is_admin' => true]);

@@ -4,7 +4,7 @@
 <p class="ad-crumbs"><a href="{{ route('admin.email') }}">Email providers</a> / Delivery log</p>
 <div class="ad-head"><div><h1>Delivery log</h1><p>Every attempt to send through a provider. A failed attempt is usually followed by a sent one through the next provider.</p></div></div>
 <form class="ad-filters" method="GET">
-    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search email or subject">
+    <input type="search" name="q" value="{{ request('q') }}" placeholder="Exact recipient email">
     <select name="status"><option value="">All results</option>@foreach (['sent' => 'Sent', 'failed' => 'Failed'] as $k => $v)<option value="{{ $k }}" @selected(request('status') === $k)>{{ $v }}</option>@endforeach</select>
     <select name="provider"><option value="">All providers</option>@foreach ($providers as $id => $name)<option value="{{ $id }}" @selected((string) request('provider') === (string) $id)>{{ $name }}</option>@endforeach</select>
     <button class="ad-btn" type="submit">Filter</button>

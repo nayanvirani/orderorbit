@@ -166,6 +166,7 @@ class AutomationController extends Controller
 
     public function run(Request $request, Store $store, int $run): Page
     {
+        \App\Models\AuditLog::viewed('workflow run', $store, ['run_id' => $run]);
         $run = WorkflowRun::with(['workflow', 'version', 'logs' => fn ($q) => $q->orderBy('id')])->where('store_id', $store->id)->findOrFail($run);
         if ($this->flow($store)) {
             // Run history shows the list and the chosen run side by side.
@@ -193,6 +194,7 @@ class AutomationController extends Controller
 
     public function inbox(Request $request, Store $store): Page
     {
+        \App\Models\AuditLog::viewed('team inbox', $store, []);
         $item = fn ($i) => ['id' => $i->id, 'title' => $i->title, 'body' => $i->body, 'kind' => $i->kind, 'due_at' => $i->due_at, 'done_at' => $i->done_at];
 
         return page('automation/inbox', $this->shared($store) + [
@@ -210,6 +212,7 @@ class AutomationController extends Controller
 
     public function emails(Request $request, Store $store): Page
     {
+        \App\Models\AuditLog::viewed('customer emails', $store, []);
         $emails = AutomationEmail::where('store_id', $store->id)->latest('id')->paginate(50);
         $emails->setCollection($emails->getCollection()->map(fn ($e) => [
             'id' => $e->id, 'subject' => $e->subject, 'body' => $e->body, 'customer_id' => $e->customer_id, 'to' => $e->to_email,

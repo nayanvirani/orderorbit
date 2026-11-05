@@ -68,13 +68,20 @@ class Triggers
         }
     }
 
-    /** Removes a customer's details from automation data (customers/redact). */
-    public function forget(Store $store, string $customerId): void
+    /**
+     * Removes a customer's details from automation data (customers/redact). Run contexts are
+     * encrypted, so each run is checked after decrypting; certificates for the customer's orders
+     * lose the owner's name.
+     */
+    public function forget(Store $store, string $customerId, array $orderIds = []): void
     {
         AutomationEmail::where('store_id', $store->id)->where('customer_id', $customerId)->delete();
-        WorkflowRun::where('store_id', $store->id)->where('context', 'like', '%"'.$customerId.'"%')->get()
-            ->filter(fn (WorkflowRun $r) => ($r->context['customer']['id'] ?? null) === $customerId)
+        WorkflowRun::where('store_id', $store->id)->lazyById(500)
+            ->filter(fn (WorkflowRun $r) => (string) ($r->context['customer']['id'] ?? '') === $customerId)
             ->each(fn (WorkflowRun $r) => $r->forceFill(['context' => array_merge($r->context, ['customer' => null])])->save());
+        if ($orderIds) {
+            \App\Models\Documents\IssuedDocument::where('store_id', $store->id)->whereIn('order_id', array_map('strval', $orderIds))->update(['customer_name' => null]);
+        }
     }
 
     /** @return list<string> tags this update added, compared with the last update we saw */

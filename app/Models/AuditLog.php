@@ -39,6 +39,18 @@ class AuditLog extends Model
         ]);
     }
 
+    /**
+     * Access log for customers' personal data (Shopify protected customer data): who opened a
+     * page showing names, emails or order details, and when. Merchant staff are the actor;
+     * Growvia's internal admins are named in the context.
+     */
+    public static function viewed(string $what, ?Store $store = null, array $context = [], ?Model $entity = null): self
+    {
+        $admin = auth()->guard('web')->user();
+
+        return static::record('personal_data.viewed', $store, ['what' => $what] + $context + ($admin ? ['admin' => $admin->email] : []) + ['ip' => request()?->ip()], $entity);
+    }
+
     public function actor(): BelongsTo
     {
         return $this->belongsTo(StoreUser::class, 'actor_id');
