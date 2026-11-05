@@ -16,7 +16,7 @@ export default function ProfitDashboard({ range, ranges, totals: t, previous: p,
   const kpis = [
     ['Net sales', t.net_sales, p.net_sales, 'After discounts and refunds, before tax'],
     ['Gross profit', t.gross_profit, p.gross_profit, 'Net sales − product cost'],
-    ['Contribution', t.contribution, p.contribution, '− payment fees and shipping'],
+    ['Contribution', t.contribution, p.contribution, '+ shipping charged − fees and shipping cost'],
     ['Profit after ads', adsEntered ? t.after_ads : null, p.after_ads, adsEntered ? '− ad spend' : 'Add your ad spend in Ad expenses'],
   ];
   // Each line adds (+) or takes away (−); bold lines are the profit levels.
@@ -24,7 +24,7 @@ export default function ProfitDashboard({ range, ranges, totals: t, previous: p,
     ['Net sales', t.net_sales, 'level'],
     ['Product cost', -t.cogs, 'cost'],
     ['Gross profit', t.gross_profit, 'level'],
-    ['Shipping charged to customers', t.shipping, 'add'],
+    ['Shipping charged', t.shipping, 'add'],
     ['Payment fees', -t.fees, 'cost'],
     ['Your shipping cost', -t.shipping_cost, 'cost'],
     ['Contribution', t.contribution, 'level'],

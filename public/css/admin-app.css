@@ -404,6 +404,10 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .pf-kpi-btn { border: 0; font: inherit; text-align: left; cursor: pointer; color: inherit; }
 .pf-kpi-btn:hover { box-shadow: 0 0 0 2px var(--ob-accent) inset, var(--ob-card-shadow); }
 .pf-step.add i { background: #8fd1a8; } .pf-step.add span, .pf-step.add b { color: #17663a; font-weight: 400; }
+/* Profit dashboard: room between the two cards and the table, and one-line labels in the breakdown. */
+.pf-two { margin-bottom: 16px; }
+.pf-step { grid-template-columns: 150px minmax(0, 1fr) 120px; }
+.pf-step span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* app-base.css */
 /* Embedded app base: fields, buttons, tables and helpers shared by the Blade pages and the React admin. */
