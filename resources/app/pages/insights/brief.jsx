@@ -28,7 +28,7 @@ function Brief({ b, today }) {
   );
 }
 
-export default function MorningBrief({ briefs, ai, budget, locked }) {
+export default function MorningBrief({ briefs, locked }) {
   const today = new Date().toLocaleDateString('en-CA');
   return (
     <Page heading="Morning Brief">
@@ -36,7 +36,6 @@ export default function MorningBrief({ briefs, ai, budget, locked }) {
       {locked && <s-banner tone="info">{locked} <a href={appUrl(route('app.settings.billing'))}>See plans</a></s-banner>}
       {!briefs.length && !locked && <div className="pt-empty">Your first brief arrives tomorrow morning.</div>}
       {briefs.map((b) => <Brief key={b.day} b={b} today={b.day === today} />)}
-      {!locked && ai && budget.limit > 0 && <p className="oo-muted pf-small">AI used this month: ${budget.used.toFixed(2)} of ${budget.limit.toFixed(2)}. Only totals and product names are sent to the AI, never customer details.</p>}
     </Page>
   );
 }

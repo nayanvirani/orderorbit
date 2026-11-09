@@ -55,15 +55,14 @@ class InsightsController extends Controller
     }
 
     /** Insights › Morning Brief (G17): today's brief with each line's facts, and the last 7 days. */
-    public function brief(Store $store, \App\Services\Ai\Ai $ai): Page
+    public function brief(Store $store): Page
     {
         abort_unless(Features::enabled('morning_brief', $store) && Features::enabled('profit', $store), 404);
         $rows = \Illuminate\Support\Facades\DB::table('morning_briefs')->where('store_id', $store->id)->orderByDesc('day')->limit(7)->get()
             ->map(fn ($b) => ['day' => $b->day, 'status' => $b->status, 'source' => $b->source ?? 'ai', 'lines' => json_decode((string) $b->lines, true) ?: [], 'facts' => json_decode((string) $b->facts, true) ?: []])->all();
 
         return page('insights/brief', [
-            'briefs' => $rows, 'ai' => $ai->available($store),
-            'budget' => ['used' => round($ai->spent($store), 2), 'limit' => $ai->budget($store)],
+            'briefs' => $rows,
             'locked' => $store->planIncludes('morning_brief') ? null : \App\Support\Plans::unlockMessage('morning_brief', 'get a daily brief', $store),
         ]);
     }

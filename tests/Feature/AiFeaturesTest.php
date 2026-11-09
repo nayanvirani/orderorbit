@@ -138,7 +138,7 @@ class AiFeaturesTest extends TestCase
         $this->assertStringStartsWith('Today, check that your best sellers are in stock', end($lines)['text'], 'The one thing to do comes last.');
         $this->assertLessThanOrEqual(5, count($lines));
         $this->assertSame([], $this->prompts, 'No AI call.');
-        $this->page('/app/insights/brief', $this->member($store, 'owner'))->assertOk()->assertJsonPath('props.briefs.0.source', 'auto')->assertJsonPath('props.ai', false);
+        $this->page('/app/insights/brief', $this->member($store, 'owner'))->assertOk()->assertJsonPath('props.briefs.0.source', 'auto')->assertJsonMissingPath('props.ai')->assertJsonMissingPath('props.budget');
 
         $owner = $this->member($store, 'owner');
         $r = $this->postJson('/app/api/ai/copy', ['type' => 'bundles', 'products' => ['Night Cream', 'Glow Serum'], 'discount' => '10%'], $this->as($owner))
