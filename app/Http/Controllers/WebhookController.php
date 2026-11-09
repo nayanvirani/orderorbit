@@ -83,7 +83,15 @@ class WebhookController extends Controller
     /** Starts matching workflows after the response is sent. */
     private function automation(Store $store, string $topic, array $payload): void
     {
-        defer(fn () => app(\App\Automation\Triggers::class)->webhook($store, $topic, $payload));
+        defer(function () use ($store, $topic, $payload) {
+            try {
+                app(\App\Automation\Triggers::class)->webhook($store, $topic, $payload);
+            } catch (\Throwable $e) {
+                report($e);
+                // Also in Railway's log, so a failing trigger is never silent.
+                \Illuminate\Support\Facades\Log::channel('stderr')->error('automation trigger failed', ['store' => $store->id, 'topic' => $topic, 'error' => mb_substr($e->getMessage(), 0, 500)]);
+            }
+        });
     }
 
     private function redactCustomer(?Store $store, array $payload): void

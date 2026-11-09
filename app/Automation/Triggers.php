@@ -18,6 +18,8 @@ class Triggers
     public function webhook(Store $store, string $topic, array $p): void
     {
         if (! $this->engine->available($store)) {
+            \Illuminate\Support\Facades\Log::channel(app()->runningUnitTests() ? 'null' : 'stderr')->info('automation trigger', ['store' => $store->id, 'topic' => $topic, 'skipped' => 'Automation isn\'t on the store\'s plan.']);
+
             return;
         }
 

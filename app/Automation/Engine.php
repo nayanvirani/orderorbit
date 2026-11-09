@@ -41,15 +41,43 @@ class Engine
         }
         // Newer order webhooks leave out the customer's lifetime spend and order count: read them.
         $context = app(ShopifyFacts::class)->withCustomer($store, $context);
-        $workflows
-            ->filter(fn (Workflow $w) => $w->publishedVersion && $this->matches($w->publishedVersion->definition, $context, $facts))
-            ->each(function (Workflow $w) use ($store, $context, $event, &$started) {
-                if ($this->start($store, $w, $context, $event.':'.$w->id)) {
-                    $started++;
-                }
-            });
+        foreach ($workflows as $w) {
+            $why = match (true) {
+                ! $w->publishedVersion => 'It isn\'t published yet.',
+                ! $this->matches($w->publishedVersion->definition, $context, $facts) => $this->mismatch($w->publishedVersion->definition),
+                default => $this->blocked($store, $w->publishedVersion->program ?? [])
+                    ?? (! $this->usage->allows($store, 'automation_executions') ? 'This month\'s automation runs are used up for the store\'s plan. Runs start again on the 1st, or upgrade.' : null),
+            };
+            $run = $why === null ? $this->start($store, $w, $context, $event.':'.$w->id) : null;
+            if ($run) {
+                $started++;
+            } elseif ($why === null) {
+                $why = 'It already ran for this event (Shopify sent it again).';
+            }
+            $this->noteTrigger($store, $w, $context, $run, $why);
+        }
 
         return $started;
+    }
+
+    /** Remembers the last trigger on the workflow (shown in the editor) and writes it to the server log. */
+    private function noteTrigger(Store $store, Workflow $w, array $context, ?WorkflowRun $run, ?string $why): void
+    {
+        $subject = Context::subject($context);
+        $w->forceFill(['last_trigger' => ['at' => now()->toIso8601String(), 'subject' => $subject, 'run_id' => $run?->id, 'skipped' => $run ? null : $why]])->saveQuietly();
+        Log::channel(app()->runningUnitTests() ? 'null' : 'stderr')->info('automation trigger', ['store' => $store->id, 'workflow' => $w->id, 'trigger' => $w->trigger, 'subject' => $subject,
+            'run' => $run?->id, 'status' => $run?->status, 'skipped' => $run ? null : $why]);
+    }
+
+    /** Why the trigger's own settings didn't match this event. */
+    private function mismatch(array $definition): string
+    {
+        return match ($definition['trigger'] ?? null) {
+            'product_purchased' => 'The order has none of the products chosen in "Starts when".',
+            'customer_tag_added' => 'The tag added isn\'t the one chosen in "Starts when".',
+            'custom_event' => 'It was a different Growvia event from the one chosen in "Starts when".',
+            default => 'The event didn\'t match the trigger settings.',
+        };
     }
 
     public function start(Store $store, Workflow $workflow, array $context, string $key, int $depth = 0, bool $test = false): ?WorkflowRun

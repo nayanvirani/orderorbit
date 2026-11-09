@@ -89,7 +89,7 @@ function summary(catalog, step, workflows) {
   return [step.label || action.label || 'Action', line || 'Fill in the details'];
 }
 
-export default function FlowEditor({ workflow, catalog, errors, banner, versions, recentRuns, otherWorkflows, automationOn, live, savedAt, gates, stats }) {
+export default function FlowEditor({ workflow, catalog, errors, banner, versions, recentRuns, otherWorkflows, automationOn, live, savedAt, gates, stats, lastTrigger }) {
   const { submit } = useRouter();
   const [name, setName] = useState(workflow.name);
   const initial = useMemo(() => ({ trigger: 'order_paid', trigger_config: {}, steps: [], ...workflow.draft }), [workflow.draft]);
@@ -195,7 +195,7 @@ export default function FlowEditor({ workflow, catalog, errors, banner, versions
 
           <aside className="fl-panel" aria-label="Step settings">
             {selected === 'workflow'
-              ? <WorkflowPanel workflow={workflow} versions={versions} recentRuns={recentRuns} />
+              ? <WorkflowPanel workflow={workflow} versions={versions} recentRuns={recentRuns} lastTrigger={lastTrigger} />
               : selected === 'trigger'
                 ? <TriggerPanel ctx={ctx} />
                 : getIn(state, selected)
@@ -510,7 +510,7 @@ function Rule({ ctx, rule, path }) {
   );
 }
 
-function WorkflowPanel({ workflow, versions, recentRuns }) {
+function WorkflowPanel({ workflow, versions, recentRuns, lastTrigger }) {
   return (
     <Panel kind="workflow" title="Workflow settings">
       {workflow.published && (
@@ -519,6 +519,19 @@ function WorkflowPanel({ workflow, versions, recentRuns }) {
           <ActionButton url={route('app.automation.toggle', { workflow: workflow.id })} confirm={workflow.status === 'enabled' ? 'Turn this workflow off? New orders won\'t start it until you turn it on again.' : undefined}>
             {workflow.status === 'enabled' ? 'Turn off' : 'Turn on'}
           </ActionButton>
+        </div>
+      )}
+      {workflow.published && (
+        <div className="fl-group">
+          <h3>Last trigger</h3>
+          {!lastTrigger ? <p className="oo-muted">No order or customer event has reached this workflow since it was published.</p> : (
+            <>
+              <p>{lastTrigger.subject || 'An event'} · {ago(lastTrigger.at)}</p>
+              {lastTrigger.run_id
+                ? <p><s-badge tone="success">Started</s-badge> <s-link href={appUrl(route('app.automation.runs.show', { run: lastTrigger.run_id }))}>Run #{lastTrigger.run_id}</s-link></p>
+                : <s-banner tone="warning">Didn't start: {lastTrigger.skipped}</s-banner>}
+            </>
+          )}
         </div>
       )}
       <div className="fl-group">

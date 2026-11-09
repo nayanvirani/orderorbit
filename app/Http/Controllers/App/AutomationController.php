@@ -246,6 +246,8 @@ class AutomationController extends Controller
             'recentRuns' => $workflow->runs()->latest('id')->limit(10)->get()->map(fn ($r) => ['id' => $r->id, 'subject' => $r->subject, 'status' => $r->status, 'test' => (bool) $r->test]),
             'otherWorkflows' => Workflow::where('store_id', $store->id)->whereKeyNot($workflow->id)->orderBy('name')->get(['handle', 'name']),
             'live' => $live ? ['version' => $live->version, 'published_at' => $live->published_at] : null,
+            // The last order or customer event that met this workflow: the run it started, or why it didn't.
+            'lastTrigger' => $workflow->last_trigger,
             'savedAt' => $workflow->updated_at,
             'gates' => ['branching' => $store->planIncludes('automation_branching'), 'webhooks' => $store->planIncludes('automation_webhooks'),
                 // Predictive reorder timing (G21): shown with its flag; null hides it.

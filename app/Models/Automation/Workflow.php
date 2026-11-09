@@ -11,11 +11,11 @@ class Workflow extends Model
 {
     protected $table = 'automation_workflows';
 
-    protected $fillable = ['store_id', 'handle', 'name', 'template', 'status', 'trigger', 'draft', 'has_unpublished_changes', 'published_version_id', 'last_run_at'];
+    protected $fillable = ['store_id', 'handle', 'name', 'template', 'status', 'trigger', 'draft', 'has_unpublished_changes', 'published_version_id', 'last_run_at', 'last_trigger'];
 
     protected function casts(): array
     {
-        return ['draft' => 'array', 'has_unpublished_changes' => 'boolean', 'last_run_at' => 'datetime'];
+        return ['draft' => 'array', 'has_unpublished_changes' => 'boolean', 'last_run_at' => 'datetime', 'last_trigger' => 'array'];
     }
 
     public function store(): BelongsTo

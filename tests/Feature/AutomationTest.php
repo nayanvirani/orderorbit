@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Automation\Context;
 use App\Automation\Definition;
 use App\Automation\Engine;
+use App\Automation\Triggers;
 use App\Automation\WorkflowManager;
 use App\Models\Automation\AutomationEmail;
 use App\Models\Automation\InboxItem;
@@ -465,5 +466,34 @@ class AutomationTest extends TestCase
         $this->assertSame(['no_match', 'not_reached', 'not_reached', 'not_reached', 'not_reached', 'finished'], array_column($steps, 'status'));
         $this->assertStringEndsWith('The Otherwise branch is empty, so the run ended.', $steps[0]['message']);
         $this->assertSame('Add customer tags', $steps[1]['message']);
+    }
+
+    public function test_each_trigger_says_whether_it_started_the_workflow_and_why_not(): void
+    {
+        $store = $this->store();
+        $paid = $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'Paid']]]], 'Paid');
+        $bought = $this->workflow($store, ['trigger' => 'product_purchased', 'trigger_config' => ['products' => [['id' => 'gid://shopify/Product/999', 'title' => 'Other']]],
+            'steps' => [['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'Bought']]]], 'Bought');
+
+        app(Triggers::class)->webhook($store, 'orders/paid', $this->order());
+        app(Triggers::class)->webhook($store, 'orders/create', $this->order());
+        $this->assertSame('Order #1052', $paid->fresh()->last_trigger['subject'] ?? null);
+        $this->assertNotNull($paid->fresh()->last_trigger['run_id']);
+        $this->assertNull($paid->fresh()->last_trigger['skipped']);
+        $this->assertSame('The order has none of the products chosen in "Starts when".', $bought->fresh()->last_trigger['skipped']);
+
+        // Shopify sends the same order again: nothing new starts, and it says so.
+        app(Triggers::class)->webhook($store, 'orders/paid', $this->order());
+        $this->assertSame('It already ran for this event (Shopify sent it again).', $paid->fresh()->last_trigger['skipped']);
+
+        // An if / else workflow on a plan without branching (e.g. after a downgrade) says why it waits.
+        $branch = $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [['type' => 'condition', 'match' => 'all', 'rules' => [['field' => 'order_total', 'op' => 'gte', 'value' => 1]],
+            'then' => [['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'Big']]], 'else' => []]]], 'Branch');
+        $store->forceFill(['plan' => 'starter'])->save();
+        app(Triggers::class)->webhook($store->fresh(), 'orders/paid', $this->order(['id' => 5002, 'name' => '#1053']));
+        $this->assertStringContainsString('if / else', $branch->fresh()->last_trigger['skipped']);
+
+        $page = $this->page('/app/automation/workflows/'.$paid->id, $this->member($store, 'owner'))->assertOk();
+        $this->assertSame('Order #1053', $page->json('props.lastTrigger.subject'));
     }
 }
