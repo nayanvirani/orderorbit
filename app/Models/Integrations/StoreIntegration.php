@@ -23,6 +23,11 @@ class StoreIntegration extends Model
         $this->forceFill(['log' => $log] + ($ok ? ['status' => 'connected', 'last_error' => null] : ['status' => 'failing', 'last_error' => mb_substr($text, 0, 500)]))->save();
     }
 
+    public function store(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Store::class);
+    }
+
     public function setting(string $key, mixed $default = null): mixed
     {
         return ($this->settings ?? [])[$key] ?? $default;

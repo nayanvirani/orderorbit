@@ -22,6 +22,7 @@ class PixelController extends Controller
     {
         // The controller can be reused across requests (long-running workers): start clean.
         $this->ga = [];
+        $this->kl = [];
         $data = json_decode($request->getContent(), true);
         $ok = response('', 204)->header('Access-Control-Allow-Origin', '*');
         if (! is_array($data) || \App\Support\Features::killed('web_pixel')) {
@@ -48,7 +49,34 @@ class PixelController extends Controller
             });
         }
 
+        // Klaviyo (G31): signed-in customers' events, with their email read from Shopify.
+        if ($this->kl && ($klaviyo = \App\Services\Integrations\Klaviyo::for($store))) {
+            $events = $this->kl;
+            defer(function () use ($store, $klaviyo, $events) {
+                $service = app(\App\Services\Integrations\Klaviyo::class);
+                $bundles = \App\Models\Experience::where('store_id', $store->id)->where('type', 'bundles')->pluck('handle')->all();
+                foreach ($events as [$customer, $metric, $props, $unique]) {
+                    if ($metric === 'bundle_bought' && ! in_array($props['offer'], $bundles, true)) {
+                        continue;
+                    }
+                    if ($email = $service->email($store, $customer)) {
+                        $service->event($klaviyo, $email, $metric, $props, $unique);
+                    }
+                }
+            });
+        }
+
         return $ok;
+    }
+
+    /** [customer id, metric, properties, unique id] collected from this request (G31). */
+    private array $kl = [];
+
+    private function toKlaviyo(array $base, string $metric, array $props, string $unique): void
+    {
+        if (! empty($base['customer_id'])) {
+            $this->kl[] = [(string) $base['customer_id'], $metric, array_filter($props, fn ($v) => $v !== null), $unique];
+        }
     }
 
     /** GA client id => [[event name, params]] collected from this request (G32). */
@@ -160,6 +188,11 @@ class PixelController extends Controller
             // Survey answers (the only events with a label); plain text, trimmed.
             'label' => isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) ?: null : null,
         ]);
+        $metric = ['view' => 'offer_viewed', 'add' => 'offer_added', 'unlock' => 'reward_unlocked', 'survey' => 'survey_answered'][$code] ?? null;
+        if ($metric) {
+            $this->toKlaviyo($base, $metric, ['offer' => $handle, 'offer_type' => $type, 'answer' => $code === 'survey' && isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) : null],
+                $metric.':'.$handle.':'.($base['session_id'] ?? '').':'.now()->format('YmdHi'));
+        }
         if ($code === 'view' || $code === 'add') {
             $this->toGa($data, $code === 'view' ? 'growvia_offer_view' : 'growvia_offer_add', ['offer_id' => $handle, 'offer_type' => $type, 'quantity' => $code === 'add' ? max(1, (int) ($data['q'] ?? 1)) : null]);
         }
@@ -199,6 +232,7 @@ class PixelController extends Controller
         }
         foreach ($credited as $who => $c) {
             AnalyticsEvent::create($base + ['event' => 'attributed', 'name' => 'growvia:revenue_attributed', 'experience_handle' => $who, 'order_ref' => $ref, 'value' => round($c['value'], 2), 'quantity' => max(1, $c['quantity']), 'currency' => $currency, 'country' => $country]);
+            $this->toKlaviyo($base, 'bundle_bought', ['offer' => $who, 'order' => $ref, 'value' => round($c['value'], 2), 'currency' => $currency], "bundle:{$ref}:{$who}");
             $this->toGa($data, 'growvia_purchase', ['offer_id' => $who, 'transaction_id' => $ref, 'value' => round($c['value'], 2), 'currency' => $currency]);
         }
 

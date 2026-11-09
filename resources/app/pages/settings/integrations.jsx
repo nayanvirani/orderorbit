@@ -11,6 +11,7 @@ function ConnectedApp({ app: a }) {
   const { can } = useShared();
   const [keys, setKeys] = useState({});
   const [events, setEvents] = useState(Object.fromEntries(a.events.map((e) => [e.name, e.on])));
+  const [segments, setSegments] = useState((a.segments || []).filter((s) => s.on).map((s) => s.id));
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
   const run = async (key, path, data = {}) => {
@@ -52,9 +53,21 @@ function ConnectedApp({ app: a }) {
               </label>
             ))}
           </div>
+          {a.segments && (
+            <div className="ca-events">
+              <small><b>Sync these segments to Klaviyo lists (daily)</b></small>
+              {!a.segments.length && <span className="oo-muted oo-small">No segments that can sync yet. Segments built from orders, total spent or customer tags can.</span>}
+              {a.segments.map((s) => (
+                <label key={s.id} className="ca-check">
+                  <input type="checkbox" disabled={!edit} checked={segments.includes(s.id)} onChange={(ev) => setSegments(ev.target.checked ? [...segments, s.id] : segments.filter((x) => x !== s.id))} />
+                  {s.name}
+                </label>
+              ))}
+            </div>
+          )}
           {edit && (
             <div className="pf-bar">
-              <s-button loading={busy === 'settings' ? '' : undefined} onClick={() => run('settings', 'app.settings.integrations.settings', { events })}>Save</s-button>
+              <s-button loading={busy === 'settings' ? '' : undefined} onClick={() => run('settings', 'app.settings.integrations.settings', { events, segments })}>Save</s-button>
               <s-button loading={busy === 'test' ? '' : undefined} onClick={() => run('test', 'app.settings.integrations.test')}>Send test</s-button>
               <s-button variant="tertiary" tone="critical" onClick={async () => (await confirmDialog(`Disconnect ${a.name}? Its keys are deleted and nothing more is sent.`, { title: 'Disconnect', action: 'Disconnect' })) && run('disconnect', 'app.settings.integrations.disconnect')}>Disconnect</s-button>
             </div>

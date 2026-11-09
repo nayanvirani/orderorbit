@@ -128,6 +128,20 @@ class Audiences
 
             return null;
         }
+        try {
+            $count = $this->api->graphql($store, 'query ($q: String!) { customersCount(query: $q) { count } }', ['q' => self::searchQuery($segment)])['customersCount']['count'] ?? null;
+        } catch (Throwable $e) {
+            report($e);
+            $count = null;
+        }
+        $segment->forceFill(['member_count' => $count, 'counted_at' => now()])->save();
+
+        return $count;
+    }
+
+    /** Shopify's customer search for a countable segment (Klaviyo list sync uses it to list members). */
+    public static function searchQuery(Segment $segment): string
+    {
         $parts = collect($segment->rules)->map(function ($r) {
             $field = self::FIELDS[$r['field']]['search'];
             if ($field === 'tag') {
@@ -139,15 +153,8 @@ class Audiences
 
             return "{$field}:{$op}".(float) $r['value'];
         });
-        try {
-            $count = $this->api->graphql($store, 'query ($q: String!) { customersCount(query: $q) { count } }', ['q' => $parts->implode($segment->match === 'any' ? ' OR ' : ' AND ')])['customersCount']['count'] ?? null;
-        } catch (Throwable $e) {
-            report($e);
-            $count = null;
-        }
-        $segment->forceFill(['member_count' => $count, 'counted_at' => now()])->save();
 
-        return $count;
+        return $parts->implode($segment->match === 'any' ? ' OR ' : ' AND ');
     }
 
     /**

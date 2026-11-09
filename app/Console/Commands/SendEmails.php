@@ -65,6 +65,11 @@ class SendEmails extends Command
 
             if ($result->ok()) {
                 $row->forceFill(['status' => 'sent', 'sent_at' => now(), 'provider' => $result->provider->driver, 'message_id' => $result->messageId, 'error' => null, 'attempts' => $row->attempts + 1])->save();
+                // Klaviyo (G31): "Workflow email sent" for the merchant's flows.
+                if ($klaviyo = \App\Services\Integrations\Klaviyo::for($store)) {
+                    app(\App\Services\Integrations\Klaviyo::class)->event($klaviyo, (string) $row->to_email, 'workflow_email_sent',
+                        ['subject' => mb_substr((string) $row->subject, 0, 150), 'run' => $row->run_id], "workflow-email:{$row->id}");
+                }
             } elseif ($result->status === 'failed') {
                 $row->forceFill(['status' => 'failed', 'error' => $result->error, 'attempts' => $row->attempts + 1])->save();
             } else {
