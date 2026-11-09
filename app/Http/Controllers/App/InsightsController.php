@@ -50,6 +50,49 @@ class InsightsController extends Controller
         ]);
     }
 
+    /** Insights › Monthly report (G15): last month by default, any of the last 12. */
+    public function report(Request $request, Store $store, \App\Services\Insights\MonthlyReport $reports): Page
+    {
+        abort_unless(Features::enabled('monthly_report', $store) && Features::enabled('profit', $store), 404);
+
+        return page('insights/report', [
+            'report' => $reports->build($store, (string) $request->query('month')),
+            'access' => ProfitSync::missingAccess($store) ? ['missing' => ProfitSync::missingAccess($store)] : null,
+            'locked' => $store->planIncludes('sales_insights') ? null : \App\Support\Plans::unlockMessage('sales_insights', 'see it', $store),
+        ]);
+    }
+
+    public function reportPdf(Request $request, Store $store, \App\Services\Insights\MonthlyReport $reports, \App\Services\Insights\MonthlyReportSender $sender): \Illuminate\Http\Response
+    {
+        $this->reportGate($store);
+        $report = $reports->build($store, (string) $request->query('month'));
+
+        return response($sender->pdf($report), 200, ['Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="growvia-report-'.$report['month'].'.pdf"', 'Cache-Control' => 'private, no-store']);
+    }
+
+    /** "Email to me": the report to the person asking, at once. */
+    public function reportEmail(Request $request, Store $store, \App\Services\Insights\MonthlyReport $reports, \App\Services\Insights\MonthlyReportSender $sender): \Illuminate\Http\RedirectResponse
+    {
+        $this->reportGate($store);
+        $user = $request->attributes->get('storeUser');
+        $report = $reports->build($store, (string) $request->input('month'));
+        if (! $user?->email) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['email' => 'Your Shopify account has no email address we can send to.']);
+        }
+        if (! $sender->sendTo($store, $user, $report)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['email' => 'The email couldn\'t be sent just now. Try again in a few minutes.']);
+        }
+
+        return redirect()->to(app_route('app.insights.report', ['month' => $report['month'], 'notice' => 'emailed']));
+    }
+
+    private function reportGate(Store $store): void
+    {
+        abort_unless(Features::enabled('monthly_report', $store) && Features::enabled('profit', $store), 404);
+        abort_unless($store->planIncludes('sales_insights'), 403, \App\Support\Plans::unlockMessage('sales_insights', 'use it', $store));
+    }
+
     /** Net sales, orders, average order and the share of orders from returning customers. */
     private function numbers(Store $store, Carbon $from, Carbon $to): array
     {

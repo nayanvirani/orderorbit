@@ -14,6 +14,7 @@ class Notices
         'document_test_sent' => ['Test email sent to you with the sample document.', false],
         'document_test_failed' => ['The test email couldn\'t be sent. Check the email provider in Internal Admin.', true],
         'saved' => ['Changes saved successfully.', false],
+        'emailed' => ['Report emailed to you.', false],
         'ticket_created' => ['Ticket sent. We usually reply within one business day.', false],
         'reply_sent' => ['Reply sent.', false],
         'analytics_deleted' => ['All analytics data for your store was deleted.', false],

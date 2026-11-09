@@ -18,7 +18,8 @@ use Throwable;
 
 /**
  * Weekly summary email (G16), every Monday: last week's sales, orders and profit after ads (when
- * costs are set), with the change from the week before, to the people who can see profit. Each
+ * costs are set), with the change from the week before, plus the Health Score and the top 3 open
+ * alerts when Protect is on, to the people who can see profit. Each
  * person can turn it off from the email or in Settings › Team and permissions.
  */
 class WeeklySummary
@@ -66,11 +67,38 @@ class WeeklySummary
             $lines[] = "Most profit: {$top['name']} ({$money($top['after_ads'])}).";
         }
 
+        // Health Score and the top 3 open alerts (Protect, when it's on for the store).
+        $actions = false;
+        if (Features::enabled('protect', $store) && $store->planIncludes('protect')) {
+            if (Features::enabled('protect_center', $store)) {
+                $score = app(\App\Services\Protect\Health::class)->compute($store)['score'];
+                if ($score !== null) {
+                    $weekAgo = \App\Models\Protect\HealthScore::where('store_id', $store->id)->where('day', '<=', $today->copy()->subDays(7)->toDateString())->orderByDesc('day')->value('score');
+                    $diff = $weekAgo !== null ? $score - $weekAgo : 0;
+                    $lines[] = '';
+                    $lines[] = "Health Score: {$score} of 100".($diff ? ' ('.($diff > 0 ? '+' : '−').abs($diff).' since last week)' : '');
+                    $actions = true;
+                }
+            }
+            $alerts = \App\Models\Protect\ProtectAlert::where('store_id', $store->id)->where('status', 'open')->where('severity', '!=', 'idea')->get()
+                ->sortBy(fn ($a) => [$a->severity === 'urgent' ? 0 : 1, -$a->cost])->take(3);
+            if ($alerts->isNotEmpty()) {
+                $lines[] = '';
+                $lines[] = 'Top '.$alerts->count().' open '.($alerts->count() === 1 ? 'alert' : 'alerts').':';
+                foreach ($alerts->values() as $i => $a) {
+                    $lines[] = ($i + 1).". {$a->title}: {$a->cost_text}.";
+                }
+                $actions = true;
+            }
+        }
+
         return [
             'subject' => "{$name} last week: {$money($t['net_sales'])} in sales".($costed ? ", {$money($t['after_ads'])} profit after ads" : ''),
             'parts' => [
                 'heading' => "Week of {$week}", 'intro' => implode("\n", $lines),
-                'cta' => ['Open Profit', $store->adminUrl('apps/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/app/profit')],
+                'cta' => $actions && Features::enabled('protect_center', $store)
+                    ? ['Open Action Center', $store->adminUrl('apps/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/app/protect/actions')]
+                    : ['Open Profit', $store->adminUrl('apps/'.(Cache::get('shopify.app_handle') ?: config('shopify.app_handle')).'/app/profit')],
                 'footer' => "Sent every Monday to people who can see profit for {$name}.",
             ],
             'week' => $from->format('o-\WW'),

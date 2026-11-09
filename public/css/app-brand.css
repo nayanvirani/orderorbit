@@ -443,3 +443,11 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .um-sub { display: block; font-size: 12px; }
 .um-strip { display: flex; gap: 2px; } .um-strip i { width: 6px; height: 18px; border-radius: 2px; background: #8fd1a8; }
 .um-strip i.down { background: #c62828; } .um-strip i.slow { background: #e08a3c; } .um-strip i.none { background: var(--ob-subdued, #efedf7); }
+/* Insights › Monthly report (G15) */
+.mr-month { display: inline-flex; gap: 8px; align-items: center; font-size: 13.5px; font-weight: 600; }
+.mr-month select { min-height: 32px; padding: 0 10px; border: 1px solid var(--ob-line); border-radius: 8px; font: inherit; background: var(--ob-surface); }
+.mr-head small { color: var(--ob-muted); font-size: 12.5px; font-weight: 600; } .mr-head h2 { margin: 2px 0 8px; font-size: 22px; }
+.mr-head p { margin: 0 0 14px; padding: 12px 14px; border-radius: 10px; background: var(--ob-subdued, #f4f4f8); font-size: 14px; line-height: 1.55; }
+.mr-total { font-weight: 700; border-top: 2px solid var(--ob-line) !important; }
+.mr-todo { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+.mr-todo li span { display: block; color: var(--ob-muted); font-size: 13.5px; line-height: 1.5; }

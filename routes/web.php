@@ -287,6 +287,10 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
         });
         // Insights › Sales (G14), behind the sales_insights flag.
         Route::get('/insights/sales', [\App\Http\Controllers\App\InsightsController::class, 'sales'])->middleware('store.can:view_dashboard')->name('insights.sales');
+        // Insights › Monthly report (G15), behind the monthly_report flag.
+        Route::get('/insights/report', [\App\Http\Controllers\App\InsightsController::class, 'report'])->middleware('store.can:view_dashboard')->name('insights.report');
+        Route::get('/insights/report/pdf', [\App\Http\Controllers\App\InsightsController::class, 'reportPdf'])->middleware('store.can:view_dashboard')->name('insights.report.pdf');
+        Route::post('/insights/report/email', [\App\Http\Controllers\App\InsightsController::class, 'reportEmail'])->middleware(['store.can:view_dashboard', 'throttle:5,1'])->name('insights.report.email');
         // Profit (phase 3), behind the profit flag.
         Route::prefix('profit')->name('profit.')->middleware('store.can:view_dashboard')->controller(\App\Http\Controllers\App\ProfitController::class)->group(function () {
             Route::get('/', 'dashboard')->name('dashboard');
