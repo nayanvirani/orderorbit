@@ -70,13 +70,12 @@ class Modules
         'reorder_timing' => ['Predictive reorder timing', 'AI', 'Reorder reminders at each product\'s usual gap.', 'automation'],
         'review_apps' => ['Judge.me, Yotpo and Loox', 'Integrations', 'Real star ratings and reviews in offers.', null],
         'klaviyo_ga4' => ['Klaviyo and GA4', 'Integrations', 'Segments and events in Klaviyo and Google Analytics.', null],
-        'gorgias' => ['Gorgias', 'Integrations', 'Order and offer context in support tickets.', null],
         'first_in_line_support' => ['First-in-line support', 'Service', 'Answered before every other plan.', 'priority_support'],
     ];
 
     /** Next MVP modules that aren't built yet: shown as "Coming soon", never promised as available. */
     public const COMING = ['translations', 'profit_snapshot', 'profit', 'profit_roas', 'profit_goals', 'protect', 'protect_alerts', 'product_data', 'url_monitor',
-        'sales_insights', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'review_apps', 'klaviyo_ga4', 'gorgias', 'first_in_line_support'];
+        'sales_insights', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'review_apps', 'klaviyo_ga4', 'first_in_line_support'];
 
     /** The next MVP's module keys per plan (G29, section 8), added to each plan's own list. */
     public const NEXT_MVP = [
@@ -86,7 +85,7 @@ class Modules
         'scale' => ['profit_snapshot', 'protect', 'profit', 'protect_alerts', 'sales_insights', 'review_apps', 'profit_roas', 'product_data', 'url_monitor', 'translations', 'klaviyo_ga4', 'product_documents',
             'profit_goals', 'customer_value'],
         'premium' => ['profit_snapshot', 'protect', 'profit', 'protect_alerts', 'sales_insights', 'review_apps', 'profit_roas', 'product_data', 'url_monitor', 'translations', 'klaviyo_ga4', 'product_documents',
-            'profit_goals', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'gorgias', 'first_in_line_support'],
+            'profit_goals', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'first_in_line_support'],
     ];
 
     /** The next MVP's limits per plan (null = unlimited): URL monitor pages, team members who see profit, days of history, store questions. */

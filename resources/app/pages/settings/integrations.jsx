@@ -7,7 +7,6 @@ const PLANNED = [
   ['Klaviyo', 'Send segments and events to your email flows.'],
   ['Judge.me and Yotpo', 'Real reviews in review blocks and requests.'],
   ['Google Analytics 4', 'Growvia events in GA4.'],
-  ['Gorgias', 'Support tickets with order context.'],
 ];
 
 export default function Integrations({ connection: c, webhooks }) {
