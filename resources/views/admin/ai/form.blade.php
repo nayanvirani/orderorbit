@@ -21,6 +21,15 @@
             <label>Output price (USD per million tokens)<input type="number" step="0.0001" min="0" name="price_out" value="{{ old('price_out', $provider?->price_out ?? $prices[1]) }}"></label>
         </div>
         <p class="ad-muted ad-small">0 for free tiers. Prices count towards each store's monthly AI budget.</p>
+        @php($suggested = $presets_limits[$preset] ?? [null, null, null, null])
+        <h3 style="margin: 8px 0 0">Limits</h3>
+        <p class="ad-muted ad-small" style="margin: 0">Growvia counts this provider's use and moves to the next provider before a limit is reached. Empty means no limit. Days and months count in UTC.
+            @if (! $provider && array_filter($suggested)) Filled in from the provider's published free-tier limits for the suggested model; check its limits page, as they change. @endif</p>
+        <div class="ad-form" style="grid-template-columns: 1fr 1fr; display: grid">
+            @foreach ($limits as $field => [$label])
+                <label>{{ ucfirst($label) }}<input type="number" min="1" step="1" name="{{ $field }}" placeholder="No limit" value="{{ old($field, $provider ? $provider->{$field} : $suggested[$loop->index]) }}"></label>
+            @endforeach
+        </div>
         <div><button class="ad-btn primary" type="submit">{{ $provider ? 'Save and test' : 'Add and test' }}</button></div>
     </form>
 </section>

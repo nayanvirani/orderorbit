@@ -68,6 +68,37 @@ class AiProvidersTest extends TestCase
         Http::assertNotSent(fn (Request $r) => str_contains($r->url(), 'generativelanguage'));
     }
 
+    public function test_a_provider_at_its_limit_is_skipped_before_it_errors(): void
+    {
+        $gemini = $this->provider('gemini', 1);
+        $gemini->forceFill(['limit_requests_day' => 2])->save();
+        $groq = $this->provider('groq', 2);
+        $groq->forceFill(['limit_tokens_day' => 4000])->save();
+        Http::fake(['*' => Http::response(['choices' => [['message' => ['content' => '{"ok": true}']]], 'usage' => ['prompt_tokens' => 1500, 'completion_tokens' => 500]])]);
+        $store = $this->premium();
+        $ai = app(Ai::class);
+
+        foreach (range(1, 4) as $_) {
+            $this->assertSame(['ok' => true], $ai->json($store, 'offer_copy', 'System', 'Prompt', self::SCHEMA, 200));
+        }
+        // Gemini answers twice (its daily limit), then Groq twice (4,000 tokens, its daily limit).
+        $this->assertSame([$gemini->id, $gemini->id, $groq->id, $groq->id], DB::table('ai_usage')->orderBy('id')->pluck('provider_id')->map(fn ($v) => (int) $v)->all());
+        $this->assertSame('limit', $gemini->fresh()->state());
+        $this->assertSame('2 requests a day', $gemini->fresh()->limitReached());
+        $this->assertSame('4,000 tokens a day', $groq->fresh()->limitReached(2200));
+        $this->assertSame('ok', $gemini->fresh()->status); // a limit isn't an error
+
+        // Every provider full: AI pauses (Morning Brief shows paused) instead of failing.
+        $this->assertFalse($ai->hasCapacity());
+        $this->assertFalse($ai->available($store));
+        $this->assertNull($ai->json($store, 'offer_copy', 'System', 'Prompt', self::SCHEMA, 200));
+        Http::assertSentCount(4);
+
+        // The next day there's room again.
+        $this->travel(1)->days();
+        $this->assertTrue($ai->available($store));
+    }
+
     public function test_every_provider_failing_returns_nothing(): void
     {
         $this->provider('gemini', 1);
@@ -108,12 +139,16 @@ class AiProvidersTest extends TestCase
         $key = 'gsk_SecretKeyValue9876';
 
         $this->actingAs($admin)->get('/admin/ai')->assertOk()->assertSee('AI providers');
-        $this->actingAs($admin)->get('/admin/ai/providers/new?preset=groq')->assertOk()->assertSee('console.groq.com');
-        $this->actingAs($admin)->post('/admin/ai/providers', ['preset' => 'groq', 'name' => 'Groq', 'model' => 'llama-3.3-70b-versatile', 'api_key' => $key])
+        $this->actingAs($admin)->get('/admin/ai/providers/new?preset=groq')->assertOk()->assertSee('console.groq.com')
+            ->assertSee('Tokens a day')->assertSee('value="100000"', false);
+        $this->actingAs($admin)->post('/admin/ai/providers', ['preset' => 'groq', 'name' => 'Groq', 'model' => 'llama-3.3-70b-versatile', 'api_key' => $key,
+            'limit_requests_minute' => 30, 'limit_requests_day' => 1000, 'limit_tokens_day' => 100000, 'limit_tokens_month' => ''])
             ->assertRedirect('/admin/ai')->assertSessionHas('status', 'Groq saved and working.');
         $this->actingAs($admin)->post('/admin/ai/providers', ['preset' => 'gemini', 'name' => 'Gemini', 'model' => 'gemini-2.5-flash', 'api_key' => 'AIzaKey'])->assertRedirect('/admin/ai');
 
         $groq = AiProvider::where('name', 'Groq')->first();
+        $this->assertSame([30, 1000, 100000, null], [$groq->limit_requests_minute, $groq->limit_requests_day, $groq->limit_tokens_day, $groq->limit_tokens_month]);
+        $this->actingAs($admin)->get('/admin/ai')->assertSee('0 / 1,000 requests a day');
         $this->assertSame($key, $groq->credentials['api_key']);
         $this->assertNotSame($key, DB::table('ai_providers')->where('id', $groq->id)->value('credentials'));
         $this->actingAs($admin)->get('/admin/ai')->assertOk()->assertDontSee($key);

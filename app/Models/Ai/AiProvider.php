@@ -3,6 +3,7 @@
 namespace App\Models\Ai;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /** An AI service Growvia's AI features can use (Internal Admin › AI providers). */
 class AiProvider extends Model
@@ -31,10 +32,30 @@ class AiProvider extends Model
             'Any service with an OpenAI-compatible /chat/completions endpoint, e.g. a self-hosted Ollama at https://your-server/v1.'],
     ];
 
+    /** Limit fields => [label, period]. Empty = no limit. */
+    public const LIMITS = [
+        'limit_requests_minute' => ['requests a minute', 'minute'],
+        'limit_requests_day' => ['requests a day', 'day'],
+        'limit_tokens_day' => ['tokens a day', 'day'],
+        'limit_tokens_month' => ['tokens a month', 'month'],
+    ];
+
+    /**
+     * Suggested free-tier limits per preset, from each provider's published limits for the
+     * suggested model (they change; the form says to check). Order as LIMITS.
+     */
+    public const SUGGESTED_LIMITS = [
+        'gemini' => [10, 250, null, null],
+        'groq' => [30, 1000, 100000, null],
+        'openrouter' => [20, 50, null, null],
+        'mistral' => [60, null, null, 1000000000],
+    ];
+
     protected function casts(): array
     {
         return ['credentials' => 'encrypted:array', 'is_active' => 'boolean', 'paused_until' => 'datetime', 'last_used_at' => 'datetime',
-            'price_in' => 'float', 'price_out' => 'float'];
+            'price_in' => 'float', 'price_out' => 'float', 'limit_requests_minute' => 'integer', 'limit_requests_day' => 'integer',
+            'limit_tokens_day' => 'integer', 'limit_tokens_month' => 'integer'];
     }
 
     public function usable(): bool
@@ -42,11 +63,52 @@ class AiProvider extends Model
         return $this->is_active && (! $this->paused_until || $this->paused_until->isPast());
     }
 
-    public function state(): string
+    /** Use so far: requests this minute and today, tokens today and this month (UTC). */
+    public function usage(): array
+    {
+        if (! $this->exists) {
+            return ['minute' => 0, 'requests_day' => 0, 'tokens_day' => 0, 'tokens_month' => 0];
+        }
+        $rows = fn ($since) => DB::table('ai_usage')->where('provider_id', $this->id)->where('created_at', '>=', $since);
+        $day = $rows(now()->startOfDay())->selectRaw('count(*) as n, coalesce(sum(input_tokens + output_tokens), 0) as t')->first();
+
+        return [
+            'minute' => $rows(now()->subMinute())->count(),
+            'requests_day' => (int) $day->n,
+            'tokens_day' => (int) $day->t,
+            'tokens_month' => (int) $rows(now()->startOfMonth())->sum(DB::raw('input_tokens + output_tokens')),
+        ];
+    }
+
+    /**
+     * The limit a request of about $tokens would reach, as text ("250 requests a day"), or null
+     * when there's room. Growvia moves to the next provider instead of waiting for an error.
+     */
+    public function limitReached(int $tokens = 0, ?array $usage = null): ?string
+    {
+        if (! $this->limit_requests_minute && ! $this->limit_requests_day && ! $this->limit_tokens_day && ! $this->limit_tokens_month) {
+            return null;
+        }
+        $u = $usage ?? $this->usage();
+        $checks = [
+            'limit_requests_minute' => $u['minute'] + 1, 'limit_requests_day' => $u['requests_day'] + 1,
+            'limit_tokens_day' => $u['tokens_day'] + max(1, $tokens), 'limit_tokens_month' => $u['tokens_month'] + max(1, $tokens),
+        ];
+        foreach ($checks as $field => $after) {
+            if ($this->{$field} && $after > $this->{$field}) {
+                return number_format($this->{$field}).' '.self::LIMITS[$field][0];
+            }
+        }
+
+        return null;
+    }
+
+    public function state(?array $usage = null): string
     {
         return match (true) {
             ! $this->is_active => 'off',
             $this->paused_until && $this->paused_until->isFuture() => 'resting',
+            $this->limitReached(0, $usage) !== null => 'limit',
             $this->status === 'failing' => 'failing',
             default => 'ok',
         };

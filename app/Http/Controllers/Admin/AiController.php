@@ -22,9 +22,13 @@ class AiController extends Controller
     public function index(): View
     {
         $since = now()->startOfMonth();
+        $providers = AiProvider::orderBy('priority')->orderBy('id')->get();
+        $usage = $providers->mapWithKeys(fn (AiProvider $p) => [$p->id => $p->usage()])->all();
 
         return view('admin.ai.index', [
-            'providers' => AiProvider::orderBy('priority')->orderBy('id')->get(), 'settings' => AiSettings::get(), 'presets' => AiProvider::PRESETS,
+            'providers' => $providers, 'usage' => $usage, 'limits' => AiProvider::LIMITS,
+            'allBlocked' => $providers->isNotEmpty() && ! $providers->contains(fn (AiProvider $p) => $p->usable() && $p->limitReached(0, $usage[$p->id]) === null),
+            'settings' => AiSettings::get(), 'presets' => AiProvider::PRESETS,
             'envKey' => (string) config('services.anthropic.key') !== '',
             'stats' => [
                 'requests' => DB::table('ai_usage')->where('created_at', '>=', $since)->count(),
@@ -49,12 +53,12 @@ class AiController extends Controller
     {
         $preset = array_key_exists((string) $request->query('preset'), AiProvider::PRESETS) ? (string) $request->query('preset') : 'gemini';
 
-        return view('admin.ai.form', ['provider' => null, 'preset' => $preset, 'presets' => AiProvider::PRESETS]);
+        return view('admin.ai.form', ['provider' => null, 'preset' => $preset, 'presets' => AiProvider::PRESETS, 'presets_limits' => AiProvider::SUGGESTED_LIMITS, 'limits' => AiProvider::LIMITS]);
     }
 
     public function edit(AiProvider $provider): View
     {
-        return view('admin.ai.form', ['provider' => $provider, 'preset' => $provider->preset, 'presets' => AiProvider::PRESETS]);
+        return view('admin.ai.form', ['provider' => $provider, 'preset' => $provider->preset, 'presets' => AiProvider::PRESETS, 'presets_limits' => AiProvider::SUGGESTED_LIMITS, 'limits' => AiProvider::LIMITS]);
     }
 
     public function store(Request $request, Ai $ai): RedirectResponse
@@ -81,11 +85,13 @@ class AiController extends Controller
             'api_key' => [$new ? 'required' : 'nullable', 'nullable', 'string', 'max:300'],
             'price_in' => ['nullable', 'numeric', 'min:0', 'max:1000'],
             'price_out' => ['nullable', 'numeric', 'min:0', 'max:1000'],
+            ...array_fill_keys(array_keys(AiProvider::LIMITS), ['nullable', 'integer', 'min:1', 'max:100000000000']),
         ]);
         $provider->fill([
             'name' => $data['name'], 'preset' => $preset, 'driver' => $driver, 'model' => trim($data['model']),
             'base_url' => $preset === 'custom' ? rtrim((string) $data['base_url'], '/') : $baseUrl,
             'price_in' => (float) ($data['price_in'] ?? 0), 'price_out' => (float) ($data['price_out'] ?? 0),
+            ...collect(AiProvider::LIMITS)->map(fn ($_, $field) => isset($data[$field]) ? (int) $data[$field] : null)->all(),
         ]);
         if (! empty($data['api_key'])) {
             $provider->credentials = ['api_key' => trim($data['api_key'])];

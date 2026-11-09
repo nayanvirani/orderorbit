@@ -13,7 +13,9 @@ use Throwable;
 
 /**
  * Growvia's AI features (Morning Brief, offer ideas) through the providers set in Internal Admin ›
- * AI providers, tried in order: when one fails or hits a rate limit it rests and the next answers.
+ * AI providers, tried in order. A provider is skipped when the request would go over one of its
+ * limits (requests a minute or day, tokens a day or month), and when it fails or answers with a
+ * rate limit it rests; either way the next provider answers.
  * Every request:
  * - carries only what it needs (totals and product names; never customer names, emails or addresses);
  * - asks for JSON matching a schema, checked before use;
@@ -57,7 +59,19 @@ class Ai
     public function available(Store $store): bool
     {
         return $this->configured() && $this->budget($store) > 0 && $this->spent($store) < $this->budget($store)
-            && $this->requests($store) < (int) AiSettings::get()['requests_per_store'];
+            && $this->requests($store) < (int) AiSettings::get()['requests_per_store'] && $this->hasCapacity();
+    }
+
+    /** Whether any provider can take a request now (not off, resting or at a limit). */
+    public function hasCapacity(): bool
+    {
+        return $this->providers()->contains(fn (AiProvider $p) => $p->usable() && $p->limitReached() === null);
+    }
+
+    /** Rough tokens for a request (about 4 characters a token, plus the most it may write). */
+    public static function estimate(string $system, string $prompt, array $schema, int $maxTokens): int
+    {
+        return (int) ceil((mb_strlen($system) + mb_strlen($prompt) + strlen(json_encode($schema))) / 4) + $maxTokens;
     }
 
     /** One request returning JSON matching $schema, or null (no AI, over budget, or every provider failed). */
@@ -66,8 +80,9 @@ class Ai
         if (! $this->available($store)) {
             return null;
         }
+        $estimate = self::estimate($system, $prompt, $schema, $maxTokens);
         foreach ($this->providers() as $p) {
-            if (! $p->usable()) {
+            if (! $p->usable() || $p->limitReached($estimate) !== null) {
                 continue;
             }
             try {
@@ -169,7 +184,7 @@ class Ai
 
     private function record(Store $store, string $feature, AiProvider $p, string $model, int $in, int $out, string $outcome): void
     {
-        DB::table('ai_usage')->insert(['store_id' => $store->id, 'feature' => $feature, 'provider' => mb_substr($p->name, 0, 80), 'model' => mb_substr($model, 0, 60),
+        DB::table('ai_usage')->insert(['store_id' => $store->id, 'feature' => $feature, 'provider' => mb_substr($p->name, 0, 80), 'provider_id' => $p->id, 'model' => mb_substr($model, 0, 60),
             'input_tokens' => $in, 'output_tokens' => $out, 'cost' => round(($in * $p->price_in + $out * $p->price_out) / 1_000_000, 5), 'outcome' => $outcome, 'created_at' => now()]);
     }
 }

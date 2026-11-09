@@ -39,6 +39,8 @@ class AiFeaturesTest extends TestCase
 
             public function configured(): bool { return true; }
 
+            public function hasCapacity(): bool { return true; }
+
             public function json(Store $store, string $feature, string $system, string $prompt, array $schema, int $maxTokens = 4000): ?array
             {
                 if (! $this->available($store)) {

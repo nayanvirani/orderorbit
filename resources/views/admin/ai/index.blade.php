@@ -1,9 +1,9 @@
 @extends('admin.layout')
 @section('title', 'AI providers')
 @section('content')
-@php($states = ['ok' => ['ok', 'Ready'], 'resting' => ['warn', 'Resting'], 'failing' => ['bad', 'Failing'], 'off' => ['', 'Off']])
+@php($states = ['ok' => ['ok', 'Ready'], 'resting' => ['warn', 'Resting'], 'limit' => ['warn', 'Limit reached'], 'failing' => ['bad', 'Failing'], 'off' => ['', 'Off']])
 <div class="ad-head">
-    <div><h1>AI providers</h1><p>The services the Morning Brief and offer ideas use. Add several, free tiers included: they're tried top to bottom, and when one fails or hits its rate limit the next answers.</p></div>
+    <div><h1>AI providers</h1><p>The services the Morning Brief and offer ideas use. Add several, free tiers included: they're tried top to bottom. When one reaches a limit you set, fails or answers with a rate limit, the next one answers.</p></div>
     <div class="ad-actions">
         <details class="ad-menu">
             <summary class="ad-btn primary">Add provider</summary>
@@ -15,6 +15,7 @@
 </div>
 
 @unless ($settings['enabled'])<div class="ad-note warn"><b>AI is switched off.</b> The Morning Brief and offer ideas pause until you switch it on below.</div>@endunless
+@if ($allBlocked)<div class="ad-note warn"><b>No provider can answer right now.</b> Every provider is switched off, resting or at a limit, so AI features pause until one has room (limits reset each minute, day or month in UTC). Add another provider or raise a limit.</div>@endif
 @if ($providers->isEmpty())
     <div class="ad-note">{!! $envKey ? 'Using the <b>ANTHROPIC_API_KEY</b> Railway variable. Add providers here to use others (free tiers included) or to add failover.' : 'No provider yet. Google Gemini, Groq, OpenRouter and Mistral all have free tiers: add one with its API key.' !!}</div>
 @endif
@@ -30,10 +31,12 @@
     <header><h2>Providers</h2><span class="ad-muted">Tried top to bottom</span></header>
     <div class="ad-scroll">
         <table class="ad-table">
-            <thead><tr><th>Order</th><th>Provider</th><th>Status</th><th>This month</th><th>Last used</th><th></th></tr></thead>
+            <thead><tr><th>Order</th><th>Provider</th><th>Status</th><th>Use against limits</th><th>Last used</th><th></th></tr></thead>
             <tbody>
                 @forelse ($providers as $i => $p)
-                    @php([$tone, $label] = $states[$p->state()])
+                    @php($u = $usage[$p->id])
+                    @php([$tone, $label] = $states[$p->state($u)])
+                    @php($used = ['limit_requests_minute' => $u['minute'], 'limit_requests_day' => $u['requests_day'], 'limit_tokens_day' => $u['tokens_day'], 'limit_tokens_month' => $u['tokens_month']])
                     <tr>
                         <td class="ad-order">
                             <form method="POST" action="{{ route('admin.ai.action', [$p->id, 'up']) }}">@csrf<button class="ad-icon-btn" @disabled($i === 0) aria-label="Move up">↑</button></form>
@@ -43,13 +46,19 @@
                         <td>
                             <span class="ad-badge {{ $tone }}">{{ $label }}</span>
                             @if ($p->paused_until && $p->paused_until->isFuture())<div class="ad-muted ad-small">Until {{ $p->paused_until->diffForHumans() }}</div>@endif
-                            @if ($p->last_error && $p->state() !== 'ok')<div class="ad-muted ad-small ad-clip" title="{{ $p->last_error }}">{{ \Illuminate\Support\Str::limit($p->last_error, 90) }}</div>@endif
+                            @if ($p->state($u) === 'limit')<div class="ad-muted ad-small">{{ $p->limitReached(0, $u) }}; the next provider answers</div>@endif
+                            @if ($p->last_error && $p->state($u) === 'failing')<div class="ad-muted ad-small ad-clip" title="{{ $p->last_error }}">{{ \Illuminate\Support\Str::limit($p->last_error, 90) }}</div>@endif
                         </td>
-                        <td>{{ $p->month === now()->format('Y-m') ? number_format($p->requests_month) : 0 }} requests</td>
+                        <td class="ad-small">
+                            @foreach ($limits as $field => [$what])
+                                @if ($p->{$field})<div class="{{ $used[$field] >= $p->{$field} ? 'ad-strong' : '' }}">{{ number_format($used[$field]) }} / {{ number_format($p->{$field}) }} {{ $what }}</div>@endif
+                            @endforeach
+                            <div class="ad-muted">{{ number_format($u['requests_day']) }} requests today · {{ $p->month === now()->format('Y-m') ? number_format($p->requests_month) : 0 }} answered this month</div>
+                        </td>
                         <td>{{ $p->last_used_at?->diffForHumans() ?? '—' }}</td>
                         <td class="ad-row-actions">
                             <form method="POST" action="{{ route('admin.ai.test', $p->id) }}">@csrf<button class="ad-btn">Test</button></form>
-                            @if ($p->state() === 'resting')<form method="POST" action="{{ route('admin.ai.action', [$p->id, 'resume']) }}">@csrf<button class="ad-btn">Resume</button></form>@endif
+                            @if ($p->state($u) === 'resting')<form method="POST" action="{{ route('admin.ai.action', [$p->id, 'resume']) }}">@csrf<button class="ad-btn">Resume</button></form>@endif
                             <form method="POST" action="{{ route('admin.ai.action', [$p->id, 'toggle']) }}">@csrf<button class="ad-btn">{{ $p->is_active ? 'Switch off' : 'Switch on' }}</button></form>
                             <form method="POST" action="{{ route('admin.ai.action', [$p->id, 'delete']) }}" onsubmit="return confirm('Remove {{ $p->name }}? Its key is deleted.')">@csrf<button class="ad-btn">Remove</button></form>
                         </td>
