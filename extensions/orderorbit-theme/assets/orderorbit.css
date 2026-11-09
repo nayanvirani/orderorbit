@@ -964,3 +964,5 @@ a.oo-sp-card:hover .oo-sp-what b { text-decoration: underline; text-underline-of
 .oo-mt .oo-badd { min-height: 54px; border-radius: 8px; font-size: 16px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
 .oo-mt .oo-badd s { opacity: .6; font-weight: 600; }
 .oo-mt .oo-badd:disabled { opacity: .55; }
+/* Review stars from the store's review app (G30) */
+.oo-stars{display:block;font-size:12px;line-height:1.4;color:inherit;opacity:.85}.oo-stars span{color:#e6a700;letter-spacing:1px}.oo-stars i{font-style:normal;color:#d5d5d5}

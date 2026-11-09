@@ -23,6 +23,7 @@ Schedule::command('orderorbit:ops-check --digest')->dailyAt('03:30'); // 09:00 i
 // Announcements (G41): email store owners when an announcement marked "email owners" starts.
 Schedule::command('orderorbit:weekly-summary')->weeklyOn(1, '03:30')->withoutOverlapping(60); // G16, Monday 09:00 India
 Schedule::command('orderorbit:protect-check')->hourlyAt(20)->withoutOverlapping(55); // Protect (phase 4)
+Schedule::command('orderorbit:refresh-ratings')->dailyAt('04:30')->withoutOverlapping(120); // Review stars (G30): ratings change as reviews come in
 Schedule::command('orderorbit:profit-goals')->hourlyAt(50)->withoutOverlapping(55); // Profit goals (G6): once a month per store when behind
 Schedule::command('orderorbit:monthly-reports')->hourlyAt(40)->withoutOverlapping(55); // Monthly Business Report (G15): due on the 1st in each store's time zone, sent once
 Schedule::command('orderorbit:url-monitor')->everyFiveMinutes()->withoutOverlapping(10); // URL monitor (G10)

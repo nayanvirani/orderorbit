@@ -9,6 +9,23 @@
 
   function root() { return (window.Shopify && Shopify.routes && Shopify.routes.root) || '/'; }
 
+  // Real star ratings from the store's review app (published with the offers; never typed in).
+  var ratings;
+  function ratingFor(id) {
+    if (ratings === undefined) {
+      try { ratings = JSON.parse(document.querySelector('script[data-oo-data]').textContent).ratings || {}; } catch (e) { ratings = {}; }
+    }
+    return ratings[String(id)] || null;
+  }
+  // "★★★★☆ 4.6 (120)" for a product with reviews, otherwise nothing.
+  h.stars = function (p) {
+    var r = p && p.rating;
+    if (!r) return '';
+    var full = Math.round(r[0]);
+    return '<span class="oo-stars" aria-label="Rated ' + r[0] + ' out of 5 from ' + r[1] + ' reviews"><span aria-hidden="true">' +
+      '★★★★★'.slice(0, full) + '<i>' + '★★★★★'.slice(full) + '</i></span> ' + r[0] + ' (' + r[1] + ')</span>';
+  };
+
   // Live product data in the shopper's currency: variants, availability, prices.
   function load(p) {
     if (!p || !p.handle) return Promise.resolve(p);
@@ -25,7 +42,7 @@
       var first = variants.filter(function (v) { return v.available; })[0] || variants[0] || {};
       var img = live.featured_image || (live.images || [])[0];
       return Object.assign(p, {
-        title: live.title, image: img ? (img.indexOf('//') === 0 ? 'https:' + img : img) : p.image,
+        title: live.title, image: img ? (img.indexOf('//') === 0 ? 'https:' + img : img) : p.image, rating: ratingFor(live.id),
         price: first.price, compare_at: first.compare_at, variant_id: first.id, available: variants.some(function (v) { return v.available; }),
         variants: variants.length > 1 ? variants : null,
         // Subscription plans (selling plans) and each variant's plan prices, for subscription bundles.

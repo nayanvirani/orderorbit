@@ -16,7 +16,7 @@
       var price = p.price != null ? Number(p.price) : null;
       var pct = Number(c.discount_percent || 0);
       var offer = pct && price != null ? price * (1 - pct / 100) : price;
-      return '<div class="oo-card">' + h.productImage(p) + '<div class="oo-card-meta"><span class="oo-name">' + h.esc(p.title) + '</span>' +
+      return '<div class="oo-card">' + h.productImage(p) + '<div class="oo-card-meta"><span class="oo-name">' + h.esc(p.title) + '</span>' + (h.stars ? h.stars(p) : '') +
         (price != null ? '<span class="oo-price">' + (pct ? '<s>' + h.esc(h.money(price, ctx.currency)) + '</s> ' : '') + h.esc(h.money(offer, ctx.currency)) + '</span>' : '') +
         S.variantSelect(p, i, ctx) + '</div><button type="button" class="oo-btn oo-btn-sm" data-oo-click="upsell_accepted" data-oo-add="' + i + '">' + h.esc(c.cta_text || 'Add') + '</button></div>';
     }).join('');

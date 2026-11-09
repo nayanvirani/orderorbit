@@ -56,12 +56,15 @@ class StorefrontPublisher
         // Segments and rules (oo-audiences.js), when the plan includes personalization.
         $personalization = \App\Services\Audiences\Audiences::payload($store, array_column($experiences, 'id'));
 
+        // Review apps (G30 step 1): real star ratings for the offers' products.
+        $ratings = app(\App\Services\Reviews\ProductRatings::class)->forData($store, $experiences);
+
         return [
             'v' => 1,
             'currency' => $store->currency,
             'updated_at' => now()->toIso8601String(),
             'experiences' => $experiences,
-        ] + ($personalization ? ['p' => $personalization] : []);
+        ] + ($personalization ? ['p' => $personalization] : []) + ($ratings ? ['ratings' => $ratings] : []);
     }
 
     /**
@@ -193,6 +196,15 @@ class StorefrontPublisher
         $this->bundles->sync($store);
         $this->offers->sync($store);
 
+        return $this->publish($store);
+    }
+
+    /**
+     * Writes what the storefront, checkout and customer accounts read, without touching bundles or
+     * discounts (the daily review-stars refresh uses this alone).
+     */
+    public function publish(Store $store): array
+    {
         $payload = $this->payload($store);
         $this->primeSalesPop($store, $payload);
         $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

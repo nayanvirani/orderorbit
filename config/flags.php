@@ -37,7 +37,7 @@ return [
         'product_documents' => ['Product documents in emails', 'Automation › Product documents: certificates made for each order (serial, verify QR) or the same PDF for everyone, sent by product with the Send email step as attachments or 30-day links, and listed in the customer account My orders block.', 'Automation', 'Phase 5', true],
         'review_prompt' => ['Review request after a milestone', 'Home shows a milestone card (a widget live a week that earned revenue, or the first \$1,000 from offers) and then asks Shopify for its review window (shopify.reviews.request). Shopify decides whether it shows; Growvia waits 60 days between asks.', 'Growth', 'Phase 2', true],
         'lifecycle_emails' => ['Lifecycle emails to store owners', 'Welcome, setup tips (no widget yet, widget not placed), an upgrade note for drafts the plan can\'t publish, and monthly results. Each sent once while its step is undone; owners can turn tips off.', 'Growth', 'Phase 2', true],
-        'review_apps' => ['Review apps (Judge.me, Yotpo, Loox)', 'Real ratings and reviews from review apps.', 'Integrations', 'Phase 5', false],
+        'review_apps' => ['Review star ratings (Judge.me, Yotpo, Loox)', 'Step 1: each offer product\'s real average rating and review count, read from what the review app saves on the product in Shopify (reviews.rating / reviews.rating_count, or Loox\'s fields), shown as stars on bundle tiers and product and cart upsells; refreshed daily; nothing can be typed in. Starter and up. Full review text (step 2) comes with phase 6.', 'Integrations', 'Phase 5', true],
         'integrations' => ['Klaviyo, GA4 and Gorgias', 'The phase 6 integrations.', 'Integrations', 'Phase 6', false],
     ],
     'kill' => [

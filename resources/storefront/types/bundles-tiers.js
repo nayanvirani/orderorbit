@@ -44,7 +44,7 @@
   function line(x, ctx, free, t) {
     var pre = free ? (w(t, 'free', 'FREE') ? h.esc(w(t, 'free', 'FREE')) + ' ' : '') : t.show_qty === false ? '' : x.q + 'x ';
     var val = t.show_values !== false && x.value > 0 && w(t, 'value', '({amount} Value)') ? ' <span class="oo-tval">' + h.esc(w(t, 'value', '({amount} Value)')).replace('{amount}', money(x.value, ctx)) + '</span>' : '';
-    return '<li><span class="oo-tcheck' + (free ? ' oo-tcheck-g' : '') + '" aria-hidden="true">✓</span><span><b>' + pre + h.esc(x.name || x.p.title || 'Product') + '</b>' +
+    return '<li><span class="oo-tcheck' + (free ? ' oo-tcheck-g' : '') + '" aria-hidden="true">✓</span><span><b>' + pre + h.esc(x.name || x.p.title || 'Product') + '</b>' + (h.stars ? h.stars(x.p) : '') +
       val + (x.desc && t.show_desc !== false ? '<small>' + h.esc(x.desc) + '</small>' : '') + '</span></li>';
   }
 
