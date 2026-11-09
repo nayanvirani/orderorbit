@@ -5,7 +5,7 @@ namespace App\Services\Insights;
 use App\Models\AnalyticsEvent;
 use App\Models\Protect\ProtectAlert;
 use App\Models\Store;
-use App\Services\Ai\Claude;
+use App\Services\Ai\Ai;
 use App\Services\Profit\ProfitReports;
 use App\Services\Profit\ProfitSync;
 use App\Services\Protect\Protect;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * AI Morning Brief (G17): a daily brief of up to 5 lines (yesterday against the usual, what
- * changed, the one thing to do today). Growvia works out the facts; Claude only writes the lines
+ * changed, the one thing to do today). Growvia works out the facts; the AI only writes the lines
  * and must cite the facts each line comes from, so every statement links to its number. Lines
  * citing nothing are dropped, and with nothing notable there's no brief that day.
  */
@@ -24,7 +24,7 @@ class MorningBrief
     /** A change counts as notable from this share. */
     public const NOTABLE = 15;
 
-    public function __construct(private readonly ProfitReports $reports, private readonly Claude $claude, private readonly Protect $protect) {}
+    public function __construct(private readonly ProfitReports $reports, private readonly Ai $ai, private readonly Protect $protect) {}
 
     public static function available(Store $store): bool
     {
@@ -99,7 +99,7 @@ class MorningBrief
         $status = 'quiet';
         $lines = null;
         if (collect($facts)->contains('notable', true)) {
-            if (! $this->claude->available($store)) {
+            if (! $this->ai->available($store)) {
                 $status = 'paused';
             } else {
                 $lines = $this->write($store, $facts);
@@ -112,11 +112,11 @@ class MorningBrief
         return $status;
     }
 
-    /** Claude writes the lines from the facts; only lines citing known facts are kept. */
+    /** The AI writes the lines from the facts; only lines citing known facts are kept. */
     public function write(Store $store, array $facts): ?array
     {
         $list = collect($facts)->map(fn ($f, $id) => "[{$id}] {$f['label']}: {$f['value']}".($f['notable'] ? ' (notable)' : ''))->implode("\n");
-        $data = $this->claude->json($store, 'morning_brief',
+        $data = $this->ai->json($store, 'morning_brief',
             'You write a short morning brief for a Shopify store owner. Use only the facts given; never invent numbers. '
             .'Write at most 5 plain, friendly lines: how yesterday compared with the usual, what changed, and as the last line the one thing to do today. '
             .'Each line cites the ids of the facts it uses. Skip facts that are not worth mentioning.',

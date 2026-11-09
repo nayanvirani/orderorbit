@@ -6,7 +6,7 @@ use App\Models\FeatureFlag;
 use App\Models\Profit\ProfitDaily;
 use App\Models\Profit\ProfitSetting;
 use App\Models\Store;
-use App\Services\Ai\Claude;
+use App\Services\Ai\Ai;
 use App\Services\Ai\OfferIdeas;
 use App\Services\Insights\MorningBrief;
 use App\Services\Profit\OrderSync;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Concerns\InteractsWithShopify;
 use Tests\TestCase;
 
-/** AI Morning Brief (G17) and AI offer ideas (G20), with Claude replaced by a stand-in. */
+/** AI Morning Brief (G17) and AI offer ideas (G20), with the AI replaced by a stand-in. */
 class AiFeaturesTest extends TestCase
 {
     use InteractsWithShopify, RefreshDatabase;
@@ -33,7 +33,7 @@ class AiFeaturesTest extends TestCase
         Features::forget();
         $this->travelTo(now()->setDate(2026, 11, 9)->setTime(8, 0)); // a Monday
         $test = $this;
-        $this->app->instance(Claude::class, new class($test) extends Claude
+        $this->app->instance(Ai::class, new class($test) extends Ai
         {
             public function __construct(private $test) {}
 
@@ -94,8 +94,8 @@ class AiFeaturesTest extends TestCase
     {
         $store = $this->store();
         DB::table('ai_usage')->insert(['store_id' => $store->id, 'feature' => 'x', 'model' => 'm', 'input_tokens' => 0, 'output_tokens' => 0, 'cost' => 5, 'outcome' => 'ok', 'created_at' => now()]);
-        $this->assertFalse(app(Claude::class)->available($store));
-        $this->assertSame(0.0, app(Claude::class)->budget($this->installedStore(['shop_domain' => 's.myshopify.com', 'plan' => 'scale'])), 'No AI below Premium.');
+        $this->assertFalse(app(Ai::class)->available($store));
+        $this->assertSame(0.0, app(Ai::class)->budget($this->installedStore(['shop_domain' => 's.myshopify.com', 'plan' => 'scale'])), 'No AI below Premium.');
     }
 
     public function test_offer_ideas_pair_products_bought_together_and_suggest_text(): void
@@ -117,8 +117,8 @@ class AiFeaturesTest extends TestCase
 
     public function test_without_a_key_ai_says_it_is_off(): void
     {
-        $this->app->forgetInstance(Claude::class);
-        $this->app->offsetUnset(Claude::class);
+        $this->app->forgetInstance(Ai::class);
+        $this->app->offsetUnset(Ai::class);
         config(['services.anthropic.key' => null]);
         $store = $this->store();
         $this->postJson('/app/api/ai/copy', ['type' => 'bundles'], $this->as($this->member($store, 'owner')))->assertStatus(402)->assertJsonPath('message', 'AI isn\'t switched on for Growvia yet.');

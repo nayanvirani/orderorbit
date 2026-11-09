@@ -534,6 +534,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/finance/railway/refresh', 'railwayRefresh')->name('finance.railway.refresh');
         });
 
+        // AI providers: the services AI features use, with failover; budgets and request caps.
+        Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\AiController::class)->group(function () {
+            Route::get('/ai', 'index')->name('ai');
+            Route::post('/ai/settings', 'saveSettings')->name('ai.settings');
+            Route::get('/ai/providers/new', 'create')->name('ai.create');
+            Route::post('/ai/providers', 'store')->middleware('throttle:10,1')->name('ai.store');
+            Route::get('/ai/providers/{provider}', 'edit')->whereNumber('provider')->name('ai.edit');
+            Route::post('/ai/providers/{provider}', 'update')->whereNumber('provider')->middleware('throttle:10,1')->name('ai.update');
+            Route::post('/ai/providers/{provider}/test', 'test')->whereNumber('provider')->middleware('throttle:10,1')->name('ai.test');
+            Route::post('/ai/providers/{provider}/{action}', 'action')->whereNumber('provider')->whereIn('action', ['toggle', 'resume', 'up', 'down', 'delete'])->name('ai.action');
+        });
+
         // Store questions (G18): questions added for every store.
         Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\StoreQuestionController::class)->group(function () {
             Route::get('/questions', 'index')->name('questions');

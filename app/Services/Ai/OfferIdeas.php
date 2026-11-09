@@ -8,7 +8,7 @@ use App\Support\Features;
 
 /**
  * AI offer ideas (G20): products customers buy together (from orders, no AI) as bundle ideas, and
- * offer text written by Claude on request. Nothing is saved until the merchant chooses a
+ * offer text written by AI on request. Nothing is saved until the merchant chooses a
  * suggestion and saves the offer.
  */
 class OfferIdeas
@@ -16,7 +16,7 @@ class OfferIdeas
     /** A pair needs at least this many shared orders to be suggested. */
     public const MIN_ORDERS = 3;
 
-    public function __construct(private readonly Claude $claude) {}
+    public function __construct(private readonly Ai $ai) {}
 
     public static function available(Store $store): bool
     {
@@ -71,7 +71,7 @@ class OfferIdeas
      */
     public function copy(Store $store, array $context): ?array
     {
-        $data = $this->claude->json($store, 'offer_copy',
+        $data = $this->ai->json($store, 'offer_copy',
             'You write short, honest storefront offer text for a Shopify store. No made-up numbers, reviews, scarcity or urgency; '
             .'only what the offer really is. Headline up to 60 characters, subheadline up to 120, button up to 24. Match the store\'s language and tone from the current text.',
             'Offer: '.json_encode(array_intersect_key($context, array_flip(['type', 'products', 'discount', 'headline', 'subheadline', 'cta'])), JSON_UNESCAPED_UNICODE)
