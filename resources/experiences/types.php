@@ -382,6 +382,9 @@ return [
         'templates' => [
             'trust-row' => ['name' => 'Trust Row', 'style' => 'row', 'design' => ['accent_color' => '#0f8a5f', 'primary_color' => '#0f8a5f']],
             'guarantee-card' => ['name' => 'Guarantee Card', 'style' => 'banner', 'design' => ['background_color' => '#ecfdf5', 'text_color' => '#064e3b', 'accent_color' => '#059669', 'primary_color' => '#059669', 'radius' => 16, 'border' => false]],
+            // Real reviews synced from Judge.me or Yotpo (Settings › Integrations); hidden when there are none.
+            'app-review-card' => ['name' => 'Review card (from your review app)', 'style' => 'reviews', 'design' => ['accent_color' => '#e6a700', 'radius' => 14]],
+            'app-review-carousel' => ['name' => 'Review carousel (from your review app)', 'style' => 'carousel', 'design' => ['accent_color' => '#e6a700', 'radius' => 14]],
         ],
         'content' => [
             'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'Why shop with us', 'max' => 80],

@@ -25,6 +25,7 @@ Schedule::command('orderorbit:weekly-summary')->weeklyOn(1, '03:30')->withoutOve
 Schedule::command('orderorbit:protect-check')->hourlyAt(20)->withoutOverlapping(55); // Protect (phase 4)
 Schedule::command('orderorbit:klaviyo-lists')->dailyAt('03:40')->withoutOverlapping(120); // Klaviyo (G31): segments to lists
 Schedule::command('orderorbit:morning-briefs')->hourlyAt(5)->withoutOverlapping(55); // AI Morning Brief (G17): once a day per store, from 6 am local
+Schedule::command('orderorbit:sync-reviews')->dailyAt('04:10')->withoutOverlapping(120); // Review apps step 2 (G30): full reviews
 Schedule::command('orderorbit:refresh-ratings')->dailyAt('04:30')->withoutOverlapping(120); // Review stars (G30): ratings change as reviews come in
 Schedule::command('orderorbit:profit-goals')->hourlyAt(50)->withoutOverlapping(55); // Profit goals (G6): once a month per store when behind
 Schedule::command('orderorbit:monthly-reports')->hourlyAt(40)->withoutOverlapping(55); // Monthly Business Report (G15): due on the 1st in each store's time zone, sent once

@@ -29,6 +29,12 @@ class ConnectedAppsController extends Controller
             'The signed-in customer\'s email with each event, and segment members as lists. Only customers who accept email marketing are added to lists.',
             ['api_key' => ['Klaviyo private API key', 'Klaviyo › Settings › API keys › Create private API key, with full access to Lists, Profiles and Events.']],
             \App\Services\Integrations\Klaviyo::EVENTS],
+        'judgeme' => ['Judge.me reviews', 'review_apps', 'Full reviews in the Review card and Review carousel trust blocks, synced daily. Star ratings work without connecting. Reviews can be filtered but never edited, and each shows it\'s from Judge.me.',
+            'Growvia only reads published reviews: rating, title, text, the reviewer\'s first name, date and one photo. Nothing is sent to Judge.me.',
+            ['api_token' => ['Judge.me private API token', 'Judge.me › Settings › Integrations › Developers › Private API token.']], \App\Services\Integrations\ReviewSync::OPTIONS],
+        'yotpo' => ['Yotpo reviews', 'review_apps', 'Full reviews in the Review card and Review carousel trust blocks, synced daily. Star ratings work without connecting. Reviews can be filtered but never edited, and each shows it\'s from Yotpo.',
+            'Growvia only reads published reviews: rating, title, text, the reviewer\'s first name, date and one photo. Nothing is sent to Yotpo.',
+            ['app_key' => ['Yotpo app key', 'Yotpo › Settings › Store › API credentials.'], 'secret' => ['Yotpo secret key', 'Same page.']], \App\Services\Integrations\ReviewSync::OPTIONS],
     ];
 
     /** The apps for the Integrations page. */
@@ -42,7 +48,7 @@ class ConnectedAppsController extends Controller
         return collect(self::APPS)->map(function ($a, $key) use ($rows, $store) {
             $i = $rows[$key] ?? null;
 
-            return ['key' => $key, 'name' => $a[0], 'what' => $a[2], 'data' => $a[3], 'fields' => collect($a[4])->map(fn ($f, $name) => ['name' => $name, 'label' => $f[0], 'help' => $f[1]])->values()->all(),
+            return ['key' => $key, 'name' => $a[0], 'what' => $a[2], 'optionsTitle' => in_array($key, ['judgeme', 'yotpo'], true) ? 'Which reviews to show' : 'Send these events', 'data' => $a[3], 'fields' => collect($a[4])->map(fn ($f, $name) => ['name' => $name, 'label' => $f[0], 'help' => $f[1]])->values()->all(),
                 'events' => collect($a[5])->map(fn ($label, $name) => ['name' => $name, 'label' => $label, 'on' => (bool) ($i?->setting('events', [])[$name] ?? false)])->values()->all(),
                 // Klaviyo: segments that can sync to lists (every rule is a customer search field).
                 'segments' => $key === 'klaviyo' && $i ? \App\Models\Audiences\Segment::where('store_id', $store->id)->get()
@@ -60,7 +66,11 @@ class ConnectedAppsController extends Controller
         $error = match ($app) {
             'ga4' => $ga4->connect($store, $data['measurement_id'], $data['api_secret']),
             'klaviyo' => $klaviyo->connect($store, $data['api_key']),
+            'judgeme', 'yotpo' => app(\App\Services\Integrations\ReviewSync::class)->connect($store, $app, $data),
         };
+        if (in_array($app, ['judgeme', 'yotpo'], true) && ! $error) {
+            $this->republish($store);
+        }
         if ($error) {
             throw ValidationException::withMessages(['connect' => $error]);
         }
@@ -76,7 +86,12 @@ class ConnectedAppsController extends Controller
             'ga4' => $ga4->test($i),
             // A test event for the person clicking.
             'klaviyo' => $klaviyo->test($i, (string) ($request->attributes->get('storeUser')?->email ?: $store->email)),
+            // Review apps: "Sync now".
+            'judgeme', 'yotpo' => app(\App\Services\Integrations\ReviewSync::class)->sync($store, $i) >= 0 && $i->fresh()->status === 'connected' ? null : $i->fresh()->last_error,
         };
+        if (in_array($app, ['judgeme', 'yotpo'], true) && ! $error) {
+            $this->republish($store);
+        }
         if ($error) {
             throw ValidationException::withMessages(['test' => $error]);
         }
@@ -94,6 +109,9 @@ class ConnectedAppsController extends Controller
             $settings['segments'] = \App\Models\Audiences\Segment::where('store_id', $store->id)->whereIn('id', array_map('intval', (array) $request->input('segments', [])))->pluck('id')->all();
         }
         $i->forceFill(['settings' => array_merge((array) $i->settings, $settings)])->save();
+        if (in_array($app, ['judgeme', 'yotpo'], true)) {
+            $this->republish($store);
+        }
 
         return redirect()->to(app_route('app.settings.integrations', ['notice' => 'saved']));
     }
@@ -103,9 +121,23 @@ class ConnectedAppsController extends Controller
     {
         abort_unless(isset(self::APPS[$app]), 404);
         StoreIntegration::where('store_id', $store->id)->where('provider', $app)->delete();
+        if (in_array($app, ['judgeme', 'yotpo'], true)) {
+            \Illuminate\Support\Facades\DB::table('store_reviews')->where('store_id', $store->id)->where('source', $app)->delete();
+            $this->republish($store);
+        }
         AuditLog::record('integration.disconnected', $store, ['app' => $app]);
 
         return redirect()->to(app_route('app.settings.integrations', ['notice' => 'saved']));
+    }
+
+    /** Reviews on the storefront follow the change at once. */
+    private function republish(Store $store): void
+    {
+        try {
+            app(\App\Services\Experiences\StorefrontPublisher::class)->publish($store);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function gate(Store $store, string $app, bool $connected = false): ?StoreIntegration

@@ -45,11 +45,11 @@ function ConnectedApp({ app: a }) {
       {a.connected && (
         <>
           <div className="ca-events">
-            <small><b>Send these events</b></small>
+            <small><b>{a.optionsTitle}</b></small>
             {a.events.map((e) => (
               <label key={e.name} className="ca-check">
                 <input type="checkbox" disabled={!edit} checked={!!events[e.name]} onChange={(ev) => setEvents({ ...events, [e.name]: ev.target.checked })} />
-                {e.label} <span className="oo-code">{e.name}</span>
+                {e.label}{a.optionsTitle === 'Send these events' && <> <span className="oo-code">{e.name}</span></>}
               </label>
             ))}
           </div>
@@ -68,7 +68,7 @@ function ConnectedApp({ app: a }) {
           {edit && (
             <div className="pf-bar">
               <s-button loading={busy === 'settings' ? '' : undefined} onClick={() => run('settings', 'app.settings.integrations.settings', { events, segments })}>Save</s-button>
-              <s-button loading={busy === 'test' ? '' : undefined} onClick={() => run('test', 'app.settings.integrations.test')}>Send test</s-button>
+              <s-button loading={busy === 'test' ? '' : undefined} onClick={() => run('test', 'app.settings.integrations.test')}>{a.optionsTitle === 'Send these events' ? 'Send test' : 'Sync now'}</s-button>
               <s-button variant="tertiary" tone="critical" onClick={async () => (await confirmDialog(`Disconnect ${a.name}? Its keys are deleted and nothing more is sent.`, { title: 'Disconnect', action: 'Disconnect' })) && run('disconnect', 'app.settings.integrations.disconnect')}>Disconnect</s-button>
             </div>
           )}

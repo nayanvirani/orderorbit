@@ -8,9 +8,29 @@
     support: '<path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/>'
   };
 
+  // Real reviews synced from the store's review app (never typed in): this product's, else the store's best.
+  var reviews;
+  function reviewsFor(product) {
+    if (reviews === undefined) {
+      try { reviews = JSON.parse(document.querySelector('script[data-oo-data]').textContent).reviews || null; } catch (e) { reviews = null; }
+    }
+    return reviews ? (product && reviews.p[String(product)]) || reviews.s || [] : [];
+  }
+  function review(r, h) {
+    return '<figure class="oo-review"><div class="oo-review-stars" aria-label="Rated ' + r[0] + ' out of 5">' + '★★★★★'.slice(0, r[0]) + '<i>' + '★★★★★'.slice(r[0]) + '</i></div>' +
+      (r[5] ? '<img src="' + h.esc(r[5]) + '" alt="" loading="lazy">' : '') + (r[1] ? '<b>' + h.esc(r[1]) + '</b>' : '') + (r[2] ? '<blockquote>' + h.esc(r[2]) + '</blockquote>' : '') +
+      '<figcaption>' + h.esc(r[3] || 'Verified buyer') + (r[4] ? ' · ' + h.esc(r[4]) : '') + '<small>Review from ' + h.esc(r[6]) + '</small></figcaption></figure>';
+  }
+
   OrderOrbit.define('trust', function (exp, ctx, h) {
     var c = exp.content;
     var style = exp.style;
+    if (style === 'reviews' || style === 'carousel') {
+      var list = reviewsFor(ctx.product);
+      if (!list.length) return null;
+      return '<div class="oo-body">' + (c.headline ? '<p class="oo-title">' + h.esc(c.headline) + '</p>' : '') +
+        (style === 'carousel' ? '<div class="oo-review-track">' + list.map(function (r) { return review(r, h); }).join('') + '</div>' : review(list[0], h)) + '</div>';
+    }
     // Trust rows and guarantees only: no typed-in reviews or ratings (App Store requirement 1.1.4).
     var badges = (c.badges || []).length ? '<ul class="oo-badges">' + c.badges.map(function (b) { return '<li>' + h.icon(ICONS[b.icon] || ICONS.guarantee) + '<span>' + h.esc(b.label) + '</span></li>'; }).join('') + '</ul>' : '';
     if (style === 'row') return '<div class="oo-body">' + badges + '</div>';

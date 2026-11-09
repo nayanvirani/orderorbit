@@ -36,7 +36,7 @@ class FactualContentTest extends TestCase
     public function test_the_editor_no_longer_offers_typed_reviews_ratings_goals_or_restarting_timers(): void
     {
         $trust = Registry::type('trust');
-        $this->assertSame(['trust-row', 'guarantee-card'], array_keys($trust['templates']));
+        $this->assertSame(['trust-row', 'guarantee-card', 'app-review-card', 'app-review-carousel'], array_keys($trust['templates']));
         $this->assertArrayNotHasKey('reviews', $trust['content']);
         $this->assertArrayNotHasKey('rating', $trust['content']);
         $this->assertArrayNotHasKey('review_count', $trust['content']);

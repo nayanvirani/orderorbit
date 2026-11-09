@@ -64,7 +64,9 @@ class StorefrontPublisher
             'currency' => $store->currency,
             'updated_at' => now()->toIso8601String(),
             'experiences' => $experiences,
-        ] + ($personalization ? ['p' => $personalization] : []) + ($ratings ? ['ratings' => $ratings] : []);
+        ] + ($personalization ? ['p' => $personalization] : []) + ($ratings ? ['ratings' => $ratings] : [])
+            // Review apps, step 2 (G30): synced reviews for the Review card and carousel blocks.
+            + (($reviews = \App\Services\Integrations\ReviewSync::forStorefront($store)) ? ['reviews' => $reviews] : []);
     }
 
     /**
