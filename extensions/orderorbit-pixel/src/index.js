@@ -8,8 +8,9 @@ import {register} from '@shopify/web-pixels-extension';
  *  - completed checkouts, with each line's OrderOrbit offer tag for revenue attribution, and the
  *    product (title, link, image) and market country for Sales pop
  * Every event carries Shopify's anonymous visitor id, a session id, the device type and the
- * session's traffic source (UTM tags or the referring site), and the customer's numeric id when
- * they're signed in. No names, emails or addresses are sent.
+ * session's traffic source (UTM tags or the referring site), the customer's numeric id when
+ * they're signed in, and the Google Analytics client id (_ga cookie) when there is one, for
+ * stores that send Growvia events to GA4. No names, emails or addresses are sent.
  */
 const ENDPOINT = 'https://growvia.orderorbit.space/api/pixel';
 const SESSION_MINUTES = 30;
@@ -105,10 +106,15 @@ register(({analytics, browser, init, settings}) => {
     return {started, ctx: {sid: current.id, src: current.src, med: current.med, cmp: current.cmp}};
   }
 
+  // Google Analytics 4 (when the store connects it in Growvia): the shopper's GA client id from the
+  // _ga cookie, so Growvia's offer events join the same GA4 user. Read once per page.
+  const gaCookie = browser.cookie.get('_ga').then((v) => v || undefined, () => undefined);
+
   async function send(event, payload) {
     const {started, ctx} = await session(event);
     const doc = (event.context && event.context.document) || {};
-    const base = Object.assign({vid: event.clientId, cust: customer, dev: device, path: doc.location ? doc.location.pathname : undefined}, ctx);
+    const ga = await gaCookie;
+    const base = Object.assign({vid: event.clientId, cust: customer, dev: device, path: doc.location ? doc.location.pathname : undefined, ga}, ctx);
     // The old "session" message keeps conversion rate working for reports built on it.
     if (started) post(Object.assign({k: 's'}, base));
     post(Object.assign(base, payload));

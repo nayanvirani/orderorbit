@@ -35,6 +35,8 @@ class IntegrationsController extends Controller
         $lastEvent = AnalyticsEvent::where('store_id', $store->id)->max('occurred_at');
 
         return page('settings/integrations', [
+            // Connected apps (phase 6).
+            'apps' => \App\Http\Controllers\App\ConnectedAppsController::list($store),
             'connection' => [
                 'connected' => $store->isInstalled() && ! $store->missingScopes(),
                 'themeBlocks' => $store->capability('online_store_2') !== false,

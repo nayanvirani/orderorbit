@@ -20,6 +20,8 @@ class PixelController extends Controller
 {
     public function collect(Request $request): Response
     {
+        // The controller can be reused across requests (long-running workers): start clean.
+        $this->ga = [];
         $data = json_decode($request->getContent(), true);
         $ok = response('', 204)->header('Access-Control-Allow-Origin', '*');
         if (! is_array($data) || \App\Support\Features::killed('web_pixel')) {
@@ -36,8 +38,28 @@ class PixelController extends Controller
         foreach ($events as $event) {
             $this->one($store, $event);
         }
+        // Google Analytics 4 (G32): this request's offer events, after the response.
+        if ($this->ga && ($ga4 = \App\Services\Integrations\Ga4::for($store))) {
+            $batches = $this->ga;
+            defer(function () use ($ga4, $batches) {
+                foreach ($batches as $clientId => $list) {
+                    app(\App\Services\Integrations\Ga4::class)->send($ga4, (string) $clientId, $list);
+                }
+            });
+        }
 
         return $ok;
+    }
+
+    /** GA client id => [[event name, params]] collected from this request (G32). */
+    private array $ga = [];
+
+    private function toGa(array $data, string $name, array $params): void
+    {
+        $id = \App\Services\Integrations\Ga4::clientId(is_string($data['ga'] ?? null) ? $data['ga'] : null);
+        if ($id) {
+            $this->ga[$id][] = [$name, array_filter($params, fn ($v) => $v !== null)];
+        }
     }
 
     /** One event from the pixel. */
@@ -138,6 +160,12 @@ class PixelController extends Controller
             // Survey answers (the only events with a label); plain text, trimmed.
             'label' => isset($data['a']) ? mb_substr(trim(strip_tags((string) $data['a'])), 0, 120) ?: null : null,
         ]);
+        if ($code === 'view' || $code === 'add') {
+            $this->toGa($data, $code === 'view' ? 'growvia_offer_view' : 'growvia_offer_add', ['offer_id' => $handle, 'offer_type' => $type, 'quantity' => $code === 'add' ? max(1, (int) ($data['q'] ?? 1)) : null]);
+        }
+        if ($code === 'view' && is_string($data['xp'] ?? null) && in_array($data['xv'] ?? null, ['A', 'B', 'C'], true)) {
+            $this->toGa($data, 'growvia_experiment_variant', ['experiment_id' => $data['xp'], 'variant' => $data['xv'], 'offer_id' => $handle]);
+        }
     }
 
     private function order(Store $store, array $data, array $base): void
@@ -171,6 +199,7 @@ class PixelController extends Controller
         }
         foreach ($credited as $who => $c) {
             AnalyticsEvent::create($base + ['event' => 'attributed', 'name' => 'growvia:revenue_attributed', 'experience_handle' => $who, 'order_ref' => $ref, 'value' => round($c['value'], 2), 'quantity' => max(1, $c['quantity']), 'currency' => $currency, 'country' => $country]);
+            $this->toGa($data, 'growvia_purchase', ['offer_id' => $who, 'transaction_id' => $ref, 'value' => round($c['value'], 2), 'currency' => $currency]);
         }
 
         $this->purchases($store, $ref, $data);

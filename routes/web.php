@@ -383,6 +383,13 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
 
             Route::get('/activity', [ActivityController::class, 'index'])->middleware('store.can:view_activity')->name('activity');
             Route::get('/integrations', [\App\Http\Controllers\App\IntegrationsController::class, 'integrations'])->name('integrations');
+            // Connected apps (phase 6): GA4, Klaviyo, review apps.
+            Route::middleware('store.can:manage_settings')->controller(\App\Http\Controllers\App\ConnectedAppsController::class)->group(function () {
+                Route::post('/integrations/{app}/connect', 'connect')->where('app', '[a-z0-9]+')->middleware('throttle:10,1')->name('integrations.connect');
+                Route::post('/integrations/{app}/test', 'test')->where('app', '[a-z0-9]+')->middleware('throttle:10,1')->name('integrations.test');
+                Route::post('/integrations/{app}/settings', 'settings')->where('app', '[a-z0-9]+')->name('integrations.settings');
+                Route::post('/integrations/{app}/disconnect', 'disconnect')->where('app', '[a-z0-9]+')->name('integrations.disconnect');
+            });
             Route::get('/privacy', [\App\Http\Controllers\App\IntegrationsController::class, 'privacy'])->name('privacy');
             Route::middleware('store.can:manage_settings')->group(function () {
                 Route::post('/privacy', [\App\Http\Controllers\App\IntegrationsController::class, 'updatePrivacy'])->name('privacy.update');
