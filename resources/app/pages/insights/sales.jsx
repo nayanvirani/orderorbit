@@ -1,6 +1,6 @@
 // Insights › Sales (G14): the same numbers as the Profit dashboard, so the two always agree.
 import { Page } from '../../components/ui.jsx';
-import { money, ProfitNotices, Ranges } from '../profit/_profit.jsx';
+import { ApproveButton, money, ProfitNotices, Ranges } from '../profit/_profit.jsx';
 
 const delta = (now, before, points) => {
   if (now === null || before === null || before === undefined) return null;
@@ -8,7 +8,7 @@ const delta = (now, before, points) => {
   return before ? `${now >= before ? '+' : '−'}${Math.abs(Math.round(((now - before) / before) * 100))}%` : null;
 };
 
-export default function SalesInsights({ range, ranges, currency, now, before, weeks, best, worst, countries, access, locked }) {
+export default function SalesInsights({ range, ranges, currency, now, before, weeks, best, worst, countries, access, locked, reports, traffic, trafficBefore }) {
   const m = (v) => money(v, currency);
   const top = Math.max(1, ...weeks.map((w) => w.new + w.returning));
   const kpis = [
@@ -17,6 +17,11 @@ export default function SalesInsights({ range, ranges, currency, now, before, we
     ['Average order', now.aov === null ? '—' : m(now.aov), now.aov !== null && before.aov !== null ? `${now.aov >= before.aov ? '+' : '−'}${m(Math.abs(now.aov - before.aov))}` : null],
     ['Returning customers', now.returning === null ? '—' : `${now.returning}%`, delta(now.returning, before.returning, true)],
   ];
+  // Whole-store traffic from Shopify's reports (optional access).
+  if (traffic) {
+    kpis.push(['Store sessions', traffic.sessions.toLocaleString(), delta(traffic.sessions, trafficBefore?.sessions)]);
+    if (traffic.conversion !== null) kpis.push(['Conversion rate', `${traffic.conversion}%`, trafficBefore?.conversion != null ? `${traffic.conversion >= trafficBefore.conversion ? '+' : '−'}${Math.abs(traffic.conversion - trafficBefore.conversion).toFixed(2)} pts` : null]);
+  }
   return (
     <Page heading="Sales insights">
       <p className="oo-muted" style={{ marginTop: 0 }}>Uses the same numbers as the Profit dashboard, so the two always agree.</p>
@@ -27,6 +32,9 @@ export default function SalesInsights({ range, ranges, currency, now, before, we
           <div className="pf-kpis">
             {kpis.map(([l, v, d]) => <div className="pf-kpi" key={l}><small>{l}</small><b>{v}</b>{d && <span className={d.startsWith('−') ? 'down' : 'up'}>{d} vs before</span>}</div>)}
           </div>
+          {!reports && !locked && (
+            <div className="pf-bar"><span className="oo-muted pf-small">See store sessions and conversion rate from Shopify's reports.</span><ApproveButton scopes={['read_reports']}>Approve Store reports</ApproveButton></div>
+          )}
           <s-section heading="Weekly sales, new and returning customers">
             <div className="si-weeks" role="img" aria-label="Weekly net sales by new and returning customers">
               {weeks.map((w) => (

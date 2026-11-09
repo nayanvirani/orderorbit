@@ -27,6 +27,8 @@ class StoreSettingsController extends Controller
                 ->mapWithKeys(fn ($key) => [$key => $store->capability($key)])->all(),
             'missingScopes' => $store->missingScopes(),
             'grantedScopes' => array_values(array_filter(explode(',', (string) $store->scopes))),
+            // Optional access (Profit, Protect, Insights): approve or remove each in Shopify's window.
+            'optional' => \App\Support\OptionalAccess::list($store),
             'themeEditorUrl' => $store->adminUrl('themes/current/editor'),
             // Emails from Growvia (G24): setup tips and monthly results can be turned off.
             'tips' => \App\Support\Features::enabled('lifecycle_emails', $store) ? ! $store->lifecycle_unsubscribed : null,

@@ -47,6 +47,10 @@ class InsightsController extends Controller
             'countries' => array_map(fn ($c) => ['name' => $c['name'], 'sales' => $c['net_sales'], 'share' => round($c['net_sales'] / $net * 100)], array_slice($countries, 0, 8)),
             'access' => ProfitSync::missingAccess($store) ? ['missing' => ProfitSync::missingAccess($store)] : null,
             'locked' => $store->planIncludes('sales_insights') ? null : \App\Support\Plans::unlockMessage('sales_insights', 'see it', $store),
+            // Whole-store sessions and conversion (optional Store reports access).
+            'reports' => \App\Support\OptionalAccess::granted($store, 'read_reports'),
+            'traffic' => app(\App\Services\Insights\StoreTraffic::class)->get($store, $from, $to),
+            'trafficBefore' => app(\App\Services\Insights\StoreTraffic::class)->get($store, $from->copy()->subDays($days), $from->copy()->subDay()),
         ]);
     }
 

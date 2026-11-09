@@ -1,11 +1,54 @@
+import { useState } from 'react';
 import { ActionButton } from '../../components/form.jsx';
 import { ago, date, KeyValue, Page } from '../../components/ui.jsx';
-import { appUrl, route, useShared } from '../../router.jsx';
+import { appUrl, route, useRouter, useShared, useUrl } from '../../router.jsx';
+import { confirmDialog } from '../../components/Confirm.jsx';
+
+/**
+ * Optional access (Profit, Protect, Insights): approve or remove each one in Shopify's own window,
+ * then Growvia re-reads what was granted.
+ */
+function OptionalAccess({ items, canEdit }) {
+  const { submit, reload } = useRouter();
+  const url = useUrl();
+  const [busy, setBusy] = useState(null);
+  const change = async (item) => {
+    if (item.on && !(await confirmDialog(`Remove "${item.name}"? ${item.without}`, { title: 'Remove access', action: 'Remove' }))) return;
+    setBusy(item.scope);
+    try {
+      const scopes = window.shopify?.scopes;
+      const result = item.on ? await scopes?.revoke([item.scope]) : await scopes?.request([item.scope]);
+      if (result) await submit(route('app.profit.access'), { back: url.split('?')[0] });
+    } catch {
+      window.shopify?.toast?.show('Shopify didn\'t change the access. Please try again.', { isError: true });
+    } finally {
+      setBusy(null);
+      reload();
+    }
+  };
+  return (
+    <s-section heading="Optional access">
+      <s-paragraph>Extra Shopify data that Profit, Protect and Insights use. Offers, bundles and automations never need it. Approve or remove each one at any time.</s-paragraph>
+      <div className="oa-list">
+        {items.map((i) => (
+          <div className="oa-row" key={i.scope}>
+            <div>
+              <b>{i.name}</b> {i.on ? <s-badge tone="success">On</s-badge> : <s-badge>Off</s-badge>}
+              <small>{i.why}</small>
+              <small className="oo-muted">Without it: {i.without}</small>
+            </div>
+            {canEdit && <s-button loading={busy === i.scope ? '' : undefined} onClick={() => change(i)}>{i.on ? 'Remove' : 'Approve'}</s-button>}
+          </div>
+        ))}
+      </div>
+    </s-section>
+  );
+}
 
 const yesNo = (value, yes, no, unknown = 'Not checked yet') => (value === null || value === undefined ? ['neutral', unknown] : value ? ['success', yes] : ['warning', no]);
 const badge = ([tone, text]) => <s-badge tone={tone}>{text}</s-badge>;
 
-export default function StoreSettings({ store, capabilities: cap, missingScopes, grantedScopes, themeEditorUrl, tips }) {
+export default function StoreSettings({ store, capabilities: cap, missingScopes, grantedScopes, themeEditorUrl, tips, optional = [] }) {
   const { can } = useShared();
   const surfaces = [
     ['Storefront blocks', yesNo(cap.online_store_2, 'Supported', 'Theme update needed'), 'Bundles, upsells, shipping bar and more, placed in the Theme Editor.'],
@@ -39,6 +82,8 @@ export default function StoreSettings({ store, capabilities: cap, missingScopes,
           </s-stack>
         )}
       </s-section>
+
+      {optional.length > 0 && <OptionalAccess items={optional} canEdit={can.manage_settings} />}
 
       {tips !== null && tips !== undefined && (
         <s-section heading="Emails from Growvia">

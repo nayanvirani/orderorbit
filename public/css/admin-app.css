@@ -453,6 +453,10 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .mr-total { font-weight: 700; border-top: 2px solid var(--ob-line) !important; }
 .mr-todo { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
 .mr-todo li span { display: block; color: var(--ob-muted); font-size: 13.5px; line-height: 1.5; }
+/* Settings › Optional access */
+.oa-list { display: flex; flex-direction: column; margin-top: 8px; }
+.oa-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--ob-line); }
+.oa-row small { display: block; font-size: 13px; margin-top: 2px; } .oa-row > s-button { flex: none; }
 
 /* app-base.css */
 /* Embedded app base: fields, buttons, tables and helpers shared by the Blade pages and the React admin. */
