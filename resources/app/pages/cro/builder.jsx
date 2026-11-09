@@ -5,6 +5,7 @@ import { Preview, useRuntime } from '../../components/runtime.jsx';
 import SchemaField, { visible } from '../../components/SchemaField.jsx';
 import { Page } from '../../components/ui.jsx';
 import SaveBar from '../../components/SaveBar.jsx';
+import AiCopy from '../../components/AiCopy.jsx';
 import Look, { withLook } from '../../components/Look.jsx';
 import ElementColours, { withElements } from '../../components/ElementColours.jsx';
 import TextLayout, { withLayout } from '../../components/TextLayout.jsx';
@@ -124,6 +125,15 @@ export default function Builder(props) {
                   {section === 'design' && (
                     <TextLayout meta={layout} design={config.design || {}} device={device} onDevice={setDevice}
                       onChange={(d) => { setConfig((c) => ({ ...c, design: d })); setDirty(true); }} />
+                  )}
+                  {section === 'content' && props.ai && ['headline', 'subheadline', 'cta_text'].some((k) => k in (props.fields.content || {})) && (
+                    <AiCopy context={{ type: x.type, headline: config.content?.headline, subheadline: config.content?.subheadline, cta: config.content?.cta_text }}
+                      fields={{ headline: 'headline' in props.fields.content, subheadline: 'subheadline' in props.fields.content, cta: 'cta_text' in props.fields.content }}
+                      onPick={(o) => {
+                        if ('headline' in props.fields.content) set('content', 'headline', o.headline);
+                        if ('subheadline' in props.fields.content) set('content', 'subheadline', o.subheadline);
+                        if ('cta_text' in props.fields.content) set('content', 'cta_text', o.cta);
+                      }} />
                   )}
                   {section === 'content' && (
                     <Look look={look} hide={config.content?.hide || []} words={config.content?.words || {}}

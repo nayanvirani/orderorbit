@@ -133,6 +133,7 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
         Route::get('/', fn (\App\Models\Store $store) => page('home', ['overview' => \App\Http\Controllers\App\Api\DashboardApiController::overviewData($store)]))->middleware('store.can:view_dashboard')->name('dashboard');
         // Insights › Store questions (G18), behind the store_questions flag.
         Route::get('/insights/questions', [\App\Http\Controllers\App\StoreQuestionController::class, 'index'])->middleware('store.can:view_dashboard')->name('insights.questions');
+        Route::post('/api/ai/copy', [\App\Http\Controllers\App\OfferIdeasController::class, 'copy'])->middleware(['store.can:manage_experiences', 'throttle:10,1'])->name('api.ai.copy');
         Route::post('/api/questions/ask', [\App\Http\Controllers\App\StoreQuestionController::class, 'ask'])->middleware(['store.can:view_dashboard', 'throttle:60,1'])->name('api.questions.ask');
         Route::post('/api/questions/favourite', [\App\Http\Controllers\App\StoreQuestionController::class, 'favourite'])->middleware('store.can:view_dashboard')->name('api.questions.favourite');
         Route::prefix('api/dashboard')->name('api.dashboard.')->middleware('store.can:view_dashboard')->controller(DashboardApiController::class)->group(function () {
@@ -178,6 +179,8 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
             Route::get('/', [ExperienceController::class, 'overview'])->middleware('store.can:view_dashboard')->name('overview');
             // New menu: Offers › Create an offer (a picker by shopper step).
             Route::get('/create', \App\Http\Controllers\App\OfferCatalogController::class)->middleware('store.can:manage_experiences')->name('create');
+            // AI offer ideas (G20).
+            Route::get('/ideas', [\App\Http\Controllers\App\OfferIdeasController::class, 'show'])->middleware('store.can:view_dashboard')->name('ideas');
             // Widget translations (G22).
             Route::get('/translations', [\App\Http\Controllers\App\TranslationController::class, 'show'])->middleware('store.can:view_dashboard')->name('translations');
             Route::post('/translations', [\App\Http\Controllers\App\TranslationController::class, 'save'])->middleware('store.can:manage_experiences')->name('translations.save');
@@ -294,6 +297,8 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
         });
         // Insights › Sales (G14), behind the sales_insights flag.
         Route::get('/insights/sales', [\App\Http\Controllers\App\InsightsController::class, 'sales'])->middleware('store.can:view_dashboard')->name('insights.sales');
+        // Insights › Morning Brief (G17), behind the morning_brief flag.
+        Route::get('/insights/brief', [\App\Http\Controllers\App\InsightsController::class, 'brief'])->middleware('store.can:view_dashboard')->name('insights.brief');
         // Insights › Customers (G19), behind the customer_value flag.
         Route::get('/insights/customers', [\App\Http\Controllers\App\InsightsController::class, 'customers'])->middleware('store.can:view_dashboard')->name('insights.customers');
         // Insights › Monthly report (G15), behind the monthly_report flag.

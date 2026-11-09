@@ -466,6 +466,8 @@ class ExperienceController extends Controller
             'editor' => ['url' => $store->themeEditorUrl($type['surface']), 'label' => $store->editorLabel($type['surface'])],
             'designNote' => empty(Schema::fields($experience->type)['design'] ?? []) ? 'checkout' : (isset(Schema::fields($experience->type)['design']['ck_background']) ? 'checkout-boxes' : 'brand'),
             'checkout' => in_array($type['surface'], Schema::CHECKOUT_SURFACES, true) || $type['surface'] === 'account',
+            // AI offer text (G20): shown with its flag on Premium.
+            'ai' => \App\Services\Ai\OfferIdeas::available($store),
         ], $errors ? 422 : 200);
     }
 

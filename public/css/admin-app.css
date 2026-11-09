@@ -490,6 +490,16 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .tr-source { padding: 8px 0; font-size: 13.5px; color: var(--ob-muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .tr-row input, .tr-row textarea { width: 100%; box-sizing: border-box; min-height: 36px; padding: 6px 10px; border: 1px solid var(--ob-line); border-radius: 8px; font: inherit; }
 @media (max-width: 700px) { .tr-row { grid-template-columns: 1fr; gap: 4px; } }
+/* Insights › Morning Brief (G17) */
+.mb-lines { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 12px; }
+.mb-lines li span { display: block; font-size: 15px; line-height: 1.5; }
+.mb-lines li small { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; font-size: 12.5px; }
+/* AI offer text (G20) */
+.ai-copy { margin: 12px 0; padding: 12px 14px; border: 1px dashed var(--ob-line); border-radius: 12px; }
+.ai-copy-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.ai-copy-head small { display: block; font-size: 12.5px; }
+.ai-copy-option { display: flex; flex-direction: column; gap: 2px; width: 100%; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--ob-line); border-radius: 10px; background: var(--ob-surface); font: inherit; text-align: left; cursor: pointer; color: inherit; }
+.ai-copy-option:hover { border-color: var(--ob-accent); } .ai-copy-option span { font-size: 13.5px; } .ai-copy-option em { font-style: normal; font-size: 12.5px; color: var(--ob-accent); font-weight: 600; }
 
 /* app-base.css */
 /* Embedded app base: fields, buttons, tables and helpers shared by the Blade pages and the React admin. */

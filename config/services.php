@@ -2,6 +2,15 @@
 
 return [
 
+    // Claude for the AI features (Morning Brief, offer ideas). The key is a Railway variable,
+    // never in the code. Monthly AI budget per store in USD, by plan (0 = no AI).
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+        'budget' => ['premium' => (float) env('AI_BUDGET_PREMIUM', 5)],
+    ],
+
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

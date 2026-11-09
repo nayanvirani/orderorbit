@@ -77,6 +77,7 @@ class Shared
             ]],
             'analytics' => ['Analytics', [
                 ['Sales', 'bag', 'app.insights.sales', [], $is('app.insights.sales'), null, 'sales_insights'],
+                ['Morning Brief', 'sparkle', 'app.insights.brief', [], $is('app.insights.brief'), null, 'morning_brief'],
                 ['Store questions', 'message', 'app.insights.questions', [], $is('app.insights.questions'), null, 'store_questions'],
                 ['Customers', 'users', 'app.insights.customers', [], $is('app.insights.customers'), null, 'customer_value'],
                 ['Monthly report', 'calendar', 'app.insights.report', [], $is('app.insights.report'), null, 'monthly_report'],
@@ -198,6 +199,7 @@ class Shared
             ['heading' => 'Manage', 'items' => [
                 ['label' => $new ? 'All offers' : 'All widgets', 'icon' => 'list', 'tone' => 'default', 'href' => self::path('app.cro.experiences.index'), 'active' => $request->routeIs('app.cro.experiences.*') && ! $experienceFeature],
                 ['label' => 'Templates', 'icon' => 'palette', 'tone' => 'default', 'href' => self::path('app.cro.templates'), 'active' => $request->routeIs('app.cro.templates')],
+                ...(\App\Support\Features::enabled('ai_offer_ideas', $store) ? [['label' => 'Offer ideas', 'icon' => 'sparkle', 'tone' => 'default', 'href' => self::path('app.cro.ideas'), 'active' => $request->routeIs('app.cro.ideas')]] : []),
                 // Widget translations (G22), behind the translations flag.
                 ...(\App\Support\Features::enabled('translations', $store) ? [['label' => 'Translations', 'icon' => 'message', 'tone' => 'default', 'href' => self::path('app.cro.translations'), 'active' => $request->routeIs('app.cro.translations')]] : []),
             ]],

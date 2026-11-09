@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.3",
         "ext-pdo_pgsql": "*",
+        "anthropic-ai/sdk": "^1.6",
         "chillerlan/php-qrcode": "^5.0",
         "dompdf/dompdf": "^3.1",
         "laravel/framework": "^13.17",
