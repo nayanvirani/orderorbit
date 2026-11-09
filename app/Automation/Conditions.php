@@ -21,6 +21,46 @@ class Conditions
         return $node['match'] === 'any' ? in_array(true, $results, true) : ! in_array(false, $results, true);
     }
 
+    /**
+     * What each rule saw, for the run history: "Customer lifetime spend: USD 120.00 ✗ · Customer
+     * tags: none ✓". Says so when Shopify didn't give a value (e.g. the customer couldn't be read).
+     */
+    public function explain(array $node, WorkflowRun $run): string
+    {
+        $c = $run->context;
+        $order = $c['order'] ?? [];
+        $customer = $c['customer'] ?? null;
+        $money = fn ($v) => $v === null ? null : trim(($order['currency'] ?? '').' '.number_format((float) $v, 2));
+        $labels = Definition::catalog()['conditions'] ?? [];
+        $parts = [];
+        foreach ($node['rules'] as $rule) {
+            $seen = match ($rule['field']) {
+                'order_total' => $money($order['total'] ?? null),
+                'quantity' => isset($order['quantity']) ? (string) $order['quantity'] : null,
+                'ltv' => $money($customer['total_spent'] ?? null),
+                'previous_orders' => isset($customer['orders_count']) ? (string) max(0, $customer['orders_count'] - 1) : null,
+                'customer' => isset($customer['orders_count']) ? ($customer['orders_count'] <= 1 ? 'new' : 'returning') : null,
+                'customer_tag' => $customer ? (implode(', ', $customer['tags'] ?? []) ?: 'none') : null,
+                'country', 'province' => ($order[$rule['field']] ?? '') ?: null,
+                'days_since_order' => (string) Context::daysSince($order['created_at'] ?? null),
+                default => '',
+            };
+            if ($seen === null) {
+                $seen = ! $customer && in_array($rule['field'], ['ltv', 'previous_orders', 'customer', 'customer_tag'], true)
+                    ? 'no customer on this order'
+                    : 'unknown'.(! empty($customer['lookup_error']) ? ' (Shopify: '.$customer['lookup_error'].')' : '');
+            }
+            try {
+                $ok = $this->rule($rule, $run);
+            } catch (\Throwable) {
+                $ok = false;
+            }
+            $parts[] = ($labels[$rule['field']]['label'] ?? $rule['field']).($seen !== '' ? ": {$seen}" : '').' '.($ok ? '✓' : '✗');
+        }
+
+        return implode(' · ', $parts);
+    }
+
     private function rule(array $rule, WorkflowRun $run): bool
     {
         $c = $run->context;

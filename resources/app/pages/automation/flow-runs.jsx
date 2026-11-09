@@ -71,6 +71,7 @@ export default function FlowRuns({ runs, status, workflow, workflowOptions, tota
                       <span className="fl-mark" aria-hidden="true">{mark}</span>
                       <div>
                         <p className="fl-step-msg">{s.message}</p>
+                        {s.seen && <p className="fl-step-seen">What it saw: {s.seen}</p>}
                         <p className="oo-muted">{label}{s.created_at ? ` · ${utc(s.created_at)} UTC` : ''}</p>
                       </div>
                     </li>

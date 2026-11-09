@@ -241,6 +241,7 @@ a.fl-chip { text-decoration: none; }
 .fl-step.bad .fl-mark { background: #fdecea; color: #b42318; }
 .fl-step.wait .fl-mark { background: #e5f0fd; color: #0b5cad; }
 .fl-step.muted .fl-step-msg { color: #5f5c74; }
+.fl-step-seen{margin:2px 0 0;font-size:13px;color:#4a4a4a;background:#f6f6f7;border-radius:6px;padding:4px 8px;display:inline-block}
 .fl-step p { margin: 0; font-size: 13px; }
 .fl-step-msg { font-size: 14px !important; font-weight: 600; color: #1b1830; overflow-wrap: anywhere; }
 .fl-run-foot { display: flex; gap: 8px; flex-wrap: wrap; }

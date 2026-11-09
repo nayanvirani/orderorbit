@@ -39,10 +39,15 @@ class ShopifyFacts
             $c = $this->api->graphql($store, 'query ($id: ID!) { customer(id: $id) { '.self::CUSTOMER.' } }', ['id' => 'gid://shopify/Customer/'.$customer['id']])['customer'] ?? null;
         } catch (Throwable $e) {
             report($e);
+            // Shown with the condition that needed it, and in the server log.
+            \Illuminate\Support\Facades\Log::channel(app()->runningUnitTests() ? 'null' : 'stderr')->warning('automation customer lookup failed', ['store' => $store->id, 'error' => mb_substr($e->getMessage(), 0, 300)]);
+            $context['customer']['lookup_error'] = mb_substr($e->getMessage(), 0, 200);
 
             return $context;
         }
         if (! $c) {
+            $context['customer']['lookup_error'] = 'the customer wasn\'t found';
+
             return $context;
         }
         $context['customer'] = array_merge($customer, [

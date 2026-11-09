@@ -305,6 +305,8 @@ class AutomationController extends Controller
         $steps = $run->logs->map(fn ($l) => [
             'id' => $l->id, 'kind' => $kind($l->kind), 'created_at' => $l->created_at,
             'message' => $l->message.($ended($l) ? '. The Otherwise branch is empty, so the run ended.' : ''),
+            // The values each rule saw (older runs: worked out from the run's saved order and customer).
+            'seen' => $l->kind === 'condition' ? ($l->data['seen'] ?? (isset($program[$l->step]['rules']) ? rescue(fn () => app(\App\Automation\Conditions::class)->explain($program[$l->step], $run), null, false) : null)) : null,
             'status' => match (true) {
                 $l->kind === 'condition' => $l->status === 'ok' ? 'matched' : 'no_match',
                 $l->kind === 'end' => $l->status === 'ok' ? 'finished' : 'stopped',

@@ -162,7 +162,7 @@ class Engine
                 } catch (Throwable $e) {
                     return $this->failure($run, $i, 'condition', $e);
                 }
-                $this->log($run, $i, 'condition', $pass ? 'ok' : 'skipped', Definition::describe($node).($pass ? ' → yes' : ' → no'));
+                $this->log($run, $i, 'condition', $pass ? 'ok' : 'skipped', Definition::describe($node).($pass ? ' → yes' : ' → no'), ['seen' => $this->conditions->explain($node, $run)]);
                 $run->step = $pass ? $i + 1 : $node['else'];
 
                 continue;

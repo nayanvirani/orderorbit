@@ -496,4 +496,25 @@ class AutomationTest extends TestCase
         $page = $this->page('/app/automation/workflows/'.$paid->id, $this->member($store, 'owner'))->assertOk();
         $this->assertSame('Order #1053', $page->json('props.lastTrigger.subject'));
     }
+
+    public function test_a_condition_shows_the_values_it_saw(): void
+    {
+        $store = $this->store();
+        $this->workflow($store, ['trigger' => 'order_paid', 'steps' => [['type' => 'condition', 'match' => 'all',
+            'rules' => [['field' => 'ltv', 'op' => 'gte', 'value' => 500], ['field' => 'customer_tag', 'op' => 'has_not', 'value' => 'vip']],
+            'then' => [['type' => 'action', 'action' => 'notify', 'params' => ['title' => 'VIP']]], 'else' => []]]], 'VIP');
+        app(Triggers::class)->webhook($store, 'orders/paid', $this->order());
+
+        $log = \App\Models\Automation\WorkflowLog::where('kind', 'condition')->sole();
+        $this->assertSame('Customer lifetime spend: USD 180.00 ✗ · Customer tag: newsletter ✓', $log->data['seen']);
+        $run = \App\Models\Automation\WorkflowRun::sole();
+        \App\Models\FeatureFlag::create(['key' => 'flow_editor', 'mode' => 'all', 'enabled' => true]);
+        \App\Support\Features::forget();
+        $this->page('/app/automation/runs?run='.$run->id, $this->member($store, 'owner'))->assertOk()
+            ->assertJsonFragment(['seen' => 'Customer lifetime spend: USD 180.00 ✗ · Customer tag: newsletter ✓']);
+
+        // An order without a customer says so instead of a silent "no".
+        app(Triggers::class)->webhook($store, 'orders/paid', $this->order(['id' => 5009, 'customer' => null]));
+        $this->assertStringContainsString('no customer on this order', \App\Models\Automation\WorkflowLog::where('kind', 'condition')->latest('id')->first()->data['seen']);
+    }
 }
