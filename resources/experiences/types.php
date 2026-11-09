@@ -402,6 +402,25 @@ return [
     | store's checkout branding, so these types have no design settings.
     */
 
+    'checkout-app-reviews' => [
+        // Real reviews synced from Judge.me or Yotpo (G30 step 2); nothing typed in. Hidden when there are none.
+        'label' => 'Checkout reviews (from your review app)',
+        'singular' => 'Synced reviews block',
+        'icon' => 'star',
+        'meter' => null,
+        'surface' => 'checkout',
+        'description' => 'Real reviews of the products in the cart, synced from your review app.',
+        'empty' => 'Connect Judge.me or Yotpo in Settings › Integrations, then show real reviews in checkout.',
+        'templates' => [
+            'synced-card' => ['name' => 'One review', 'style' => 'card'],
+            'synced-list' => ['name' => 'Review list', 'style' => 'list'],
+        ],
+        'content' => [
+            'headline' => ['type' => 'text', 'label' => 'Headline', 'default' => 'What customers say', 'max' => 80],
+            'count' => ['type' => 'number', 'label' => 'Reviews in the list', 'default' => 3, 'min' => 1, 'max' => 4],
+        ],
+    ],
+
     'checkout-reviews' => [
         // Retired: reviews typed in by the merchant aren't factual (App Store requirement 1.1.4).
         // Existing blocks stop showing (App\Experiences\Factual); real reviews come with a reviews-app integration.

@@ -86,4 +86,16 @@ class ReviewSyncTest extends TestCase
         $free = $this->installedStore(['shop_domain' => 'f.myshopify.com', 'plan' => 'free']);
         $this->assertNull(ReviewSync::forStorefront($free), 'Starter and up.');
     }
+
+    public function test_checkout_gets_the_reviews_and_the_review_app(): void
+    {
+        $store = $this->installedStore(['plan' => 'growth']);
+        app(ReviewSync::class)->connect($store, 'judgeme', ['api_token' => 'good']);
+        $payload = app(\App\Services\Experiences\StorefrontPublisher::class)->checkoutPayload($store);
+        $this->assertSame('judgeme', $payload['review_app']);
+        $this->assertSame('Judge.me', $payload['reviews']['p']['10'][0][6]);
+        $type = \App\Experiences\Registry::type('checkout-app-reviews');
+        $this->assertSame('checkout', $type['surface']);
+        $this->assertTrue(\App\Experiences\Factual::allowed('checkout-app-reviews', 'synced-card', ['content' => []]), 'Synced reviews are factual.');
+    }
 }

@@ -45,7 +45,7 @@ class CheckoutBlocksTest extends TestCase
     {
         $checkout = array_keys(array_filter(Registry::types(), fn ($t) => $t['surface'] === 'checkout'));
         $thankYou = array_keys(array_filter(Registry::types(), fn ($t) => $t['surface'] === 'thank-you'));
-        $this->assertCount(9, $checkout);
+        $this->assertCount(10, $checkout); // including reviews synced from the review app (G30)
         $this->assertCount(8, $thankYou);
 
         // Checkout uses the store's checkout branding: Shopify's box styles only, and only the targeting checkout knows.

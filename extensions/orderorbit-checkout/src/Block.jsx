@@ -706,8 +706,10 @@ function Reorder({ exp, c }) {
   );
 }
 
-function ReviewRequest({ exp, c }) {
+function ReviewRequest({ exp, c, payload }) {
   const url = c.review_url || storefront('');
+  // With Judge.me connected and no link set, product links open its review section (G30).
+  const anchor = payload && payload.review_app === 'judgeme' ? '#judgeme_product_reviews' : '';
   const clicked = () => track(exp, 'experience_clicked', { action: 'review' });
   if (exp.style === 'products') {
     const items = (shopify.lines?.value || []).filter((l) => l.merchandise).slice(0, 4);
@@ -723,7 +725,7 @@ function ReviewRequest({ exp, c }) {
                 {m.image?.url && on(exp, 'pictures') ? <s-product-thumbnail src={m.image.url} alt={title} size="small" /> : null}
                 <T type="strong">{title}</T>
               </s-stack>
-              <s-link href={c.review_url || storefront(m.product?.handle ? '/products/' + m.product.handle : '')} onClick={clicked}>{shopify.i18n.translate('review')}</s-link>
+              <s-link href={c.review_url || storefront(m.product?.handle ? '/products/' + m.product.handle + anchor : '')} onClick={clicked}>{shopify.i18n.translate('review')}</s-link>
             </Row>
           );
         })} />
@@ -898,7 +900,30 @@ function ImageBlock({ exp, c }) {
   );
 }
 
+// Real reviews synced from the store's review app (G30 step 2): the cart's products first, else the store's best.
+function AppReviews({ exp, c, payload }) {
+  const data = payload && payload.reviews;
+  if (!data) return null;
+  const ids = (shopify.lines?.value || []).map((l) => String(l.merchandise?.product?.id || '').split('/').pop());
+  const list = [];
+  ids.forEach((id) => (data.p[id] || []).forEach((r) => list.push(r)));
+  const shown = (list.length ? list : data.s || []).slice(0, exp.style === 'card' ? 1 : Math.max(1, Math.min(4, Number(c.count) || 3)));
+  if (!shown.length) return null;
+  return (
+    <Frame exp={exp} heading={c.headline}>
+      <Divided items={shown.map((r) => (
+        <s-stack gap="small-200">
+          <T>{'★★★★★'.slice(0, r[0])}{'☆☆☆☆☆'.slice(r[0])}{r[1] ? ' ' + r[1] : ''}</T>
+          {r[2] ? <T color="subdued">{r[2]}</T> : null}
+          <T type="small" color="subdued">{(r[3] || shopify.i18n.translate('verified')) + ' · ' + shopify.i18n.translate('reviewFrom', { app: r[6] })}</T>
+        </s-stack>
+      ))} />
+    </Frame>
+  );
+}
+
 const BLOCKS = {
+  'checkout-app-reviews': AppReviews,
   // Retired: reviews typed in by the merchant aren't allowed (App Store requirement 1.1.4).
   'checkout-reviews': () => null,
   'checkout-countdown': () => null,

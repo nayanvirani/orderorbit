@@ -24,5 +24,6 @@
   "itemsInOrder": "{{count}} items from this order",
   "review": "Review",
   "addFailed": "This item couldn't be added right now.",
-  "addonPrice": "Add for {{price}}"
+  "addonPrice": "Add for {{price}}",
+  "reviewFrom": "Review from {{app}}"
 }

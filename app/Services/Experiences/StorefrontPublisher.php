@@ -83,6 +83,10 @@ class StorefrontPublisher
             'updated_at' => now()->toIso8601String(),
             'experiences' => $live->filter(fn (array $e) => in_array(Registry::type($e['type'])['surface'], Schema::CHECKOUT_SURFACES, true) && Registry::type($e['type'])['surface'] !== 'account')->values()->all(),
             'gifts' => ($gifts = $live->firstWhere('type', 'progressive-gifts')) ? array_intersect_key($gifts, array_flip(['id', 'content'])) : null,
+            // Review apps, step 2 (G30): synced reviews for the checkout reviews block, and the review
+            // app for the Thank You "Ask for a review" links.
+            'reviews' => \App\Services\Integrations\ReviewSync::forStorefront($store),
+            'review_app' => collect(\App\Services\Integrations\ReviewSync::connected($store))->pluck('provider')->first(),
         ];
     }
 
