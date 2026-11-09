@@ -11,7 +11,7 @@ class ProfitSetting extends Model
 
     protected function casts(): array
     {
-        return ['fees' => 'array', 'shipping' => 'array', 'fixed_costs' => 'array', 'protect' => 'array', 'default_cost_percent' => 'float',
+        return ['fees' => 'array', 'shipping' => 'array', 'fixed_costs' => 'array', 'protect' => 'array', 'goal' => 'array', 'default_cost_percent' => 'float',
             'synced_at' => 'datetime', 'costs_synced_at' => 'datetime', 'backfilled_at' => 'datetime'];
     }
 

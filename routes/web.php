@@ -300,6 +300,9 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
             Route::get('/breakdowns', 'breakdowns')->name('breakdowns');
             Route::get('/breakdowns/export', 'exportBreakdown')->name('breakdowns.export');
             Route::get('/roas', 'roas')->name('roas');
+            // Profit goals and pacing (G6), behind the profit_goals flag.
+            Route::get('/goals', [\App\Http\Controllers\App\ProfitGoalController::class, 'show'])->name('goals');
+            Route::post('/goals', [\App\Http\Controllers\App\ProfitGoalController::class, 'save'])->middleware('store.can:manage_settings')->name('goals.save');
             Route::middleware('store.can:manage_settings')->group(function () {
                 Route::post('/access', 'accessGranted')->name('access');
                 Route::post('/costs', 'saveCosts')->name('costs.save');

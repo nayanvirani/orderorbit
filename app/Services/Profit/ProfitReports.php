@@ -59,7 +59,8 @@ class ProfitReports
         $out = [];
         foreach (CarbonPeriod::create($from, $to) as $d) {
             $r = $rows[$d->toDateString()] ?? null;
-            $out[] = ['day' => $d->toDateString(), 'sales' => $r ? $r->net_sales : 0, 'after_ads' => $r ? round($r->contribution - $r->ad_spend, 2) : 0];
+            $out[] = ['day' => $d->toDateString(), 'sales' => $r ? $r->net_sales : 0, 'after_ads' => $r ? round($r->contribution - $r->ad_spend, 2) : 0,
+                'contribution' => $r ? round((float) $r->contribution, 2) : 0];
         }
 
         return $out;

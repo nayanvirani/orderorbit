@@ -98,6 +98,7 @@ class Shared
                 ['Costs', 'tag', 'app.profit.costs', [], $is('app.profit.costs')],
                 ['Ad expenses', 'target', 'app.profit.ads', [], $is('app.profit.ads')],
                 ['ROAS and POAS', 'split', 'app.profit.roas', [], $is('app.profit.roas')],
+                ['Goals', 'target', 'app.profit.goals', [], $is('app.profit.goals'), null, 'profit_goals'],
             ]],
             'settings' => ['Settings', [
                 ['Store', 'store', 'app.settings.store', [], $is('app.settings.store')],

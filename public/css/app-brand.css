@@ -455,3 +455,12 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .oa-list { display: flex; flex-direction: column; margin-top: 8px; }
 .oa-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--ob-line); }
 .oa-row small { display: block; font-size: 13px; margin-top: 2px; } .oa-row > s-button { flex: none; }
+/* Profit › Goals (G6) */
+.pg-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .pg-layout { grid-template-columns: 1fr; } }
+.pg-chart { width: 100%; height: auto; } .pg-chart text { font-size: 11px; fill: var(--ob-muted); }
+.pg-chart .grid { stroke: var(--ob-line); } .pg-chart polyline { fill: none; stroke-width: 2.5; }
+.pg-chart .act { stroke: var(--ob-accent); } .pg-chart .proj { stroke: var(--ob-accent); stroke-dasharray: 6 5; opacity: .6; } .pg-chart .goal { stroke: #17663a; stroke-dasharray: 3 4; }
+.pg-chart .lbl { fill: #17663a; font-weight: 700; }
+.pg-key { display: inline-block; width: 16px; height: 3px; margin: 0 4px 3px 10px; vertical-align: middle; background: var(--ob-accent); }
+.pg-key.proj { opacity: .5; } .pg-key.goal { background: #17663a; }
