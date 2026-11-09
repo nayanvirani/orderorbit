@@ -287,6 +287,8 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
         });
         // Insights › Sales (G14), behind the sales_insights flag.
         Route::get('/insights/sales', [\App\Http\Controllers\App\InsightsController::class, 'sales'])->middleware('store.can:view_dashboard')->name('insights.sales');
+        // Insights › Customers (G19), behind the customer_value flag.
+        Route::get('/insights/customers', [\App\Http\Controllers\App\InsightsController::class, 'customers'])->middleware('store.can:view_dashboard')->name('insights.customers');
         // Insights › Monthly report (G15), behind the monthly_report flag.
         Route::get('/insights/report', [\App\Http\Controllers\App\InsightsController::class, 'report'])->middleware('store.can:view_dashboard')->name('insights.report');
         Route::get('/insights/report/pdf', [\App\Http\Controllers\App\InsightsController::class, 'reportPdf'])->middleware('store.can:view_dashboard')->name('insights.report.pdf');

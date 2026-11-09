@@ -466,6 +466,11 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .pg-chart .lbl { fill: #17663a; font-weight: 700; }
 .pg-key { display: inline-block; width: 16px; height: 3px; margin: 0 4px 3px 10px; vertical-align: middle; background: var(--ob-accent); }
 .pg-key.proj { opacity: .5; } .pg-key.goal { background: #17663a; }
+/* Insights › Customers (G19) */
+.cv-cohorts td, .cv-cohorts th { text-align: center; white-space: nowrap; } .cv-cohorts td:first-child, .cv-cohorts th:first-child { text-align: left; }
+.cv-best { display: grid; grid-template-columns: 200px minmax(0, 1fr) 160px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13.5px; }
+.cv-best span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cv-best i { display: block; height: 10px; border-radius: 5px; background: var(--ob-accent); } .cv-best b { text-align: right; }
+@media (max-width: 700px) { .cv-best { grid-template-columns: 1fr; } .cv-best b { text-align: left; } }
 
 /* app-base.css */
 /* Embedded app base: fields, buttons, tables and helpers shared by the Blade pages and the React admin. */

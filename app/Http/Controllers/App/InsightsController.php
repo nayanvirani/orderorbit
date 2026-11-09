@@ -54,6 +54,19 @@ class InsightsController extends Controller
         ]);
     }
 
+    /** Insights › Customers (G19): repeat rate, time to a second order, value and cohorts. Scale and up. */
+    public function customers(Store $store, \App\Services\Insights\CustomerValue $value): Page
+    {
+        abort_unless(Features::enabled('customer_value', $store) && Features::enabled('profit', $store), 404);
+        $missing = ProfitSync::missingAccess($store);
+
+        return page('insights/customers', ($missing ? [] : $value->build($store)) + [
+            'currency' => $store->currency ?: 'USD',
+            'access' => $missing ? ['missing' => $missing] : null,
+            'locked' => $store->planIncludes('customer_value') ? null : \App\Support\Plans::unlockMessage('customer_value', 'see it', $store),
+        ]);
+    }
+
     /** Insights › Monthly report (G15): last month by default, any of the last 12. */
     public function report(Request $request, Store $store, \App\Services\Insights\MonthlyReport $reports): Page
     {
