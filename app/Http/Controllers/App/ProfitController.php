@@ -79,7 +79,8 @@ class ProfitController extends Controller
         $this->gate($store, 'profit');
         $data = $request->validate(['costs' => ['required', 'array', 'max:2000'], 'costs.*' => ['nullable', 'numeric', 'min:0', 'max:1000000']]);
         foreach ($data['costs'] as $variant => $cost) {
-            ProductCost::where('store_id', $store->id)->where('variant_id', (int) $variant)->update(['cost' => $cost === null || $cost === '' ? null : round((float) $cost, 2), 'source' => $cost === null || $cost === '' ? null : ($request->input('source') === 'percent' ? 'percent' : 'manual')]);
+            // Through the model, so the cost is stored encrypted.
+            ProductCost::where('store_id', $store->id)->where('variant_id', (int) $variant)->get()->each(fn ($c) => $c->forceFill(['cost' => $cost === null || $cost === '' ? null : round((float) $cost, 2), 'source' => $cost === null || $cost === '' ? null : ($request->input('source') === 'percent' ? 'percent' : 'manual')])->save());
         }
         $sync->costsChanged($store);
 
@@ -120,7 +121,7 @@ class ProfitController extends Controller
             [$key, $cost] = [trim((string) ($row[0] ?? '')), trim((string) ($row[array_key_last($row)] ?? ''))];
             $variant = ctype_digit($key) ? (int) $key : (int) ($skus[$key] ?? 0);
             if ($variant && is_numeric($cost)) {
-                $saved += ProductCost::where('store_id', $store->id)->where('variant_id', $variant)->update(['cost' => round((float) $cost, 2), 'source' => 'csv']);
+                $saved += ProductCost::where('store_id', $store->id)->where('variant_id', $variant)->get()->each(fn ($c) => $c->forceFill(['cost' => round((float) $cost, 2), 'source' => 'csv'])->save())->count();
             }
         }
         if (! $saved) {

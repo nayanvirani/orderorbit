@@ -83,4 +83,17 @@ class CustomerDataProtectionTest extends TestCase
         $this->assertTrue(LegalPage::where('slug', 'security')->where('is_published', true)->exists());
         $this->assertStringContainsString('within 72 hours', LegalPage::where('slug', 'security')->value('body'));
     }
+
+    public function test_product_costs_are_encrypted_at_rest(): void
+    {
+        $this->setUpShopify();
+        $store = $this->installedStore();
+        $c = \App\Models\Profit\ProductCost::create(['store_id' => $store->id, 'variant_id' => 1, 'product_id' => 1, 'title' => 'Serum', 'cost' => 12.5, 'shopify_cost' => 9.99]);
+        $raw = DB::table('product_costs')->where('id', $c->id)->first();
+        $this->assertFalse(is_numeric($raw->cost) || is_numeric($raw->shopify_cost), 'Stored encrypted.');
+        $this->assertSame([12.5, 9.99, 12.5], [$c->fresh()->cost, $c->fresh()->shopify_cost, $c->fresh()->effective()]);
+        // A plain number from before encryption still reads.
+        DB::table('product_costs')->where('id', $c->id)->update(['cost' => '7.25']);
+        $this->assertSame(7.25, $c->fresh()->cost);
+    }
 }
