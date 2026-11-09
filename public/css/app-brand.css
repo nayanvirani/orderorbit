@@ -469,3 +469,16 @@ body { font-family: var(--ob-font); -webkit-font-smoothing: antialiased; }
 .cv-best { display: grid; grid-template-columns: 200px minmax(0, 1fr) 160px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13.5px; }
 .cv-best span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cv-best i { display: block; height: 10px; border-radius: 5px; background: var(--ob-accent); } .cv-best b { text-align: right; }
 @media (max-width: 700px) { .cv-best { grid-template-columns: 1fr; } .cv-best b { text-align: left; } }
+/* Insights › Store questions (G18) */
+.sq-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 16px; align-items: start; margin-top: 12px; }
+.sq-topics { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 12px; }
+.sq-topics button { padding: 8px 12px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; color: inherit; }
+.sq-topics button[aria-pressed="true"] { background: color-mix(in srgb, var(--ob-accent) 12%, transparent); font-weight: 700; }
+.sq-search { width: 100%; box-sizing: border-box; min-height: 38px; padding: 0 12px; margin-bottom: 8px; border: 1px solid var(--ob-line); border-radius: 10px; font: inherit; }
+.sq-list { list-style: none; margin: 0; padding: 0; }
+.sq-list li { display: flex; align-items: center; border-bottom: 1px solid var(--ob-line); }
+.sq-q { flex: 1; padding: 10px 4px; border: 0; background: none; font: inherit; font-size: 14px; text-align: left; cursor: pointer; color: inherit; }
+.sq-q:hover:not(:disabled) { color: var(--ob-accent); } .sq-q:disabled { cursor: default; opacity: .7; }
+.sq-star { flex: none; width: 32px; height: 32px; border: 0; background: none; font-size: 18px; cursor: pointer; color: #b8860b; }
+.sq-sentence { margin: 4px 0 12px; font-size: 17px; font-weight: 600; line-height: 1.45; }
+@media (max-width: 800px) { .sq-layout { grid-template-columns: 1fr; } .sq-topics { position: static; flex-direction: row; flex-wrap: wrap; } }

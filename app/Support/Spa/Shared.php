@@ -77,6 +77,7 @@ class Shared
             ]],
             'analytics' => ['Analytics', [
                 ['Sales', 'bag', 'app.insights.sales', [], $is('app.insights.sales'), null, 'sales_insights'],
+                ['Store questions', 'message', 'app.insights.questions', [], $is('app.insights.questions'), null, 'store_questions'],
                 ['Customers', 'users', 'app.insights.customers', [], $is('app.insights.customers'), null, 'customer_value'],
                 ['Monthly report', 'calendar', 'app.insights.report', [], $is('app.insights.report'), null, 'monthly_report'],
                 ['Overview', 'chart', 'app.analytics', [], $is('app.analytics')],

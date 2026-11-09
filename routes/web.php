@@ -131,6 +131,10 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
     Route::middleware('store.plan')->group(function () {
         // Home is the React admin (resources/app); its cards load from the JSON API below.
         Route::get('/', fn (\App\Models\Store $store) => page('home', ['overview' => \App\Http\Controllers\App\Api\DashboardApiController::overviewData($store)]))->middleware('store.can:view_dashboard')->name('dashboard');
+        // Insights › Store questions (G18), behind the store_questions flag.
+        Route::get('/insights/questions', [\App\Http\Controllers\App\StoreQuestionController::class, 'index'])->middleware('store.can:view_dashboard')->name('insights.questions');
+        Route::post('/api/questions/ask', [\App\Http\Controllers\App\StoreQuestionController::class, 'ask'])->middleware(['store.can:view_dashboard', 'throttle:60,1'])->name('api.questions.ask');
+        Route::post('/api/questions/favourite', [\App\Http\Controllers\App\StoreQuestionController::class, 'favourite'])->middleware('store.can:view_dashboard')->name('api.questions.favourite');
         Route::prefix('api/dashboard')->name('api.dashboard.')->middleware('store.can:view_dashboard')->controller(DashboardApiController::class)->group(function () {
             Route::get('/overview', 'overview')->name('overview');
             Route::get('/kpis', 'kpis')->name('kpis');
@@ -513,6 +517,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/finance/settings', 'settings')->name('finance.settings');
             Route::post('/finance/railway', 'railway')->name('finance.railway');
             Route::post('/finance/railway/refresh', 'railwayRefresh')->name('finance.railway.refresh');
+        });
+
+        // Store questions (G18): questions added for every store.
+        Route::middleware('admin.can:settings')->controller(\App\Http\Controllers\Admin\StoreQuestionController::class)->group(function () {
+            Route::get('/questions', 'index')->name('questions');
+            Route::post('/questions', 'store')->name('questions.store');
+            Route::post('/questions/{question}/toggle', 'toggle')->whereNumber('question')->name('questions.toggle');
         });
 
         // Database backups, by hand: make, download (logged) and delete.
