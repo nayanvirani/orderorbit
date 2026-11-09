@@ -16,6 +16,7 @@ class OptionalAccess
         'read_inventory' => ['Product costs and stock', 'Shopify\'s "Cost per item" and stock levels, for profit per item and days of stock.', 'Profit and Protect stop until it\'s approved again.'],
         'read_all_orders' => ['Orders older than 60 days', 'Order history for profit trends, breakdowns and reports.', 'Profit and Protect stop until it\'s approved again.'],
         'read_locations' => ['Stock per location', 'Inventory split by location.', 'Inventory shows the total across locations only.'],
+        'read_locales' => ['Store languages', 'Your store\'s languages, so offer text can be translated for each one.', 'Offers show in the default language only.'],
         'read_reports' => ['Store reports', 'Store sessions and conversion rate from Shopify\'s reports, so insights cover the whole store.', 'Sales insights stop showing sessions and conversion rate.'],
     ];
 

@@ -221,6 +221,22 @@ class StorefrontPublisher
             'type' => 'json',
             'value' => $json,
         ]];
+        // Widget translations (G22): one copy of the offers per store language; the theme picks the
+        // shopper's language and falls back to the default copy above.
+        $languages = [];
+        if (\App\Services\Translations\OfferTranslations::enabled($store)) {
+            $translator = app(\App\Services\Translations\OfferTranslations::class);
+            $translations = \App\Services\Translations\OfferTranslations::forStore($store);
+            foreach (array_slice(array_keys($translator->languages($store)), 0, 20) as $locale) {
+                if (! preg_match('/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,4})?$/', $locale)) {
+                    continue;
+                }
+                $languages[] = $locale;
+                $metafields[] = ['ownerId' => $owners['currentAppInstallation']['id'], 'namespace' => self::NAMESPACE, 'key' => self::KEY.'_'.$locale, 'type' => 'json',
+                    'value' => json_encode(['experiences' => $translator->apply($payload['experiences'], $translations, $locale)] + $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)];
+            }
+        }
+        $this->removeStaleLanguages($store, $owners['currentAppInstallation']['id'], $languages);
         // Checkout extensions can't read app-installation metafields, so their blocks go on the shop.
         if (! empty($owners['shop']['id'])) {
             $metafields[] = [
@@ -290,6 +306,24 @@ class StorefrontPublisher
                 'design' => $v->design ?: null,
             ], fn ($x) => $x !== null))->values()->all(),
         ];
+    }
+
+    /** Language copies written before for languages no longer published (or translations turned off) are removed. */
+    private function removeStaleLanguages(Store $store, string $owner, array $languages): void
+    {
+        $before = (array) ($store->capability('translated_languages') ?? []);
+        $stale = array_values(array_diff($before, $languages));
+        if ($stale) {
+            try {
+                $this->api->graphql($store, 'mutation ($m: [MetafieldIdentifierInput!]!) { metafieldsDelete(metafields: $m) { userErrors { message } } }',
+                    ['m' => array_map(fn ($l) => ['ownerId' => $owner, 'namespace' => self::NAMESPACE, 'key' => self::KEY.'_'.$l], $stale)]);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+        if ($before !== $languages) {
+            $store->forceFill(['capabilities' => array_merge($store->capabilities ?? [], ['translated_languages' => $languages])])->save();
+        }
     }
 
     private function ensureAccountDefinition(Store $store): void

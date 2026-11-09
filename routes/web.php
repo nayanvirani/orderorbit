@@ -178,6 +178,9 @@ Route::prefix('app')->middleware(['shopify.auth', 'spa', \App\Http\Middleware\St
             Route::get('/', [ExperienceController::class, 'overview'])->middleware('store.can:view_dashboard')->name('overview');
             // New menu: Offers › Create an offer (a picker by shopper step).
             Route::get('/create', \App\Http\Controllers\App\OfferCatalogController::class)->middleware('store.can:manage_experiences')->name('create');
+            // Widget translations (G22).
+            Route::get('/translations', [\App\Http\Controllers\App\TranslationController::class, 'show'])->middleware('store.can:view_dashboard')->name('translations');
+            Route::post('/translations', [\App\Http\Controllers\App\TranslationController::class, 'save'])->middleware('store.can:manage_experiences')->name('translations.save');
 
             Route::prefix('experiences')->name('experiences.')->group(function () {
                 Route::get('/', [ExperienceController::class, 'index'])->name('index');

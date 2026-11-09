@@ -19,7 +19,7 @@ class OptionalAccessTest extends TestCase
         $store = $this->installedStore(['scopes' => config('shopify.scopes').',read_inventory,read_reports']);
         $owner = $this->member($store, 'owner');
         $list = collect($this->page('/app/settings/store', $owner)->assertOk()->json('props.optional'))->keyBy('scope');
-        $this->assertSame(['read_inventory', 'read_all_orders', 'read_locations', 'read_reports'], $list->keys()->all());
+        $this->assertSame(['read_inventory', 'read_all_orders', 'read_locations', 'read_locales', 'read_reports'], $list->keys()->all());
         $this->assertTrue($list['read_inventory']['on']);
         $this->assertFalse($list['read_all_orders']['on']);
         $this->assertTrue(OptionalAccess::granted($store, 'read_reports'));

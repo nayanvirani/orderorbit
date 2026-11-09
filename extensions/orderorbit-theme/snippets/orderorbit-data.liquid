@@ -7,7 +7,10 @@
   quantity, price and the Growvia offer that added them.
   Duplicates across several blocks are harmless; the runtime reads the first.
 {%- endcomment -%}
-<script type="application/json" data-oo-data>{{ app.metafields.orderorbit.experiences.value | json }}</script>
+{%- comment -%} Widget translations: the shopper's language copy when Growvia published one, else the default. {%- endcomment -%}
+{%- assign oo_lang = 'experiences_' | append: request.locale.iso_code -%}
+{%- assign oo_local = app.metafields.orderorbit[oo_lang] -%}
+<script type="application/json" data-oo-data>{% if oo_local and oo_local.value %}{{ oo_local.value | json }}{% else %}{{ app.metafields.orderorbit.experiences.value | json }}{% endif %}</script>
 {%- if customer -%}{%- capture oo_products -%}{%- for order in customer.orders limit: 10 -%}{%- for item in order.line_items -%}{{ item.product_id }},{%- endfor -%}{%- endfor -%}{%- endcapture -%}{%- endif -%}
 <script type="application/json" data-oo-context>
   {

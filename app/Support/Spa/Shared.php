@@ -198,6 +198,8 @@ class Shared
             ['heading' => 'Manage', 'items' => [
                 ['label' => $new ? 'All offers' : 'All widgets', 'icon' => 'list', 'tone' => 'default', 'href' => self::path('app.cro.experiences.index'), 'active' => $request->routeIs('app.cro.experiences.*') && ! $experienceFeature],
                 ['label' => 'Templates', 'icon' => 'palette', 'tone' => 'default', 'href' => self::path('app.cro.templates'), 'active' => $request->routeIs('app.cro.templates')],
+                // Widget translations (G22), behind the translations flag.
+                ...(\App\Support\Features::enabled('translations', $store) ? [['label' => 'Translations', 'icon' => 'message', 'tone' => 'default', 'href' => self::path('app.cro.translations'), 'active' => $request->routeIs('app.cro.translations')]] : []),
             ]],
         ];
     }
