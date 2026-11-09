@@ -114,15 +114,41 @@ class AiFeaturesTest extends TestCase
 
         $owner = $this->member($store, 'owner');
         $this->postJson('/app/api/ai/copy', ['type' => 'bundles', 'products' => ['Night Cream', 'Glow Serum']], $this->as($owner))
-            ->assertOk()->assertJsonPath('options.0.headline', 'Better together');
+            ->assertOk()->assertJsonPath('options.0.headline', 'Better together')->assertJsonPath('source', 'ai');
     }
 
-    public function test_without_a_key_ai_says_it_is_off(): void
+    public function test_without_ai_growvia_writes_the_brief_and_offer_text(): void
     {
         $this->app->forgetInstance(Ai::class);
         $this->app->offsetUnset(Ai::class);
         config(['services.anthropic.key' => null]);
         $store = $this->store();
-        $this->postJson('/app/api/ai/copy', ['type' => 'bundles'], $this->as($this->member($store, 'owner')))->assertStatus(402)->assertJsonPath('message', 'AI isn\'t switched on for Growvia yet.');
+        foreach ([1, 2, 3, 4] as $w) {
+            ProfitDaily::create(['store_id' => $store->id, 'day' => now()->subDay()->subWeeks($w)->toDateString(), 'orders' => 10, 'net_sales' => 1000, 'contribution' => 300]);
+        }
+        ProfitDaily::create(['store_id' => $store->id, 'day' => now()->subDay()->toDateString(), 'orders' => 6, 'net_sales' => 600, 'contribution' => 180]);
+
+        $this->assertSame('ready', app(MorningBrief::class)->make($store));
+        $brief = DB::table('morning_briefs')->sole();
+        $this->assertSame('auto', $brief->source);
+        $lines = json_decode($brief->lines, true);
+        $this->assertSame('Net sales yesterday were USD 600.00, down 40% on a usual Sunday (USD 1,000.00).', $lines[0]['text']);
+        $this->assertSame(['net_sales'], $lines[0]['facts']);
+        $this->assertSame('You had 6 orders yesterday, down 40% on a usual Sunday.', $lines[1]['text']);
+        $this->assertStringStartsWith('Today, check that your best sellers are in stock', end($lines)['text'], 'The one thing to do comes last.');
+        $this->assertLessThanOrEqual(5, count($lines));
+        $this->assertSame([], $this->prompts, 'No AI call.');
+        $this->page('/app/insights/brief', $this->member($store, 'owner'))->assertOk()->assertJsonPath('props.briefs.0.source', 'auto')->assertJsonPath('props.ai', false);
+
+        $owner = $this->member($store, 'owner');
+        $r = $this->postJson('/app/api/ai/copy', ['type' => 'bundles', 'products' => ['Night Cream', 'Glow Serum'], 'discount' => '10%'], $this->as($owner))
+            ->assertOk()->assertJsonPath('source', 'auto')->assertJsonCount(3, 'options');
+        $this->assertSame(['headline' => 'Save 10% on the set', 'subheadline' => 'Get Night Cream and Glow Serum together.', 'cta' => 'Add both'], $r->json('options.0'));
+        $this->postJson('/app/api/ai/copy', ['type' => 'upsell'], $this->as($owner))->assertOk()->assertJsonPath('options.0.headline', 'Something to add?');
+        foreach (OfferIdeas::auto(['products' => [str_repeat('Very long product name ', 6), 'B', 'C']]) as $o) {
+            $this->assertLessThanOrEqual(60, mb_strlen($o['headline']));
+            $this->assertLessThanOrEqual(120, mb_strlen($o['subheadline']));
+            $this->assertLessThanOrEqual(24, mb_strlen($o['cta']));
+        }
     }
 }

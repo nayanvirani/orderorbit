@@ -7,9 +7,10 @@ use App\Models\Store;
 use App\Support\Features;
 
 /**
- * AI offer ideas (G20): products customers buy together (from orders, no AI) as bundle ideas, and
- * offer text written by AI on request. Nothing is saved until the merchant chooses a
- * suggestion and saves the offer.
+ * Offer ideas (G20): products customers buy together (from orders, no AI) as bundle ideas, and
+ * offer text on request. The text is written by Growvia from the offer itself (no AI) unless AI is
+ * switched on in Internal Admin and available for the store; then AI writes it, and if AI fails
+ * Growvia's own options are used. Nothing is saved until the merchant chooses one and saves.
  */
 class OfferIdeas
 {
@@ -66,9 +67,60 @@ class OfferIdeas
     }
 
     /**
-     * Three options for an offer's text, or null without AI. $context: what the offer is (type,
-     * products, current text); only product names and the merchant's own words are sent.
+     * Three options for an offer's text: ['options' => [...], 'source' => 'ai'|'auto']. $context:
+     * what the offer is (type, products, discount, current text); AI gets only product names and
+     * the merchant's own words.
      */
+    public function suggest(Store $store, array $context): array
+    {
+        $options = $this->ai->available($store) ? $this->copy($store, $context) : null;
+
+        return $options ? ['options' => $options, 'source' => 'ai'] : ['options' => self::auto($context), 'source' => 'auto'];
+    }
+
+    /** Growvia's own three options, from the offer's products, type and discount. No AI. */
+    public static function auto(array $context): array
+    {
+        $short = fn (string $name) => mb_strlen($name) > 28 ? rtrim(mb_substr($name, 0, 27)).'…' : $name;
+        $products = array_values(array_filter(array_map(fn ($p) => $short(trim((string) $p)), (array) ($context['products'] ?? []))));
+        $discount = trim((string) ($context['discount'] ?? ''));
+        $save = $discount !== '' ? "Save {$discount}" : null;
+        $type = (string) ($context['type'] ?? '');
+        $list = match (count($products)) {
+            0 => null, 1 => $products[0], 2 => "{$products[0]} and {$products[1]}",
+            default => implode(', ', array_slice($products, 0, -1)).' and '.end($products),
+        };
+
+        if (count($products) >= 2) {
+            $all = count($products) === 2 ? 'both' : 'all '.count($products);
+            $options = [
+                [$save ? "{$save} on the set" : 'Better together', "Get {$list} together.", 'Add '.$all],
+                ['Complete the set', $save ? "{$list}: {$discount} off when bought together." : "{$list} in one click.", 'Add the set'],
+                ['Pair '.$products[0], 'Goes well with '.implode(' and ', array_slice($products, 1)).'.', $save ? "Add and save {$discount}" : 'Add to cart'],
+            ];
+        } elseif ($list) {
+            $options = [
+                ['You may also like', $list.($save ? " · {$discount} off" : ''), 'Add to cart'],
+                [$save ? "{$save} on {$list}" : "Add {$list}", $save ? "Add it to this order for {$discount} less." : 'Add it to this order in one click.', 'Add'],
+                ['Complete your order', "Add {$list} before you check out.", 'Add to order'],
+            ];
+        } else {
+            $gift = str_contains($type, 'gift') || str_contains($type, 'tier') || str_contains($type, 'reward');
+            $options = $gift ? [
+                ['Unlock your reward', 'Add a little more to your cart to get it.', 'Shop now'],
+                ['A thank-you on us', 'Spend a little more and the reward is added to your order.', 'See what\'s next'],
+                ['Almost there', 'Your reward is waiting a few items away.', 'Keep shopping'],
+            ] : [
+                [$save ? "{$save} today" : 'Something to add?', $save ? "Take {$discount} off when you add it to this order." : 'Picked to go with what\'s in your cart.', 'Add to cart'],
+                ['Complete your order', 'A good match for what you\'ve chosen.', 'Add'],
+                ['Before you go', $save ? "{$discount} off when you add it now." : 'Add it in one click.', 'Add to order'],
+            ];
+        }
+
+        return array_map(fn ($o) => ['headline' => mb_substr($o[0], 0, 60), 'subheadline' => mb_substr($o[1], 0, 120), 'cta' => mb_substr($o[2], 0, 24)], $options);
+    }
+
+    /** Three AI-written options, or null when AI didn't answer. */
     public function copy(Store $store, array $context): ?array
     {
         $data = $this->ai->json($store, 'offer_copy',

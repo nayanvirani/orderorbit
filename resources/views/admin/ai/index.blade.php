@@ -14,8 +14,8 @@
     </div>
 </div>
 
-@unless ($settings['enabled'])<div class="ad-note warn"><b>AI is switched off.</b> The Morning Brief and offer ideas pause until you switch it on below.</div>@endunless
-@if ($allBlocked)<div class="ad-note warn"><b>No provider can answer right now.</b> Every provider is switched off, resting or at a limit, so AI features pause until one has room (limits reset each minute, day or month in UTC). Add another provider or raise a limit.</div>@endif
+@unless ($settings['enabled'])<div class="ad-note"><b>AI is off.</b> The Morning Brief and offer text are written by Growvia from each store's numbers, no AI. Switch AI on below to have AI write them for Premium stores; if AI isn't available or fails, Growvia's own text is used.</div>@endunless
+@if ($allBlocked)<div class="ad-note warn"><b>No provider can answer right now.</b> Every provider is switched off, resting or at a limit, so Growvia writes the text itself until one has room (limits reset each minute, day or month in UTC). Add another provider or raise a limit.</div>@endif
 @if ($providers->isEmpty())
     <div class="ad-note">{!! $envKey ? 'Using the <b>ANTHROPIC_API_KEY</b> Railway variable. Add providers here to use others (free tiers included) or to add failover.' : 'No provider yet. Google Gemini, Groq, OpenRouter and Mistral all have free tiers: add one with its API key.' !!}</div>
 @endif
@@ -75,7 +75,7 @@
         @csrf
         <label style="display: flex; gap: 8px; align-items: center"><input type="checkbox" name="enabled" value="1" @checked($settings['enabled']) style="width: auto"> AI features on</label>
         <label>Monthly AI budget per Premium store (USD)<input type="number" step="0.01" min="0" name="budget_premium" value="{{ $settings['budget_premium'] }}"><small class="ad-muted">Counted from each provider's prices; free providers cost $0.</small></label>
-        <label>Requests per store per month<input type="number" min="0" name="requests_per_store" value="{{ $settings['requests_per_store'] }}"><small class="ad-muted">Keeps one store from using up a free tier's limits. When reached, AI pauses for that store until the 1st.</small></label>
+        <label>Requests per store per month<input type="number" min="0" name="requests_per_store" value="{{ $settings['requests_per_store'] }}"><small class="ad-muted">Keeps one store from using up a free tier's limits. When reached, that store gets Growvia's own text until the 1st.</small></label>
         <div><button class="ad-btn primary" type="submit">Save settings</button></div>
     </form>
 </section>

@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-/** Internal Admin AI settings: on/off, each plan's monthly budget per store and a request cap. */
+/**
+ * Internal Admin AI settings: on/off (off by default: the Morning Brief and offer text are written by
+ * Growvia from the numbers, no AI), each plan's monthly budget per store and a request cap.
+ */
 class AiSettings
 {
     private const KEY = 'ai-settings:v1';
@@ -23,7 +26,7 @@ class AiSettings
             return $value ? (array) json_decode($value, true) : [];
         });
 
-        return array_merge(['enabled' => true, 'budget_premium' => (float) env('AI_BUDGET_PREMIUM', 5), 'requests_per_store' => 300], $saved);
+        return array_merge(['enabled' => false, 'budget_premium' => (float) env('AI_BUDGET_PREMIUM', 5), 'requests_per_store' => 300], $saved);
     }
 
     public static function save(array $values): void

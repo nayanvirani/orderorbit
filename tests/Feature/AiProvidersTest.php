@@ -26,6 +26,7 @@ class AiProvidersTest extends TestCase
         parent::setUp();
         $this->setUpShopify();
         config(['services.anthropic.key' => '']);
+        AiSettings::save(['enabled' => true, 'budget_premium' => 5, 'requests_per_store' => 300]);
     }
 
     private function provider(string $preset, int $priority, string $key = 'key-123'): AiProvider
@@ -123,6 +124,14 @@ class AiProvidersTest extends TestCase
 
         AiSettings::save(['enabled' => false, 'budget_premium' => 5, 'requests_per_store' => 300]);
         $this->assertFalse($ai->configured());
+    }
+
+    public function test_ai_is_off_until_switched_on(): void
+    {
+        $this->provider('groq', 1);
+        AiSettings::save([]);
+        $this->assertFalse(AiSettings::get()['enabled']);
+        $this->assertFalse(app(Ai::class)->available($this->premium()));
     }
 
     public function test_without_providers_the_railway_key_still_works(): void
