@@ -148,11 +148,22 @@ class Engine
                     continue;
                 }
                 $resume = now()->add($node['unit'], $node['amount']);
+                $how = 'Waiting '.$node['amount'].' '.$node['unit'];
+                // Predictive reorder timing (G21): the order's products' usual reorder gap.
+                if (! empty($node['reorder']) && $run->store && ReorderTiming::available($run->store)) {
+                    $days = app(ReorderTiming::class)->days($run->store, (array) ($run->context['order']['products'] ?? []));
+                    if ($days !== null) {
+                        $resume = now()->addDays($days);
+                        $how = "Waiting {$days} days, these products' usual reorder time";
+                    } else {
+                        $how .= ' (too little reorder history for these products yet)';
+                    }
+                }
                 if (isset($node['window'])) {
                     $resume = Definition::inWindow($resume, $node['window'], $run->store?->timezone ?: 'UTC');
                 }
                 $run->forceFill(['status' => 'waiting', 'resume_at' => $resume, 'results' => $results])->save();
-                $this->log($run, $i, 'wait', 'waiting', 'Waiting '.$node['amount'].' '.$node['unit'].', until '.$resume->toDayDateTimeString().' UTC.');
+                $this->log($run, $i, 'wait', 'waiting', $how.', until '.$resume->toDayDateTimeString().' UTC.');
 
                 return $run;
             }

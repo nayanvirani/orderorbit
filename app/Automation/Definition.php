@@ -74,6 +74,10 @@ class Definition
                         $amount = max(1, min($max, $amount));
                     }
                     $wait = ['type' => 'wait', 'amount' => $amount, 'unit' => $unit];
+                    // Predictive reorder timing (G21): the products' usual reorder gap, this wait as the fallback.
+                    if (! empty($step['reorder']) && $unit === 'days') {
+                        $wait['reorder'] = true;
+                    }
                     // Optional: only continue between two times of day (the store's time zone).
                     $from = (string) ($step['window']['from'] ?? '');
                     $to = (string) ($step['window']['to'] ?? '');
@@ -236,7 +240,7 @@ class Definition
                     $program[$at]['else'] = count($program);
                 }
             } elseif ($step['type'] === 'wait') {
-                $program[] = ['t' => 'wait', 'amount' => $step['amount'], 'unit' => $step['unit']] + (isset($step['window']) ? ['window' => $step['window']] : []);
+                $program[] = ['t' => 'wait', 'amount' => $step['amount'], 'unit' => $step['unit']] + (isset($step['window']) ? ['window' => $step['window']] : []) + (! empty($step['reorder']) ? ['reorder' => true] : []);
             } else {
                 $program[] = ['t' => 'action', 'action' => $step['action'], 'params' => $step['params']];
             }
@@ -251,7 +255,7 @@ class Definition
         $catalog = self::catalog();
 
         return match ($step['type'] ?? $step['t'] ?? null) {
-            'wait' => "Wait {$step['amount']} {$step['unit']}".(isset($step['window']) ? ", then continue between {$step['window']['from']} and {$step['window']['to']}" : ''),
+            'wait' => (! empty($step['reorder']) ? "Wait for the usual reorder time (else {$step['amount']} {$step['unit']})" : "Wait {$step['amount']} {$step['unit']}").(isset($step['window']) ? ", then continue between {$step['window']['from']} and {$step['window']['to']}" : ''),
             'condition', 'cond' => 'If '.implode($step['match'] === 'any' ? ' or ' : ' and ', array_map(fn ($r) => ($catalog['conditions'][$r['field']]['label'] ?? $r['field']).' '.($catalog['operators'][$r['op']] ?? $r['op']).' '.(is_array($r['value']) ? implode(', ', array_column($r['value'], 'title')) : $r['value']), $step['rules'])),
             'action' => $catalog['actions'][$step['action']]['label'] ?? $step['action'],
             default => '',

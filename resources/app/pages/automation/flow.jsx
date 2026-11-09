@@ -69,7 +69,7 @@ function ruleText(catalog, r) {
 /** Title and one-line summary for a node on the canvas. */
 function summary(catalog, step, workflows) {
   if (step.type === 'wait') {
-    return [step.label || `Wait ${step.amount} ${Number(step.amount) === 1 ? step.unit.replace(/s$/, '') : step.unit}`, step.window ? `Then continue between ${step.window.from} and ${step.window.to}` : 'Then continue'];
+    return [step.label || (step.reorder ? 'Wait for the usual reorder time' : `Wait ${step.amount} ${Number(step.amount) === 1 ? step.unit.replace(/s$/, '') : step.unit}`), step.window ? `Then continue between ${step.window.from} and ${step.window.to}` : 'Then continue'];
   }
   if (step.type === 'condition') {
     const rules = (step.rules || []).map((r) => ruleText(catalog, r));
@@ -402,6 +402,16 @@ function StepPanel({ ctx, path, onRemove, onMove }) {
           <Field ctx={ctx} def={{ type: 'number', label: 'Wait', min: 1 }} path={`${path}.amount`} />
           <Field ctx={ctx} def={{ type: 'select', label: 'Unit', options: catalog.wait_units }} path={`${path}.unit`} />
         </div>
+        {ctx.gates.reorder !== null && ctx.gates.reorder !== undefined && step.unit === 'days' && (
+          <>
+            <label className="fl-check">
+              <input type="checkbox" checked={!!step.reorder} onChange={(e) => ctx.update(`${path}.reorder`, e.target.checked || undefined)} />
+              Wait for each product&apos;s usual reorder time
+            </label>
+            {step.reorder && <p className="fl-note">Learned from your customers&apos; repeat orders. With too little history for a product, the wait above is used.</p>}
+            {step.reorder && !ctx.gates.reorder && <s-banner tone="warning">Reorder timing needs the Premium plan. Until then the wait above is used.</s-banner>}
+          </>
+        )}
         <label className="fl-check">
           <input type="checkbox" checked={windowOn} onChange={(e) => ctx.update(`${path}.window`, e.target.checked ? { from: '09:00', to: '20:00' } : undefined)} />
           Only continue between set hours

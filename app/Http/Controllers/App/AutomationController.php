@@ -247,7 +247,9 @@ class AutomationController extends Controller
             'otherWorkflows' => Workflow::where('store_id', $store->id)->whereKeyNot($workflow->id)->orderBy('name')->get(['handle', 'name']),
             'live' => $live ? ['version' => $live->version, 'published_at' => $live->published_at] : null,
             'savedAt' => $workflow->updated_at,
-            'gates' => ['branching' => $store->planIncludes('automation_branching'), 'webhooks' => $store->planIncludes('automation_webhooks')],
+            'gates' => ['branching' => $store->planIncludes('automation_branching'), 'webhooks' => $store->planIncludes('automation_webhooks'),
+                // Predictive reorder timing (G21): shown with its flag; null hides it.
+                'reorder' => \App\Support\Features::enabled('reorder_timing', $store) ? $store->planIncludes('reorder_timing') : null],
             'stats' => $flow ? [
                 'runs' => $workflow->runs()->where('test', false)->where('created_at', '>=', $since)->count(),
                 'failed' => $workflow->runs()->where('test', false)->where('status', 'failed')->where('created_at', '>=', $since)->count(),
