@@ -258,7 +258,7 @@ class AdminController extends Controller
         $keys = array_values(array_intersect((array) ($request['modules'] ?? []), array_keys(\App\Support\Modules::ALL)));
         $rows = collect($keys)->map(fn ($key) => [
             'key' => $key, 'label' => \App\Support\Modules::label($key), 'has' => $store->planIncludes($key), 'needs' => $first[$key] ?? 'a private plan',
-            'coming' => in_array($key, \App\Support\Modules::COMING, true), 'on' => in_array($key, (array) ($store->entitlements['modules_on'] ?? []), true),
+            'coming' => in_array($key, \App\Support\Modules::coming(), true), 'on' => in_array($key, (array) ($store->entitlements['modules_on'] ?? []), true),
         ])
             // What their plan lacks first, then what's coming, then what they already have.
             ->sortBy(fn ($r) => ($r['has'] ? 2 : 0) + ($r['coming'] ? 1 : 0))->values()->all();

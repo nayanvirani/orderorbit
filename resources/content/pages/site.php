@@ -21,6 +21,7 @@ return [
         'convert' => 'Raise order value',
         'checkout' => 'After the Buy button',
         'grow' => 'Measure & grow',
+        'store' => 'Profit & store health',
         'templates_title' => 'Start from a template',
         'templates_text' => '{templates} ready-made designs to customise →',
     ],

@@ -1,6 +1,8 @@
 @extends('layouts.site')
 @php($c = \App\Support\SiteContent::page('features'))
 @php($features = \App\Support\Content::features())
+{{-- Only groups with a released feature (Profit & store health waits for its flags). --}}
+@php($shownGroups = array_filter($c['groups'], fn ($g, $key) => collect($features)->contains('group', $key), ARRAY_FILTER_USE_BOTH))
 
 @section('title', \App\Support\SiteContent::plain($c['seo_title']))
 @section('description', \App\Support\SiteContent::plain($c['seo_description']))
@@ -12,12 +14,12 @@
         <h1>{{ site_md($c['title']) }}</h1>
         <p class="lead">{{ site_md($c['lead']) }}</p>
         <div class="chips">
-            @foreach ($c['groups'] as $group => $g)<a class="chip {{ $loop->first ? 'on' : '' }}" href="#{{ $group }}">{{ $g['tab'] }}</a>@endforeach
+            @foreach ($shownGroups as $group => $g)<a class="chip {{ $loop->first ? 'on' : '' }}" href="#{{ $group }}">{{ $g['tab'] }}</a>@endforeach
         </div>
     </div>
 </section>
 
-@foreach ($c['groups'] as $group => $g)
+@foreach ($shownGroups as $group => $g)
     @php($items = array_filter($features, fn ($f) => $f['group'] === $group))
     <section class="section {{ $loop->first ? '' : 'top-0' }}" id="{{ $group }}" style="scroll-margin-top:96px">
         <div class="wrap stack xl">

@@ -8,7 +8,9 @@
 */
 
 return [
-    'seo_title' => 'Pricing | Growvia',
+    'seo_title' => 'Pricing: Free Plan & Paid Plans for Shopify | Growvia',
+    // {from}: the cheapest paid plan's monthly price.
+    'seo_description' => 'Start free with Growvia, then upgrade for more live widgets, A/B tests, automation and personalization. Paid plans from {from} a month, billed through Shopify.',
     'eyebrow' => 'Pricing',
     'per_month' => '/mo',
     'free' => '$0',

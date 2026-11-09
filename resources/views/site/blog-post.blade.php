@@ -2,7 +2,9 @@
 @php($c = \App\Support\SiteContent::page('blog'))
 @php($feature = $post->feature ? \App\Support\Content::feature($post->feature) : null)
 
-@section('title', ($post->seo_title ?: $post->title).' | Growvia')
+{{-- Long titles go without the brand so Google shows them in full (about 60 characters). --}}
+@php($seoTitle = $post->seo_title ?: $post->title)
+@section('title', mb_strlen($seoTitle) > 50 ? $seoTitle : $seoTitle.' | Growvia')
 @section('description', $post->seo_description ?: $post->excerpt)
 
 @push('head')

@@ -3,8 +3,8 @@
 /* Templates page. The templates themselves are under Lists → Template gallery. */
 
 return [
-    'seo_title' => 'Templates | Growvia',
-    'seo_description' => 'Ready-made layouts for bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart and trust blocks. Pick one and make it yours.',
+    'seo_title' => 'Shopify Bundle, Gift & Upsell Templates | Growvia',
+    'seo_description' => 'Ready-made templates for Shopify bundles, quantity breaks, free gift bars, cart upsells, countdowns and trust badges. Pick one and match it to your brand.',
     'eyebrow' => 'Template library',
     'title' => 'Start from a template, *finish with your brand.*',
     'lead' => 'A template is a ready-made layout, not a fixed design. Pick one in the app, then change every offer, product, text, colour, size and spacing to match your store, with a live preview.',

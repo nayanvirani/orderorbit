@@ -14,13 +14,20 @@
     'description' => \App\Support\SiteContent::plain($c['seo_description']),
     'offers' => array_values(array_map(fn ($p) => ['@type' => 'Offer', 'name' => $p['name'], 'price' => $p['price'], 'priceCurrency' => 'USD'], $plans)),
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+<script type="application/ld+json">{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@graph' => [
+        ['@type' => 'Organization', '@id' => url('/').'#org', 'name' => 'Growvia', 'url' => url('/'), 'logo' => asset('images/og/growvia.png'), 'sameAs' => ['https://apps.shopify.com/orderorbit']],
+        ['@type' => 'WebSite', '@id' => url('/').'#site', 'name' => 'Growvia', 'url' => url('/'), 'publisher' => ['@id' => url('/').'#org']],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @php($hero = $c['hero'])
 @php($mock = $hero['mockup'])
 @php($features = \App\Support\Content::features())
 @php($cards = $groups['convert'])
-@php($others = $groups['checkout'] + $groups['grow'])
+@php($others = $groups['checkout'] + $groups['grow'] + ($groups['store'] ?? []))
 
 @section('content')
 <section class="home-hero glow-hero">

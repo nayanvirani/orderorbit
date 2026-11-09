@@ -81,7 +81,7 @@ class Plans
 
         return [
             'feature' => Modules::label($missing), 'plan' => $name, 'price' => $plan['price'] ?? null, 'off' => false,
-            'also' => $plan ? collect($plan['includes'] ?? [])->diff($own)->diff(Modules::COMING)->reject(fn ($k) => $k === $missing || Modules::ALL[$k][3] !== null)
+            'also' => $plan ? collect($plan['includes'] ?? [])->diff($own)->diff(Modules::coming())->reject(fn ($k) => $k === $missing || Modules::ALL[$k][3] !== null)
                 ->map(fn ($k) => Modules::label($k))->values()->take(8)->all() : [],
         ];
     }

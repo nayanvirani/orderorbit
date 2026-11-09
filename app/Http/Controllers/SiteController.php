@@ -285,13 +285,16 @@ class SiteController extends Controller
         foreach (array_keys(Content::solutions()) as $slug) {
             $urls[] = route('site.solution', $slug);
         }
-        foreach (BlogPost::live()->pluck('slug') as $slug) {
-            $urls[] = route('site.blog.post', $slug);
+        // Blog posts carry their last change, so search engines re-read edited articles.
+        $modified = [];
+        foreach (BlogPost::live()->get(['slug', 'updated_at', 'published_at']) as $post) {
+            $urls[] = $url = route('site.blog.post', $post->slug);
+            $modified[$url] = ($post->updated_at ?? $post->published_at)?->toDateString();
         }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
         foreach ($urls as $url) {
-            $xml .= '<url><loc>'.e($url).'</loc></url>';
+            $xml .= '<url><loc>'.e($url).'</loc>'.(! empty($modified[$url]) ? '<lastmod>'.$modified[$url].'</lastmod>' : '').'</url>';
         }
 
         return response($xml.'</urlset>', 200, ['Content-Type' => 'application/xml']);

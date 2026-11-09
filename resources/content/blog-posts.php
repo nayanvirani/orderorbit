@@ -142,7 +142,7 @@ MD,
         'category' => 'AOV',
         'feature' => 'progressive-gifts',
         'excerpt' => 'Pick thresholds from your own order data, and show shoppers how close they are.',
-        'seo_title' => 'Free Gift with Purchase on Shopify: How to Set the Right Threshold',
+        'seo_title' => 'Free Gift with Purchase on Shopify: Setting the Threshold',
         'seo_description' => 'How to choose free-gift thresholds from your own order data, pick gifts that protect your margin, and show shoppers how close they are.',
         'body' => <<<'MD'
 "Spend $75, get a free gift" works because it gives shoppers a reason to add one more item. But the threshold makes or breaks it. Set it too low and you give gifts to orders that would have happened anyway. Set it too high and nobody bothers.
@@ -262,7 +262,7 @@ MD,
         'category' => 'AOV',
         'feature' => 'bundles',
         'excerpt' => 'When to sell more of one product and when to sell more products.',
-        'seo_title' => 'Quantity Breaks vs Bundles: Which Raises AOV More on Shopify?',
+        'seo_title' => 'Quantity Breaks vs Bundles: Which Raises AOV on Shopify?',
         'seo_description' => 'When quantity breaks beat product bundles, when bundles win, and how to test both on your Shopify store.',
         'body' => <<<'MD'
 Both quantity breaks and bundles raise average order value. They do it in different ways, and the right choice depends on how your customers already shop.
@@ -557,7 +557,7 @@ MD,
         'category' => 'Retention',
         'feature' => 'automation',
         'excerpt' => 'Three workflows every repeat-purchase brand should run, with timing that fits your product.',
-        'seo_title' => 'Post-Purchase Automation for Shopify: Review, Reorder & Win-back',
+        'seo_title' => 'Shopify Post-Purchase Flows: Review, Reorder & Win-back',
         'seo_description' => 'Three post-purchase workflows every Shopify brand should run, how to time them for your product, and what to put in each message.',
         'body' => <<<'MD'
 Getting a second order is easier than getting a first one, but only if you ask at the right time. Post-purchase automation sends the right message when a customer is ready for it, without you remembering to.
@@ -682,7 +682,7 @@ MD,
         'category' => 'Retention',
         'feature' => 'bundles',
         'excerpt' => 'Combine a bundle discount with your subscription app, so shoppers subscribe to a whole routine instead of one product.',
-        'seo_title' => 'Subscription Bundles on Shopify: Subscribe & Save on Packs and Boxes',
+        'seo_title' => 'Subscription Bundles on Shopify: Subscribe & Save Packs',
         'seo_description' => 'How subscription bundles work on Shopify: combining bundle discounts with selling plans, what shoppers see, and how pricing works on the first and later deliveries.',
         'body' => <<<'MD'
 Subscriptions bring predictable revenue. Bundles raise order value. A subscription bundle does both: shoppers subscribe to a whole routine, pack or box, not just one product.

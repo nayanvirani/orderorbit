@@ -228,4 +228,64 @@ return [
         ],
     ],
 
+    'profit' => [
+        'status' => 'live',
+        'summary' => 'Profit after product costs, fees, shipping and ad spend, by product, order, channel and day.',
+        'overview' => [
+            'Most Shopify dashboards stop at sales. Growvia carries on to profit: it reads your orders, applies your product costs, payment fees, shipping costs and ad spend, and labels every number with its profit level, from gross profit to profit after ads and estimated net.',
+            'Open any figure down to the orders behind it, see which products and channels earn money and which don\'t, and fill in missing costs from a list sorted by the sales they affect.',
+        ],
+        'benefits' => [
+            ['Profit at every level', 'Gross profit, contribution, profit after ads and estimated net, each clearly labelled.'],
+            ['Costs in one place', 'Shopify\'s cost per item, your own costs, fee and shipping rules and fixed monthly costs.'],
+            ['Ad spend that adds up', 'Enter or import spend by channel and tag it to products to see ROAS and POAS.'],
+            ['Breakdowns you can export', 'By product, variant, order, channel, country and day, with CSV export.'],
+        ],
+    ],
+
+    'protect' => [
+        'status' => 'live',
+        'summary' => 'Alerts for prices below cost, low stock, missing data and broken pages, sorted by money at risk.',
+        'overview' => [
+            'Growvia watches the parts of your store that quietly cost money. It checks prices against costs, stock against how fast each product sells, and product data for gaps, then lists every problem in the Action Center with the money at risk and the fix.',
+            'A Health Score from 0 to 100 sums up how your store is doing, the URL monitor checks your key pages around the clock, and new urgent problems arrive by email once a day.',
+        ],
+        'benefits' => [
+            ['Sorted by money at risk', 'The Action Center puts the most expensive problem first.'],
+            ['Stock before it runs out', 'Days of stock for each product, with a date to reorder by.'],
+            ['Pricing mistakes caught', 'Prices below cost and products that lose money on each sale.'],
+            ['Pages that load', 'Key pages checked around the clock, with an alert after two failed checks.'],
+        ],
+    ],
+
+    'insights' => [
+        'status' => 'live',
+        'summary' => 'Ready questions answered from your data, a monthly report PDF and a weekly email.',
+        'overview' => [
+            'Insights turns your Shopify orders into answers. Choose from over 1,000 ready questions about sales, profit, products, customers, stock and your Growvia offers, and see the answer with the numbers and table behind it, using the same figures as your dashboards.',
+            'Each month Growvia prepares a Monthly Business Report you can download as a PDF, and each week a short summary email shows how the store did, its Health Score and the top problems to fix.',
+        ],
+        'benefits' => [
+            ['Over 1,000 ready questions', 'Grouped by topic, searchable and easy to star.'],
+            ['Answers with the numbers', 'Each answer shows the figures and the table it comes from.'],
+            ['Monthly Business Report', 'Last month in one PDF to keep or share with your team.'],
+            ['Weekly summary email', 'How the week went, the Health Score and what to fix first.'],
+        ],
+    ],
+
+    'integrations' => [
+        'status' => 'live',
+        'summary' => 'Offer events in Klaviyo and GA4, segment lists in Klaviyo, and real reviews from Judge.me or Yotpo.',
+        'overview' => [
+            'Growvia connects to the apps many Shopify stores already run. Offer views, adds and purchases appear in Google Analytics 4 next to your other traffic, and Growvia events become Klaviyo metrics you can start flows from, with chosen segments synced to Klaviyo lists every day.',
+            'Connect Judge.me or Yotpo and their published reviews fill Growvia review cards and carousels, labelled with their source. Every connection has a Send test button and an activity log, and disconnecting deletes the keys at once.',
+        ],
+        'benefits' => [
+            ['Google Analytics 4', 'Offer views, adds from an offer, purchases and A/B test versions.'],
+            ['Klaviyo', 'Growvia events as metrics, and segments synced to lists daily.'],
+            ['Judge.me and Yotpo', 'Real published reviews and star ratings in your offers.'],
+            ['Private by design', 'Keys stored encrypted, consent respected and keys deleted on disconnect.'],
+        ],
+    ],
+
 ];

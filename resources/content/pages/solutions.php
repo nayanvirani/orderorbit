@@ -6,8 +6,8 @@
 */
 
 return [
-    'seo_title' => 'Solutions | Growvia',
-    'seo_description' => 'How DTC, repeat-purchase, fashion and Shopify Plus brands use Growvia to raise order value.',
+    'seo_title' => 'Shopify Growth Setups by Store Type | Growvia',
+    'seo_description' => 'How DTC, repeat-purchase, fashion and Shopify Plus brands use Growvia bundles, gifts, upsells and checkout blocks to raise order value.',
     'eyebrow' => 'Solutions',
     'title' => 'A setup for *your kind of store.*',
     'lead' => 'Pick the model closest to yours to see which offers to start with and why.',

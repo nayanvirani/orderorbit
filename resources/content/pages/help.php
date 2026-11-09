@@ -3,8 +3,8 @@
 /* Help Center page. Topics and articles are under Lists → Help topics & articles. */
 
 return [
-    'seo_title' => 'Help Center | Growvia',
-    'seo_description' => 'Answers about setting up bundles, progressive gifts, upsells, countdowns, analytics and billing in Growvia.',
+    'seo_title' => 'Help Center: Setup Guides & Answers | Growvia',
+    'seo_description' => 'Answers about setting up Growvia bundles, free gifts, upsells, countdowns, checkout blocks, analytics, automation and billing on your Shopify store.',
     'eyebrow' => 'Help Center',
     'title' => 'How can we help?',
     'lead' => 'Short answers to the questions merchants ask most, from installing the app to reading your analytics.',

@@ -14,7 +14,8 @@ return [
         'visual' => 'bundles',
         'h1' => 'Raise order value without an app stack.',
         'hero' => 'Bundles, gifts, upsells, countdowns and trust blocks in one app, with one design and one set of numbers.',
-        'seo_description' => 'One Shopify app for bundles, progressive gifts, upsells, countdowns and trust — built for DTC brands.',
+        'seo_title' => 'Shopify Bundles & Upsells for DTC Brands | Growvia',
+        'seo_description' => 'One Shopify app for DTC brands: bundles, free gifts, cart upsells, countdowns, trust badges and checkout offers, with revenue measured per offer.',
         'overview' => [
             'Most direct-to-consumer stores end up with a bundle app, a gift app, a timer app and a reviews widget. Each has its own settings, its own look and its own claim to the revenue — and each adds a little weight to your pages.',
             'Growvia replaces that stack with one app. Every offer shares your store\'s design, applies its price at checkout, and reports to the same analytics, so you can see which offer actually earned the money.',
@@ -40,7 +41,8 @@ return [
         'visual' => 'bundles',
         'h1' => 'Sell the routine, not just the product.',
         'hero' => 'Routine bundles, multi-packs and gifts that reward bigger orders for beauty, food, supplements and other consumables.',
-        'seo_description' => 'Routine bundles, multi-packs and gift rewards for Shopify beauty, food and supplement brands.',
+        'seo_title' => 'Shopify Bundles for Beauty, Food & Supplements | Growvia',
+        'seo_description' => 'Routine bundles, multi-packs, reorder reminders and gift rewards for Shopify beauty, food and supplement brands that sell on repeat orders.',
         'overview' => [
             'When customers buy a product they use up, the best time to grow the order is the first purchase. A routine bundle or a three-pack turns one bottle into a month\'s supply, and a gift at the right threshold makes the bigger basket feel like the obvious choice.',
             'With Growvia you can offer mix & match routines, multi-packs with a per-unit saving, and progressive gifts — all priced at checkout, with inventory deducted per product.',
@@ -65,7 +67,8 @@ return [
         'visual' => 'bundles',
         'h1' => 'Sell the outfit, not the single item.',
         'hero' => 'Frequently-bought-together bundles, size selection per item, gifts and trust blocks for fashion and apparel stores.',
-        'seo_description' => 'Complete-the-look bundles, per-item size selection, gifts and trust blocks for Shopify fashion brands.',
+        'seo_title' => 'Shopify Bundles for Fashion: Complete the Look | Growvia',
+        'seo_description' => 'Complete-the-look bundles with a size for each item, free gifts and trust badges for Shopify fashion and apparel brands.',
         'overview' => [
             'Fashion shoppers think in outfits. A frequently-bought-together bundle — tee, overshirt and cap — shows them the full look and makes it easy to buy in one step, with a size picker for every item.',
             'Add a free gift above your average order and a trust row about returns and exchanges, and the bigger basket stops feeling risky.',
@@ -89,7 +92,8 @@ return [
         'visual' => 'analytics',
         'h1' => 'Grow order value with control and clear numbers.',
         'hero' => 'Team roles, an audit log, checkout-level pricing and per-offer revenue for larger Shopify stores.',
-        'seo_description' => 'Bundles, gifts and upsells with team roles, audit logs and per-offer revenue for Shopify Plus brands.',
+        'seo_title' => 'Bundles, Upsells & Checkout for Shopify Plus | Growvia',
+        'seo_description' => 'Bundles, gifts, checkout upsells and post-purchase offers for Shopify Plus brands, with staff roles, audit logs and revenue per offer.',
         'overview' => [
             'Larger stores need more than a widget. Growvia gives your team owner, admin and staff roles, records every change in an audit log, and applies every saving through Shopify\'s own checkout functions.',
             'Analytics credit each order line to the offer that added it, so merchandising and growth teams can agree on what\'s working.',

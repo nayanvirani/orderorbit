@@ -14,7 +14,31 @@
     <meta property="og:title" content="@yield('title', 'Growvia | Shopify CRO, Checkout & Upsell App')">
     <meta property="og:description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
     <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('images/og/growvia.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Growvia: bundles, upsells and real profit for Shopify">
+    <meta property="og:locale" content="en_US">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'Growvia | Shopify CRO, Checkout & Upsell App')">
+    <meta name="twitter:description" content="@yield('description', 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.')">
+    <meta name="twitter:image" content="{{ asset('images/og/growvia.png') }}">
+    @php
+        // Breadcrumbs for Google from the URL: Home › section › this page (the title without the brand).
+        $crumbPath = trim(request()->path(), '/');
+        $crumbSections = ['features' => 'Features', 'solutions' => 'Solutions', 'blog' => 'Blog', 'docs' => 'Docs', 'legal' => 'Legal'];
+        $crumbs = [['Home', route('site.home')]];
+        if ($crumbPath !== '') {
+            $parts = explode('/', $crumbPath);
+            if (count($parts) > 1 && isset($crumbSections[$parts[0]])) {
+                $crumbs[] = [$crumbSections[$parts[0]], url($parts[0])];
+            }
+            $crumbs[] = [trim(preg_replace('/\s*\|[^|]*$/', '', html_entity_decode(trim($__env->yieldContent('title')), ENT_QUOTES))) ?: 'Growvia', url()->current()];
+        }
+    @endphp
+    @if (count($crumbs) > 1)
+    <script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => collect($crumbs)->values()->map(fn ($c, $i) => ['@type' => 'ListItem', 'position' => $i + 1, 'name' => $c[0], 'item' => $c[1]])->all()], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endif
     <meta name="theme-color" content="{{ \App\Support\SiteTheme::get()['header_bg'] }}">
     @include('partials.favicons')
     <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ filemtime(public_path('css/site.css')) }}">
@@ -59,6 +83,12 @@
                             @foreach ($navGroups['grow'] as $slug => $f)
                                 <a class="dd-link" href="{{ route('site.feature', $slug) }}"><span class="ico"><x-icon :name="$f['icon']"/></span><span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span></a>
                             @endforeach
+                            @if (! empty($navGroups['store']))
+                                <h5 style="margin-top:14px">{{ $site['product_menu']['store'] ?? 'Profit & store health' }}</h5>
+                                @foreach ($navGroups['store'] as $slug => $f)
+                                    <a class="dd-link" href="{{ route('site.feature', $slug) }}"><span class="ico"><x-icon :name="$f['icon']"/></span><span><strong>{{ $f['name'] }}</strong><span>{{ $f['menu'] }}</span></span></a>
+                                @endforeach
+                            @endif
                         </div>
                     </div>
                 </div>

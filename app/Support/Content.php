@@ -12,9 +12,15 @@ class Content
 {
     private static array $cache = [];
 
+    /** Feature pages; a page with a release flag shows only once that flag is on for every store. */
     public static function features(): array
     {
-        return SiteContent::applyItems('feature', self::baseFeatures());
+        return array_filter(SiteContent::applyItems('feature', self::baseFeatures()), fn ($f) => self::released($f));
+    }
+
+    public static function released(array $feature): bool
+    {
+        return collect((array) ($feature['flag'] ?? []))->every(fn ($flag) => Features::enabled($flag));
     }
 
     /** The built-in feature copy; long-form copy (status, summary, overview, benefits) lives in feature-copy.php. */
@@ -41,7 +47,7 @@ class Content
      */
     public static function featureGroups(): array
     {
-        $groups = ['convert' => [], 'checkout' => [], 'grow' => []];
+        $groups = ['convert' => [], 'checkout' => [], 'grow' => [], 'store' => []];
 
         foreach (self::features() as $slug => $feature) {
             $groups[$feature['group']][$slug] = $feature;

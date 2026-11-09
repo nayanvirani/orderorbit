@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'seo_title' => 'About | Growvia',
-    'seo_description' => 'Growvia helps Shopify stores raise order value with offers that respect the theme, measure honestly and stay in the merchant\'s control.',
+    'seo_title' => 'About Growvia: Shopify Apps for Order Value | Growvia',
+    'seo_description' => 'Growvia helps Shopify stores raise order value with offers that match the theme, numbers that are measured honestly and settings the merchant controls.',
     'eyebrow' => 'About',
     'title' => 'Growth tools that work with your store, *not against it.*',
     'paragraphs' => [

@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'seo_title' => 'Contact | Growvia',
-    'seo_description' => 'Questions about Growvia, pricing or partnerships? We reply within one business day.',
+    'seo_title' => 'Contact Growvia: Support, Sales & Partnerships',
+    'seo_description' => 'Questions about Growvia, a plan, a custom setup or a partnership? Send us a message and a real person on the team replies within one business day.',
     'eyebrow' => 'Contact',
     'title' => 'Talk to *a real person.*',
     'lead' => 'Questions before installing, help with setup, billing or a partnership idea — send a message and you\'ll get a reply within one business day.',

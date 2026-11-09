@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'seo_title' => 'How It Works | Growvia',
-    'seo_description' => 'Install, pick a template, make it yours, publish and measure. How Growvia works on your Shopify store.',
+    'seo_title' => 'How Growvia Works: From Install to First Offer | Growvia',
+    'seo_description' => 'Install Growvia, pick a template, match it to your theme and publish. Then see the revenue each bundle, gift and upsell brings to your Shopify store.',
     'eyebrow' => 'How it works',
     'title' => 'Five steps from install *to measured results.*',
     'lead' => 'Growvia follows one simple loop: create an offer, publish it, and see what it earns. No theme code, no discount codes, no guesswork.',

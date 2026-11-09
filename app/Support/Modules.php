@@ -73,9 +73,27 @@ class Modules
         'first_in_line_support' => ['First-in-line support', 'Service', 'Answered before every other plan.', 'priority_support'],
     ];
 
-    /** Next MVP modules that aren't built yet: shown as "Coming soon", never promised as available. */
+    /**
+     * Next MVP modules with a release flag. Each one counts as "Coming soon" (never promised as
+     * available on the pricing page, the custom plan form or upgrade prompts) until its flag is on
+     * for every store; see coming().
+     */
     public const COMING = ['translations', 'profit_snapshot', 'profit', 'profit_roas', 'profit_goals', 'protect', 'protect_alerts', 'product_data', 'url_monitor',
         'sales_insights', 'customer_value', 'morning_brief', 'ai_offer_ideas', 'reorder_timing', 'review_apps', 'klaviyo_ga4', 'first_in_line_support'];
+
+    /** The release flag behind each module in COMING. */
+    public const COMING_FLAGS = [
+        'translations' => 'translations', 'profit_snapshot' => 'profit', 'profit' => 'profit', 'profit_roas' => 'profit', 'profit_goals' => 'profit_goals',
+        'protect' => 'protect', 'protect_alerts' => 'protect', 'product_data' => 'protect', 'url_monitor' => 'url_monitor',
+        'sales_insights' => 'sales_insights', 'customer_value' => 'customer_value', 'morning_brief' => 'morning_brief', 'ai_offer_ideas' => 'ai_offer_ideas',
+        'reorder_timing' => 'reorder_timing', 'review_apps' => 'review_apps', 'klaviyo_ga4' => 'integrations', 'first_in_line_support' => 'premium_plan',
+    ];
+
+    /** Modules not yet released to every store: COMING minus those whose flag is on for all. */
+    public static function coming(): array
+    {
+        return array_values(array_filter(self::COMING, fn ($key) => ! Features::enabled(self::COMING_FLAGS[$key] ?? $key)));
+    }
 
     /** The next MVP's module keys per plan (G29, section 8), added to each plan's own list. */
     public const NEXT_MVP = [

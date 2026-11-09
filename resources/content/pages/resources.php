@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'seo_title' => 'Resources | Growvia',
-    'seo_description' => 'Guides, templates and help for raising conversion and order value on Shopify with Growvia.',
+    'seo_title' => 'Shopify Growth Guides, Docs & Help | Growvia',
+    'seo_description' => 'Guides, setup docs and help articles for Shopify bundles, free gifts, upsells, checkout blocks, automation and A/B testing with Growvia.',
     'eyebrow' => 'Resources',
     'title' => 'Everything you need *to get started.*',
     'lead' => 'Help articles, step-by-step guides, the template gallery and the blog — all in one place.',

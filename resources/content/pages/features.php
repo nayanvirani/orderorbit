@@ -6,8 +6,8 @@
 */
 
 return [
-    'seo_title' => 'Features | Growvia — Bundles, Gifts, Upsells for Shopify',
-    'seo_description' => 'Bundles, progressive gifts, cart upsells, countdowns, sticky add-to-cart, trust blocks and analytics for Shopify, in one app.',
+    'seo_title' => 'Shopify Bundles, Upsells & Free Gift Features | Growvia',
+    'seo_description' => 'Every Growvia feature: bundles, quantity breaks, free gifts, cart upsells, countdowns, checkout blocks, automation, analytics and A/B tests for Shopify.',
     'breadcrumb' => 'Features',
     'title' => 'Everything that raises order value, *in one app.*',
     'lead' => 'Each feature has ready-made templates, shares your store\'s design and applies its savings at checkout.',
@@ -15,6 +15,7 @@ return [
         'convert' => ['title' => 'Raise order value and conversion', 'text' => 'On your product pages and in the cart.', 'tab' => 'Order value & conversion'],
         'grow' => ['title' => 'Measure and grow', 'text' => 'See what each offer earns.', 'tab' => 'Measure & grow'],
         'checkout' => ['title' => 'After the Buy button', 'text' => 'Checkout, Thank You and customer accounts.', 'tab' => 'After the Buy button'],
+        'store' => ['title' => 'Profit and store health', 'text' => 'Real profit, store alerts, reports and the apps you already use.', 'tab' => 'Profit & store health'],
     ],
     'learn_more' => 'Learn more →',
     'cta' => [

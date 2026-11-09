@@ -2,7 +2,7 @@
 @php($c = \App\Support\SiteContent::page('legal'))
 
 @section('title', $page->title.' | '.(\App\Support\Legal::details()['trading_name'] ?: 'Growvia'))
-@section('description', strip_tags((string) \App\Support\Legal::render((string) $page->summary)['html']) ?: $page->title)
+@section('description', \App\Support\SiteContent::page('legal')['descriptions'][$page->slug] ?? (trim(strip_tags((string) \App\Support\Legal::render((string) $page->summary)['html'])) ?: $page->title))
 
 @push('head')
     <link rel="stylesheet" href="{{ asset('css/docs.css') }}?v={{ filemtime(public_path('css/docs.css')) }}">

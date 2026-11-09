@@ -7,8 +7,8 @@
 */
 
 return [
-    'seo_title' => 'Growvia | Shopify CRO, Checkout & Upsell App',
-    'seo_description' => 'Bundles, progressive gifts, upsells, checkout blocks, automation, analytics and A/B testing for Shopify — in one app.',
+    'seo_title' => 'Shopify Bundles, Upsells & Free Gift App | Growvia',
+    'seo_description' => 'Growvia adds bundles, quantity breaks, free gifts, cart and checkout upsells to your Shopify store, plus analytics, A/B tests and automation. Start free.',
     'hero' => [
         'eyebrow' => '{tools} sales tools · one Shopify app',
         'title' => 'Convert more shoppers and *raise every order.*',

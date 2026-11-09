@@ -3,8 +3,8 @@
 /* Blog pages. The articles themselves are written and published in Internal Admin → Blog. */
 
 return [
-    'seo_title' => 'Blog | Shopify Conversion, Explained | Growvia',
-    'seo_description' => 'Practical guides on bundles, gifts, upsells, checkout and retention for Shopify stores.',
+    'seo_title' => 'Shopify Bundles, Upsells & CRO Guides | Growvia Blog',
+    'seo_description' => 'Practical guides for Shopify stores: product bundles, free gifts, upsells, checkout, A/B testing and post-purchase flows that raise order value.',
     'eyebrow' => 'Blog',
     'title' => 'Shopify conversion, *explained.*',
     'lead' => 'Practical, plain-English guides on raising order value, conversion and repeat orders on Shopify.',

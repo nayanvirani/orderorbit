@@ -2,7 +2,7 @@
 @php($c = \App\Support\SiteContent::page('pricing'))
 
 @section('title', \App\Support\SiteContent::plain($c['seo_title']))
-@section('description', $page['lead'].' '.collect($plans)->map(fn ($p) => $p['name'].' '.($p['price'] > 0 ? '$'.number_format($p['price'], 2).'/mo' : 'free'))->implode(', ').'. '.$page['billing_note'])
+@section('description', str_replace('{from}', '$'.number_format((float) (collect($plans)->where('price', '>', 0)->min('price') ?? 0), 2), \App\Support\SiteContent::plain($c['seo_description'] ?? $page['lead'])))
 
 @section('content')
 <section class="page-hero center" style="border-bottom:0;padding-bottom:40px">
