@@ -46,6 +46,10 @@ class ProfitSync
         if (! self::enabled($store) || ! $store->isInstalled() || self::missingAccess($store)) {
             return 'skipped';
         }
+        // After a failure Shopify isn't asked again every 5 minutes: the store rests 1, 2, 4, then 6 hours.
+        if (($until = \Illuminate\Support\Facades\Cache::get("profit-sync-pause:{$store->id}")) && now()->lt($until)) {
+            return 'paused after an error until '.\Illuminate\Support\Carbon::parse($until)->format('H:i').' UTC';
+        }
         $settings = ProfitSetting::for($store->id);
         $this->ensureWebhooks($store);
         try {
@@ -54,12 +58,14 @@ class ProfitSync
                 $orders = $this->orders->backfill($store, now()->subDays(self::historyDays($store)));
                 $this->engine->recalculateAll($store);
                 $settings->forceFill(['backfilled_at' => now(), 'costs_synced_at' => now(), 'synced_at' => now()])->save();
+                \Illuminate\Support\Facades\Cache::forget("profit-sync-failures:{$store->id}");
 
                 return "backfilled {$orders} orders, {$variants} variants";
             }
             if (! $settings->costs_synced_at || $settings->costs_synced_at->lt(now()->subHours(6))) {
                 $this->costs->sync($store);
                 $settings->forceFill(['costs_synced_at' => now()])->save();
+                \Illuminate\Support\Facades\Cache::forget("profit-sync-failures:{$store->id}");
                 $this->engine->recalculateAll($store);
 
                 return 'costs refreshed';
@@ -85,12 +91,17 @@ class ProfitSync
             $today = now($store->timezone ?: 'UTC');
             $this->engine->recalculate($store, $today->copy()->subDay()->toDateString(), $today->toDateString());
             $settings->forceFill(['synced_at' => now()])->save();
+            \Illuminate\Support\Facades\Cache::forget("profit-sync-failures:{$store->id}");
 
             return 'up to date';
         } catch (Throwable $e) {
             report($e);
+            $failures = (int) \Illuminate\Support\Facades\Cache::get("profit-sync-failures:{$store->id}", 0) + 1;
+            \Illuminate\Support\Facades\Cache::put("profit-sync-failures:{$store->id}", $failures, now()->addDays(2));
+            $until = now()->addMinutes(min(360, 60 * 2 ** ($failures - 1)));
+            \Illuminate\Support\Facades\Cache::put("profit-sync-pause:{$store->id}", $until->toIso8601String(), $until);
 
-            return 'failed: '.mb_substr($e->getMessage(), 0, 120);
+            return 'failed (next try '.$until->format('H:i').' UTC): '.mb_substr($e->getMessage(), 0, 120);
         }
     }
 
@@ -152,7 +163,7 @@ class ProfitSync
     public function ensureWebhooks(Store $store): void
     {
         $key = "inventory-webhooks:v1:{$store->id}";
-        if (! $store->hasScope('read_inventory') || \Illuminate\Support\Facades\Cache::get($key)) {
+        if (! $store->hasScope('read_inventory') || \Illuminate\Support\Facades\Cache::get($key) || \Illuminate\Support\Facades\Cache::get("{$key}:retry")) {
             return;
         }
         try {
@@ -163,6 +174,8 @@ class ProfitSync
             \Illuminate\Support\Facades\Cache::forever($key, true);
         } catch (\Throwable $e) {
             report($e);
+            // Tried again in 6 hours, not on every 5-minute run.
+            \Illuminate\Support\Facades\Cache::put("{$key}:retry", true, now()->addHours(6));
         }
     }
 

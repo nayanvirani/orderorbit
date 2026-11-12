@@ -33,7 +33,9 @@ class UrlMonitorCommand extends Command
                     return;
                 }
                 try {
-                    if (Cache::add("url-monitor:discover:{$store->id}", true, 7 * 86400) || ! MonitoredUrl::where('store_id', $store->id)->exists()) {
+                    // Weekly; a store with no pages yet tries again hourly (not every 5 minutes if Shopify can't be read).
+                    if (Cache::add("url-monitor:discover:{$store->id}", true, 7 * 86400)
+                        || (! MonitoredUrl::where('store_id', $store->id)->exists() && Cache::add("url-monitor:discover-retry:{$store->id}", true, 3600))) {
                         $monitor->discover($store);
                     }
                     $r = $monitor->check($store);
