@@ -20,6 +20,9 @@ class OpsController extends Controller
             'recent' => OpsAlert::whereNotNull('resolved_at')->where('resolved_at', '>=', now()->subDays(30))->latest('resolved_at')->limit(30)->get(),
             'lastRun' => ($r = Cache::get('ops-monitor:last-run')) ? \Illuminate\Support\Carbon::parse($r) : null,
             'recipient' => TeamAlert::recipient(),
+            // For Shopify's IP allowlist: the web service now, and the worker as it last recorded.
+            'ips' => ['Web (orderorbit)' => \Illuminate\Support\Facades\Cache::remember('outbound-ip:web', 300, fn () => \App\Support\OutboundIp::detect()),
+                'Worker (orderorbit-worker)' => \App\Support\OutboundIp::recorded('worker')],
         ]);
     }
 

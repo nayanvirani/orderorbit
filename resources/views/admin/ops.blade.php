@@ -3,6 +3,22 @@
 @section('content')
 <div class="ad-head"><div><h1>Ops alerts</h1><p>Checked every 5 minutes: the website and app responding, Shopify webhooks, workflow runs, email sending and Shopify token refreshes. Each alert is emailed at most once an hour while it lasts, and closes by itself when the problem is gone. A daily summary goes out at 09:00 India time.</p></div></div>
 <section class="ad-card">
+    <h2>Outgoing IP addresses</h2>
+    <p class="ad-muted">The addresses Growvia's servers use when they call Shopify. Add every one of these to Dev Dashboard › Growvia › Settings › IP allowlist; if Shopify's logs show "IP blocked", the address there is missing from the list.</p>
+    <div class="ad-scroll"><table class="ad-table">
+        <thead><tr><th>Service</th><th>IPv4</th><th>IPv6</th><th>Checked</th></tr></thead>
+        <tbody>
+            @foreach ($ips as $service => $ip)
+                <tr><td>{{ $service }}</td>
+                    <td><code>{{ $ip['v4'] ?? '—' }}</code></td>
+                    <td><code>{{ $ip['v6'] ?? 'not used' }}</code></td>
+                    <td>{{ ! empty($ip['at']) ? \Illuminate\Support\Carbon::parse($ip['at'])->diffForHumans() : 'not yet (the worker records it every 10 minutes)' }}</td></tr>
+            @endforeach
+        </tbody>
+    </table></div>
+</section>
+
+<section class="ad-card">
     <p>Alerts and the daily summary go to <b>{{ $recipient ?? 'nobody yet' }}</b> · <a href="{{ route('admin.email') }}">change in Email providers</a><br>
     <span class="ad-muted">Last check: {{ $lastRun ? $lastRun->diffForHumans() : 'not yet (the worker runs it)' }}@if ($lastRun && $lastRun->lt(now()->subMinutes(15))) · <b style="color:var(--bad)">the checks have stopped: is the worker running?</b>@endif</span></p>
 </section>

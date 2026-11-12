@@ -19,6 +19,7 @@ Schedule::command('orderorbit:prune-analytics')->dailyAt('03:15');
 
 // Ops alerts for the Growvia team (G26): checks every 5 minutes, a summary every morning.
 Schedule::command('orderorbit:ops-check')->everyFiveMinutes()->withoutOverlapping(10);
+Schedule::command('orderorbit:outbound-ip')->everyTenMinutes()->withoutOverlapping(5); // IPs for Shopify's allowlist
 Schedule::command('orderorbit:ops-check --digest')->dailyAt('03:30'); // 09:00 in India
 // Announcements (G41): email store owners when an announcement marked "email owners" starts.
 Schedule::command('orderorbit:weekly-summary')->weeklyOn(1, '03:30')->withoutOverlapping(60); // G16, Monday 09:00 India
