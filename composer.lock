@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "anthropic-ai/sdk",
-            "version": "v1.6.0",
+            "version": "v1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/anthropics/anthropic-sdk-php.git",
-                "reference": "7f4ac63b8abdc24c9cdc248479c1ff653e9d584b"
+                "reference": "67df24ec030b3d21a1b88edc057ba6d3e9593028"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/anthropics/anthropic-sdk-php/zipball/7f4ac63b8abdc24c9cdc248479c1ff653e9d584b",
-                "reference": "7f4ac63b8abdc24c9cdc248479c1ff653e9d584b",
+                "url": "https://api.github.com/repos/anthropics/anthropic-sdk-php/zipball/67df24ec030b3d21a1b88edc057ba6d3e9593028",
+                "reference": "67df24ec030b3d21a1b88edc057ba6d3e9593028",
                 "shasum": ""
             },
             "require": {
@@ -67,9 +67,9 @@
             "description": "Anthropic PHP SDK",
             "support": {
                 "issues": "https://github.com/anthropics/anthropic-sdk-php/issues",
-                "source": "https://github.com/anthropics/anthropic-sdk-php/tree/v1.6.0"
+                "source": "https://github.com/anthropics/anthropic-sdk-php/tree/v1.8.0"
             },
-            "time": "2026-11-05T18:59:06+00:00"
+            "time": "2026-11-10T16:24:39+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -9586,13 +9586,13 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.3",
         "ext-pdo_pgsql": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }
